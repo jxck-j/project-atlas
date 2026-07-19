@@ -8,6 +8,7 @@ import { WATER_BODIES } from '../data/waterBodies'
 import { latLngPathToPoints, latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
+import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
 import { resetView, useSelection } from '../hud/selectionStore'
@@ -221,6 +222,7 @@ export function Globe() {
       <Countries />
       <CapitalMarker />
       <WaterLabels occluder={coreSphereRef} />
+      <LayerEngine />
 
       {/* Inner glow */}
       <mesh>

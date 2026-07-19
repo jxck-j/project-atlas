@@ -5,6 +5,70 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.0: Layer Engine architecture
+
+**Why split Registry, Store, Manager, and Engine into four pieces instead of
+one file.** They change for different reasons and at different rates: the
+Registry is a static catalog (what layers *exist*, populated once at import
+time); the Store is runtime state (what's *enabled right now*, changes on
+every toggle); the Manager is rendering/lifecycle logic (how enabled layers
+actually get mounted/unmounted/isolated); the Engine is the public seam
+(`Globe.tsx`'s only integration point). Collapsing these would work today
+with three placeholder layers, but the whole point of this version is
+future engines (Country, Relationship, Intelligence, Data, Timeline) being
+able to register layers without caring how mounting/toggling works — that
+requires the contract (Registry) to stay decoupled from the mechanism
+(Manager).
+
+**Category is a free-form string, not a closed union.** First draft used a
+`LayerCategory` union (`'geography' | 'infrastructure' | 'conflict' | ...`)
+with a `CATEGORY_LABELS` lookup table in `LayerPanel.tsx`. That meant every
+future engine introducing a new grouping (a Timeline Engine's layers might
+want a "temporal" category, say) would have to edit a HUD file it has no
+other reason to touch — exactly the coupling this version exists to remove.
+Switched to a plain string, displayed as-is (uppercased) in the panel. Costs
+autocomplete/typo-safety on the category field; worth it for not needing to
+touch `LayerPanel.tsx` to add a category.
+
+**Registration happens as an import side effect, not an explicit call from
+some central setup function.** A layer module calls `registerLayer()` at its
+own top level, and the only thing that "installs" it is one import line in
+`placeholders/index.ts`. This only works because ES module evaluation runs
+the entire import graph before React renders anything — so as long as
+*something* reachable from `main.tsx` imports the barrel (`src/layers/index.ts`,
+which imports `LayerEngine.tsx`, which imports `placeholders/`), registration
+is guaranteed complete before any component that reads the registry actually
+renders, regardless of which file happens to import which first. Documented
+this explicitly in `CLAUDE.md` because it's the kind of thing that looks like
+a race condition until you think through module evaluation order.
+
+**Per-layer error boundaries, even though v2.0 has no real layers yet.** Added
+`LayerErrorBoundary` (a class component — no hook equivalent exists) wrapping
+each mounted layer individually. Not strictly required for three placeholder
+markers that can't fail, but "future layers should be addable without
+modifying Globe.tsx" implies those future layers (live APIs, databases,
+whoever writes them) shouldn't be able to take the whole globe down if they
+have a bug. Cheap to add now, much more annoying to retrofit once several
+real layers depend on the current no-isolation behavior.
+
+**`LayerPanel.tsx` lives in `hud/`, not `layers/`.** Everything else in the
+Layer Engine lives together in `src/layers/` (types, registry, store,
+manager, engine), but the toggle UI follows the existing rule that all
+DOM/Tailwind HUD panels live in `hud/` (see `CLAUDE.md`'s "Two-layer split")
+and import whatever scene-side state they need — `LayerPanel.tsx` imports
+from `'../layers'` the same way `SettingsPanel.tsx` imports from
+`'./settingsStore'`. Kept the engine's own directory scene-only rather than
+mixing HUD components into it.
+
+**Only three placeholder layers, not one per forbidden topic.** The spec
+listed a long list of things not to build (terrain, rivers, military bases,
+hospitals, oil fields, ports, airports, conflict visualization, relationship
+arcs, live APIs, ...). Rather than one placeholder per item, built three
+spanning distinct categories (geography/terrain, infrastructure, conflict) —
+enough to prove the registry groups by category correctly and that multiple
+layers can be enabled simultaneously without interference, without padding
+the placeholder set past what's needed to validate the architecture.
+
 ## 2026-07-18 — Initial build session
 
 **Antimeridian triangulation bug (Russia, and any country crossing ±180°).**

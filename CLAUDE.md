@@ -27,12 +27,23 @@ correct way to typecheck without emitting — matches what `npm run build` does.
 
 ## Architecture
 
+Since v2.0, Atlas is organized around long-lived **engines** rather than a flat
+feature list — each engine is a self-contained subsystem with its own directory.
+Current: the Rendering Engine (`src/scene/`) and the Layer Engine (`src/layers/`,
+see below). Planned: Country Engine, Relationship Engine, Intelligence Engine,
+Data Engine, Timeline Engine. Before starting a new major version, name which
+engine is being expanded and how it reduces future complexity — see
+`CHANGELOG.md`'s versioning note and `LOGBOOK.md` for the reasoning behind this.
+
 ### Two-layer split: `scene/` vs `hud/`
 
 - `src/scene/` — everything inside the R3F `<Canvas>` (Three.js objects, materials,
   camera controls, geometry math). Composed in `Scene.tsx`, mounted once from `App.tsx`.
 - `src/hud/` — plain DOM/Tailwind overlay panels positioned with `fixed` + `z-*`,
   siblings of the Canvas in `App.tsx`, not children of it.
+- `src/layers/` — the Layer Engine (see its own section below). Spans both:
+  the engine itself renders inside the Canvas, `hud/LayerPanel.tsx` controls it
+  from the DOM side.
 - `src/data/` — static datasets (UN member list, water body labels, country profiles).
 - `src/utils/geo.ts` — the lat/lng ⟷ `Vector3` sphere projection and its inverse,
   shared by both layers.
@@ -162,6 +173,63 @@ convert (`time / 1000`) before calling `advance()`.
   against everything also catches the atmosphere glow shells (which sit in front
   of every label regardless of which hemisphere it's on) and hides all labels
   unconditionally, always.
+
+### Layer Engine (`src/layers/`)
+
+A plugin system for pluggable visualization modules, added in v2.0 so future
+overlays (terrain, infrastructure, conflict zones, relationship arcs, live
+data, ...) never require editing `Globe.tsx` again. As of v2.0 the only
+layers that exist are architecture-validating placeholders — see
+`src/layers/placeholders/`.
+
+**Pieces, and why they're separate:**
+
+- `types.ts` — the `LayerDefinition` contract: `id`, `label`, `description`,
+  `category` (a free-form string, not a closed union — deliberately, so a new
+  category never requires touching `LayerPanel.tsx`), `defaultEnabled`, and
+  `component` (a prop-less `ComponentType` the layer mounts while enabled).
+- `layerRegistry.ts` — a plain `Map`, not reactive. `registerLayer(def)` /
+  `getLayerDefinitions()`. Layers register themselves as an **import side
+  effect** — see the registration workflow below.
+- `layerStore.ts` — the *runtime enabled/disabled state*, separate from the
+  registry (which is just the static catalog of what's available). Same
+  `useSyncExternalStore` pub/sub pattern as every other store in this repo
+  (`selectionStore.ts` etc.) — see the "Two-layer split" section above for why.
+- `LayerManager.tsx` — reads the registry + store every render and mounts/
+  unmounts each enabled layer's component. Wraps each layer in its own
+  `LayerErrorBoundary` (a class component — error boundaries require one) so
+  one broken layer can't crash the whole globe, and logs mount/unmount for
+  each layer (`console.info('[LayerEngine] "<id>" mounted')`) — the "lifecycle"
+  placeholder layers exist to demonstrate.
+- `LayerEngine.tsx` — the public entry point. This is the **only** file
+  `Globe.tsx` imports from `src/layers/`; it renders `LayerManager` and, as an
+  import side effect, pulls in `placeholders/` (bootstrapping registration).
+  Nothing else in the scene knows or needs to know what layers exist.
+- `index.ts` — the barrel. Both `LayerEngine` (scene side) and `hud/LayerPanel.tsx`
+  (HUD side) should import from here (`'../layers'`), not from individual
+  files — importing the barrel is what guarantees registration has happened
+  before anything reads the registry or store.
+
+**Registration workflow — how to add a new layer:**
+
+1. Write a module that calls `registerLayer({...})` at the top level (module
+   load time, not inside a component) — see any file in `placeholders/` for
+   the shape.
+2. Add one import line for that module to `placeholders/index.ts` (or, for a
+   non-placeholder/production layer, wherever the app's "real" layer set ends
+   up being composed — that composition point doesn't exist yet since v2.0 is
+   placeholders-only, but it's the same one-line-import pattern).
+3. Nothing else changes. `Globe.tsx`, `LayerManager.tsx`, and `LayerPanel.tsx`
+   never need to know the new layer exists — they only deal with
+   `LayerDefinition`s and the enabled-state map.
+
+**How future engines integrate:** the Layer Engine doesn't know or care which
+engine produced a `LayerDefinition` — it only deals with the contract in
+`types.ts`. A future Country Engine, Relationship Engine, Intelligence Engine,
+etc. is expected to own its own data/state internally and hand the Layer
+Engine a component via `registerLayer()`, the same way the placeholders do.
+That decoupling — engines produce layers, the Layer Engine only knows how to
+register/toggle/mount/unmount them — is the reason this version exists.
 
 ### Data quirks worth knowing
 

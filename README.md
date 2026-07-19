@@ -64,8 +64,10 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   click the 🌍 button in the top-left toolbar. Clears the current selection and
   cinematically flies the camera back to the default framing.
 - The top-left **toolbar** also has 🔍 **Search** (type a country name, press
-  Enter — selects it and flies the camera there) and ⚙ **Settings** (camera
-  rotate/zoom sensitivity, with a reset).
+  Enter — selects it and flies the camera there), 🗂 **Layers** (toggle
+  visualization layers on/off — as of v2.0 these are architecture-validating
+  placeholders, not real data; see Layer Engine below), and ⚙ **Settings**
+  (camera rotate/zoom sensitivity, with a reset).
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
@@ -113,11 +115,28 @@ src/
                                hard 60fps cap — see CLAUDE.md for a real bug this
                                caused if you touch it
     constants.ts              Shared GLOBE_RADIUS + camera distance bounds
+  layers/                    The Layer Engine (v2.0) — pluggable visualization
+                               modules; Globe.tsx only ever mounts <LayerEngine />
+    types.ts                   The LayerDefinition contract every layer implements
+    layerRegistry.ts            Plain registerLayer()/getLayerDefinitions() catalog
+    layerStore.ts                Enabled/disabled runtime state (useSyncExternalStore,
+                                 same pattern as the hud/*Store.ts files)
+    LayerManager.tsx              Mounts/unmounts enabled layers, per-layer error
+                                 boundary, mount/unmount lifecycle logging
+    LayerEngine.tsx                Public entry point — the only thing Globe.tsx
+                                 imports from this directory
+    LayerErrorBoundary.tsx          Isolates one layer's crash from the rest
+    index.ts                       Barrel — import from here, not individual files
+    placeholders/                  Example layers demonstrating registration +
+                                 lifecycle only (terrain/infrastructure/conflict);
+                                 no real data or production visualization yet
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar
-    Toolbar.tsx                Top-left icon bar: reset view / search / settings
+    Toolbar.tsx                Top-left icon bar: reset view / search / layers / settings
     SearchBar.tsx               Country name -> select + fly-to
+    LayerPanel.tsx               Toggle list for registered layers, grouped by
+                                 category (toggled via Toolbar)
     SettingsPanel.tsx           Camera sensitivity sliders (toggled via Toolbar)
     Telemetry.tsx               Bottom-left live orbit readout (az/el/range)
     CommandBar.tsx               Bottom status bar: ready/connected/country
@@ -155,6 +174,11 @@ to build against without refactoring the globe itself.
 
 ## Notes for future work
 
+- **Adding a visualization layer** (terrain, infrastructure, conflict zones,
+  relationship arcs, live data, ...) means writing a module that calls
+  `registerLayer()` and adding one import line to `layers/placeholders/index.ts`
+  (or wherever a "real" layer set eventually gets composed) — never editing
+  `Globe.tsx`. See `CLAUDE.md`'s Layer Engine section for the full workflow.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.

@@ -6,6 +6,7 @@ import { CommandBar } from './hud/CommandBar'
 import { Toolbar } from './hud/Toolbar'
 import { SearchBar } from './hud/SearchBar'
 import { SettingsPanel } from './hud/SettingsPanel'
+import { LayerPanel } from './hud/LayerPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
       <Toolbar />
       <SearchBar />
       <SettingsPanel />
+      <LayerPanel />
       <IntelligencePanel />
     </div>
   )

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 
 // Which single toolbar dropdown (if any) is open. Mutually exclusive —
 // opening one closes the other, matching a normal toolbar's behavior.
-export type HudPanel = 'search' | 'settings' | null
+export type HudPanel = 'search' | 'settings' | 'layers' | null
 
 let openPanel: HudPanel = null
 const listeners = new Set<() => void>()

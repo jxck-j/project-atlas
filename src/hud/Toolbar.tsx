@@ -45,6 +45,12 @@ export function Toolbar() {
             onClick={() => toggleHudPanel('search')}
           />
           <ToolbarButton
+            icon="🗂"
+            label="Layers"
+            active={openPanel === 'layers'}
+            onClick={() => toggleHudPanel('layers')}
+          />
+          <ToolbarButton
             icon="⚙"
             label="Settings"
             active={openPanel === 'settings'}

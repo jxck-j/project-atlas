@@ -11,6 +11,40 @@ Versioning here isn't semver. It's:
 
 Each entry should say *what* changed and, where it's not obvious, *why*.
 
+Starting with v2.0, Atlas is organized around long-lived **engines** rather
+than a flat feature list (Rendering, Layer, and eventually Country,
+Relationship, Intelligence, Data, Timeline). Every new major version should
+name which engine it expands and how that reduces future complexity — see
+`CLAUDE.md`'s Architecture section.
+
+## v2.0 — Layer Engine
+
+Architectural only — no new production visualization. Builds the plugin
+system future visualization modules (terrain, infrastructure, conflict
+zones, relationship arcs, live data, ...) will register through, so adding
+one never again means editing `Globe.tsx`.
+
+### Added
+
+- Layer Engine (`src/layers/`): a registry (`registerLayer`/
+  `getLayerDefinitions`), a runtime enabled/disabled store (same
+  `useSyncExternalStore` pattern as the rest of the HUD state), a manager
+  that mounts/unmounts enabled layers with per-layer error isolation and
+  lifecycle logging, and a single `<LayerEngine />` entry point that
+  `Globe.tsx` renders.
+- Layer Panel (top-left toolbar, 🗂): lists every registered layer grouped by
+  category with an on/off toggle.
+- Three placeholder layers (terrain, infrastructure, conflict) demonstrating
+  the registration workflow end to end — each is registration + lifecycle
+  logging + a trivial debug marker, not real data or visualization.
+
+### Notes
+
+- Existing v1.0 functionality (globe, countries, camera, search, settings,
+  intelligence panel) is unchanged — the Layer Engine is purely additive.
+- See `LOGBOOK.md` for the reasoning behind the Registry/Store/Manager/Engine
+  split and the registration-via-import-side-effect pattern.
+
 ## v1.0 — Initial release
 
 The baseline globe, HUD, and interaction model, covering all 193 UN member
