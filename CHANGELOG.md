@@ -17,6 +17,34 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.1 — Data architecture foundations
+
+Point release, not a new major version — this is preparatory schema/type
+work with nothing populated and nothing consuming it yet, not a shippable
+capability in its own right. (Contrast with v2.0's Layer Engine, which was
+also "architectural only" but stood up a working, wired-in system — this is
+one step earlier than that: the data shape future layers will read from.)
+
+### Added
+
+- `src/data/types.ts`: TypeScript interfaces for `Country`, `Territory`,
+  `Conflict`, and `Relationship`, plus shared helper types (`EntityRef`,
+  `GeoPoint`, `DataProvenance`). Attribute/facts data, deliberately separate
+  from both the rendering geometry in `scene/countryGeometry.ts` and the
+  existing presentation-formatted `data/countryProfiles.ts`.
+- `src/data/{countries,territories,conflicts,relationships}/*.json`: empty
+  (`[]`) data files matching those interfaces — the schema exists, nothing
+  is populated.
+
+### Notes
+
+- Nothing renders, nothing is wired into the Layer Engine or `Globe.tsx`,
+  and no existing functionality changed — verified via `git status` showing
+  only new files.
+- See `LOGBOOK.md` for the reasoning behind specific type decisions (numeric
+  vs. formatted population/GDP, the discriminated `EntityRef`, why category-
+  like fields stay open strings).
+
 ## v2.0 — Layer Engine
 
 Architectural only — no new production visualization. Builds the plugin

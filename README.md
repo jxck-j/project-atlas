@@ -154,6 +154,12 @@ src/
     waterBodies.ts              Ocean/sea/gulf/strait/bay label coordinates
     countryProfiles.ts          Illustrative government/capital/population/GDP
                                data for ~60 of the 193 countries, keyed by name
+    types.ts                    Country/Territory/Conflict/Relationship interfaces
+                               for future layers (v2.1, schema-only — see below)
+    countries/countries.json    Empty — matches the Country[] schema
+    territories/territories.json  Empty — matches the Territory[] schema
+    conflicts/conflicts.json      Empty — matches the Conflict[] schema
+    relationships/relationships.json  Empty — matches the Relationship[] schema
   utils/
     geo.ts                    lat/lng <-> Vector3 sphere projection and its inverse
   App.tsx                     Composes Scene + all HUD layers
@@ -179,6 +185,9 @@ to build against without refactoring the globe itself.
   `registerLayer()` and adding one import line to `layers/placeholders/index.ts`
   (or wherever a "real" layer set eventually gets composed) — never editing
   `Globe.tsx`. See `CLAUDE.md`'s Layer Engine section for the full workflow.
+- **`data/types.ts` + the empty `data/{countries,territories,conflicts,relationships}/*.json`**
+  are the schema those future layers will eventually read from — no data yet,
+  nothing wired in. See `CLAUDE.md`'s "Geopolitical data architecture" section.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.

@@ -231,6 +231,33 @@ Engine a component via `registerLayer()`, the same way the placeholders do.
 That decoupling — engines produce layers, the Layer Engine only knows how to
 register/toggle/mount/unmount them — is the reason this version exists.
 
+### Geopolitical data architecture (`src/data/{countries,territories,conflicts,relationships}/`)
+
+Schema-only foundation (v2.1) for future layers — `types.ts` has the
+`Country`/`Territory`/`Conflict`/`Relationship` interfaces, each JSON file
+is an empty `[]`. Nothing renders this, nothing is registered as a layer,
+and nothing populates it yet. Deliberately separate from two things that
+already exist and might look similar at a glance:
+
+- `scene/countryGeometry.ts` — that's border/fill *geometry*, this is
+  attribute *facts* (population, claimants, participants, ...).
+- `data/countryProfiles.ts` — that's already-shipped, presentation-formatted
+  data for the IntelligencePanel (population as `"335 Million"`). The new
+  `Country` type stores the same kind of facts as plain numbers instead,
+  because it's meant to be computed on (sorted, filtered, thresholded) by
+  future layers — formatting is a presentation concern downstream of this.
+  The two datasets are not merged; see `LOGBOOK.md` for why that's a
+  separate decision, not a side effect of adding this schema.
+
+`EntityRef` (`{ type: 'country' | 'territory', id: string }`) is how
+`Conflict.participants` and `Relationship.parties` point at other records —
+discriminated rather than a bare string id because country ids (ISO
+3166-1 alpha-3) and territory ids (ad hoc slugs, no standard exists) aren't
+guaranteed disjoint. When a future layer actually consumes this data, it's
+expected to register through the Layer Engine above the same way the
+placeholders do — this data architecture and the Layer Engine are
+independent pieces that a real layer will eventually connect.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed

@@ -5,6 +5,58 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.1: Data architecture foundations
+
+**Why this is v2.1, not v3.0.** By the changelog's own rule, "a new data
+layer" is listed as a new-major-version example — this looked like v3.0
+material at first pass. Decided against it: v3.0 (or whichever major is
+next) should be a *shippable* new capability, the same way v2.0's Layer
+Engine wasn't just types-on-paper but a working, wired-in mount/unmount
+system with a HUD toggle. This is one step earlier than that — schema with
+nothing populated and nothing reading it — so it's a point release under
+v2, not its own major version. Worth naming explicitly since "when does
+prep work get its own major version" will come up again.
+
+**Numeric population/GDP instead of the formatted strings `countryProfiles.ts`
+uses.** That file stores `"335 Million"` / `"$27.4 Trillion"` because it only
+ever feeds directly into the IntelligencePanel's text display. This new
+`Country` type is meant for layers that will *compute* with the data —
+sort by population, threshold by GDP, choose a marker size — so it stores
+plain numbers and leaves formatting to whatever eventually displays them.
+Deliberately did not attempt to merge or migrate `countryProfiles.ts` onto
+this — that's a real decision (does the intelligence panel become a
+consumer of this data, or stay independent?) that shouldn't be made as a
+side effect of adding an unrelated schema.
+
+**`EntityRef` is `{ type, id }`, not a bare string id.** Territory ids and
+country ids aren't drawn from a shared namespace (countries use ISO
+3166-1 alpha-3; territories use ad hoc slugs, since no equivalent standard
+covers disputed/dependent regions) — nothing currently guarantees they
+can't collide, and a consumer resolving a `Conflict`'s participant or a
+`Relationship`'s party needs to know which collection to look in regardless.
+Cheap to add now; the alternative (a bare string, disambiguated by
+convention or by checking both collections) is the kind of implicit
+contract that's easy to get subtly wrong once more than one person/session
+is writing data against it.
+
+**Category-shaped fields (`Country.region`, `Territory.status`, etc.) stay
+open strings where there's no fixed real-world enumeration.** Same
+reasoning as the Layer Engine's `category` field (see the v2.0 entry
+below): a closed union means every future region/status value edits a type
+file it has no other reason to touch. Where the set of values genuinely
+*is* fixed and small (`ConflictParticipant.role`, `Relationship.directionality`)
+a union is still used — the distinction is whether new values are expected
+over time, not a blanket rule either way.
+
+**Conflict data deliberately has no casualty/statistical fields.** Added a
+coarse `severity: 'low' | 'medium' | 'high' | 'unknown'` band instead of
+anything numeric. This dataset has no editorial process behind it yet and
+ships empty — the same caution the project already applied to
+IntelligencePanel's Military/Economy/Diplomacy placeholder sections
+("Awaiting data feed" rather than fabricated assessments) extends to not
+even shaping a field that would invite a future contributor to casually
+fill in sensitive numbers without one.
+
 ## 2026-07-19 — v2.0: Layer Engine architecture
 
 **Why split Registry, Store, Manager, and Engine into four pieces instead of
