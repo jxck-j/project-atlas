@@ -5,6 +5,36 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.1.1: Country Registry
+
+**Duplicate registration throws here, unlike the Layer Registry's warn-and-
+overwrite.** Copied the Layer Registry's shape almost exactly, but changed
+this one behavior on purpose. Layer re-registration is a normal, harmless
+occurrence (Vite HMR re-executing a placeholder module on save) where
+overwriting-with-a-warning is the right call. A duplicate *country*
+registration has no equivalent benign cause yet — nothing auto-registers
+countries at all right now, so the only way to hit this is two data sources
+genuinely disagreeing about the same id, which is a real bug worth stopping
+on rather than silently picking whichever one happened to register last.
+If a future dynamic-loading system needs idempotent re-registration (a live
+refresh re-fetching the same country), that's on the loader to handle
+explicitly (check-then-register, or `removeCountry()` first) — the registry
+itself stays strict.
+
+**The registry doesn't import `countries.json`.** Deliberately left the
+"populate the registry from the JSON file" step undone here, even though
+`countries.json` already exists (from v2.1) and importing it would have
+been one line. Two reasons: first, it's still an empty array, so wiring it
+up right now accomplishes nothing observable — there's nothing to verify
+against. Second, and more importantly, baking a specific data source into
+the registry module would undercut the actual point of this version ("query
+geopolitical entities without knowing where the data comes from") — the
+registry is supposed to be the stable seam a future loader plugs into, not
+itself coupled to one particular loading strategy. Whatever seeds it later
+(a JSON loader, an API-backed Data Engine, both) is a separate, deliberate
+piece of work, the same way `layers/placeholders/index.ts` — not
+`layerRegistry.ts` — is what actually knows which layers exist.
+
 ## 2026-07-19 — v2.1: Data architecture foundations
 
 **Why this is v2.1, not v3.0.** By the changelog's own rule, "a new data

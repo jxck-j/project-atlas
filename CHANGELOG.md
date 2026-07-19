@@ -17,6 +17,32 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.1.1 — Country Registry
+
+Point release. Adds the query seam future layers/HUD code will use to look
+up countries, mirroring `src/layers/layerRegistry.ts`'s architecture —
+still no visualization, no data, no change to existing globe behavior.
+
+### Added
+
+- `src/data/registry/CountryRegistry.ts`: `registerCountry`/`getCountry`/
+  `getCountries`/`removeCountry` over a plain, non-reactive `Map<string,
+  Country>`. Registering a duplicate id **throws** (deliberately stricter
+  than the Layer Registry's warn-and-overwrite — see `LOGBOOK.md`).
+- `src/data/index.ts`: public barrel re-exporting the data types and
+  registry functions — the intended single import point for any future
+  consumer, so nothing needs to import `data/countries/countries.json` (or
+  any other data type's JSON) directly.
+
+### Notes
+
+- The registry holds no opinion about where `Country` records come from —
+  it doesn't import `countries.json` itself. That JSON is still empty, and
+  nothing populates the registry yet; this version is the mechanism, not
+  the wiring.
+- No existing files changed besides documentation and `package.json`'s
+  version — verified via `git status`.
+
 ## v2.1 — Data architecture foundations
 
 Point release, not a new major version — this is preparatory schema/type

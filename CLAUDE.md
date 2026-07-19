@@ -231,13 +231,13 @@ Engine a component via `registerLayer()`, the same way the placeholders do.
 That decoupling — engines produce layers, the Layer Engine only knows how to
 register/toggle/mount/unmount them — is the reason this version exists.
 
-### Geopolitical data architecture (`src/data/{countries,territories,conflicts,relationships}/`)
+### Geopolitical data architecture (`src/data/`)
 
-Schema-only foundation (v2.1) for future layers — `types.ts` has the
-`Country`/`Territory`/`Conflict`/`Relationship` interfaces, each JSON file
-is an empty `[]`. Nothing renders this, nothing is registered as a layer,
-and nothing populates it yet. Deliberately separate from two things that
-already exist and might look similar at a glance:
+Schema + query-layer foundation for future layers (v2.1 added the schema,
+v2.1.1 added the registry below). Nothing renders this, nothing is
+registered as a layer, and no country data is populated yet. Deliberately
+separate from two things that already exist and might look similar at a
+glance:
 
 - `scene/countryGeometry.ts` — that's border/fill *geometry*, this is
   attribute *facts* (population, claimants, participants, ...).
@@ -253,10 +253,26 @@ already exist and might look similar at a glance:
 `Conflict.participants` and `Relationship.parties` point at other records —
 discriminated rather than a bare string id because country ids (ISO
 3166-1 alpha-3) and territory ids (ad hoc slugs, no standard exists) aren't
-guaranteed disjoint. When a future layer actually consumes this data, it's
-expected to register through the Layer Engine above the same way the
-placeholders do — this data architecture and the Layer Engine are
-independent pieces that a real layer will eventually connect.
+guaranteed disjoint.
+
+**`data/registry/CountryRegistry.ts`** is the query seam: `registerCountry`/
+`getCountry`/`getCountries`/`removeCountry` over a plain `Map`, structurally
+identical to `layers/layerRegistry.ts` (see that section above) with one
+deliberate difference — registering a duplicate id **throws** here instead
+of warning-and-overwriting, since there's no benign reason (like Vite HMR)
+for the same country id to be registered twice yet. The registry doesn't
+import `countries.json` itself and has no opinion about where `Country`
+records come from; whatever eventually seeds it (a JSON loader, a future
+Data Engine) is separate, deliberate work, the same way `layers/placeholders/`
+— not `layerRegistry.ts` — is what actually knows which layers exist. Import
+both types and registry functions from the barrel, `data/index.ts`, not
+individual files — mirrors `layers/index.ts`'s role for the Layer Engine.
+
+When a future layer actually consumes this data, it's expected to call
+`getCountry()`/`getCountries()` for whatever it needs and register itself
+through the Layer Engine the same way the placeholders do — this data
+architecture and the Layer Engine are independent pieces that a real layer
+will eventually connect.
 
 ### Data quirks worth knowing
 
