@@ -5,6 +5,42 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.2.0: Geometry Map, and Crimea has no polygon
+
+**Crimea does not exist as a standalone feature in Natural Earth's country
+data, at any resolution this project has touched.** Went looking for a real
+geometry id to use for Crimea's placeholder mapping, the same way Taiwan
+(158) and Western Sahara (732) have real ISO 3166-1 numeric ids in the raw
+10m source. There isn't one — Crimea is geometrically part of Ukraine's
+polygon in this data, not a separately-clickable shape. This is a genuinely
+useful thing to have discovered now rather than when someone tries to
+actually make Crimea selectable: representing it as its own clickable
+region will eventually need either a hand-authored sub-polygon clipped out
+of Ukraine's border, or a point-in-region test layered on top of the
+existing polygon — not just a registry entry. `GeometryMap` doesn't solve
+this (a synthetic placeholder id stands in for now, clearly labeled as
+such); it just means the *next* piece of work in this direction has a known
+shape instead of being a surprise.
+
+**Why `getEntityForGeometry` resolves all the way to a `ResolvedEntity`
+instead of stopping at the entity id.** Could have kept `GeometryMap`
+narrowly scoped to "geometry id -> entity id" and made callers chain
+`resolveEntity()` themselves. Didn't, because the whole point of this
+version (per the goal: prepare the globe for independent territory
+selection) is that a future click handler should be able to ask one
+question — "what entity does this polygon represent, if any" — and get one
+answer. Splitting that into two calls a consumer has to remember to chain
+would just relocate the "does this caller know about both registries"
+problem `EntityResolver` already solved in v2.1.3, one level up.
+
+**Why `registerGeometryMapping` throws on a duplicate, matching
+`CountryRegistry`/`TerritoryRegistry` rather than reconsidering the
+convention.** No new reasoning here beyond what's already in the v2.1.1
+entry — kept for consistency, since two entities claiming the same polygon
+id is exactly the same *kind* of bug as two data sources disagreeing about
+a country id, and there's still no benign (HMR-like) reason for a
+legitimate duplicate to occur.
+
 ## 2026-07-19 — v2.1.3: Entity Resolution layer
 
 **`GeopoliticalEntity` is deliberately just the fields Country and Territory

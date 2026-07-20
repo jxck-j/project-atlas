@@ -173,14 +173,20 @@ src/
     territories/territories.json  Empty — matches the Territory[] schema
     conflicts/conflicts.json      Empty — matches the Conflict[] schema
     relationships/relationships.json  Empty — matches the Relationship[] schema
-  entities/                   Entity Resolution layer (v2.1.3) — not
-                               connected to rendering/HUD/search yet
+  entities/                   Entity Resolution layer (v2.1.3, extended
+                               v2.2.0) — not connected to rendering/HUD/
+                               search yet
     types.ts                    GeopoliticalEntity (shared shape Country and
                                Territory already satisfy) + ResolvedEntity
                                (the discriminated union EntityResolver returns)
     EntityResolver.ts            resolveEntity/resolveCountry/resolveTerritory
                                — checks Country Registry then Territory
                                Registry, hides which one an id came from
+    GeometryMap.ts                (v2.2.0) registerGeometryMapping/
+                               hasGeometryMapping/getEntityForGeometry —
+                               polygon_id -> entity_id -> EntityResolver
+    exampleGeometryMappings.ts   Taiwan/Crimea/Western Sahara placeholder
+                               mappings — NOT imported by the app
   utils/
     geo.ts                    lat/lng <-> Vector3 sphere projection and its inverse
   App.tsx                     Composes Scene + all HUD layers
@@ -221,6 +227,11 @@ to build against without refactoring the globe itself.
   `ResolvedEntity` instead of the caller needing to know which registry to
   check. Not wired into the globe's click handling yet — see `CLAUDE.md`'s
   "Entity Resolution" section.
+- **`entities/GeometryMap.ts`** is the piece above that: once a rendered
+  shape's own id doesn't necessarily equal a country's registry id anymore
+  (needed for e.g. a future carved-out Crimea sub-region), a click handler
+  calls `getEntityForGeometry(shapeId)` instead of assuming the two are the
+  same string. Also not wired in yet — see `CLAUDE.md`.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.

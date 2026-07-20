@@ -17,6 +17,39 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.2.0 — Geometry Map
+
+Point release under v2 (per the project's own convention this is arguably
+borderline — it's a new file/API, but still architectural prep with no
+shippable behavior change, the same character as v2.1.x). Completes the
+`polygon_id -> entity_id -> EntityResolver` chain a future click handler
+will use. No rendering, highlighting, or `Globe.tsx` changes.
+
+### Added
+
+- `src/entities/GeometryMap.ts`: `registerGeometryMapping(geometryId,
+  entityId)`, `hasGeometryMapping(geometryId)`, `getEntityForGeometry
+  (geometryId)` — the last one walks the full chain (geometry id -> entity
+  id -> `resolveEntity()`) and returns a ready-to-use `ResolvedEntity`.
+  Plain `Map<string, string>` storage, same duplicate-throws convention as
+  `CountryRegistry`/`TerritoryRegistry`.
+- `src/entities/exampleGeometryMappings.ts`: placeholder mappings for
+  Taiwan (`"158"`) and Western Sahara (`"732"`) — their real ISO 3166-1
+  numeric ids from the raw Natural Earth source data, even though neither
+  is part of the rendered UN-193 set — and Crimea (a synthetic id, since
+  Crimea has no standalone polygon anywhere in the source data; see
+  `LOGBOOK.md`). **Not imported anywhere the app loads.**
+
+### Notes
+
+- Verified end to end at runtime: `getEntityForGeometry('158')` resolves
+  through to the full Taiwan territory record; an unmapped id correctly
+  returns `undefined` from both `hasGeometryMapping` and
+  `getEntityForGeometry`.
+- `scene/Countries.tsx` still uses a rendered polygon's own GeoJSON feature
+  id directly as its country id — this version doesn't change that, it
+  builds the seam that would let it stop being a hardcoded 1:1 assumption.
+
 ## v2.1.3 — Entity Resolution layer
 
 Point release. Adds the seam that will eventually let a clicked map polygon

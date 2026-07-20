@@ -338,6 +338,45 @@ Country Engine, Relationship Engine, or anything else that needs to look up
 "what entity is this id" is expected to go through here, not reimplement
 Country-then-Territory fallback logic itself.
 
+**`GeometryMap.ts`** (v2.2.0, same directory) is the layer above this one:
+`registerGeometryMapping(geometryId, entityId)` / `hasGeometryMapping
+(geometryId)` / `getEntityForGeometry(geometryId)`. It completes the chain
+implied by "resolve a clicked polygon into an entity":
+
+```
+polygon_id -> entity_id -> EntityResolver -> GeopoliticalEntity
+```
+
+`getEntityForGeometry` walks the whole thing and returns a ready-to-use
+`ResolvedEntity` directly, rather than making every caller chain a
+geometry-id lookup into a separate `resolveEntity()` call. Storage is a
+plain `Map<string, string>` (geometry id -> entity id) — it doesn't know or
+care what *kind* of geometry produced an id (a country polygon today, a
+hand-authored territory shape or a point marker later), which is what
+"support multiple geometry types" means in practice: there's no type
+branching to extend, every id is opaque.
+
+**This is the piece that makes territory selection possible without
+touching `scene/Countries.tsx`'s rendering.** Right now, a rendered
+polygon's own GeoJSON feature id *is* used directly as its country id (see
+`Countries.tsx`) — that 1:1 assumption is hardcoded into the click handler,
+not enforced by anything in the data layer. `GeometryMap` doesn't remove
+that assumption (nothing calls it yet — see `CHANGELOG.md`), but it's what
+would let a future version add non-country-shaped geometry (a carved-out
+Crimea sub-region, say) and have it resolve correctly, by mapping *that*
+shape's id to the right entity instead of requiring geometry ids and
+country registry ids to always be the same string.
+
+Placeholder mappings for Taiwan/Crimea/Western Sahara live in
+`exampleGeometryMappings.ts`, chained onto v2.1.2's `exampleTerritories.ts`
+— same "not imported anywhere the app loads" rule as every other example
+file in this data architecture. Taiwan and Western Sahara use their real
+ISO 3166-1 numeric ids from the raw Natural Earth source (158, 732) even
+though neither is part of the rendered UN-193 set; Crimea uses a synthetic
+placeholder id because — a genuinely useful discovery from building this —
+**Crimea has no standalone polygon anywhere in the source data at all**,
+being geometrically part of Ukraine's. See `LOGBOOK.md`.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed
