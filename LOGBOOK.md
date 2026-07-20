@@ -5,6 +5,56 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.2.1: wiring selection to Entity Resolution — the empty-registry problem
+
+**The Country Registry being empty would have silently broken every single
+country selection the moment the click handler started calling
+`resolveEntity()`.** This was the biggest risk in this version and almost
+got missed: v2.1.1 through v2.2.0 built `CountryRegistry`, `EntityResolver`,
+and `GeometryMap`, but nothing had ever actually called `registerCountry()`
+with real data — `data/countries/countries.json` is still an empty `[]`
+(see v2.1's LOGBOOK entry: populating it was explicitly deferred). If
+`Countries.tsx`'s click handler had switched to `resolveEntity(id)` without
+first making sure the registry actually had all 193 countries in it, every
+click would have resolved to `undefined` and (depending on the fallback
+logic) either selected nothing or silently regressed to synthesized,
+data-less entities — a direct violation of "preserve existing country
+functionality," the task's first requirement. Caught this by tracing
+through what `resolveEntity` would actually do against the registry's real
+(empty) state before writing the click handler, not after.
+
+**Fix: `useCountryFeatures.ts` now registers every fetched feature into the
+Country Registry, in the same `.then()` callback that already sets
+`features`.** Considered doing this bootstrap in `Countries.tsx` instead
+(a `useEffect` on mount), but `useCountryFeatures` is the actual singleton
+source of truth (`SearchBar`/`CommandBar`/`Countries` all read from it) and
+already runs its population logic exactly once, guarded by the existing
+`fetchStarted` flag — piggybacking on that guarantee is more reliable than
+adding a second, independent "run once" mechanism in a component that
+isn't even the only consumer of the feature list.
+
+**Why `SelectedEntity` denormalizes `id`/`name` instead of consumers
+reading `entity.id`/`entity.name`.** Could have required
+`IntelligencePanel.tsx` to change `selected.name` to `selected.entity.name`
+— a small, mechanical, three-line diff. Chose not to, specifically because
+the task said "do not redesign the HUD yet," and even a one-line property
+path change is still a change to a file the task asked to leave alone.
+Denormalizing costs a small amount of duplication (`id`/`name` exist at two
+levels of the object); the payoff is `IntelligencePanel.tsx`,
+`Countries.tsx`'s highlight comparisons, `Globe.tsx`'s `CapitalMarker`, and
+`useCameraFlight.ts` all needed exactly zero changes, verified by `git
+status` showing only the three files that actually needed to change.
+
+**Why `selectCountry()` still exists, unchanged in signature, instead of
+updating `SearchBar.tsx` to call `selectEntity()` directly.** Same
+reasoning as above, applied to "do not change search": `SearchBar.tsx`
+only ever finds countries (it searches the rendered country list;
+territories were never in that list), so there was no *behavioral* reason
+it needed to change. Kept it calling the exact same function with the
+exact same signature, and moved the entity-resolution logic *inside*
+`selectCountry()` instead — the compatibility wrapper absorbs the
+migration so the search code doesn't have to know it happened.
+
 ## 2026-07-19 — v2.2.0: Geometry Map, and Crimea has no polygon
 
 **Crimea does not exist as a standalone feature in Natural Earth's country

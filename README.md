@@ -95,7 +95,10 @@ src/
                                angular extent, all merged per-country and
                                projected onto the sphere
     useCountryFeatures.ts     Fetches + parses countries-un193.json once,
-                               shared via a singleton useSyncExternalStore
+                               shared via a singleton useSyncExternalStore;
+                               also registers each feature into the Country
+                               Registry (v2.2.1) so EntityResolver can
+                               resolve a real click
     CameraControls.tsx        OrbitControls setup: clipping-safe distance
                                bounds, sensitivity wiring, Home-key handling,
                                composes the flight/reset/flick hooks below
@@ -144,7 +147,9 @@ src/
     IntelligencePanel.tsx       Right-side sliding panel with the selected
                                  country's profile data + FOCUS CAMERA button
     hudPanelStore.ts             Which single toolbar dropdown is open
-    selectionStore.ts             Selected country + camera flight/reset triggers
+    selectionStore.ts             Selected entity (country or territory,
+                                 since v2.2.1 — see entities/) + camera
+                                 flight/reset triggers
     settingsStore.ts              User-adjustable camera sensitivity
     telemetryStore.ts             Camera telemetry, FPS, hover lat/lng
   data/
@@ -174,8 +179,8 @@ src/
     conflicts/conflicts.json      Empty — matches the Conflict[] schema
     relationships/relationships.json  Empty — matches the Relationship[] schema
   entities/                   Entity Resolution layer (v2.1.3, extended
-                               v2.2.0) — not connected to rendering/HUD/
-                               search yet
+                               v2.2.0) — wired into the click -> select
+                               pipeline as of v2.2.1, see scene/Countries.tsx
     types.ts                    GeopoliticalEntity (shared shape Country and
                                Territory already satisfy) + ResolvedEntity
                                (the discriminated union EntityResolver returns)
@@ -220,18 +225,24 @@ to build against without refactoring the globe itself.
   are separate fields on purpose — see `CLAUDE.md`'s "Geopolitical data
   architecture" section before adding logic that treats them as the same
   thing.
-- **`entities/EntityResolver.ts`** is the intended way to look up "what
-  entity is this id" once anything needs to (a future click handler, a
-  future layer) — `resolveEntity(id)`/`resolveCountry(id)`/
-  `resolveTerritory(id)`, checking both registries and returning a uniform
-  `ResolvedEntity` instead of the caller needing to know which registry to
-  check. Not wired into the globe's click handling yet — see `CLAUDE.md`'s
-  "Entity Resolution" section.
-- **`entities/GeometryMap.ts`** is the piece above that: once a rendered
-  shape's own id doesn't necessarily equal a country's registry id anymore
-  (needed for e.g. a future carved-out Crimea sub-region), a click handler
-  calls `getEntityForGeometry(shapeId)` instead of assuming the two are the
-  same string. Also not wired in yet — see `CLAUDE.md`.
+- **`entities/EntityResolver.ts`** is how the app looks up "what entity is
+  this id" — `resolveEntity(id)`/`resolveCountry(id)`/`resolveTerritory(id)`,
+  checking both registries and returning a uniform `ResolvedEntity`. Wired
+  into the globe's click handling as of v2.2.1 — see `CLAUDE.md`'s "Entity
+  Resolution" section.
+- **`entities/GeometryMap.ts`** is the piece above that: since a rendered
+  shape's own id doesn't necessarily have to equal its entity's registry id
+  (needed for e.g. a future carved-out Crimea sub-region), the click
+  handler checks `getEntityForGeometry(shapeId)` first, falling back to
+  treating the shape's id as an entity id directly (true for every country
+  today). No real geometry mappings are registered yet outside the
+  unimported `exampleGeometryMappings.ts` — see `CLAUDE.md`.
+- **Adding real territory geometry/selection** (making Taiwan, Crimea, etc.
+  actually clickable) means: give the territory a real shape with its own
+  id, `registerGeometryMapping(thatId, territoryId)`, and selection/
+  highlighting/the panel all already work — `hud/selectionStore.ts`'s
+  `SelectedEntity` and `scene/Countries.tsx`'s click handler don't
+  special-case countries anymore. See `LOGBOOK.md`'s v2.2.1 entry.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.

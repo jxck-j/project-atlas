@@ -83,7 +83,10 @@ browser. Re-run `npm run build:geo` if `unMembers.ts` changes or the source
 `world-atlas` version bumps. `useCountryFeatures.ts` is a singleton store (fetch
 once, `useSyncExternalStore` to share the result) because topojson's `feature()`
 conversion isn't free and several components need the same list (`Countries.tsx`,
-`SearchBar.tsx`, `CommandBar.tsx`).
+`SearchBar.tsx`, `CommandBar.tsx`). Since v2.2.1 it also registers each fetched
+feature into the Country Registry (minimal id/name records) right after they
+load — the prerequisite that makes `EntityResolver` able to resolve a real,
+rendered country at all (see "Entity Resolution" and `LOGBOOK.md`).
 
 ### Country geometry (`scene/countryGeometry.ts`)
 
@@ -155,9 +158,18 @@ convert (`time / 1000`) before calling `advance()`.
 
 ### Selection & HUD panel state
 
-- `hud/selectionStore.ts` — the selected country (`id`/`name`/world-space
-  `direction`), `flightSeq` (camera-flight trigger), `resetSeq` (reset-view
-  trigger). Read via `useSelection()`.
+- `hud/selectionStore.ts` — `selected: SelectedEntity | null` (since v2.2.1:
+  wraps a full `ResolvedEntity` — country *or* territory — from
+  `entities/EntityResolver.ts`, plus denormalized `id`/`name`/world-space
+  `direction` at the top level so generic consumers don't need to reach
+  into `entity.*`), `flightSeq` (camera-flight trigger), `resetSeq`
+  (reset-view trigger). Read via `useSelection()`. Two ways to select:
+  `selectEntity(resolvedEntity, direction)` (generic — what
+  `scene/Countries.tsx`'s click handler uses) and `selectCountry({id, name,
+  direction})` (a country-only compatibility wrapper kept so
+  `hud/SearchBar.tsx` didn't need to change; resolves through the Country
+  Registry internally). See the Entity Resolution section below and
+  `LOGBOOK.md` for why the migration was shaped this way.
 - `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' | 'settings'
   | null`) is open; mutually exclusive, toggled from `Toolbar.tsx`.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
@@ -303,10 +315,10 @@ the control/claims split.
 ### Entity Resolution (`src/entities/`)
 
 The seam between "an id came from a clicked map polygon" and "which
-registry actually holds that id" (v2.1.3). Nothing calls into this yet —
-`scene/Countries.tsx`'s click handler still calls `selectCountry()`
-directly and treats every polygon as a country, unchanged since v1. This is
-scaffolding for when that stops being true.
+registry actually holds that id" (v2.1.3). **Wired into the live selection
+pipeline as of v2.2.1** — `scene/Countries.tsx`'s click handler now
+resolves through this (see "Selection & HUD panel state" above) instead of
+constructing a country selection directly from the clicked polygon.
 
 - **`types.ts`** — `GeopoliticalEntity`, the minimal shape
   (`id`/`name`/`aliases`/`provenance`) both `Country` and `Territory`
@@ -357,15 +369,15 @@ hand-authored territory shape or a point marker later), which is what
 branching to extend, every id is opaque.
 
 **This is the piece that makes territory selection possible without
-touching `scene/Countries.tsx`'s rendering.** Right now, a rendered
-polygon's own GeoJSON feature id *is* used directly as its country id (see
-`Countries.tsx`) — that 1:1 assumption is hardcoded into the click handler,
-not enforced by anything in the data layer. `GeometryMap` doesn't remove
-that assumption (nothing calls it yet — see `CHANGELOG.md`), but it's what
-would let a future version add non-country-shaped geometry (a carved-out
-Crimea sub-region, say) and have it resolve correctly, by mapping *that*
-shape's id to the right entity instead of requiring geometry ids and
-country registry ids to always be the same string.
+touching `scene/Countries.tsx`'s rendering.** As of v2.2.1, the click
+handler calls `getEntityForGeometry(polygonId) ?? resolveEntity(polygonId)`
+— it checks `GeometryMap` first, and only falls back to treating the
+polygon's own id as an entity id directly, which is what actually resolves
+every country today (no real geometry mappings are registered yet outside
+the unimported `exampleGeometryMappings.ts`). Adding real territory
+geometry later (a carved-out Crimea sub-region, say) means registering its
+shape's id against the right entity id — the click handler doesn't change
+again.
 
 Placeholder mappings for Taiwan/Crimea/Western Sahara live in
 `exampleGeometryMappings.ts`, chained onto v2.1.2's `exampleTerritories.ts`

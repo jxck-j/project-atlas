@@ -1,16 +1,32 @@
 import { useSyncExternalStore } from 'react'
 import { Vector3 } from 'three'
+import type { ResolvedEntity } from '../entities/types'
+import { resolveCountry } from '../entities/EntityResolver'
 
-export interface SelectedCountry {
+/**
+ * The currently selected geopolitical entity — a country or a territory,
+ * resolved through EntityResolver (`entities/EntityResolver.ts`) rather
+ * than assumed to always be a country (v2.2.1 migrated selection off
+ * Country-only). `id`/`name` are denormalized copies of
+ * `entity.id`/`entity.name`, kept at the top level so existing consumers
+ * that only care "what's selected, generically" — `IntelligencePanel`,
+ * `Countries.tsx`'s highlight logic, `Globe.tsx`'s `CapitalMarker` — didn't
+ * need to change as part of this migration. A consumer that needs to know
+ * *which kind* of entity this is, or needs kind-specific fields (a
+ * territory's claimants, a country's population), reads
+ * `entity.kind`/`entity.data`. See `LOGBOOK.md`.
+ */
+export interface SelectedEntity {
+  entity: ResolvedEntity
   id: string
   name: string
-  // World-space direction from the globe's center through the country at
-  // the moment it was clicked — used to aim the camera flight.
+  // World-space direction from the globe's center through the entity at
+  // the moment it was selected — used to aim the camera flight.
   direction: Vector3
 }
 
 interface SelectionState {
-  selected: SelectedCountry | null
+  selected: SelectedEntity | null
   // Increments only when a camera flight is explicitly requested (see
   // flyToSelectedCountry), so the camera flight hook can detect "start a new
   // flight" independent of selection changes. Selecting a country does NOT
@@ -29,9 +45,42 @@ function notify() {
   listeners.forEach((l) => l())
 }
 
-export function selectCountry(country: SelectedCountry) {
-  state = { ...state, selected: country }
+/**
+ * The generic selection entry point — takes an already-resolved entity
+ * (from `EntityResolver`/`GeometryMap`) plus the world-space direction to
+ * aim a camera flight at. Works identically whether `entity.kind` is
+ * `'country'` or `'territory'`. `scene/Countries.tsx`'s click handler is
+ * the intended caller for map clicks.
+ */
+export function selectEntity(entity: ResolvedEntity, direction: Vector3) {
+  state = {
+    ...state,
+    selected: { entity, id: entity.id, name: entity.name, direction },
+  }
   notify()
+}
+
+/**
+ * Country-only selection, kept so `hud/SearchBar.tsx` — which only ever
+ * finds countries, since it searches the rendered country list and
+ * territories aren't part of that list — doesn't need to change as part of
+ * the entity migration. Resolves through the Country Registry so a
+ * search-selected country produces the exact same `SelectedEntity` shape a
+ * map click does; synthesizes a minimal one as a last-resort fallback if
+ * the id somehow isn't registered (shouldn't happen once
+ * `useCountryFeatures.ts` has populated the registry, but a click/search
+ * selection should never just silently do nothing).
+ */
+export function selectCountry(country: { id: string; name: string; direction: Vector3 }) {
+  const resolved: ResolvedEntity =
+    resolveCountry(country.id) ?? {
+      kind: 'country',
+      id: country.id,
+      name: country.name,
+      aliases: [],
+      data: { id: country.id, name: country.name, aliases: [], status: 'un-member' },
+    }
+  selectEntity(resolved, country.direction)
 }
 
 export function clearSelection() {
@@ -39,10 +88,10 @@ export function clearSelection() {
   notify()
 }
 
-// Explicitly kicks off a camera flight to the currently selected country.
-// Separate from selectCountry so clicking a country never auto-moves the
-// camera — this is only called from an opt-in UI action (e.g. a panel
-// button).
+// Explicitly kicks off a camera flight to the currently selected entity.
+// Separate from selectEntity/selectCountry so selecting something never
+// auto-moves the camera — this is only called from an opt-in UI action
+// (e.g. a panel button).
 export function flyToSelectedCountry() {
   if (!state.selected) return
   state = { ...state, flightSeq: state.flightSeq + 1 }

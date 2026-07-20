@@ -17,6 +17,49 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.2.1 — Selection migrated to Entity Resolution
+
+Point release. The first version in this series that actually wires the
+Entity Resolution/Geometry Map architecture (v2.1.3/v2.2.0) into live
+behavior — everything before this was unconnected scaffolding. Country
+selection is verified pixel-identical to before; territory selection is
+now structurally possible (once real territory geometry exists — still not
+built).
+
+### Changed
+
+- **Selection pipeline**: a map click now resolves `polygon_id ->
+  (GeometryMap ??) EntityResolver -> SelectedEntity`, instead of directly
+  constructing a country selection from the clicked polygon's own
+  id/name. See `scene/Countries.tsx`'s `handlePointerUp`.
+- `hud/selectionStore.ts`: `selected` is now a generic `SelectedEntity`
+  (wraps a `ResolvedEntity` — country *or* territory) instead of
+  `SelectedCountry`. `id`/`name`/`direction` stay denormalized at the top
+  level, so `IntelligencePanel.tsx`, `Countries.tsx`'s highlight logic, and
+  `Globe.tsx`'s `CapitalMarker` needed **zero changes** — they already only
+  read those generic fields. New `selectEntity(entity, direction)` is the
+  generic entry point; `selectCountry({id, name, direction})` still exists
+  unchanged as a country-only compatibility wrapper for `hud/SearchBar.tsx`.
+- `scene/useCountryFeatures.ts` now registers each fetched country feature
+  into the Country Registry (minimal id/name records) right after they
+  load — a necessary prerequisite this version depends on: without it, the
+  registry would still be empty and every resolution would fail. See
+  `LOGBOOK.md`.
+
+### Notes
+
+- **Zero changes** to `hud/SearchBar.tsx`, `hud/IntelligencePanel.tsx`,
+  `scene/Globe.tsx`, `scene/CameraControls.tsx`, or `scene/useCameraFlight.ts`
+  — confirmed via `git status` (only `selectionStore.ts`, `Countries.tsx`,
+  `useCountryFeatures.ts` touched).
+- Verified live in a browser, not just type-checked: search-select and
+  map-click-select both produce an identical panel/highlight/camera-flight
+  experience, zero console errors.
+- If entity resolution ever somehow misses for a real click (shouldn't
+  happen now that the registry is populated), the click handler falls back
+  to the old country-shaped selection path rather than silently selecting
+  nothing.
+
 ## v2.2.0 — Geometry Map
 
 Point release under v2 (per the project's own convention this is arguably

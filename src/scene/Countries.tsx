@@ -11,7 +11,9 @@ import {
 } from './countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
-import { selectCountry, useSelection } from '../hud/selectionStore'
+import { selectCountry, selectEntity, useSelection } from '../hud/selectionStore'
+import { resolveEntity } from '../entities/EntityResolver'
+import { getEntityForGeometry } from '../entities/GeometryMap'
 
 const BORDER_RADIUS = GLOBE_RADIUS * 1.004
 // Well clear of the core sphere (0.98*RADIUS in Globe.tsx) to leave room
@@ -162,9 +164,24 @@ export function Countries() {
     const worldPoint = (e.object as Mesh).localToWorld(localCentroid.clone())
     const direction = worldPoint.normalize()
 
-    selectCountry({ id: country.id, name: country.name, direction })
+    // Geometry -> entity: check for an explicit geometry mapping first
+    // (for a future shape whose id doesn't equal its entity id — e.g. a
+    // carved-out territory), then fall back to resolving the polygon's own
+    // id directly, which is what actually resolves every country today
+    // (geometry id and country id are still the same string — see
+    // GeometryMap.ts and CLAUDE.md's Entity Resolution section).
+    const resolved = getEntityForGeometry(country.id) ?? resolveEntity(country.id)
+
+    if (resolved) {
+      selectEntity(resolved, direction)
+    } else {
+      // Shouldn't happen once useCountryFeatures.ts has populated the
+      // Country Registry, but falls back to the country-shaped selection
+      // path so a click can never just silently do nothing.
+      selectCountry({ id: country.id, name: country.name, direction })
+    }
     // Temporary console visibility during development.
-    console.log(country.name)
+    console.log(resolved?.name ?? country.name)
   }
 
   return (

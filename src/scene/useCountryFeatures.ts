@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { feature } from 'topojson-client'
 import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { Feature } from 'geojson'
+import { registerCountry } from '../data'
 
 // Pre-built by scripts/buildCountryTopology.mjs (`npm run build:geo`): the
 // 193 UN member states only, simplified from world-atlas's 10m dataset.
@@ -38,6 +39,28 @@ function ensureFetch() {
       // topojson-specification, not geojson's GeoJsonProperties) — recast
       // to the geojson Feature type the rest of the app already uses.
       features = feature(topology, object).features as Feature[]
+
+      // Populate the Country Registry so EntityResolver/GeometryMap can
+      // actually resolve a clicked polygon's id — see selectionStore.ts's
+      // migration to entity-based selection (v2.2.1). Deliberately minimal
+      // records (id/name only); enriching these with capital/population/
+      // government from countryProfiles.ts is separate future work, not
+      // part of wiring selection through the registry.
+      for (let i = 0; i < features.length; i++) {
+        const f = features[i]
+        // Same id convention as scene/Countries.tsx and hud/SearchBar.tsx —
+        // a handful of features have no numeric topojson id, so fall back
+        // to the array index to avoid colliding them all on "undefined".
+        const id = f.id !== undefined && f.id !== null ? String(f.id) : `feature-${i}`
+        const name = (f.properties?.name as string) ?? 'Unknown'
+        try {
+          registerCountry({ id, name, aliases: [], status: 'un-member' })
+        } catch {
+          // Already registered — harmless (e.g. Vite HMR re-running this
+          // module's top-level code in dev after an edit elsewhere).
+        }
+      }
+
       loaded = true
       notify()
     })
