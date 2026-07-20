@@ -17,6 +17,37 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.2.2 — Intelligence HUD upgraded to Entity-based
+
+Point release. The Intelligence panel no longer assumes the selected thing
+is always a country — it renders a different, kind-appropriate set of
+fields depending on `selected.entity.kind`. Country cards are pixel-
+identical to before; Territory cards are new.
+
+### Changed
+
+- `hud/IntelligencePanel.tsx` now dispatches on `selected.entity.kind`:
+  `CountryDetails` (unchanged — same `COUNTRY_PROFILES` lookup, same four
+  fields, same fallback message) for `'country'`, new `TerritoryDetails`
+  for `'territory'`.
+- **Territory cards** show: ENTITY TYPE (`"Territory"`), CONTROLLER
+  (`Territory.controllingAuthorities`, joined — omitted entirely if
+  empty), CLAIMANTS (`Territory.claimants`, joined — omitted if empty),
+  POLITICAL STATUS (`Territory.status`, title-cased). No new components,
+  no new styling — every row reuses the existing `DataRow`.
+
+### Notes
+
+- No new tabs, no styling changes, no changes to `src/layers/`.
+- Verified live in a browser, not just type-checked: confirmed the country
+  card (Japan, via search) is unchanged, then force-selected the
+  `western-sahara` example territory (which has split control — two
+  controllers, two claimants) through the app's own live selection store
+  and confirmed every field rendered correctly, gracefully, with the exact
+  same visual styling as a country card. Zero console errors.
+- See `LOGBOOK.md` for how the country/territory split is meant to extend
+  to future entity kinds.
+
 ## v2.2.1 — Selection migrated to Entity Resolution
 
 Point release. The first version in this series that actually wires the

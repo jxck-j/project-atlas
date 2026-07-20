@@ -5,6 +5,52 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.2.2: Entity-based Intelligence HUD, and how to verify a panel with no test framework
+
+**Verifying the Territory card was harder than expected, and the first
+approach silently failed.** Tried driving the live app by dynamically
+`import()`-ing `selectionStore.ts` from inside `page.evaluate()` and
+calling `selectEntity()` on the result. It ran without error and returned
+a correctly-resolved territory — but the panel never updated. The likely
+cause: a dynamic `import()` injected into the page from outside Vite's own
+transform pipeline doesn't reliably resolve to the *same* module instance
+the already-mounted React tree is subscribed to (module identity is
+URL-keyed, and there's no guarantee the ad hoc path matches Vite's internal
+resolution exactly) — so the call almost certainly updated a second,
+orphaned copy of the store's `state`/`listeners` that nothing was
+listening to. Fixed by temporarily adding a debug hook (`window.
+__debugSelectEntity = selectEntity`, guarded by `import.meta.env.DEV`)
+*inside* `selectionStore.ts` itself, guaranteeing the call hits the exact
+singleton the app uses — then reverted it immediately after confirming
+the screenshot, before committing. `git status`/`git diff` after reverting
+showed the file byte-identical to before, confirming no debug residue
+shipped. Worth remembering next time something needs to be forced into a
+running app's state for a screenshot: reach for a temporary hook *inside*
+the real module, not a fresh import from outside it.
+
+**Why Territory cards omit CONTROLLER/CLAIMANTS individually instead of
+falling back to one "no data" message.** `Territory.status` is a required
+field, so anything that resolves as a territory at all always has at least
+a Political Status to show — there's no realistic "this territory has
+literally nothing to display" case the way an unprofiled country has.
+`controllingAuthorities`/`claimants` being empty arrays is the actual
+"nothing here" case, and it's per-field, so the omission is per-row
+(matching "if no territory fields exist, gracefully omit them" literally)
+rather than an all-or-nothing panel-level fallback.
+
+**How this generalizes to a future entity kind (organization, conflict,
+infrastructure, ...).** The dispatch in `IntelligencePanel.tsx` is a
+two-way check on `selected.entity.kind` — deliberately not a registry/
+plugin system like the Layer Engine's (the task said not to touch that,
+and two cases don't justify one anyway; see "three similar lines is better
+than a premature abstraction"). Adding a third kind means: extend
+`ResolvedEntity`'s union in `entities/types.ts`, write one more
+`XDetails({ x: X })` component following the same shape as `CountryDetails`/
+`TerritoryDetails` (reuse `DataRow`, gracefully omit missing fields), and
+add one more arm to the panel's kind check. Nothing about the panel's
+outer structure (header, FOCUS CAMERA, close button, the pending-sections
+footer) changes — only the middle section swaps.
+
 ## 2026-07-19 — v2.2.1: wiring selection to Entity Resolution — the empty-registry problem
 
 **The Country Registry being empty would have silently broken every single

@@ -1,5 +1,6 @@
 import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
+import type { Territory } from '../data'
 
 function Divider() {
   return <div className="h-px w-full bg-cyan-400/30" />
@@ -23,10 +24,67 @@ function PendingSection({ label }: { label: string }) {
   )
 }
 
+// "unrecognized-state" -> "Unrecognized State", "disputed-claim" -> "Disputed Claim".
+function titleCase(value: string): string {
+  return value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// Unchanged from before v2.2.2 — same COUNTRY_PROFILES lookup, same four
+// fields, same fallback message. Kept as its own component (rather than
+// inlined) so the kind dispatch below reads as "one component per entity
+// kind," the pattern a future kind follows too.
+function CountryDetails({ name }: { name: string }) {
+  const profile = COUNTRY_PROFILES[name]
+
+  if (!profile) {
+    return (
+      <div className="text-xs text-cyan-500/50 italic">
+        No profile data available for this territory.
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <DataRow label="GOVERNMENT" value={profile.government} />
+      <DataRow label="CAPITAL" value={profile.capital} />
+      <DataRow label="POPULATION" value={profile.population} />
+      <DataRow label="GDP" value={profile.gdp} />
+    </>
+  )
+}
+
+// New in v2.2.2. `status` is a required field on Territory, so there's
+// always at least a Political Status to show for anything that resolved
+// here at all — but `controllingAuthorities`/`claimants` are allowed to be
+// empty arrays (see data/types.ts), so those two rows are omitted
+// individually rather than falling back to a single "no data" message.
+function TerritoryDetails({ territory }: { territory: Territory }) {
+  const controller =
+    territory.controllingAuthorities.length > 0
+      ? territory.controllingAuthorities
+          .map((a) => (a.extent ? `${a.displayName} (${a.extent})` : a.displayName))
+          .join('; ')
+      : undefined
+
+  const claimants =
+    territory.claimants.length > 0
+      ? territory.claimants.map((c) => `${c.displayName} (${titleCase(c.claimType)})`).join('; ')
+      : undefined
+
+  return (
+    <>
+      <DataRow label="ENTITY TYPE" value="Territory" />
+      {controller && <DataRow label="CONTROLLER" value={controller} />}
+      {claimants && <DataRow label="CLAIMANTS" value={claimants} />}
+      <DataRow label="POLITICAL STATUS" value={titleCase(territory.status)} />
+    </>
+  )
+}
+
 export function IntelligencePanel() {
   const { selected } = useSelection()
   const isOpen = selected != null
-  const profile = selected ? COUNTRY_PROFILES[selected.name] : undefined
 
   return (
     <div
@@ -65,17 +123,10 @@ export function IntelligencePanel() {
 
             <Divider />
 
-            {profile ? (
-              <>
-                <DataRow label="GOVERNMENT" value={profile.government} />
-                <DataRow label="CAPITAL" value={profile.capital} />
-                <DataRow label="POPULATION" value={profile.population} />
-                <DataRow label="GDP" value={profile.gdp} />
-              </>
+            {selected.entity.kind === 'country' ? (
+              <CountryDetails name={selected.entity.name} />
             ) : (
-              <div className="text-xs text-cyan-500/50 italic">
-                No profile data available for this territory.
-              </div>
+              <TerritoryDetails territory={selected.entity.data} />
             )}
 
             <Divider />

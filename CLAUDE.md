@@ -185,6 +185,17 @@ convert (`time / 1000`) before calling `advance()`.
   against everything also catches the atmosphere glow shells (which sit in front
   of every label regardless of which hemisphere it's on) and hides all labels
   unconditionally, always.
+- **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
+  `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
+  `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
+  same "no profile data" fallback) for `'country'`, `TerritoryDetails`
+  (new) for `'territory'` — ENTITY TYPE / CONTROLLER / CLAIMANTS /
+  POLITICAL STATUS, reusing the same `DataRow` component, each of
+  CONTROLLER/CLAIMANTS omitted individually if that array is empty rather
+  than falling back to one blanket "no data" message. Deliberately a
+  two-way check, not a registry/plugin system like the Layer Engine's — a
+  third entity kind means one more `XDetails` component and one more arm
+  of the check, not a new abstraction layer. See `LOGBOOK.md`.
 
 ### Layer Engine (`src/layers/`)
 

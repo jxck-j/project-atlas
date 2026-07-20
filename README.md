@@ -145,7 +145,9 @@ src/
     CommandBar.tsx               Bottom status bar: ready/connected/country
                                  count/FPS/hover coordinates
     IntelligencePanel.tsx       Right-side sliding panel with the selected
-                                 country's profile data + FOCUS CAMERA button
+                                 entity's data + FOCUS CAMERA button — country
+                                 cards (v1, unchanged) or territory cards
+                                 (v2.2.2), dispatched on entity kind
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or territory,
                                  since v2.2.1 — see entities/) + camera
@@ -241,8 +243,9 @@ to build against without refactoring the globe itself.
   actually clickable) means: give the territory a real shape with its own
   id, `registerGeometryMapping(thatId, territoryId)`, and selection/
   highlighting/the panel all already work — `hud/selectionStore.ts`'s
-  `SelectedEntity` and `scene/Countries.tsx`'s click handler don't
-  special-case countries anymore. See `LOGBOOK.md`'s v2.2.1 entry.
+  `SelectedEntity`, `scene/Countries.tsx`'s click handler, and
+  `hud/IntelligencePanel.tsx`'s Territory card (v2.2.2) don't special-case
+  countries anymore. See `LOGBOOK.md`'s v2.2.1/v2.2.2 entries.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.
