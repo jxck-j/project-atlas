@@ -17,6 +17,59 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.2.4 — Search expanded to all registered entities
+
+Point release. `hud/SearchBar.tsx` no longer only searches the rendered
+country list — it now searches every registered `Country` and `Territory`
+and shows each result's entity type. Same "extend an existing feature to a
+new entity kind" shape as v2.2.1 (selection) and v2.2.2 (the Intelligence
+HUD); search is the third and, for now, last of the pieces that assumed
+"selectable thing" meant "country."
+
+### Added
+
+- `data/registry/territories.ts` — the first **real**, always-loaded
+  territory data (Taiwan, Puerto Rico, Crimea, Western Sahara), registered
+  into `TerritoryRegistry` as a side effect of importing `data/index.ts`.
+  Distinct from `registry/exampleTerritories.ts`, which stays deliberately
+  unimported (same neutral framing, reused). Puerto Rico is new — added
+  specifically because it's an uncontroversial dependency (`status:
+  'dependency'`, `parentCountryId: 'USA'`, no claimants), unlike the other
+  three, which are all genuinely disputed.
+- `hud/SearchBar.tsx`: results are now a live, ranked (exact → starts-with
+  → contains) dropdown of up to 8 matches across countries *and*
+  territories, each row labeled `COUNTRY` or `TERRITORY`. Selecting a
+  result — by click, or Enter for the top match — resolves the id through
+  `EntityResolver.resolveEntity()` and calls the generic `selectEntity()`,
+  the same resolution path a map click uses, instead of the old
+  country-only `selectCountry()`.
+
+### Fixed
+
+- `hud/selectionStore.ts`'s v2.2.3 dev-only `__debugSelectTerritory` hook
+  used to import `registry/exampleTerritories.ts` to guarantee something
+  was registered to select. With real territory data now always loaded,
+  that import started throwing an uncaught "already registered" error on
+  every dev page load (both modules register the same ids). Removed —
+  `EntityResolver`'s own `../data` import already pulls in the real
+  dataset, so the hook needs nothing extra.
+
+### Notes
+
+- No changes to `scene/CameraControls.tsx`, `useCameraFlight.ts`, or any
+  highlighting logic in `scene/Countries.tsx` — camera behavior and
+  highlighting are exactly as before for country selections; territory
+  selections still don't highlight anything on the globe (no territory has
+  real geometry yet — see v2.2.0/v2.2.1's notes).
+- Verified live: typed each of China/Taiwan/Puerto Rico/Crimea/Western
+  Sahara into search and confirmed the dropdown returns exactly one result
+  per query with the correct type label; clicked the Puerto Rico result
+  and confirmed a real camera flight plus a correct Territory card;
+  confirmed Enter-to-fly on an exact country match (Japan) and the
+  NOT FOUND state both still work. Zero console errors after the fix above.
+- See `CLAUDE.md` for how a future registry (Conflict, Relationship, ...)
+  plugs into search the same way Territory just did.
+
 ## v2.2.3 — Dev-only console hook for territory selection
 
 Point release. No architecture change — this exists because there is

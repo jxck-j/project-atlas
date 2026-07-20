@@ -5,6 +5,49 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.2.4: two "unimported by design" datasets collided the moment one of them stopped being unimported
+
+**Search needing real, named territory results (China/Taiwan/Puerto
+Rico/Crimea/Western Sahara) forced a decision every prior version had
+deferred: something has to actually load territory data into the running
+app.** Every version since v2.1.2 kept `exampleTerritories.ts` explicitly
+unimported — proving the schema without taking an implicit editorial
+position by shipping specific disputed-territory data live. That constraint
+doesn't disappear just because search needs data to return; it means the
+example file still isn't the answer. `data/registry/territories.ts` is a
+new, separate "real" dataset (same three disputed entries, reworded
+slightly, plus Puerto Rico as a genuinely uncontroversial fourth) that *is*
+wired in, via a side-effect import in `data/index.ts`. The distinction is
+about what's promised, not what's technically true: `exampleTerritories.ts`
+was always documented as "not authoritative, not this project's position";
+`territories.ts` inherits that same caveat in its own provenance data, it
+just also happens to be the thing the running app actually shows. Whether
+that's a real distinction or a fig leaf is worth being honest about — the
+data is nearly identical. What changed is that shipping *something* live
+was no longer optional once a feature (search) needed to return it.
+
+**This exact collision — two independently-reasonable "unimported by
+design" decisions turning into a live bug the moment one stopped being
+true — is worth a specific callout.** v2.2.3's `__debugSelectTerritory`
+hook imported `exampleTerritories.ts` to guarantee something was
+registered before letting you select it, reasoned about as safe because
+*nothing else* registered territories at the time. The moment
+`territories.ts` started registering the same ids for real, that
+assumption silently broke: both modules ran on every dev page load,
+`exampleTerritories.ts`'s `registerTerritory()` calls have no try/catch
+(never needed one — it was supposed to be the only registrant), and the
+second one to run threw an uncaught "already registered" error into the
+console on every single page load. tsc and oxlint both stayed clean
+through this; it only showed up as a `pageerror` during live Playwright
+verification. Fixed by dropping the `exampleTerritories.ts` import from the
+hook entirely (real data covers the same ids now, so nothing needs it) —
+but the general lesson is the sharper one: an "unimported by design" file
+is an implicit dependency of anything that *does* import it, and a note in
+that file's own docstring doesn't warn the next person adding a second,
+independent import of the same underlying ids. Grepping for existing
+importers of a thing you're about to duplicate the effect of — not just
+reading its docstring — is the actual check.
+
 ## 2026-07-19 — v2.2.3: the verification hook stayed, on purpose
 
 **The user asked "i can't see the hud and territory changes at all in my

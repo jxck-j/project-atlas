@@ -165,11 +165,14 @@ convert (`time / 1000`) before calling `advance()`.
   into `entity.*`), `flightSeq` (camera-flight trigger), `resetSeq`
   (reset-view trigger). Read via `useSelection()`. Two ways to select:
   `selectEntity(resolvedEntity, direction)` (generic — what
-  `scene/Countries.tsx`'s click handler uses) and `selectCountry({id, name,
-  direction})` (a country-only compatibility wrapper kept so
-  `hud/SearchBar.tsx` didn't need to change; resolves through the Country
-  Registry internally). See the Entity Resolution section below and
-  `LOGBOOK.md` for why the migration was shaped this way.
+  `scene/Countries.tsx`'s click handler *and*, since v2.2.4, `hud/
+  SearchBar.tsx`'s result selection use, both resolving through
+  `EntityResolver.resolveEntity()` first) and `selectCountry({id, name,
+  direction})` (a narrower country-only wrapper, kept for any caller that
+  only ever has a country id/name in hand and doesn't want to resolve it
+  itself; resolves through the Country Registry internally). See the Entity
+  Resolution section below and `LOGBOOK.md` for why the migration was
+  shaped this way.
 - `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' | 'settings'
   | null`) is open; mutually exclusive, toggled from `Toolbar.tsx`.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
@@ -323,6 +326,21 @@ mistaken for "the real dataset" or this project's editorial position on any
 of the disputes involved. See `LOGBOOK.md` for the full reasoning behind
 the control/claims split.
 
+**`data/registry/territories.ts`** (v2.2.4) is the real counterpart —
+**this one *is* imported** (as a side effect of `data/index.ts`, so
+`TerritoryRegistry` is populated before anything reads it). Same three
+disputed entries as `exampleTerritories.ts`, reworded slightly, plus a
+fourth: Puerto Rico, a genuinely uncontroversial dependency
+(`status: 'dependency'`, `parentCountryId: 'USA'`, no claimants) included
+specifically so not every real territory in search is a live dispute. Its
+own `provenance.source` still carries the same "simplified, not
+authoritative" caveat `exampleTerritories.ts` uses — being the dataset the
+app actually loads doesn't make it a sourced, comprehensive one. See
+`LOGBOOK.md` for why this needed to be a separate file rather than just
+importing `exampleTerritories.ts`, and for a real bug this split caused
+(v2.2.3's debug hook importing `exampleTerritories.ts` started throwing on
+every dev page load once both files tried to register the same ids).
+
 ### Entity Resolution (`src/entities/`)
 
 The seam between "an id came from a clicked map polygon" and "which
@@ -401,12 +419,60 @@ placeholder id because — a genuinely useful discovery from building this —
 being geometrically part of Ukraine's. See `LOGBOOK.md`.
 
 Because none of this is wired into real clickable geometry yet, there is
-currently no way to reach a Territory card by clicking anything in the
-live app. `hud/selectionStore.ts` installs a dev-only console helper for
-this (v2.2.3): `window.__debugSelectTerritory('taiwan' | 'crimea' |
-'western-sahara')`, gated by `import.meta.env.DEV` and eliminated from
-production builds. Use it to check the Territory card without first
-building real geometry.
+still no way to reach a Territory card by **clicking** anything on the
+globe itself — that part is unchanged. Search (below) is now a real way in
+that doesn't depend on geometry at all. `hud/selectionStore.ts` also
+installs a dev-only console helper (v2.2.3): `window.__debugSelectTerritory
+('taiwan' | 'puerto-rico' | 'crimea' | 'western-sahara')`, gated by
+`import.meta.env.DEV` and eliminated from production builds — a console
+shortcut, now redundant with search for most purposes but still faster for
+quick checks.
+
+### Search (`hud/SearchBar.tsx`)
+
+Since v2.2.4, search covers every registered `Country` *and* `Territory`,
+not just the rendered country list. It builds one flat, ranked (exact →
+starts-with → contains) list from two sources — `useCountryFeatures()`'s
+features (via `geometryToCentroid`, same as before v2.2.4) and
+`getTerritories()` (filtering out any territory with no `location`, since
+there'd be nowhere to fly the camera) — and renders the top 8 as a live
+dropdown, each row tagged `COUNTRY` or `TERRITORY`. Selecting a result (by
+click, or Enter for the top match) calls `resolveEntity(id)` from
+`entities/EntityResolver.ts` and passes the result to the generic
+`selectEntity()` — not the old country-only `selectCountry()` — the same
+resolution path a map click uses (see "Selection & HUD panel state"
+above), so a search-selected territory produces an identical
+`SelectedEntity` to a geometry click on one.
+
+**Currently searchable entity types: `country` (193, from the rendered
+UN-193 topology) and `territory` (4, from `data/registry/territories.ts` —
+Taiwan, Puerto Rico, Crimea, Western Sahara).**
+
+**Adding a future registry to search** (Conflict, Relationship, or
+whatever a future engine introduces) is additive, mirroring exactly how
+Territory was added on top of Country:
+
+1. The new type needs a registry (`registerX`/`getX`s, same `Map`-backed
+   shape as `CountryRegistry.ts`/`TerritoryRegistry.ts`) and needs to
+   satisfy `entities/types.ts`'s `GeopoliticalEntity` shape
+   (`id`/`name`/`aliases`/`provenance`) — no changes to the type itself if
+   it already has those fields, same as `Country`/`Territory` needed none.
+2. Add a `resolveX(id)` function to `entities/EntityResolver.ts` and fold
+   it into `resolveEntity()`'s fallback chain (`resolveCountry(id) ??
+   resolveTerritory(id) ?? resolveX(id)`), plus one more `ResolvedEntity`
+   union member in `entities/types.ts`.
+3. In `SearchBar.tsx`: one more block shaped like `territoryEntries`
+   (map the registry's records to `SearchEntry`, skip any without a
+   location), append it into `entries`, and add the new `kind` to
+   `SearchEntry`'s union and `ENTITY_TYPE_LABEL`.
+4. If real data should ship live (not just prove the schema), give it its
+   own always-imported file like `registry/territories.ts` — never repurpose
+   an explicitly-unimported example file for that (see `LOGBOOK.md`'s
+   v2.2.4 entry for a real bug that came from almost doing exactly that).
+
+Nothing about ranking, the dropdown UI, camera flight, or highlighting
+needs to change — they're already generic over `SearchEntry`/
+`ResolvedEntity` and don't know or care how many kinds exist.
 
 ### Data quirks worth knowing
 

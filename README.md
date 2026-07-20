@@ -137,7 +137,9 @@ src/
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar
     Toolbar.tsx                Top-left icon bar: reset view / search / layers / settings
-    SearchBar.tsx               Country name -> select + fly-to
+    SearchBar.tsx               Name -> select + fly-to, across countries
+                                 AND territories since v2.2.4 (ranked
+                                 dropdown, entity type shown per result)
     LayerPanel.tsx               Toggle list for registered layers, grouped by
                                  category (toggled via Toolbar)
     SettingsPanel.tsx           Camera sensitivity sliders (toggled via Toolbar)
@@ -179,6 +181,10 @@ src/
     registry/exampleTerritories.ts  Taiwan/Crimea/Western Sahara worked
                                examples — NOT imported by the app, exists to
                                validate the schema (see CLAUDE.md)
+    registry/territories.ts     (v2.2.4) The REAL, always-loaded territory
+                               data — Taiwan/Puerto Rico/Crimea/Western
+                               Sahara — imported as a side effect of
+                               index.ts, is what search actually returns
     countries/countries.json    Empty — matches the Country[] schema
     territories/territories.json  Empty — matches the Territory[] schema
     conflicts/conflicts.json      Empty — matches the Conflict[] schema

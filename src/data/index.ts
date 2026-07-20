@@ -7,6 +7,16 @@
 // future live API, or anywhere else — the registry is the seam that hides
 // that decision, the same way `src/layers/index.ts` hides layer
 // registration mechanics from `Globe.tsx`.
+//
+// Side-effect import: registers the real territory dataset (see
+// registry/territories.ts) into TerritoryRegistry as soon as this barrel is
+// evaluated — same "importing the barrel is what guarantees registration
+// has happened" guarantee layers/index.ts provides for the Layer Engine.
+// Countries don't need an equivalent here: they're registered by
+// scene/useCountryFeatures.ts once the country geometry fetch resolves,
+// since there's no country data to register ahead of that.
+import './registry/territories'
+
 export type {
   Country,
   Territory,

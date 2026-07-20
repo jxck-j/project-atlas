@@ -5,36 +5,91 @@ import { geometryToCentroid } from '../scene/countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
-import { flyToSelectedCountry, selectCountry } from './selectionStore'
+import { flyToSelectedCountry, selectEntity } from './selectionStore'
 import { useHudPanel } from './hudPanelStore'
+import { getTerritories } from '../data'
+import { resolveEntity } from '../entities/EntityResolver'
 
 const UP_AXIS = new Vector3(0, 1, 0)
+const MAX_RESULTS = 8
 
+// Every kind of entity search currently knows how to return, normalized to
+// one flat shape so matching/ranking/rendering don't need to branch on
+// where an entry came from. Adding a future registry (e.g. Conflict) means
+// one more block like `territoryEntries` below plus one more `kind` union
+// member — see CLAUDE.md for the full walkthrough.
 interface SearchEntry {
   id: string
   name: string
+  kind: 'country' | 'territory'
   lat: number
   lng: number
+}
+
+const ENTITY_TYPE_LABEL: Record<SearchEntry['kind'], string> = {
+  country: 'COUNTRY',
+  territory: 'TERRITORY',
 }
 
 export function SearchBar() {
   const isOpen = useHudPanel() === 'search'
   const features = useCountryFeatures()
   const [query, setQuery] = useState('')
-  const [notFound, setNotFound] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const entries = useMemo<SearchEntry[]>(() => {
+  const countryEntries = useMemo<SearchEntry[]>(() => {
     return features.map((f, index) => {
       const centroid = geometryToCentroid(f.geometry)
       return {
         id: f.id !== undefined && f.id !== null ? String(f.id) : `feature-${index}`,
         name: (f.properties?.name as string) ?? 'Unknown',
+        kind: 'country' as const,
         lat: centroid.lat,
         lng: centroid.lng,
       }
     })
   }, [features])
+
+  // getTerritories() reads TerritoryRegistry, which data/index.ts's
+  // registry/territories.ts side-effect import has already populated by
+  // the time this module loads — no fetch/loading state needed here, unlike
+  // countries (whose geometry, and therefore registry population, arrives
+  // asynchronously). Territories without a `location` are skipped: there's
+  // nowhere to fly the camera to, and search shouldn't return a result it
+  // can't select.
+  const territoryEntries = useMemo<SearchEntry[]>(() => {
+    return getTerritories().flatMap((t) => {
+      if (!t.location) return []
+      return [{ id: t.id, name: t.name, kind: 'territory' as const, lat: t.location.lat, lng: t.location.lng }]
+    })
+  }, [])
+
+  const entries = useMemo<SearchEntry[]>(
+    () => [...countryEntries, ...territoryEntries],
+    [countryEntries, territoryEntries],
+  )
+
+  // Ranked, not just filtered: exact name matches first, then
+  // starts-with, then contains — same three-tier ordering the old
+  // single-best-match logic used, just computed once (a single pass over
+  // `entries`) instead of up to three separate `.find()` scans, and capped
+  // to MAX_RESULTS so the dropdown stays short.
+  const matches = useMemo<SearchEntry[]>(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return []
+    const exact: SearchEntry[] = []
+    const starts: SearchEntry[] = []
+    const includes: SearchEntry[] = []
+    for (const entry of entries) {
+      const name = entry.name.toLowerCase()
+      if (name === q) exact.push(entry)
+      else if (name.startsWith(q)) starts.push(entry)
+      else if (name.includes(q)) includes.push(entry)
+    }
+    return [...exact, ...starts, ...includes].slice(0, MAX_RESULTS)
+  }, [entries, query])
+
+  const notFound = query.trim().length > 0 && matches.length === 0
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus()
@@ -42,31 +97,32 @@ export function SearchBar() {
 
   if (!isOpen) return null
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    const q = query.trim().toLowerCase()
-    if (!q) return
+  function selectEntry(entry: SearchEntry) {
+    // Resolves through EntityResolver (Country Registry, then Territory
+    // Registry) rather than assuming a country the way the old
+    // selectCountry() call did — the same resolution path
+    // scene/Countries.tsx's click handler uses, so a search-selected
+    // territory produces an identical SelectedEntity to a (future)
+    // geometry click on one.
+    const resolved = resolveEntity(entry.id)
+    if (!resolved) return
 
-    const match =
-      entries.find((c) => c.name.toLowerCase() === q) ??
-      entries.find((c) => c.name.toLowerCase().startsWith(q)) ??
-      entries.find((c) => c.name.toLowerCase().includes(q))
-
-    if (!match) {
-      setNotFound(true)
-      return
-    }
-
-    // Same technique as the click handler: project the country's centroid
+    // Same technique as the click handler: project the entity's centroid
     // through the globe's CURRENT rotation to get a live world-space
     // direction, since there's no clicked mesh to read localToWorld() from.
-    const local = latLngToVector3(match.lat, match.lng, GLOBE_RADIUS)
+    const local = latLngToVector3(entry.lat, entry.lng, GLOBE_RADIUS)
     const direction = local.applyAxisAngle(UP_AXIS, getGlobeRotationY()).normalize()
 
-    selectCountry({ id: match.id, name: match.name, direction })
+    selectEntity(resolved, direction)
     flyToSelectedCountry()
     setQuery('')
-    setNotFound(false)
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    const top = matches[0]
+    if (!top) return
+    selectEntry(top)
   }
 
   return (
@@ -78,14 +134,29 @@ export function SearchBar() {
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
-              setNotFound(false)
-            }}
-            placeholder="COUNTRY NAME..."
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="SEARCH..."
             className="w-full border border-cyan-400/25 bg-cyan-950/30 px-2 py-1.5 font-mono text-[11px] tracking-[0.05em] text-cyan-100 placeholder:text-cyan-500/40 outline-none focus:border-cyan-300"
           />
         </form>
+        {matches.length > 0 && (
+          <ul className="mt-1.5 max-h-56 overflow-y-auto border border-cyan-400/25 bg-cyan-950/40">
+            {matches.map((entry) => (
+              <li key={`${entry.kind}-${entry.id}`}>
+                <button
+                  type="button"
+                  onClick={() => selectEntry(entry)}
+                  className="flex w-full items-baseline justify-between gap-2 px-2 py-1.5 text-left font-mono text-[11px] text-cyan-100 hover:bg-cyan-400/10"
+                >
+                  <span className="truncate">{entry.name}</span>
+                  <span className="shrink-0 text-[9px] tracking-[0.15em] text-cyan-500/60">
+                    {ENTITY_TYPE_LABEL[entry.kind]}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         {notFound && (
           <div className="mt-1.5 text-[10px] tracking-[0.1em] text-red-400/80">NOT FOUND</div>
         )}

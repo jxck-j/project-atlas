@@ -105,35 +105,33 @@ export function resetView() {
   notify()
 }
 
-// Dev-only console helper: territories have no clickable geometry wired
-// into the live scene yet (registering real geometry for Taiwan/Crimea/
-// Western Sahara is out of scope through v2.2.2 — see LOGBOOK.md), so
-// there's currently no way to reach a Territory card through normal
-// interaction. This lets you trigger one by hand from devtools, e.g.
-// __debugSelectTerritory('western-sahara'). Calling selectEntity() from
-// inside this module (rather than a separately-imported copy) guarantees
-// it's the same singleton store the mounted React tree subscribes to.
-// import.meta.env.DEV is statically replaced at build time, so this whole
-// branch is dead-code-eliminated from production builds.
+// Dev-only console helper. Territories are now searchable for real (v2.2.4
+// wired data/registry/territories.ts into the live TerritoryRegistry, and
+// hud/SearchBar.tsx resolves search results through EntityResolver — see
+// CLAUDE.md), so this is no longer the only way to reach a Territory card —
+// it's kept as a quick console shortcut. Deliberately does NOT import
+// data/registry/exampleTerritories.ts (the old, still-unimported
+// illustrative dataset) — it registers 'taiwan'/'crimea'/'western-sahara'
+// under the same ids the real dataset now uses, and throws on the
+// duplicate. EntityResolver's own `../data` import already pulls in the
+// real dataset, so nothing extra needs loading here.
 if (import.meta.env.DEV) {
-  void import('../data/registry/exampleTerritories').then(() => {
-    void import('../entities/EntityResolver').then(({ resolveTerritory }) => {
-      ;(window as unknown as { __debugSelectTerritory?: (id: string) => void }).__debugSelectTerritory = (
-        id: string,
-      ) => {
-        const resolved = resolveTerritory(id)
-        if (!resolved) {
-          console.warn(
-            `[debug] no territory "${id}" — try 'taiwan', 'crimea', or 'western-sahara'`,
-          )
-          return
-        }
-        selectEntity(resolved, new Vector3(1, 0, 0))
+  void import('../entities/EntityResolver').then(({ resolveTerritory }) => {
+    ;(window as unknown as { __debugSelectTerritory?: (id: string) => void }).__debugSelectTerritory = (
+      id: string,
+    ) => {
+      const resolved = resolveTerritory(id)
+      if (!resolved) {
+        console.warn(
+          `[debug] no territory "${id}" — try 'taiwan', 'puerto-rico', 'crimea', or 'western-sahara'`,
+        )
+        return
       }
-      console.info(
-        "[debug] __debugSelectTerritory('taiwan' | 'crimea' | 'western-sahara') is available in this console — dev build only.",
-      )
-    })
+      selectEntity(resolved, new Vector3(1, 0, 0))
+    }
+    console.info(
+      "[debug] __debugSelectTerritory('taiwan' | 'puerto-rico' | 'crimea' | 'western-sahara') is available in this console — dev build only. Territories are also searchable directly now.",
+    )
   })
 }
 
