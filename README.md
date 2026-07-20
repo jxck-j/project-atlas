@@ -81,24 +81,41 @@ src/
   scene/                    Everything inside the R3F <Canvas>
     Scene.tsx                Canvas setup (frameloop="never" — see FrameRateCap),
                                lighting, starfield; composes Globe + camera + probes
-    Globe.tsx                 Composes graticule, Countries, CapitalMarker,
-                               WaterLabels, and the core/atmosphere shells;
-                               owns the ambient self-rotation and the
-                               double-click-on-ocean / hover-coordinate handlers
-                               on the core sphere
+    Globe.tsx                 Composes graticule, Countries, Territories,
+                               CapitalMarker, WaterLabels, and the core/
+                               atmosphere shells; owns the ambient
+                               self-rotation and the double-click-on-ocean /
+                               hover-coordinate handlers on the core sphere.
+                               CapitalMarker (country-only, since v2.3.0
+                               explicitly checks entity.kind) shows the
+                               selected country's capital
     Countries.tsx             Renders one merged border lineSegments + one merged
                                fill mesh PER COUNTRY (not per ring/polygon — see
                                countryGeometry.ts); owns hover state, cursor, and
                                kicks off selection on click
+    Territories.tsx            (v2.3.0) Same rendering approach as
+                               Countries.tsx, for the subset of registered
+                               territories with real geometry (Taiwan,
+                               Puerto Rico, W. Sahara — not Crimea, see
+                               CLAUDE.md). Own file, not a shared component
+                               with Countries.tsx, so this can't regress
+                               already-verified country behavior
     countryGeometry.ts         GeoJSON -> antimeridian-safe border segments /
                                earcut-triangulated fill geometry / centroid /
                                angular extent, all merged per-country and
-                               projected onto the sphere
+                               projected onto the sphere. Fully generic —
+                               Territories.tsx (v2.3.0) reuses it unchanged
     useCountryFeatures.ts     Fetches + parses countries-un193.json once,
                                shared via a singleton useSyncExternalStore;
                                also registers each feature into the Country
                                Registry (v2.2.1) so EntityResolver can
                                resolve a real click
+    useTerritoryFeatures.ts    (v2.3.0) Same pattern as useCountryFeatures.ts
+                               for territories.json; registers real
+                               GeometryMap mappings (geometry id -> entity
+                               id) as each feature loads, finally
+                               exercising the chain GeometryMap.ts (v2.2.0)
+                               built and left unused
     CameraControls.tsx        OrbitControls setup: clipping-safe distance
                                bounds, sensitivity wiring, Home-key handling,
                                composes the flight/reset/flick hooks below
@@ -145,7 +162,8 @@ src/
     SettingsPanel.tsx           Camera sensitivity sliders (toggled via Toolbar)
     Telemetry.tsx               Bottom-left live orbit readout (az/el/range)
     CommandBar.tsx               Bottom status bar: ready/connected/country
-                                 count/FPS/hover coordinates
+                                 count/territory count (v2.3.0)/FPS/hover
+                                 coordinates
     IntelligencePanel.tsx       Right-side sliding panel with the selected
                                  entity's data + FOCUS CAMERA button — country
                                  cards (v1, unchanged) or territory cards
@@ -184,7 +202,11 @@ src/
     registry/territories.ts     (v2.2.4) The REAL, always-loaded territory
                                data — Taiwan/Puerto Rico/Crimea/Western
                                Sahara — imported as a side effect of
-                               index.ts, is what search actually returns
+                               index.ts, is what search actually returns.
+                               Three of the four also have real rendered
+                               geometry since v2.3.0 — see scene/
+                               Territories.tsx and entities/
+                               territoryGeometryIds.ts
     countries/countries.json    Empty — matches the Country[] schema
     territories/territories.json  Empty — matches the Territory[] schema
     conflicts/conflicts.json      Empty — matches the Conflict[] schema
@@ -200,20 +222,39 @@ src/
                                Registry, hides which one an id came from
     GeometryMap.ts                (v2.2.0) registerGeometryMapping/
                                hasGeometryMapping/getEntityForGeometry —
-                               polygon_id -> entity_id -> EntityResolver
+                               polygon_id -> entity_id -> EntityResolver.
+                               Real mappings registered since v2.3.0 (see
+                               useTerritoryFeatures.ts above)
+    territoryGeometryIds.ts      (v2.3.0) The id map ("158" -> "taiwan",
+                               etc.) buildTerritoryTopology.mjs and
+                               useTerritoryFeatures.ts both read, so the
+                               build-time allowlist and runtime lookup
+                               can't drift apart
     exampleGeometryMappings.ts   Taiwan/Crimea/Western Sahara placeholder
-                               mappings — NOT imported by the app
+                               mappings — NOT imported by the app; Taiwan/
+                               W. Sahara's entries are superseded by real
+                               mappings since v2.3.0, Crimea's isn't (no
+                               real geometry exists for it to map)
   utils/
     geo.ts                    lat/lng <-> Vector3 sphere projection and its inverse
   App.tsx                     Composes Scene + all HUD layers
   index.css                   Tailwind v4 entry + font tokens + reduced-motion
 scripts/
-  buildCountryTopology.mjs   Build-time asset generator (npm run build:geo):
-                             filters world-atlas's 10m data to the 193 UN
-                             members, simplifies coastlines, re-quantizes
+  buildCountryTopology.mjs   Build-time asset generator (npm run
+                             build:geo:countries): filters world-atlas's
+                             10m data to the 193 UN members, simplifies
+                             coastlines, re-quantizes
+  buildTerritoryTopology.mjs  (v2.3.0) Same pipeline (npm run
+                             build:geo:territories), for the subset of
+                             registered territories with a standalone
+                             polygon in the same source — see
+                             territoryGeometryIds.ts
 public/geo/
-  countries-un193.json       Generated output of the script above — the only
-                             geo asset actually fetched at runtime
+  countries-un193.json       Generated output of buildCountryTopology.mjs —
+                             fetched at runtime by useCountryFeatures.ts
+  territories.json            (v2.3.0) Generated output of
+                             buildTerritoryTopology.mjs — fetched at
+                             runtime by useTerritoryFeatures.ts
 ```
 
 This separation (scene layer vs. HUD layer, data vs. rendering, a small pub/sub

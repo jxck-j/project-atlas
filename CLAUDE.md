@@ -17,7 +17,9 @@ npm run dev        # dev server, http://localhost:5173
 npm run build      # tsc -b (project-references typecheck) + vite build to dist/
 npm run lint       # oxlint
 npm run preview    # preview the production build
-npm run build:geo  # regenerate public/geo/countries-un193.json (see Data pipeline below)
+npm run build:geo  # regenerate both geo assets below (runs the two npm scripts in sequence)
+npm run build:geo:countries    # regenerate public/geo/countries-un193.json (see Data pipeline below)
+npm run build:geo:territories  # regenerate public/geo/territories.json (see Territory geometry below)
 ```
 
 There is no test suite/framework configured in this repo.
@@ -115,6 +117,49 @@ Two non-obvious things here matter a lot:
   `DoubleSide`, a pointer ray that misses every near-hemisphere country (e.g. a gap
   over open ocean) can continue through the globe and hit a country's back-facing
   triangles on the *far* side, causing wrong-country click-throughs.
+
+Every function in this file is generic over any GeoJSON `Geometry` — nothing
+in it is country-specific despite the file name. `scene/Territories.tsx`
+(v2.3.0) reuses all four functions unchanged to render territory geometry;
+this module needed zero changes to serve a second entity kind.
+
+### Territory geometry (`scene/Territories.tsx`, v2.3.0)
+
+Closely mirrors `scene/Countries.tsx` — same merged-geometry-per-entity
+approach (via `countryGeometry.ts`, see above), same hover/select/dim color
+logic and palette (deliberately identical to countries — a territory reads
+as "another selectable thing on this globe," not a different visual
+category), same click-vs-drag threshold. Kept as its own file rather than
+generalizing `Countries.tsx` into a shared component — same reasoning
+`CountryRegistry.ts`/`TerritoryRegistry.ts` are two files instead of one
+generic `Registry<T>` (see below): duplication here means this addition
+can't regress already-verified country click/highlight behavior.
+
+**The one thing that is NOT safe to copy from `Countries.tsx` verbatim:**
+a country's rendered polygon id and its registry id are the same string by
+construction, so `Countries.tsx` compares `selected?.id === country.id`
+directly. A territory's rendered shape id (`"158"`, an ISO numeric code)
+and its entity id (`"taiwan"`, the `TerritoryRegistry` slug) are
+*deliberately* different — that's the whole reason `GeometryMap` exists —
+so `TerritoryEntry` carries both `geometryId` (hover state, `GeometryMap`
+lookups) and `entityId` (compared against `selected.id`) rather than one
+`id`. Getting this wrong doesn't throw or warn — it silently makes
+`isSelected` always `false`, so a selected territory renders with the same
+faint dimmed treatment as everything else instead of highlighted. See
+`LOGBOOK.md`'s v2.3.0 entry for how this was actually found (a screenshot,
+not a type error) and a second, related bug it surfaced
+(`Globe.tsx`'s `CapitalMarker` needing to check `selected.entity.kind`,
+not just look up `selected.name` by string).
+
+`scripts/buildTerritoryTopology.mjs` (`npm run build:geo:territories`)
+extracts real geometry from the same `world-atlas` 10m source
+`buildCountryTopology.mjs` reads, for the subset of registered territories
+that have a standalone polygon there — see `entities/territoryGeometryIds.ts`
+(the id -> territory-id map both the build script and
+`scene/useTerritoryFeatures.ts` share) for which ones and why not all four:
+Crimea still has no rendered geometry, for the same "no standalone polygon
+anywhere in the source data" reason noted below — it stays selectable via
+search only.
 
 ### Camera system
 
@@ -402,31 +447,28 @@ touching `scene/Countries.tsx`'s rendering.** As of v2.2.1, the click
 handler calls `getEntityForGeometry(polygonId) ?? resolveEntity(polygonId)`
 — it checks `GeometryMap` first, and only falls back to treating the
 polygon's own id as an entity id directly, which is what actually resolves
-every country today (no real geometry mappings are registered yet outside
-the unimported `exampleGeometryMappings.ts`). Adding real territory
-geometry later (a carved-out Crimea sub-region, say) means registering its
-shape's id against the right entity id — the click handler doesn't change
-again.
+every country today for actual UN-member polygons; since v2.3.0, real
+territory shapes also register through here — see "Territory geometry"
+above). `exampleGeometryMappings.ts` (v2.2.0's placeholder file, still
+**not imported anywhere the app loads**) is now superseded for two of its
+three entries: `scene/useTerritoryFeatures.ts` registers real mappings for
+Taiwan (`"158"`) and Western Sahara (`"732"`) using the same ISO numeric
+ids this placeholder file anticipated. Its Crimea mapping
+(`'placeholder-crimea-subregion'`) is still the only one that exists
+anywhere, synthetic id and all — **Crimea has no standalone polygon
+anywhere in the source data at all**, being geometrically part of
+Ukraine's. See `LOGBOOK.md`.
 
-Placeholder mappings for Taiwan/Crimea/Western Sahara live in
-`exampleGeometryMappings.ts`, chained onto v2.1.2's `exampleTerritories.ts`
-— same "not imported anywhere the app loads" rule as every other example
-file in this data architecture. Taiwan and Western Sahara use their real
-ISO 3166-1 numeric ids from the raw Natural Earth source (158, 732) even
-though neither is part of the rendered UN-193 set; Crimea uses a synthetic
-placeholder id because — a genuinely useful discovery from building this —
-**Crimea has no standalone polygon anywhere in the source data at all**,
-being geometrically part of Ukraine's. See `LOGBOOK.md`.
-
-Because none of this is wired into real clickable geometry yet, there is
-still no way to reach a Territory card by **clicking** anything on the
-globe itself — that part is unchanged. Search (below) is now a real way in
-that doesn't depend on geometry at all. `hud/selectionStore.ts` also
-installs a dev-only console helper (v2.2.3): `window.__debugSelectTerritory
-('taiwan' | 'puerto-rico' | 'crimea' | 'western-sahara')`, gated by
-`import.meta.env.DEV` and eliminated from production builds — a console
-shortcut, now redundant with search for most purposes but still faster for
-quick checks.
+Since v2.3.0, clicking Taiwan, Puerto Rico, or Western Sahara's actual
+rendered shape on the globe reaches a Territory card, the same as clicking
+any country — see "Territory geometry" above. Crimea is still reachable
+only via search or the console helper below, since it has no rendered
+shape to click. `hud/selectionStore.ts` also installs a dev-only console
+helper (v2.2.3): `window.__debugSelectTerritory('taiwan' | 'puerto-rico' |
+'crimea' | 'western-sahara')`, gated by `import.meta.env.DEV` and
+eliminated from production builds — a console shortcut, redundant with
+search/clicking for three of the four but still the only way to reach
+Crimea's card outside search.
 
 ### Search (`hud/SearchBar.tsx`)
 

@@ -17,6 +17,100 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.3.0 — Territories get real, clickable, highlighted geometry
+
+Point release under v2 (same call as v2.2.0's "Geometry Map" entry: new
+files/behavior, but it completes infrastructure v2.1-v2.2 already built —
+GeometryMap, EntityResolver, entity-based selection — rather than
+introducing a new system the way v2.0's Layer Engine did). This is the
+first version where a territory has any presence on the globe itself:
+Taiwan, Puerto Rico, and Western Sahara are now real rendered shapes you
+can hover and click, exactly like a country. `scene/countryGeometry.ts`'s
+border/fill/centroid math — built for countries — turned out to need zero
+changes to serve a second entity kind, which is the whole reason that
+module exists as generic geometry math rather than country-specific code.
+
+### Added
+
+- `src/entities/territoryGeometryIds.ts`: single source of truth mapping a
+  raw ISO 3166-1 numeric id (`"158"`, `"630"`, `"732"`) to the territory
+  registry id it belongs to (`taiwan`, `puerto-rico`, `western-sahara`) —
+  used by both the new build script and the new runtime hook so they can't
+  drift apart.
+- `scripts/buildTerritoryTopology.mjs` (`npm run build:geo:territories`,
+  folded into `npm run build:geo`): extracts just those three features from
+  the same `world-atlas` 10m source `buildCountryTopology.mjs` already
+  reads, simplifies and re-quantizes them the same way, writes
+  `public/geo/territories.json`. Separate output file from
+  `countries-un193.json` — these aren't UN members and don't belong in the
+  "exactly 193" set that pipeline guards.
+- `src/scene/useTerritoryFeatures.ts`: fetches that file, converts it to
+  GeoJSON, and — this is the part that actually makes clicking work —
+  calls `registerGeometryMapping(geometryId, entityId)` for each feature,
+  finally exercising the `polygon_id -> entity_id -> EntityResolver` chain
+  `GeometryMap.ts` (v2.2.0) built and left unused until now.
+- `src/scene/Territories.tsx`: mirrors `Countries.tsx` closely — same
+  merged-geometry-per-entity approach, same hover/select/dim color logic
+  (identical palette, deliberately: a territory reads as "another
+  selectable thing," not a different visual category), same click-vs-drag
+  threshold. Kept as its own file rather than generalizing `Countries.tsx`
+  into a shared component, so this addition couldn't regress already-
+  verified country behavior — same reasoning `CountryRegistry.ts`/
+  `TerritoryRegistry.ts` are two files instead of one generic `Registry<T>`.
+- `Globe.tsx` now mounts `<Territories />` alongside `<Countries />`.
+- `hud/CommandBar.tsx`: a new `TERRITORIES` segment next to `COUNTRIES`,
+  reflecting the same "what's actually rendered right now" semantics
+  (`useTerritoryFeatures().length`), not the full registry count — Crimea
+  (registered but geometry-less) intentionally doesn't count toward it.
+
+### Fixed
+
+Two real bugs turned up during live verification, both from places where
+territories quietly inherited an assumption that only ever had to be true
+for countries:
+
+- **Selected territories rendered dimmed instead of highlighted.**
+  `TerritoryEntry` initially stored one `id` (the shape's own geometry id,
+  e.g. `"158"`) and compared it directly against `selected.id` — which is
+  always the *resolved entity's* id (`"taiwan"`). For a country these are
+  the same string by construction, so `Countries.tsx`'s identical-looking
+  comparison works; for a territory they're deliberately different (that's
+  the entire point of `GeometryMap`), so `isSelected` was always `false`
+  and a selected territory got the same faint dimmed treatment as
+  everything else instead of the red selected color. Fixed by splitting
+  `TerritoryEntry` into `geometryId` (hover state, `GeometryMap` lookups)
+  and `entityId` (compared against `selected.id`).
+- **Selecting the Taiwan territory showed Taipei's capital marker.**
+  `Globe.tsx`'s `CapitalMarker` looked up `COUNTRY_PROFILES[selected.name]`
+  by name only, with no check on `selected.entity.kind`. `countryProfiles.ts`
+  happens to have a `"Taiwan"` entry (illustrative country data, unrelated
+  to the Territory registry entry of the same name) — since territories
+  were never independently selectable before this version, the name
+  collision was latent and harmless. The moment a Territory named "Taiwan"
+  became selectable, `selected.name === "Taiwan"` started matching that
+  country-profile entry and showing its capital marker on a Territory
+  selection. Fixed by gating on `selected.entity.kind === 'country'` first.
+
+### Notes
+
+- Crimea still has no rendered geometry — it has no standalone polygon
+  anywhere in the source data at any resolution (see v2.2.0/LOGBOOK.md),
+  so there's nothing for `buildTerritoryTopology.mjs` to extract. It stays
+  selectable via search only until a real sub-region shape exists.
+- Verified live, not just type-checked: hovering Taiwan's actual rendered
+  shape shows the gold hover label; clicking it opens the Territory panel
+  with no camera flight (matches "click just opens the panel," unchanged
+  from countries); clicking a country (China) while a territory was
+  selected correctly switches the panel, and clicking back onto Taiwan's
+  shape switches it back — real geometry, both directions, through
+  `GeometryMap -> EntityResolver -> selectEntity`. Zero console errors
+  throughout. Country click/hover/highlight behavior (Japan) reconfirmed
+  unchanged.
+- See `LOGBOOK.md` for why both fixed bugs are examples of the same root
+  cause — a hardcoded assumption that was only ever exercised by countries
+  before now, quietly relied upon, and only surfaces once a Territory
+  actually runs the same code path for the first time.
+
 ## v2.2.4 — Search expanded to all registered entities
 
 Point release. `hud/SearchBar.tsx` no longer only searches the rendered

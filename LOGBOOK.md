@@ -5,6 +5,81 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-20 — v2.3.0: a shape's own id is not the same thing as what it means, and two ways that bit us in one afternoon
+
+**The core bug: `TerritoryEntry` compared a geometry id to an entity id
+because `Countries.tsx` never had to tell the two apart.** Mirroring
+`Countries.tsx` for `Territories.tsx` meant copying `const isSelected =
+selected?.id === entry.id` — correct for countries, where a rendered
+polygon's own topojson feature id *is* the country's registry id, no
+translation needed. `GeometryMap` (v2.2.0) exists specifically because that
+assumption doesn't hold for territories: Taiwan's shape id is `"158"` (an
+ISO numeric code), its entity id is `"taiwan"` (the `TerritoryRegistry`
+slug), and `selectionStore`'s `selected.id` is always the *entity* id
+(whatever `EntityResolver` resolved to), never the raw geometry id. So
+`isSelected` silently evaluated to `false` for every territory, always —
+the selected shape rendered with the same faint dimmed treatment as
+everything else instead of the red "selected" highlight, and the bug
+produced no error, no warning, nothing to grep for. It only became visible
+by actually looking at a screenshot of a selected territory and noticing
+the highlight wasn't there. Fixed by giving `TerritoryEntry` two ids —
+`geometryId` for hover state and `GeometryMap` lookups, `entityId` for
+comparison against `selected.id` — rather than the one `Countries.tsx`
+gets away with. Worth remembering generally: when copying a pattern from
+code where "the shape's id" and "the thing's id" happen to be the same
+string, check whether that's a coincidence of the specific case or an
+actual invariant — it was deliberately *not* an invariant here, that's the
+entire reason `GeometryMap` exists, and the copy-paste re-introduced the
+assumption it was built to remove.
+
+**The second bug, found while screenshotting the first one: selecting the
+Taiwan *territory* showed Taipei's capital marker — a country's UI
+artifact leaking onto a territory selection.** `Globe.tsx`'s
+`CapitalMarker` has always looked up `COUNTRY_PROFILES[selected.name]` by
+name alone, no check on what kind of thing was selected. That was
+harmless through v2.2.x because nothing named the same as a
+`COUNTRY_PROFILES` entry could ever be selected except an actual country
+— territories weren't independently selectable yet. `countryProfiles.ts`
+happens to carry a `"Taiwan"` entry (ordinary illustrative country data,
+written long before the Territory registry existed, with no knowledge of
+it). The moment `Territories.tsx` made `selected.name === "Taiwan"` a real
+possibility for a *Territory* selection, that name collision stopped being
+theoretical and started rendering a live UI bug: Taipei's marker and
+leader-line label, layered right on top of the territory's own hover
+label, on a screenshot that was supposed to be showing off the highlight
+fix. Fixed by gating on `selected.entity.kind === 'country'` before the
+name lookup. The pattern connecting both bugs: neither was a bug in the
+code that shipped it (`Countries.tsx`'s id comparison and
+`CapitalMarker`'s name lookup were both completely correct for the only
+case that could reach them at the time) — both were assumptions that
+quietly stopped holding the instant a second, structurally-different case
+started running through the same code path for the first time. That's the
+specific risk worth watching for whenever "make X also work for
+territories" is the task: not "does the new code have bugs" but "does
+existing code near it have an unstated country-only assumption that new
+code just made reachable."
+
+**How the click-vs-drag testing actually got resolved.** Automated
+verification for this version needed to click a real point on the
+rendered globe, not just drive `selectEntity()` through search/devtools —
+the whole point was proving the *mesh* is clickable. First attempts
+(clicking a fixed screen offset computed from one earlier screenshot)
+flaked intermittently, and turned out not to be an app bug at all: `Globe.
+tsx` only freezes ambient auto-rotation while `selected != null`, so
+closing the Intelligence panel via clearSelection() (rather than
+resetView()) leaves the camera in place but *resumes* rotation, drifting
+the just-tested shape out from under a fixed pixel within a second or two.
+Separately, the exact resting camera angle after a search-triggered flight
+varies run to run by a degree or two, because ambient rotation keeps
+accumulating for however long the test script takes to get from page load
+to clicking the search result — real wall-clock timing, not seeded or
+deterministic. Fixed the *test*, not the app: keep something selected
+(freezing rotation) for the whole interaction sequence, and locate the
+target by spiraling outward from screen center checking the canvas cursor
+style, rather than trusting one hardcoded offset. Worth remembering for
+any future test against this globe: never assume a screen position stays
+valid across more than one action unless something is currently selected.
+
 ## 2026-07-19 — v2.2.4: two "unimported by design" datasets collided the moment one of them stopped being unimported
 
 **Search needing real, named territory results (China/Taiwan/Puerto

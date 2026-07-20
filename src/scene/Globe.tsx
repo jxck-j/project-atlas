@@ -8,6 +8,7 @@ import { WATER_BODIES } from '../data/waterBodies'
 import { latLngPathToPoints, latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
+import { Territories } from './Territories'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
@@ -70,10 +71,16 @@ function GraticuleGrid() {
 
 // Marker for the currently selected country's capital — only rendered while
 // a country with known profile data is selected (see selectionStore).
+// Gated on entity.kind === 'country' specifically (not just "does
+// COUNTRY_PROFILES have a key matching selected.name"): COUNTRY_PROFILES
+// has entries for a few non-UN-member places name-shared with a registered
+// Territory (e.g. "Taiwan"), so a name-only lookup would show that
+// country's capital marker for an unrelated Territory selection once
+// territories became independently selectable (v2.3.0) — see LOGBOOK.md.
 function CapitalMarker() {
   const { selected } = useSelection()
   const meshRef = useRef<Mesh>(null)
-  const profile = selected ? COUNTRY_PROFILES[selected.name] : undefined
+  const profile = selected?.entity.kind === 'country' ? COUNTRY_PROFILES[selected.name] : undefined
 
   useFrame(({ clock }) => {
     if (!meshRef.current) return
@@ -220,6 +227,7 @@ export function Globe() {
 
       <GraticuleGrid />
       <Countries />
+      <Territories />
       <CapitalMarker />
       <WaterLabels occluder={coreSphereRef} />
       <LayerEngine />
