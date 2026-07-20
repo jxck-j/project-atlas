@@ -300,6 +300,44 @@ mistaken for "the real dataset" or this project's editorial position on any
 of the disputes involved. See `LOGBOOK.md` for the full reasoning behind
 the control/claims split.
 
+### Entity Resolution (`src/entities/`)
+
+The seam between "an id came from a clicked map polygon" and "which
+registry actually holds that id" (v2.1.3). Nothing calls into this yet —
+`scene/Countries.tsx`'s click handler still calls `selectCountry()`
+directly and treats every polygon as a country, unchanged since v1. This is
+scaffolding for when that stops being true.
+
+- **`types.ts`** — `GeopoliticalEntity`, the minimal shape
+  (`id`/`name`/`aliases`/`provenance`) both `Country` and `Territory`
+  already satisfy exactly as they're defined in `data/types.ts` — nothing
+  was added to either interface for this. `ResolvedEntity` is the
+  discriminated union `EntityResolver` actually returns: a
+  `GeopoliticalEntity`'s fields plus `kind` (`'country' | 'territory'`, so
+  a consumer can narrow), a normalized `location` (`Country.capital` and
+  `Territory.location` are the same `GeoPoint` shape under different field
+  names — `ResolvedEntity` picks one), and `data` (the full original
+  record, for kind-specific fields like a country's `population` or a
+  territory's `claimants`).
+- **`EntityResolver.ts`** — `resolveEntity(id)` checks the Country
+  Registry, then the Territory Registry (`resolveCountry(id) ??
+  resolveTerritory(id)`); `resolveCountry(id)`/`resolveTerritory(id)` check
+  one specifically. All three return `undefined` for a miss rather than
+  throwing — unlike `registerCountry`/`registerTerritory`, where a
+  duplicate id is a real bug worth throwing on, "this id isn't a country"
+  is an expected, normal outcome here (that's what makes the `??` chain in
+  `resolveEntity` work).
+
+**The intended convention going forward:** once something starts consuming
+resolved entities (a future click handler, a future layer), it should call
+`resolveEntity()`/`resolveCountry()`/`resolveTerritory()` and never import
+`CountryRegistry`/`TerritoryRegistry` directly — the same "import the
+barrel, not the implementation" discipline as `data/index.ts` and
+`layers/index.ts` elsewhere in this codebase, one level up. A future
+Country Engine, Relationship Engine, or anything else that needs to look up
+"what entity is this id" is expected to go through here, not reimplement
+Country-then-Territory fallback logic itself.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed

@@ -17,6 +17,38 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.1.3 — Entity Resolution layer
+
+Point release. Adds the seam that will eventually let a clicked map polygon
+resolve to a country *or* a territory, without the click handler needing to
+know which registry to check. No rendering, HUD, or search changes — the
+globe still treats every selectable polygon as a country, unchanged.
+
+### Added
+
+- `src/entities/types.ts`: `GeopoliticalEntity`, the minimal shape every
+  entity has (`id`/`name`/`aliases`/`provenance`) — `Country` and
+  `Territory` already satisfy it structurally, no changes made to either.
+  `ResolvedEntity`, a discriminated union (`kind: 'country' | 'territory'`)
+  with a normalized `location` (`Country.capital`/`Territory.location`
+  under one name) and `data` (the full original record).
+- `src/entities/EntityResolver.ts`: `resolveEntity(id)` (checks the Country
+  Registry, then the Territory Registry), `resolveCountry(id)`,
+  `resolveTerritory(id)`. Returns `undefined` for an unregistered id rather
+  than throwing — resolution is a lookup, not an assertion.
+
+### Notes
+
+- Verified end to end (not just type-checked): registered a test country,
+  resolved it and the v2.1.2 example territories through `resolveEntity`,
+  confirmed cross-registry lookups (`resolveCountry` on a territory id,
+  `resolveTerritory` on a country id) correctly return `undefined`.
+- Nothing imports this yet. `scene/Countries.tsx` still calls
+  `selectCountry()` directly on click — wiring the globe's click handler
+  through `resolveEntity()` is future work, not this version.
+- See `CLAUDE.md` for how future systems are expected to consume this
+  instead of `CountryRegistry`/`TerritoryRegistry` directly.
+
 ## v2.1.2 — Territory Registry: control vs. claims
 
 Point release. Extends the schema/registry architecture to politically

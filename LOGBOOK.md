@@ -5,6 +5,45 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.1.3: Entity Resolution layer
+
+**`GeopoliticalEntity` is deliberately just the fields Country and Territory
+already both have — no changes to either.** First instinct was to add a
+discriminant field (something like `entityKind`) directly to `Country` and
+`Territory` in `data/types.ts`, so they'd formally `extends
+GeopoliticalEntity`. Decided against it: those two interfaces were already
+revised twice this week (v2.1's initial shape, v2.1.2's control/claims
+split), and this version's actual job is the resolution layer, not another
+schema change. TypeScript's structural typing means `GeopoliticalEntity`
+containing only `id`/`name`/`aliases`/`provenance` is satisfied by both
+types exactly as they stand today — the interface describes their existing
+common ground rather than asking them to grow into it. The discriminant
+(`kind`) and the normalized `location` live on `ResolvedEntity` instead,
+which `EntityResolver` constructs — so the "unification" happens at
+resolution time, not by mutating the source schemas.
+
+**Why `resolveEntity`/`resolveCountry`/`resolveTerritory` return `undefined`
+for a miss instead of throwing.** `CountryRegistry.registerCountry()` and
+`TerritoryRegistry.registerTerritory()` throw on a *duplicate* registration
+because that's a real bug (two sources disagreeing about one id).
+Resolution is different: "this id isn't a country" is an entirely normal,
+expected outcome for `resolveCountry()` when checking an id that turns out
+to be a territory (or vice versa, or neither) — `resolveEntity()`'s whole
+implementation is `resolveCountry(id) ?? resolveTerritory(id)`, which only
+works cleanly if a miss is a value, not an exception.
+
+**Why this isn't wired into `scene/Countries.tsx`'s click handler yet, even
+though "resolve a clicked polygon" is literally the module's stated
+purpose.** Explicitly out of scope for this version — the task was the
+resolution *seam*, not changing what a click does. Wiring it in means
+`Countries.tsx`'s `handlePointerUp` would need to look up the clicked
+polygon's id through `resolveEntity()` and branch on `.kind` before calling
+`selectCountry()` (which — see `selectionStore.ts` — is currently
+country-shaped: `id`/`name`/`direction`, no concept of "this is a
+territory"). That's a real, deliberate design decision about how
+territory selection should work in the HUD/selection model, not something
+to decide as a side effect of adding a resolver.
+
 ## 2026-07-19 — v2.1.2: Territory Registry, and separating control from claims
 
 **Why `controllingAuthorities` and `claimants` are separate fields instead of

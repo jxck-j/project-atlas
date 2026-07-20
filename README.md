@@ -173,6 +173,14 @@ src/
     territories/territories.json  Empty — matches the Territory[] schema
     conflicts/conflicts.json      Empty — matches the Conflict[] schema
     relationships/relationships.json  Empty — matches the Relationship[] schema
+  entities/                   Entity Resolution layer (v2.1.3) — not
+                               connected to rendering/HUD/search yet
+    types.ts                    GeopoliticalEntity (shared shape Country and
+                               Territory already satisfy) + ResolvedEntity
+                               (the discriminated union EntityResolver returns)
+    EntityResolver.ts            resolveEntity/resolveCountry/resolveTerritory
+                               — checks Country Registry then Territory
+                               Registry, hides which one an id came from
   utils/
     geo.ts                    lat/lng <-> Vector3 sphere projection and its inverse
   App.tsx                     Composes Scene + all HUD layers
@@ -206,6 +214,13 @@ to build against without refactoring the globe itself.
   are separate fields on purpose — see `CLAUDE.md`'s "Geopolitical data
   architecture" section before adding logic that treats them as the same
   thing.
+- **`entities/EntityResolver.ts`** is the intended way to look up "what
+  entity is this id" once anything needs to (a future click handler, a
+  future layer) — `resolveEntity(id)`/`resolveCountry(id)`/
+  `resolveTerritory(id)`, checking both registries and returning a uniform
+  `ResolvedEntity` instead of the caller needing to know which registry to
+  check. Not wired into the globe's click handling yet — see `CLAUDE.md`'s
+  "Entity Resolution" section.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.
