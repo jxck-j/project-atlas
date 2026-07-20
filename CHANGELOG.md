@@ -17,6 +17,46 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.1.2 — Territory Registry: control vs. claims
+
+Point release. Extends the schema/registry architecture to politically
+complex territories (disputed areas, unrecognized states, split-control
+regions) — still no visualization, no change to country rendering or
+`Globe.tsx`.
+
+### Added
+
+- `src/data/registry/TerritoryRegistry.ts`: `registerTerritory`/
+  `getTerritory`/`getTerritories`, same architecture as `CountryRegistry.ts`
+  (register throws on duplicate id; doesn't import any JSON itself).
+- **Schema revision** in `data/types.ts`: `Territory` now has
+  `controllingAuthorities: ControllingAuthority[]` (who administers it in
+  practice, right now — a list, since control is often split) as a field
+  *independent* from `claimants: TerritoryClaimant[]` (who claims
+  sovereignty). Previously "de-facto-control" was one of several possible
+  values inside a claimant's `claimType`, conflating control with claiming;
+  it's now its own field. `TerritoryClaimant` and the new
+  `ControllingAuthority` both accept an optional `countryRef`/`ref` plus a
+  required `displayName`, since the relevant entity (a de facto government,
+  an unrecognized state) is frequently not itself a registered UN-member
+  `Country` in this dataset.
+- `src/data/registry/exampleTerritories.ts`: three illustrative entries
+  (Taiwan, Crimea, Western Sahara) exercising the schema against real,
+  non-trivial cases — including Western Sahara's genuinely split control
+  (Morocco administers most of the territory; the Polisario Front/SADR
+  administers the rest). **Not imported anywhere the app loads** — exists to
+  validate the schema and as a worked example, not to ship as real data.
+  Explicitly caveated in-file as illustrative, not this project's editorial
+  position on any of these disputes.
+
+### Notes
+
+- `getCountries`/`getTerritory`/`getTerritories`/`registerTerritory` are now
+  re-exported from `data/index.ts` alongside the Country registry.
+- See `LOGBOOK.md` for why control and claims are separate fields rather
+  than one field with a type flag, and `CLAUDE.md` for why that separation
+  is what keeps this data-driven rather than hardcoded.
+
 ## v2.1.1 — Country Registry
 
 Point release. Adds the query seam future layers/HUD code will use to look

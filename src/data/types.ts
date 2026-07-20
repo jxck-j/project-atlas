@@ -123,14 +123,57 @@ export interface Country {
 }
 
 /**
- * A claim by one country on a Territory — deliberately its own type rather
- * than a bare EntityRef, because a claim needs to say *what kind* of claim
- * it is, and a territory frequently has more than one of these
- * simultaneously (the entire reason this field is a list).
+ * An entity that exercises practical, on-the-ground administrative control
+ * over some or all of a Territory, right now — a statement of fact about who
+ * runs it day to day, not a judgment about who *should*. Kept structurally
+ * separate from `TerritoryClaimant` on purpose: control and claimed
+ * sovereignty are different facts that frequently disagree (Russia
+ * *controls* Crimea; that is a separate fact from whether that control is
+ * *recognized* — most of the world's claimants/recognition disagree with
+ * it). Collapsing the two into one field would silently force a political
+ * conclusion — "control implies legitimacy," or its opposite — into the
+ * data model itself.
+ */
+export interface ControllingAuthority {
+  /** Reference to a registered Country/Territory, if the controlling authority is itself one of those. */
+  ref?: EntityRef
+  /**
+   * Always-available human-readable name, independent of whether `ref`
+   * resolves to anything — the de facto administrator of a disputed
+   * territory is very often a government that isn't itself a registered,
+   * internationally-recognized Country in this dataset (e.g. the
+   * Taiwan/ROC government, or the Polisario Front/SADR administering part
+   * of Western Sahara) and forcing `ref` to be required would make those
+   * cases unrepresentable.
+   */
+  displayName: string
+  /**
+   * Rough share of the territory this authority actually administers, in
+   * plain language (e.g. "majority of the territory", "eastern portion
+   * behind the berm") — not a precise percentage, because precise
+   * percentages are themselves rarely agreed upon. Omit for a territory
+   * with one uncontested administrator.
+   */
+  extent?: string
+  /** ISO 8601 date this authority's control began, if known/relevant. */
+  since?: string
+}
+
+/**
+ * A claim of sovereignty by one entity over a Territory — deliberately its
+ * own type rather than a bare EntityRef, because a claim needs to say *what
+ * kind* of claim it is, and a territory frequently has more than one of
+ * these simultaneously (the entire reason this field is a list). Note this
+ * says nothing about control — see `ControllingAuthority` above; a claimant
+ * and a controlling authority are very often different entities, and a
+ * Territory can (and often does) have both at once.
  */
 export interface TerritoryClaimant {
-  countryId: string
-  claimType: 'recognized-sovereign' | 'de-facto-control' | 'disputed-claim' | 'historical-claim'
+  /** Reference to a registered Country, if the claimant is one. */
+  countryRef?: EntityRef
+  /** Always-available human-readable name — see ControllingAuthority.displayName for why this can't just be `countryRef`. */
+  displayName: string
+  claimType: 'recognized-sovereign' | 'disputed-claim' | 'historical-claim'
   /** ISO 8601 date the claim began, if known/relevant. */
   since?: string
 }
@@ -141,8 +184,17 @@ export interface TerritoryClaimant {
  * an unrecognized/partially-recognized state. Split out from Country instead
  * of folding into it with a "disputed" flag because territories have a
  * fundamentally different shape of data — most importantly, more than one
- * claimant — that would otherwise force every consumer of Country to handle
- * a rare case.
+ * claimant, and control that can be split or contested — that would
+ * otherwise force every consumer of Country to handle a rare case.
+ *
+ * The central design decision in this interface: "who controls it"
+ * (`controllingAuthorities`) and "who claims it" (`claimants`) are separate
+ * fields, not one field with a "type" flag. A consumer that wants to render,
+ * say, "administered by Morocco, claimed by both Morocco and the Polisario
+ * Front" reads two independent lists — it never has to interpret a single
+ * overloaded field to figure out which entries mean what. See LOGBOOK.md for
+ * why this shape specifically, and CLAUDE.md for why keeping this as *data*
+ * (rather than encoding any of it as application logic) is the point.
  */
 export interface Territory {
   /** Stable identifier. Convention: lowercase slug (e.g. "western-sahara", "kashmir") — no equivalent to ISO 3166-1 exists for most disputed/dependent territories. */
@@ -151,16 +203,29 @@ export interface Territory {
   aliases: string[]
   status: 'disputed' | 'dependency' | 'autonomous-region' | 'unrecognized-state' | 'other'
   /**
-   * Every country that claims this territory, and how. A territory with
-   * zero claimants would be unusual but is not disallowed by the type — an
-   * uninhabited/unclaimed area is still representable.
+   * Every entity that currently administers some or all of this territory.
+   * A list, not a single value — real-world control is very often split
+   * (this schema's own Western Sahara example has two administrators, one
+   * for most of the territory and one for the rest) or, rarely, genuinely
+   * unclear. An empty array is valid and means exactly that: no single
+   * clear administrator, not "unknown, ask elsewhere."
+   */
+  controllingAuthorities: ControllingAuthority[]
+  /**
+   * Every entity that claims sovereignty over this territory, and how. A
+   * claimant is not necessarily a controlling authority, and a controlling
+   * authority does not necessarily appear here (a government can administer
+   * a territory without formally claiming sovereign ownership of it, though
+   * in practice it usually does). A territory with zero claimants would be
+   * unusual but is not disallowed by the type.
    */
   claimants: TerritoryClaimant[]
   /**
-   * The country this territory is formally a dependency/part of, if any
-   * (e.g. Puerto Rico -> USA). Distinct from `claimants` — a recognized
-   * dependency isn't "disputed," it's administratively attached to exactly
-   * one parent, whereas claimants covers contested sovereignty.
+   * The country this territory is formally, uncontroversially a
+   * dependency/part of, if any (e.g. Puerto Rico -> USA). Distinct from
+   * `controllingAuthorities`/`claimants` — a recognized dependency isn't
+   * "disputed," so modeling it via the same fields used for a genuine
+   * dispute would misrepresent it as more contested than it is.
    */
   parentCountryId?: string
   /** Approximate centroid, for placing a label before any real geometry integration exists. */

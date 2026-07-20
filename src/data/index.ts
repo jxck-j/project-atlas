@@ -16,7 +16,9 @@ export type {
   GeoPoint,
   DataProvenance,
   TerritoryClaimant,
+  ControllingAuthority,
   ConflictParticipant,
 } from './types'
 
 export { registerCountry, getCountry, getCountries, removeCountry } from './registry/CountryRegistry'
+export { registerTerritory, getTerritory, getTerritories } from './registry/TerritoryRegistry'

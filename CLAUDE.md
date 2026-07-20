@@ -274,6 +274,32 @@ through the Layer Engine the same way the placeholders do — this data
 architecture and the Layer Engine are independent pieces that a real layer
 will eventually connect.
 
+**`data/registry/TerritoryRegistry.ts`** (v2.1.2) is the same pattern —
+`registerTerritory`/`getTerritory`/`getTerritories` — for politically
+complex territories (disputed areas, unrecognized states): Taiwan, Crimea,
+Western Sahara, that kind of thing. The `Territory` type's central design
+decision, and the reason this section exists rather than just pointing back
+to the Country Registry description above: **who controls a territory and
+who claims it are two separate fields**, `controllingAuthorities` and
+`claimants`, not one field with a type flag. They frequently disagree (a
+government can control territory that isn't internationally recognized as
+rightfully theirs), and `controllingAuthorities` is a *list* — real-world
+control is often split (Western Sahara has two administrators, divided by a
+berm) — so the type doesn't force picking one administrator or resolving
+the dispute itself. Both `ControllingAuthority` and `TerritoryClaimant`
+accept an optional `Country`/`Territory` reference plus a required
+`displayName`, because the relevant government is frequently *not* a
+registered UN-member `Country` (Taiwan's own government, the Polisario
+Front/SADR).
+
+Worked examples for all three live in `data/registry/exampleTerritories.ts`
+— **not imported anywhere the app loads**, on purpose. It's there to prove
+the schema holds up against real, complicated cases (and to type-check,
+which a JSON file can't) without those specific illustrative entries being
+mistaken for "the real dataset" or this project's editorial position on any
+of the disputes involved. See `LOGBOOK.md` for the full reasoning behind
+the control/claims split.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed

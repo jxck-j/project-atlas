@@ -5,6 +5,64 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.1.2: Territory Registry, and separating control from claims
+
+**Why `controllingAuthorities` and `claimants` are separate fields instead of
+one field with a type flag.** The original v2.1 `Territory` design had a
+single `claimants: TerritoryClaimant[]` list where `claimType` could be
+`'de-facto-control'` alongside `'recognized-sovereign'`/`'disputed-claim'`/
+`'historical-claim'` — i.e., control was modeled as *one kind of claim*.
+Working through the Taiwan/Crimea/Western Sahara examples exposed why that's
+the wrong shape: control and claimed sovereignty are answers to two
+different questions ("who runs this place" vs. "who says they own it") that
+routinely disagree — Russia controls Crimea; that is a separate fact from
+whether that control is internationally recognized as legitimate, and the
+overwhelming majority of claimants/recognition disagree with it. Modeling
+control as a *kind of claim* implicitly encodes an assumption ("control is
+itself a claim, on the same axis as recognized sovereignty") that isn't
+neutral — it flattens two independent facts onto one scale. Splitting them
+into `controllingAuthorities` and `claimants` means a consumer reads two
+separate lists and draws its own conclusions (or, more likely, just renders
+both) instead of this data model pre-deciding how they relate.
+
+**Why `controllingAuthorities` is a list, not a single value.** Almost
+modeled it as `controllingAuthority: ControllingAuthority | null` (singular)
+before writing the Western Sahara example, where it became obvious that's
+wrong: Morocco and the Polisario Front/SADR each genuinely administer part
+of the territory, split by a berm. A singular field would have forced
+picking one, which is exactly the "single political interpretation" this
+version was asked not to force. Added `extent` as free-text prose (not a
+percentage) for the same reason `Conflict.severity` uses a coarse band
+instead of a casualty count — precise proportions are themselves usually
+contested, and a fake-precise number would just relocate the same problem.
+
+**Why `ControllingAuthority`/`TerritoryClaimant` both take an optional
+`ref` plus a required `displayName`, instead of always requiring a
+`Country` reference.** Taiwan's controlling authority is its own
+government, which isn't a registered UN-member `Country` in this dataset
+(see `unMembers.ts` — the app's country data is deliberately scoped to the
+193 UN members). Western Sahara's second controlling authority (the
+Polisario Front/SADR) has the same problem. Requiring `ref` would make
+these — arguably the *most* important examples for this schema to handle
+correctly — unrepresentable. This mirrors `ConflictParticipant`'s existing
+`ref?`/`displayName?` shape from v2.1, just with `displayName` made
+required here since (unlike a conflict participant, which is at least
+usually a country) an unregistered claimant/administrator is closer to the
+common case for disputed territories than the exception.
+
+**Why the example territories live in an unimported file rather than in
+`territories.json`.** `territories.json` is meant to eventually hold a real,
+sourced dataset — populating it with three illustrative, admittedly-
+simplified examples would make it ambiguous later whether the file's
+contents are "the real data" or "worked examples," especially since JSON
+can't hold the neutrality caveats these specific examples need inline.
+Keeping them in a `.ts` file that's never imported by the app gets the
+worked-example value (and lets `tsc` type-check them, which a JSON file
+wouldn't) without that ambiguity. Verified they actually register
+correctly (all three, no throw, `western-sahara` shows both controlling
+authorities) by running the module directly — see the file for the import
+line that would wire it in, which nothing currently uses.
+
 ## 2026-07-19 — v2.1.1: Country Registry
 
 **Duplicate registration throws here, unlike the Layer Registry's warn-and-

@@ -162,6 +162,13 @@ src/
                                removeCountry (v2.1.1) — same architecture as
                                layers/layerRegistry.ts; doesn't import the
                                JSON below itself, see CLAUDE.md
+    registry/TerritoryRegistry.ts registerTerritory/getTerritory/getTerritories
+                               (v2.1.2) — for disputed/complex territories;
+                               controllingAuthorities and claimants are
+                               separate fields, see CLAUDE.md
+    registry/exampleTerritories.ts  Taiwan/Crimea/Western Sahara worked
+                               examples — NOT imported by the app, exists to
+                               validate the schema (see CLAUDE.md)
     countries/countries.json    Empty — matches the Country[] schema
     territories/territories.json  Empty — matches the Territory[] schema
     conflicts/conflicts.json      Empty — matches the Conflict[] schema
@@ -193,9 +200,12 @@ to build against without refactoring the globe itself.
   `Globe.tsx`. See `CLAUDE.md`'s Layer Engine section for the full workflow.
 - **`data/types.ts` + the empty `data/{countries,territories,conflicts,relationships}/*.json`**
   are the schema those future layers will eventually read from — no data yet,
-  nothing wired in. Query countries through `data/registry/CountryRegistry.ts`
-  (`getCountry()`/`getCountries()`), not by importing the JSON directly — see
-  `CLAUDE.md`'s "Geopolitical data architecture" section.
+  nothing wired in. Query countries/territories through `data/registry/
+  CountryRegistry.ts` / `TerritoryRegistry.ts`, not by importing the JSON
+  directly. For a disputed territory, "who controls it" and "who claims it"
+  are separate fields on purpose — see `CLAUDE.md`'s "Geopolitical data
+  architecture" section before adding logic that treats them as the same
+  thing.
 - `scene/constants.ts` exports `GLOBE_RADIUS` so any new overlay feature
   (markers, arcs, selection highlights) can share the same sphere projection
   without reaching into `Globe.tsx` and risking circular imports.
