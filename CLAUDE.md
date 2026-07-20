@@ -400,6 +400,14 @@ placeholder id because — a genuinely useful discovery from building this —
 **Crimea has no standalone polygon anywhere in the source data at all**,
 being geometrically part of Ukraine's. See `LOGBOOK.md`.
 
+Because none of this is wired into real clickable geometry yet, there is
+currently no way to reach a Territory card by clicking anything in the
+live app. `hud/selectionStore.ts` installs a dev-only console helper for
+this (v2.2.3): `window.__debugSelectTerritory('taiwan' | 'crimea' |
+'western-sahara')`, gated by `import.meta.env.DEV` and eliminated from
+production builds. Use it to check the Territory card without first
+building real geometry.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed

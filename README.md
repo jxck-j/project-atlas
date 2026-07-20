@@ -151,7 +151,10 @@ src/
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or territory,
                                  since v2.2.1 — see entities/) + camera
-                                 flight/reset triggers
+                                 flight/reset triggers. Dev builds also get
+                                 window.__debugSelectTerritory() (v2.2.3),
+                                 since no territory has real clickable
+                                 geometry yet
     settingsStore.ts              User-adjustable camera sensitivity
     telemetryStore.ts             Camera telemetry, FPS, hover lat/lng
   data/

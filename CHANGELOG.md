@@ -17,6 +17,32 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v2.2.3 — Dev-only console hook for territory selection
+
+Point release. No architecture change — this exists because there is
+currently no way to reach a Territory card through normal interaction at
+all: no territory has real clickable geometry on the globe yet, and
+`exampleTerritories`/`exampleGeometryMappings` are never imported by the
+running app (both true since v2.1.2/v2.2.0, by explicit design). Country
+selection/rendering is untouched.
+
+### Added
+
+- `hud/selectionStore.ts`: in dev builds only (`import.meta.env.DEV`, dead-
+  code-eliminated from production), installs
+  `window.__debugSelectTerritory(id)` — resolves `id` through
+  `EntityResolver` and, if found, selects it through the same store
+  instance the mounted app already uses, so the Intelligence panel
+  re-renders for real. Unknown ids `console.warn` instead of throwing.
+  Try `'taiwan'`, `'crimea'`, or `'western-sahara'`.
+
+### Notes
+
+- This is the same technique used to verify Territory cards for v2.2.2,
+  kept around instead of reverted, since it's the only way to see that
+  work without first building real territory geometry (a separate, larger
+  future task).
+
 ## v2.2.2 — Intelligence HUD upgraded to Entity-based
 
 Point release. The Intelligence panel no longer assumes the selected thing

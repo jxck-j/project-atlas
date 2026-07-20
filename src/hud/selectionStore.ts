@@ -105,6 +105,38 @@ export function resetView() {
   notify()
 }
 
+// Dev-only console helper: territories have no clickable geometry wired
+// into the live scene yet (registering real geometry for Taiwan/Crimea/
+// Western Sahara is out of scope through v2.2.2 — see LOGBOOK.md), so
+// there's currently no way to reach a Territory card through normal
+// interaction. This lets you trigger one by hand from devtools, e.g.
+// __debugSelectTerritory('western-sahara'). Calling selectEntity() from
+// inside this module (rather than a separately-imported copy) guarantees
+// it's the same singleton store the mounted React tree subscribes to.
+// import.meta.env.DEV is statically replaced at build time, so this whole
+// branch is dead-code-eliminated from production builds.
+if (import.meta.env.DEV) {
+  void import('../data/registry/exampleTerritories').then(() => {
+    void import('../entities/EntityResolver').then(({ resolveTerritory }) => {
+      ;(window as unknown as { __debugSelectTerritory?: (id: string) => void }).__debugSelectTerritory = (
+        id: string,
+      ) => {
+        const resolved = resolveTerritory(id)
+        if (!resolved) {
+          console.warn(
+            `[debug] no territory "${id}" — try 'taiwan', 'crimea', or 'western-sahara'`,
+          )
+          return
+        }
+        selectEntity(resolved, new Vector3(1, 0, 0))
+      }
+      console.info(
+        "[debug] __debugSelectTerritory('taiwan' | 'crimea' | 'western-sahara') is available in this console — dev build only.",
+      )
+    })
+  })
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener)
   return () => listeners.delete(listener)

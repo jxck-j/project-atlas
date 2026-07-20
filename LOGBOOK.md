@@ -5,6 +5,37 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-19 — v2.2.3: the verification hook stayed, on purpose
+
+**The user asked "i can't see the hud and territory changes at all in my
+local host browser" — and they were right, by design.** Two different
+things were being reported as one. Country cards were an explicit
+pixel-identical requirement in v2.2.2, so there is genuinely nothing new
+to notice there. Territory cards are new, but every version from v2.1.2
+onward deliberately kept territories disconnected from real interaction
+("do not connect visualization yet," "do not add highlighting," "do not
+modify rendering behavior yet") — no territory has clickable geometry, and
+the example data files are never imported by the running app. So a normal
+user clicking around the live globe was never going to hit a Territory
+card. The only place it had ever rendered was in a screenshot from a debug
+hook that was then reverted.
+
+**Decided to keep a version of that hook permanently, dev-only, rather
+than either reverting it again or building real territory geometry.**
+Building real clickable geometry for Taiwan/Crimea/Western Sahara is a
+meaningfully larger task (they aren't part of the rendered UN-193 country
+set, and Crimea has no standalone polygon in the source data at all) and
+wasn't what was being asked — the user wanted to *see the existing work*,
+not a new feature. `window.__debugSelectTerritory(id)` in
+`hud/selectionStore.ts`, gated by `import.meta.env.DEV`, gives a reliable
+way to do that from the browser console without hitting the module-
+identity trap described below, and costs nothing in production since Vite
+statically eliminates the dead branch. Worth remembering: a verification
+hook that answers "how would anyone actually confirm this without a test
+framework" is sometimes worth productizing as a permanent dev affordance,
+not just a disposable scaffold — especially for a feature that has no
+other way to be observed yet.
+
 ## 2026-07-19 — v2.2.2: Entity-based Intelligence HUD, and how to verify a panel with no test framework
 
 **Verifying the Territory card was harder than expected, and the first
