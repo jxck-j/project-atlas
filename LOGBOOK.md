@@ -5,6 +5,43 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.1.5: the blue overlay was scoped to "claimant" when the real concept was "connected country"
+
+**39 territory entries got real `claimedBy` data (v3.0.0-v3.1.4) without
+anyone noticing the visualization only ever looked at `claimedBy`.** The
+report that triggered this fix: select Curaçao, expect the Netherlands to
+highlight the way China highlighted when Taiwan was selected — it didn't.
+Curaçao has no `claimedBy` (it's an uncontested Netherlands dependency,
+correctly modeled that way), so `useClaimantCountryIds` — which only ever
+read `geoEntity.claimedBy` — had nothing to find. The bug wasn't in the
+data (Curaçao's `parentEntity: Netherlands` was correct and had been since
+v3.0.0) or even really in the overlay code (it did exactly what its name
+said: show claimants) — it was a scope mismatch between what the feature
+was named/built for ("claimant countries") and what a user reasonably
+expects "the country connected to what I selected" to mean, which spans
+both `parentEntity` and `claimedBy`. Worth remembering: a feature that
+"does what it says" can still under-deliver if the name itself was scoped
+narrower than the actual user need — the fix here was mostly a reframing
+(one mechanism serving two relationship kinds, distinguished by a role
+label) more than new logic.
+
+**Gibraltar turned out to be a real test case for "a country can be both a
+parent and a claimant of different entities, or even the same one."**
+After adding Spain as a claimant (v3.1.4) on top of Gibraltar's existing
+UK parent (v3.0.0), Gibraltar became the one entity in this dataset with
+two *different* countries in two *different* roles simultaneously. Built
+`useRelatedCountryRoles` to return `Map<countryId, Set<role>>` rather than
+a plain `Set<countryId>` specifically so this case wouldn't need special-
+casing — the same country appearing as both `parent` and `claimant` for
+one entity (not represented anywhere currently, but structurally possible)
+would just join both role labels on one marker instead of needing a second
+data structure or a "which one wins" tiebreak. Verified with `tsx` against
+the real registry before considering this done, same discipline as
+v3.0.1/v3.1.4: Curaçao → Netherlands (parent only), Taiwan → China
+(claimant only, unaffected regression check), Gibraltar → UK (parent) +
+Spain (claimant) both rendered, Puerto Rico → USA (parent only, still no
+claimant since it remains uncontested).
+
 ## 2026-07-21 — v3.1.4: verified every numeric id again before trusting a user-supplied correction list
 
 **Re-ran the exact verification `LOGBOOK.md`'s v3.0.1 entry describes,

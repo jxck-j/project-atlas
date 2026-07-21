@@ -25,6 +25,15 @@ import type { GeoEntity } from '../../data'
 // Taiwan/Spratly flagged) are meant to be immediately visible, not
 // contingent on first finding the right toggle.
 //
+// v3.1.5: also renders a GeoEntity's *administering parent*, not just its
+// claimants — reported as a real gap (Curaçao selected, Netherlands not
+// highlighted) after this file only ever looked at `claimedBy`. Kept in
+// this same file/layer rather than split into ParentOverlayLayer.tsx: from
+// a viewer's perspective "which country is connected to what I selected"
+// is one mechanism (fetch Country geometry, dashed border + fill +
+// marker), reused for two relationship kinds — see the RELATED_COUNTRY_*
+// section below and LOGBOOK.md's v3.1.5 entry.
+//
 // v3.1: "hatching style" is a real dashed outline (LineDashedMaterial),
 // replacing v3.0's pulsing-solid-line approximation — see LOGBOOK.md. This
 // needs the border geometry's 'lineDistance' attribute, which
@@ -73,57 +82,100 @@ function useClaimRelatedEntityIds(): Set<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Claimant countries — the other direction of the same relationship.
+// Related countries — the other direction of the same relationships.
 // Countries.tsx renders on completely different geometry (its own
 // useCountryFeatures() fetch, not the GeoEntity topology above), so "Taiwan
-// is claimed by China" needs its own small render path here: the GeoEntity
-// side (Taiwan) already gets the dashed CLAIM_COLOR treatment above when
-// CHINA is selected, but when TAIWAN is selected there was previously
-// nothing at all pointing at China — a Country is never itself a GeoEntity
-// entry, so useClaimRelatedEntityIds' `ref.type === 'geo-entity'` filter
-// silently dropped every country-typed claimant. `Country` has no
-// `claimedBy` field of its own (see data/types.ts) — a selected Country can
-// therefore never itself have "claimant countries"; this only ever fires
-// for a selected GeoEntity.
+// is claimed by China" (and, v3.1.5, "Curaçao's parent is the Netherlands")
+// need their own small render path here: the GeoEntity side already gets
+// the dashed CLAIM_COLOR treatment above when a claimant COUNTRY is
+// selected, but when the GeoEntity itself is selected there was previously
+// nothing at all pointing at the connected country — a Country is never
+// itself a GeoEntity entry, so useClaimRelatedEntityIds' `ref.type ===
+// 'geo-entity'` filter silently drops every country-typed relation.
+// `Country` has no `claimedBy`/`parentEntity` field of its own (see
+// data/types.ts) — a selected Country can therefore never itself have a
+// "related country"; this only ever fires for a selected GeoEntity.
+//
+// v3.1.0 built this for `claimedBy` only ("claimant countries"); v3.1.5
+// widened it to also cover `parentEntity` after a real gap report: Curaçao
+// selected, Netherlands not highlighted, because a parent relationship
+// isn't a claim and the layer only ever looked at `claimedBy`. Both roles
+// share one color/one mechanism — from the viewer's perspective "which
+// country is connected to what I selected" is one question, whether the
+// answer is "administers it" or "claims it" — and the marker's label text
+// (PARENT vs. CLAIMANT, or both if a future entry somehow has both) is what
+// actually distinguishes them, not a second color to memorize. See
+// data/types.ts's GeoEntity doc comment for why `parentEntity` and
+// `claimedBy` are separate fields in the first place (an uncontroversial
+// dependency isn't "disputed," so modeling it via the claim fields would
+// misrepresent it) — that distinction stays intact in the data; it just
+// doesn't need a second render color on top of it.
 //
 // Deliberately a different color from the claimed side (blue, not magenta)
 // plus a prominent fill (0.32, well above the claimed side's near-zero
-// 0.1) — meant to visibly cover the claimant country's whole area, not
-// just outline it — so "claims" and "is claimed by" read as distinct facts
-// at a glance, not the same treatment pointed two directions. Both sides
-// share the dashed-border language (still the general "flagged, not
-// primary-selected" cue), plus a pulsing labeled marker here specifically
-// so "why is this whole country highlighted" never depends on already
-// knowing what the blue means.
-const CLAIMANT_COLOR = HIGHLIGHT_COLORS.claimant.hex
-const CLAIMANT_BORDER_RADIUS = GLOBE_RADIUS * 1.006
-const CLAIMANT_FILL_RADIUS = GLOBE_RADIUS * 1.0
-const CLAIMANT_FILL_SCALE = 1.004
-const CLAIMANT_FILL_OPACITY = 0.32
+// 0.1) — meant to visibly cover the related country's whole area, not
+// just outline it — so "claims/is administered by" and "is claimed by"
+// read as distinct facts at a glance, not the same treatment pointed two
+// directions. Both sides share the dashed-border language (still the
+// general "flagged, not primary-selected" cue), plus a pulsing labeled
+// marker here specifically so "why is this whole country highlighted"
+// never depends on already knowing what the blue means.
+const RELATED_COUNTRY_COLOR = HIGHLIGHT_COLORS.relatedCountry.hex
+const RELATED_COUNTRY_BORDER_RADIUS = GLOBE_RADIUS * 1.006
+const RELATED_COUNTRY_FILL_RADIUS = GLOBE_RADIUS * 1.0
+const RELATED_COUNTRY_FILL_SCALE = 1.004
+const RELATED_COUNTRY_FILL_OPACITY = 0.32
 
-function useClaimantCountryIds(): Set<string> {
+type RelatedCountryRole = 'parent' | 'claimant'
+
+/** Every country connected to the selected GeoEntity, and how (parent, claimant, or — rare, but possible — both). */
+function useRelatedCountryRoles(): Map<string, Set<RelatedCountryRole>> {
   const { selected } = useSelection()
 
   return useMemo(() => {
-    const ids = new Set<string>()
-    if (!selected || selected.entity.kind !== 'geo-entity') return ids
-    const geoEntity = selected.entity.data as GeoEntity
-    for (const relation of geoEntity.claimedBy) {
-      if (relation.ref?.type === 'country') ids.add(relation.ref.id)
+    const roles = new Map<string, Set<RelatedCountryRole>>()
+    if (!selected || selected.entity.kind !== 'geo-entity') return roles
+
+    function addRole(countryId: string, role: RelatedCountryRole) {
+      const existing = roles.get(countryId) ?? new Set<RelatedCountryRole>()
+      existing.add(role)
+      roles.set(countryId, existing)
     }
-    return ids
+
+    const geoEntity = selected.entity.data as GeoEntity
+    if (geoEntity.parentEntity?.ref?.type === 'country') {
+      addRole(geoEntity.parentEntity.ref.id, 'parent')
+    }
+    for (const relation of geoEntity.claimedBy) {
+      if (relation.ref?.type === 'country') addRole(relation.ref.id, 'claimant')
+    }
+    return roles
   }, [selected])
 }
 
-interface ClaimantCountryEntry {
+interface RelatedCountryEntry {
   id: string
   name: string
+  roles: Set<RelatedCountryRole>
   centroid: { lat: number; lng: number }
   borderGeometry: BufferGeometry
   fillGeometry: BufferGeometry | null
 }
 
-function ClaimantMarker({ name, centroid }: { name: string; centroid: { lat: number; lng: number } }) {
+const ROLE_LABEL: Record<RelatedCountryRole, string> = {
+  parent: 'PARENT',
+  claimant: 'CLAIMANT',
+}
+
+function RelatedCountryMarker({
+  name,
+  roles,
+  centroid,
+}: {
+  name: string
+  roles: Set<RelatedCountryRole>
+  centroid: { lat: number; lng: number }
+}) {
   const dotRef = useRef<Mesh>(null)
 
   useFrame(({ clock }) => {
@@ -135,43 +187,49 @@ function ClaimantMarker({ name, centroid }: { name: string; centroid: { lat: num
   // Same pointed-callout convention as CapitalMarker/HoverLabel — a marker
   // on the country itself, a leader line out to an explicit text label, so
   // "why is this highlighted" never depends on the viewer already knowing
-  // what CLAIMANT_COLOR means (the point of also having hud/LegendPanel.tsx,
-  // but a label on the globe itself needs no lookup at all).
+  // what RELATED_COUNTRY_COLOR means (the point of also having
+  // hud/LegendPanel.tsx, but a label on the globe itself needs no lookup at
+  // all) — and the role(s) in the label are what distinguish "administers
+  // this" from "claims this," since the color alone doesn't.
   const anchor = latLngToVector3(centroid.lat, centroid.lng, GLOBE_RADIUS * 1.01)
   const calloutPoint = latLngToVector3(centroid.lat - 10, centroid.lng + 10, GLOBE_RADIUS * 1.32)
+  const roleLabel = Array.from(roles)
+    .map((role) => ROLE_LABEL[role])
+    .join(' & ')
 
   return (
     <group>
       <mesh ref={dotRef} position={anchor}>
         <sphereGeometry args={[0.014, 10, 10]} />
-        <meshBasicMaterial color={CLAIMANT_COLOR} />
+        <meshBasicMaterial color={RELATED_COUNTRY_COLOR} />
       </mesh>
-      <Line points={[anchor, calloutPoint]} color={CLAIMANT_COLOR} lineWidth={1} transparent opacity={0.85} />
+      <Line points={[anchor, calloutPoint]} color={RELATED_COUNTRY_COLOR} lineWidth={1} transparent opacity={0.85} />
       <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[18, 0]} style={{ pointerEvents: 'none' }}>
         <div
           className="whitespace-nowrap font-mono text-[9px] tracking-[0.2em]"
-          style={{ color: CLAIMANT_COLOR, textShadow: `0 0 6px ${CLAIMANT_COLOR}` }}
+          style={{ color: RELATED_COUNTRY_COLOR, textShadow: `0 0 6px ${RELATED_COUNTRY_COLOR}` }}
         >
-          CLAIMANT — {name.toUpperCase()}
+          {roleLabel} — {name.toUpperCase()}
         </div>
       </Html>
     </group>
   )
 }
 
-function ClaimantCountriesOverlay({ countryIds }: { countryIds: Set<string> }) {
+function RelatedCountriesOverlay({ countryRoles }: { countryRoles: Map<string, Set<RelatedCountryRole>> }) {
   const features = useCountryFeatures()
 
-  const claimants = useMemo<ClaimantCountryEntry[]>(() => {
-    if (countryIds.size === 0) return []
+  const related = useMemo<RelatedCountryEntry[]>(() => {
+    if (countryRoles.size === 0) return []
     return features.flatMap((f) => {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
-      if (!id || !countryIds.has(id)) return []
+      const roles = id ? countryRoles.get(id) : undefined
+      if (!id || !roles) return []
 
       const borderGeometry = new BufferGeometry()
       borderGeometry.setAttribute(
         'position',
-        new Float32BufferAttribute(geometryToBorderSegments(f.geometry, CLAIMANT_BORDER_RADIUS), 3)
+        new Float32BufferAttribute(geometryToBorderSegments(f.geometry, RELATED_COUNTRY_BORDER_RADIUS), 3)
       )
       computeLineDistances(borderGeometry)
 
@@ -179,35 +237,42 @@ function ClaimantCountriesOverlay({ countryIds }: { countryIds: Set<string> }) {
         {
           id,
           name: (f.properties?.name as string) ?? 'Unknown',
+          roles,
           centroid: geometryToCentroid(f.geometry),
           borderGeometry,
-          fillGeometry: geometryToFillMesh(f.geometry, CLAIMANT_FILL_RADIUS),
+          fillGeometry: geometryToFillMesh(f.geometry, RELATED_COUNTRY_FILL_RADIUS),
         },
       ]
     })
-  }, [features, countryIds])
+  }, [features, countryRoles])
 
-  if (claimants.length === 0) return null
+  if (related.length === 0) return null
 
   return (
     <group>
-      {claimants.map((claimant) => (
-        <group key={`claimant-${claimant.id}`}>
-          <lineSegments geometry={claimant.borderGeometry}>
-            <lineDashedMaterial color={CLAIMANT_COLOR} dashSize={DASH_SIZE} gapSize={GAP_SIZE} transparent opacity={0.95} />
+      {related.map((country) => (
+        <group key={`related-country-${country.id}`}>
+          <lineSegments geometry={country.borderGeometry}>
+            <lineDashedMaterial
+              color={RELATED_COUNTRY_COLOR}
+              dashSize={DASH_SIZE}
+              gapSize={GAP_SIZE}
+              transparent
+              opacity={0.95}
+            />
           </lineSegments>
-          {claimant.fillGeometry && (
-            <mesh geometry={claimant.fillGeometry} scale={CLAIMANT_FILL_SCALE}>
+          {country.fillGeometry && (
+            <mesh geometry={country.fillGeometry} scale={RELATED_COUNTRY_FILL_SCALE}>
               <meshBasicMaterial
-                color={CLAIMANT_COLOR}
+                color={RELATED_COUNTRY_COLOR}
                 transparent
-                opacity={CLAIMANT_FILL_OPACITY}
+                opacity={RELATED_COUNTRY_FILL_OPACITY}
                 side={FrontSide}
                 depthWrite={false}
               />
             </mesh>
           )}
-          <ClaimantMarker name={claimant.name} centroid={claimant.centroid} />
+          <RelatedCountryMarker name={country.name} roles={country.roles} centroid={country.centroid} />
         </group>
       ))}
     </group>
@@ -256,30 +321,31 @@ function ClaimedGeoEntitiesOverlay({ entityIds }: { entityIds: Set<string> }) {
   )
 }
 
-// Renders both directions of the same relationship, on two different
-// geometry systems: GeoEntity-vs-GeoEntity claims (dashed magenta, on
-// GeoEntity geometry) and claimant countries (dashed blue + prominent fill
-// + labeled marker, on Country geometry) — see ClaimantCountriesOverlay's
-// comment above for why a Country needs an entirely separate render path
-// here. Selecting China shows Taiwan/Spratly/Scarborough via the first;
-// selecting Taiwan shows China via the second.
+// Renders both directions of these relationships, on two different geometry
+// systems: GeoEntity-vs-GeoEntity claims (dashed magenta, on GeoEntity
+// geometry) and related countries — parents and claimants alike (dashed
+// blue + prominent fill + labeled marker, on Country geometry) — see
+// RelatedCountriesOverlay's comment above for why a Country needs an
+// entirely separate render path here. Selecting China shows
+// Taiwan/Spratly/Scarborough via the first; selecting Taiwan or Curaçao
+// shows China or the Netherlands, respectively, via the second.
 export function ClaimsOverlayComponent() {
   const claimRelatedEntityIds = useClaimRelatedEntityIds()
-  const claimantCountryIds = useClaimantCountryIds()
+  const relatedCountryRoles = useRelatedCountryRoles()
 
   return (
     <group>
       <ClaimedGeoEntitiesOverlay entityIds={claimRelatedEntityIds} />
-      <ClaimantCountriesOverlay countryIds={claimantCountryIds} />
+      <RelatedCountriesOverlay countryRoles={relatedCountryRoles} />
     </group>
   )
 }
 
 registerLayer({
   id: 'claims-overlay',
-  label: 'CLAIMS OVERLAY',
+  label: 'RELATIONSHIPS OVERLAY',
   description:
-    'Highlights entities claimed by the current selection (dashed outline) and, when a claimed entity is selected, the country claiming it (solid outline + marker).',
+    'Highlights entities claimed by the current selection (dashed outline) and, when a GeoEntity is selected, the country administering or claiming it (dashed outline + fill + marker).',
   category: 'geopolitical',
   defaultEnabled: true,
   component: ClaimsOverlayComponent,

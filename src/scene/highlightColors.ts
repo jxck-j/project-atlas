@@ -31,9 +31,18 @@ export const HIGHLIGHT_COLORS = {
     label: 'CLAIMED',
     description: 'In a sovereignty-claim relationship with the current selection (dashed outline).',
   },
-  claimant: {
+  // v3.1.5: covers both directions a selected GeoEntity can be connected to
+  // a Country — as its administering parent (Curaçao -> Netherlands) or as
+  // a claimant (Taiwan -> China). Deliberately one color/one role for both:
+  // from the viewer's perspective "which country is connected to what I
+  // selected" is one question, answered by ClaimsOverlayLayer.tsx's
+  // RelatedCountryMarker label ("PARENT — NETHERLANDS" vs.
+  // "CLAIMANT — CHINA") rather than by a second color to memorize. See
+  // LOGBOOK.md's v3.1.5 entry.
+  relatedCountry: {
     hex: '#4C8DFF',
-    label: 'CLAIMANT',
-    description: 'A sovereign state that claims the current selection (dashed blue outline + fill).',
+    label: 'RELATED COUNTRY',
+    description:
+      'A sovereign state directly connected to the current selection — its administering parent or a claimant (dashed blue outline + fill + labeled marker).',
   },
 } as const

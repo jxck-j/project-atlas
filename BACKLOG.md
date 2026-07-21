@@ -159,6 +159,13 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 ## Not yet verified
 
+- **The v3.1.5 "related country" overlay's dual-role case (Gibraltar: UK as
+  parent, Spain as claimant, both highlighted simultaneously) has only
+  been checked against the data (`tsx`, not a browser)** — confirmed the
+  right two countries and roles resolve, but not that the two markers'
+  leader-line callouts (each offset from its own country's centroid) don't
+  visually crowd each other at typical zoom levels. No browser tooling was
+  available this session either.
 - **Mobile/narrow-viewport layout for the v3.1 HUD additions**
   (`LegendPanel`/`Telemetry`'s shared bottom-left stack,
   `IntelligencePanel`'s full-width-on-mobile behavior) was reasoned about

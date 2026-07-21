@@ -17,6 +17,33 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.5 — Parent countries get the same visual treatment claimants already had
+
+Point release. Fixes a real gap: selecting Curaçao never highlighted the
+Netherlands — the "related country" overlay built in v3.1.0/v3.1.1 only
+ever looked at `claimedBy` (claimants), never `parentEntity`, so every
+uncontroversial dependency (~40 entries) had no visual counterpart at all
+when selected, only the 19 disputed entities did.
+
+### Fixed
+
+- `ClaimsOverlayLayer.tsx`'s country-side overlay (previously "claimant
+  countries only") now also resolves a selected GeoEntity's
+  `parentEntity`, highlighting that country with the same dashed-blue-
+  outline + prominent-fill treatment already used for claimants. One
+  mechanism, two roles — the country gets a labeled marker reading
+  "PARENT — NETHERLANDS" or "CLAIMANT — CHINA" (or both, joined, for the
+  rare entity connected to a country both ways — Gibraltar is exactly this
+  case: UK as parent, Spain as claimant, both shown simultaneously).
+- Renamed accordingly: `HIGHLIGHT_COLORS.claimant` → `.relatedCountry`,
+  the layer's Layer Panel label from "CLAIMS OVERLAY" to "RELATIONSHIPS
+  OVERLAY" (id unchanged — `'claims-overlay'` — to avoid unrelated churn
+  to `LegendPanel.tsx`'s lookup). `hud/LegendPanel.tsx` updated to match.
+- Verified against the real dataset (not just read): Curaçao → Netherlands
+  (parent), Taiwan → China (claimant, regression check), Gibraltar → both
+  UK and Spain simultaneously with distinct role labels, Puerto Rico →
+  USA (parent, no claimant). See `LOGBOOK.md`.
+
 ## v3.1.4 — Ten claim relationships corrected against real-world sources
 
 Point release. `data/registry/geoEntities.ts` data correction, prompted by

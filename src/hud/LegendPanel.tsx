@@ -19,12 +19,13 @@ import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
 // Every color/label/description comes from scene/highlightColors.ts — the
 // exact same values Countries.tsx, GeoEntities.tsx, and both geoOverlays
 // layers render with — so this can't drift out of sync with what's actually
-// on screen. The overlay rows (TERRITORY; CLAIMED + CLAIMANT together,
-// since ClaimsOverlayLayer renders both directions of the same
-// relationship) are conditional on that overlay's layer actually being
-// enabled (read via the Layer Engine barrel, same as LayerPanel.tsx):
-// showing "CLAIMED = magenta" while Claims Overlay is toggled off would
-// describe a color nothing on screen currently uses.
+// on screen. The overlay rows (TERRITORY; CLAIMED + RELATED COUNTRY
+// together, since ClaimsOverlayLayer/"Relationships Overlay" renders both
+// directions of these relationships — see that file's v3.1.5 comments) are
+// conditional on that overlay's layer actually being enabled (read via the
+// Layer Engine barrel, same as LayerPanel.tsx): showing "CLAIMED = magenta"
+// while the overlay is toggled off would describe a color nothing on
+// screen currently uses.
 function LegendRow({ color, label, description }: { color: string; label: string; description: string }) {
   return (
     <div className="flex items-start gap-2">
@@ -77,9 +78,9 @@ export function LegendPanel() {
             description={HIGHLIGHT_COLORS.claimsOverlay.description}
           />
           <LegendRow
-            color={HIGHLIGHT_COLORS.claimant.hex}
-            label={HIGHLIGHT_COLORS.claimant.label}
-            description={HIGHLIGHT_COLORS.claimant.description}
+            color={HIGHLIGHT_COLORS.relatedCountry.hex}
+            label={HIGHLIGHT_COLORS.relatedCountry.label}
+            description={HIGHLIGHT_COLORS.relatedCountry.description}
           />
         </>
       )}
