@@ -6,6 +6,7 @@ import { useGeoEntityFeatures } from './useGeoEntityFeatures'
 import { buildGeoEntityEntries, type GeoEntityEntry } from './geoEntityEntries'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
+import { HIGHLIGHT_COLORS } from './highlightColors'
 import { selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
@@ -33,10 +34,11 @@ const FILL_RADIUS = GLOBE_RADIUS * 1.0
 // Same palette as Countries.tsx, deliberately — a GeoEntity should read as
 // "another selectable thing on this globe", not a visually different
 // category. What kind of entity it is lives in the data (IntelligencePanel,
-// search's type tag), not a special on-globe color language.
-const COLOR_DEFAULT = '#7FE9FF'
-const COLOR_HOVER = '#FFD24C'
-const COLOR_SELECTED = '#FF4D4D'
+// search's type tag), not a special on-globe color language. Sourced from
+// scene/highlightColors.ts (v3.1) — see that file.
+const COLOR_DEFAULT = HIGHLIGHT_COLORS.default.hex
+const COLOR_HOVER = HIGHLIGHT_COLORS.hovered.hex
+const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 
 const CLICK_MOVE_THRESHOLD = 6
 const LARGE_ENTITY_THRESHOLD_DEG = 7

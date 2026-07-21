@@ -1,9 +1,15 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { FrontSide, type LineBasicMaterial } from 'three'
+import { Html, Line } from '@react-three/drei'
+import { BufferGeometry, Float32BufferAttribute, FrontSide, type Mesh } from 'three'
 import { registerLayer } from '../layerRegistry'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
-import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
+import { useCountryFeatures } from '../../scene/useCountryFeatures'
+import { buildGeoEntityEntries, computeLineDistances } from '../../scene/geoEntityEntries'
+import { geometryToBorderSegments, geometryToCentroid, geometryToFillMesh } from '../../scene/countryGeometry'
+import { GLOBE_RADIUS } from '../../scene/constants'
+import { latLngToVector3 } from '../../utils/geo'
+import { HIGHLIGHT_COLORS } from '../../scene/highlightColors'
 import { useSelection } from '../../hud/selectionStore'
 import { getEntities } from '../../data'
 import type { GeoEntity } from '../../data'
@@ -19,15 +25,21 @@ import type { GeoEntity } from '../../data'
 // Taiwan/Spratly flagged) are meant to be immediately visible, not
 // contingent on first finding the right toggle.
 //
-// Rendering note: this app's borders use plain LineBasicMaterial (native
-// WebGL ignores its `linewidth`, and a true diagonal-hatch fill would need
-// a custom shader/texture — out of scope here). "Hatching style" is
-// approximated instead with a distinct, unused-elsewhere color plus a slow
-// pulse, so a claimed entity reads as "flagged" rather than solidly filled
-// — and specifically never reuses COLOR_SELECTED, satisfying "do not fill
-// claimed territories with the same color as the claimant."
-const CLAIM_COLOR = '#FF5CD6'
+// v3.1: "hatching style" is a real dashed outline (LineDashedMaterial),
+// replacing v3.0's pulsing-solid-line approximation — see LOGBOOK.md. This
+// needs the border geometry's 'lineDistance' attribute, which
+// scene/geoEntityEntries.ts's buildGeoEntityEntries() precomputes for every
+// entry (see that file's computeLineDistances()), so nothing extra is
+// required here beyond picking a material. Fill stays deliberately
+// near-zero opacity and a color that's never COLOR_SELECTED — that's what
+// actually satisfies "do not fill claimed territories with the same color
+// as the claimant," the dash is a legibility choice on top of it.
+// Sourced from scene/highlightColors.ts — the same value hud/LegendPanel.tsx
+// explains.
+const CLAIM_COLOR = HIGHLIGHT_COLORS.claimsOverlay.hex
 const CLAIM_FILL_RADIUS_FACTOR = 1.002
+const DASH_SIZE = 0.028
+const GAP_SIZE = 0.02
 
 function countryIdOf(selectedId: string, kind: 'country' | 'geo-entity') {
   return kind === 'country' ? selectedId : undefined
@@ -60,39 +72,171 @@ function useClaimRelatedEntityIds(): Set<string> {
   }, [selected])
 }
 
-export function ClaimsOverlayComponent() {
-  const claimRelatedIds = useClaimRelatedEntityIds()
-  const features = useGeoEntityFeatures()
-  const entries = useMemo(() => buildGeoEntityEntries(features), [features])
-  const pulseRef = useRef<LineBasicMaterial[]>([])
+// ---------------------------------------------------------------------------
+// Claimant countries — the other direction of the same relationship.
+// Countries.tsx renders on completely different geometry (its own
+// useCountryFeatures() fetch, not the GeoEntity topology above), so "Taiwan
+// is claimed by China" needs its own small render path here: the GeoEntity
+// side (Taiwan) already gets the dashed CLAIM_COLOR treatment above when
+// CHINA is selected, but when TAIWAN is selected there was previously
+// nothing at all pointing at China — a Country is never itself a GeoEntity
+// entry, so useClaimRelatedEntityIds' `ref.type === 'geo-entity'` filter
+// silently dropped every country-typed claimant. `Country` has no
+// `claimedBy` field of its own (see data/types.ts) — a selected Country can
+// therefore never itself have "claimant countries"; this only ever fires
+// for a selected GeoEntity.
+//
+// Deliberately a different color from the claimed side (blue, not magenta)
+// plus a prominent fill (0.32, well above the claimed side's near-zero
+// 0.1) — meant to visibly cover the claimant country's whole area, not
+// just outline it — so "claims" and "is claimed by" read as distinct facts
+// at a glance, not the same treatment pointed two directions. Both sides
+// share the dashed-border language (still the general "flagged, not
+// primary-selected" cue), plus a pulsing labeled marker here specifically
+// so "why is this whole country highlighted" never depends on already
+// knowing what the blue means.
+const CLAIMANT_COLOR = HIGHLIGHT_COLORS.claimant.hex
+const CLAIMANT_BORDER_RADIUS = GLOBE_RADIUS * 1.006
+const CLAIMANT_FILL_RADIUS = GLOBE_RADIUS * 1.0
+const CLAIMANT_FILL_SCALE = 1.004
+const CLAIMANT_FILL_OPACITY = 0.32
+
+function useClaimantCountryIds(): Set<string> {
+  const { selected } = useSelection()
+
+  return useMemo(() => {
+    const ids = new Set<string>()
+    if (!selected || selected.entity.kind !== 'geo-entity') return ids
+    const geoEntity = selected.entity.data as GeoEntity
+    for (const relation of geoEntity.claimedBy) {
+      if (relation.ref?.type === 'country') ids.add(relation.ref.id)
+    }
+    return ids
+  }, [selected])
+}
+
+interface ClaimantCountryEntry {
+  id: string
+  name: string
+  centroid: { lat: number; lng: number }
+  borderGeometry: BufferGeometry
+  fillGeometry: BufferGeometry | null
+}
+
+function ClaimantMarker({ name, centroid }: { name: string; centroid: { lat: number; lng: number } }) {
+  const dotRef = useRef<Mesh>(null)
 
   useFrame(({ clock }) => {
+    if (!dotRef.current) return
     const t = clock.getElapsedTime()
-    const pulse = 0.55 + Math.sin(t * 2.4) * 0.35
-    for (const material of pulseRef.current) {
-      material.opacity = pulse
-    }
+    dotRef.current.scale.setScalar(1 + Math.sin(t * 2.4) * 0.2)
   })
 
-  if (claimRelatedIds.size === 0) return null
+  // Same pointed-callout convention as CapitalMarker/HoverLabel — a marker
+  // on the country itself, a leader line out to an explicit text label, so
+  // "why is this highlighted" never depends on the viewer already knowing
+  // what CLAIMANT_COLOR means (the point of also having hud/LegendPanel.tsx,
+  // but a label on the globe itself needs no lookup at all).
+  const anchor = latLngToVector3(centroid.lat, centroid.lng, GLOBE_RADIUS * 1.01)
+  const calloutPoint = latLngToVector3(centroid.lat - 10, centroid.lng + 10, GLOBE_RADIUS * 1.32)
 
-  const claimed = entries.filter((entry) => claimRelatedIds.has(entry.entityId))
+  return (
+    <group>
+      <mesh ref={dotRef} position={anchor}>
+        <sphereGeometry args={[0.014, 10, 10]} />
+        <meshBasicMaterial color={CLAIMANT_COLOR} />
+      </mesh>
+      <Line points={[anchor, calloutPoint]} color={CLAIMANT_COLOR} lineWidth={1} transparent opacity={0.85} />
+      <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[18, 0]} style={{ pointerEvents: 'none' }}>
+        <div
+          className="whitespace-nowrap font-mono text-[9px] tracking-[0.2em]"
+          style={{ color: CLAIMANT_COLOR, textShadow: `0 0 6px ${CLAIMANT_COLOR}` }}
+        >
+          CLAIMANT — {name.toUpperCase()}
+        </div>
+      </Html>
+    </group>
+  )
+}
+
+function ClaimantCountriesOverlay({ countryIds }: { countryIds: Set<string> }) {
+  const features = useCountryFeatures()
+
+  const claimants = useMemo<ClaimantCountryEntry[]>(() => {
+    if (countryIds.size === 0) return []
+    return features.flatMap((f) => {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!id || !countryIds.has(id)) return []
+
+      const borderGeometry = new BufferGeometry()
+      borderGeometry.setAttribute(
+        'position',
+        new Float32BufferAttribute(geometryToBorderSegments(f.geometry, CLAIMANT_BORDER_RADIUS), 3)
+      )
+      computeLineDistances(borderGeometry)
+
+      return [
+        {
+          id,
+          name: (f.properties?.name as string) ?? 'Unknown',
+          centroid: geometryToCentroid(f.geometry),
+          borderGeometry,
+          fillGeometry: geometryToFillMesh(f.geometry, CLAIMANT_FILL_RADIUS),
+        },
+      ]
+    })
+  }, [features, countryIds])
+
+  if (claimants.length === 0) return null
+
+  return (
+    <group>
+      {claimants.map((claimant) => (
+        <group key={`claimant-${claimant.id}`}>
+          <lineSegments geometry={claimant.borderGeometry}>
+            <lineDashedMaterial color={CLAIMANT_COLOR} dashSize={DASH_SIZE} gapSize={GAP_SIZE} transparent opacity={0.95} />
+          </lineSegments>
+          {claimant.fillGeometry && (
+            <mesh geometry={claimant.fillGeometry} scale={CLAIMANT_FILL_SCALE}>
+              <meshBasicMaterial
+                color={CLAIMANT_COLOR}
+                transparent
+                opacity={CLAIMANT_FILL_OPACITY}
+                side={FrontSide}
+                depthWrite={false}
+              />
+            </mesh>
+          )}
+          <ClaimantMarker name={claimant.name} centroid={claimant.centroid} />
+        </group>
+      ))}
+    </group>
+  )
+}
+
+function ClaimedGeoEntitiesOverlay({ entityIds }: { entityIds: Set<string> }) {
+  const features = useGeoEntityFeatures()
+  const entries = useMemo(() => buildGeoEntityEntries(features), [features])
+
+  if (entityIds.size === 0) return null
+
+  const claimed = entries.filter((entry) => entityIds.has(entry.entityId))
   if (claimed.length === 0) return null
-
-  pulseRef.current = []
 
   return (
     <group>
       {claimed.map((entry) => (
         <group key={`claims-overlay-${entry.geometryId}`}>
           <lineSegments geometry={entry.borderGeometry}>
-            <lineBasicMaterial
-              ref={(m) => {
-                if (m) pulseRef.current.push(m)
-              }}
+            {/* dashSize/gapSize are in world units (GLOBE_RADIUS = 2.4) —
+                requires the geometry's 'lineDistance' attribute, which
+                geoEntityEntries.ts's computeLineDistances() already set. */}
+            <lineDashedMaterial
               color={CLAIM_COLOR}
+              dashSize={DASH_SIZE}
+              gapSize={GAP_SIZE}
               transparent
-              opacity={0.9}
+              opacity={0.95}
             />
           </lineSegments>
           {entry.fillGeometry && (
@@ -112,11 +256,30 @@ export function ClaimsOverlayComponent() {
   )
 }
 
+// Renders both directions of the same relationship, on two different
+// geometry systems: GeoEntity-vs-GeoEntity claims (dashed magenta, on
+// GeoEntity geometry) and claimant countries (dashed blue + prominent fill
+// + labeled marker, on Country geometry) — see ClaimantCountriesOverlay's
+// comment above for why a Country needs an entirely separate render path
+// here. Selecting China shows Taiwan/Spratly/Scarborough via the first;
+// selecting Taiwan shows China via the second.
+export function ClaimsOverlayComponent() {
+  const claimRelatedEntityIds = useClaimRelatedEntityIds()
+  const claimantCountryIds = useClaimantCountryIds()
+
+  return (
+    <group>
+      <ClaimedGeoEntitiesOverlay entityIds={claimRelatedEntityIds} />
+      <ClaimantCountriesOverlay countryIds={claimantCountryIds} />
+    </group>
+  )
+}
+
 registerLayer({
   id: 'claims-overlay',
   label: 'CLAIMS OVERLAY',
   description:
-    'Highlights entities claimed by (or claiming) the current selection in a distinct pulsing outline — sovereignty disputes made visible without implying resolution.',
+    'Highlights entities claimed by the current selection (dashed outline) and, when a claimed entity is selected, the country claiming it (solid outline + marker).',
   category: 'geopolitical',
   defaultEnabled: true,
   component: ClaimsOverlayComponent,

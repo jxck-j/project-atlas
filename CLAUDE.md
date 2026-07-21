@@ -273,6 +273,32 @@ convert (`time / 1000`) before calling `advance()`.
   Geopolitical data architecture section below); the dispatch itself only
   ever needed to grow to two arms, not five, because `kind` is `'country' |
   'geo-entity'`, not one member per `GeoEntityType`. See `LOGBOOK.md`.
+- **`scene/highlightColors.ts`** (v3.1.0) is the single source of truth for
+  every highlight/selection color the globe renders — `Countries.tsx`,
+  `GeoEntities.tsx`, and both `geoOverlays` layers (below) all import their
+  colors from here rather than each hardcoding their own hex literal.
+  **`hud/LegendPanel.tsx`** reads the exact same values to explain them, so
+  the two can never drift apart. Deliberately always-on (stacked with
+  `Telemetry.tsx` in a shared bottom-left flex column in `App.tsx`, not a
+  Toolbar toggle) and deliberately bottom-left, not bottom-right/top-right —
+  `IntelligencePanel.tsx` covers the entire right edge
+  (`inset-y-0 right-0`) for as long as anything's selected, which is
+  exactly when the overlay colors this legend explains are on screen. See
+  `LOGBOOK.md`'s v3.1.0 entry.
+- **`ClaimsOverlayLayer.tsx` renders a claim relationship in both
+  directions, on two unconnected geometry systems** (v3.1.0). Selecting a
+  Country (China) highlights the GeoEntities it claims (Taiwan, Spratly
+  Islands, ...) with a dashed magenta border, drawn on the same GeoEntity
+  geometry `scene/GeoEntities.tsx` uses. Selecting a claimed GeoEntity
+  (Taiwan) highlights the Country claiming it (China) with a **different**
+  treatment — dashed blue border, a prominent fill covering the whole
+  country (not a thin outline), plus a pulsing marker with an explicit
+  "CLAIMANT — <NAME>" label — drawn on `Countries.tsx`'s geometry instead,
+  fetched independently via `useCountryFeatures()`. The two directions
+  can't share rendering code because a `Country` has no presence in the
+  GeoEntity feature collection at all; don't assume "the other end of a
+  relationship" is representable by whatever loop is already iterating one
+  side of it. See `LOGBOOK.md`'s v3.1.0 entry for how this gap was found.
 
 ### Layer Engine (`src/layers/`)
 

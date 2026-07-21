@@ -3,6 +3,7 @@ import { FrontSide } from 'three'
 import { registerLayer } from '../layerRegistry'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
 import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
+import { HIGHLIGHT_COLORS } from '../../scene/highlightColors'
 import { useSelection } from '../../hud/selectionStore'
 import { getEntities } from '../../data'
 
@@ -18,11 +19,10 @@ import { getEntities } from '../../data'
 // same pure function scene/GeoEntities.tsx uses) so there's one place that
 // knows how to turn a raw feature into renderable geometry — this layer
 // only adds the "which entries, which color" logic on top.
-// Green, per spec ("secondary highlight style like a green highlight") —
-// also keeps it unambiguously distinct from COLOR_SELECTED (red) and
-// COLOR_HOVER (amber) in GeoEntities.tsx/Countries.tsx, and from
-// ClaimsOverlayLayer's magenta.
-const OVERLAY_COLOR = '#39FF6A'
+// Sourced from scene/highlightColors.ts (v3.1) — green, per spec
+// ("secondary highlight style like a green highlight") — the same value
+// hud/LegendPanel.tsx explains, so the two can never drift apart.
+const OVERLAY_COLOR = HIGHLIGHT_COLORS.territoryOverlay.hex
 const OVERLAY_RADIUS_FACTOR = 1.0015
 
 export function ParentOverlayComponent() {

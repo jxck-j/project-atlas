@@ -17,6 +17,64 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.0 — Claimant countries get their own visual treatment, dashed claim borders, and a legend
+
+Point release under v3 (same call v2.2.0's "Geometry Map" and v2.3.0 made
+for themselves — see those entries: new files/behavior, but it completes
+and explains a capability v3.0 already shipped, rather than introducing a
+new one).
+
+### Added
+
+- **`ClaimsOverlayLayer.tsx` now renders both directions of a claim
+  relationship, on two different geometry systems.** v3.0's claims overlay
+  only ever highlighted other `GeoEntity` records — selecting China
+  correctly flagged Taiwan/Spratly Islands/Scarborough Reef (all
+  GeoEntities), but selecting Taiwan showed nothing at all for China,
+  because China is a `Country`, rendered by a completely separate component
+  (`Countries.tsx`) on completely separate geometry (`useCountryFeatures()`,
+  not the GeoEntity topology). `ClaimantCountriesOverlay` (new, same file)
+  fetches country features directly and highlights whichever countries
+  appear in the selected GeoEntity's `claimedBy` with `ref.type ===
+  'country'` — a **new, deliberately distinct visual convention**: a dashed
+  blue outline (blue, not the claimed side's magenta) with a prominent
+  fill covering the claimant's whole area (not just a thin outline), plus a
+  pulsing marker with an explicit "CLAIMANT — <NAME>" text label, so the
+  two directions of the same relationship never look like the same fact
+  pointed two ways.
+- `scene/highlightColors.ts`: the single source of truth for every
+  highlight/selection color the globe renders, including the new
+  `claimant` entry. `Countries.tsx`, `GeoEntities.tsx`,
+  `ParentOverlayLayer.tsx`, and `ClaimsOverlayLayer.tsx` all now import
+  their colors from here instead of independent hex literals — the same
+  values `hud/LegendPanel.tsx` (below) explains, so the two can never drift
+  apart.
+- `hud/LegendPanel.tsx`: an always-on panel (not a Toolbar toggle — see the
+  file for why) explaining what each on-globe color means: UNSELECTED /
+  HOVERED / SELECTED always shown; TERRITORY shown while the territory
+  overlay is enabled; CLAIMED and CLAIMANT shown together while the claims
+  overlay is enabled. Stacked with `Telemetry.tsx` in a shared bottom-left
+  flex column in `App.tsx` — the one corner that stays visible regardless
+  of selection state, since `IntelligencePanel.tsx` covers the entire right
+  edge (`inset-y-0 right-0`) the whole time something's selected, which is
+  exactly when the overlay colors this legend explains are on screen. See
+  `LOGBOOK.md`.
+
+### Changed
+
+- `ClaimsOverlayLayer.tsx`: the GeoEntity-vs-GeoEntity "hatching style" is
+  now a real dashed border (`LineDashedMaterial`) instead of v3.0's
+  pulsing-solid-line approximation. `scene/geoEntityEntries.ts`'s
+  `buildGeoEntityEntries()` now precomputes each entry's border geometry
+  `lineDistance` attribute (`computeLineDistances()`, ported from
+  `THREE.Line`'s own implementation since that method only exists on a
+  `Line`/`LineSegments` *instance*, not a bare `BufferGeometry`) so every
+  entry is dash-ready without the overlay layer needing to do anything
+  beyond picking `<lineDashedMaterial>`.
+- `ParentOverlayLayer.tsx`: no visual change here beyond sourcing its green
+  from the new shared palette — it already matched the "green highlight"
+  ask as of v3.0.1.
+
 ## v3.0.1 — Fixing the bug that made both v3 overlays silently do nothing
 
 Point release. v3.0.0 shipped `ParentOverlayLayer`/`ClaimsOverlayLayer` as

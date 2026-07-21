@@ -5,6 +5,76 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.1.0: computeLineDistances() isn't a BufferGeometry method, a legend almost got hidden behind the panel it exists to explain, and "claimed" needed a mirror-image "claimant"
+
+**The claims overlay only ever pointed one direction, because a Country
+and a GeoEntity render through two unconnected systems.** First pass at
+v3.1's dashed claims overlay (and, before that, v3.0's pulsing-color one)
+only ever populated `claimRelatedIds` by scanning for `ref.type ===
+'geo-entity'` — clicking China correctly flagged Taiwan/Spratly
+Islands/Scarborough Reef, and it was tempting to call the overlay done
+there, since that matches the v3 spec's own worked example exactly. But
+selecting Taiwan showed nothing for China: `ref.type === 'country'`
+relations were being silently filtered out of the same loop, because a
+`Country` has no rendered presence in `scene/GeoEntities.tsx`'s geometry at
+all — it's a completely different component (`Countries.tsx`), fetching a
+completely different topology (`useCountryFeatures()`, not
+`useGeoEntityFeatures()`). "Highlight the claimant" and "highlight the
+claimed" look like the same problem from the data model's side
+(`GeoEntityRelation` either way) but are NOT the same problem from the
+rendering side — one target type has geometry sitting right there in the
+same entry list, the other requires fetching an entirely separate feature
+collection and building geometry from scratch. Fixed by giving
+`ClaimsOverlayLayer.tsx` a second, independent sub-component
+(`ClaimantCountriesOverlay`) that fetches country features directly and
+renders on that geometry — and giving it an intentionally different visual
+treatment (blue instead of magenta, a prominent fill covering the whole
+country rather than a near-invisible tint, plus a labeled pulsing marker)
+rather than just reusing `CLAIM_COLOR`, so "X claims Y" and "Y is claimed
+by X" don't read as the identical fact rendered twice. General lesson,
+worth remembering the next time a relationship field spans two
+different entity kinds: check whether "the other end of this relationship"
+is even representable in the renderer that's about to loop over it, not
+just whether the data model can express the reference.
+
+**`THREE.Line.prototype.computeLineDistances()` operates on an object
+instance, not a geometry.** Reached for it expecting a `BufferGeometry`
+method (the same shape as `computeVertexNormals()`, `computeBoundingBox()`,
+etc.) — it isn't one. It lives on `Line` (and `LineSegments`, which extends
+`Line` without overriding it), reads `this.geometry.attributes.position`,
+and writes the `lineDistance` attribute back onto `this.geometry`. That's
+awkward for this codebase's shape: `scene/geoEntityEntries.ts`'s
+`buildGeoEntityEntries()` builds a plain `BufferGeometry` with no scene
+object attached to it yet — `GeoEntities.tsx`, `ParentOverlayLayer.tsx`, and
+`ClaimsOverlayLayer.tsx` each mount their own `<lineSegments>` from the same
+shared geometry later, independently, so there's no single "the" Line
+instance to call the method on even if timing allowed it. Ported the
+algorithm itself (it's ~10 lines, verbatim from three.js's source) into a
+standalone function operating directly on a `BufferGeometry`, called once
+right after the border geometry is built — every entry is dash-ready before
+any component ever sees it, and `LineBasicMaterial` (every other consumer)
+silently ignores the extra attribute.
+
+**The legend almost shipped in the one spot that hides it exactly when it's
+needed.** First draft put `LegendPanel` at bottom-right, mirroring
+`Telemetry.tsx`'s bottom-left placement for visual symmetry. Caught before
+shipping: `hud/IntelligencePanel.tsx` is `fixed inset-y-0 right-0` at
+`z-30` — it covers the *entire* right edge, top to bottom, for as long as
+anything is selected, not just a corner. A legend explaining
+selection/overlay colors is specifically most useful exactly when something
+is selected — meaning bottom-right (or top-right, same problem) would be
+covered by the one panel that's guaranteed to be open whenever the legend
+had anything to say. Moved it to stack with `Telemetry.tsx` in a shared
+bottom-left flex column instead (`App.tsx`), which meant pulling both
+components' own `fixed bottom-* left-*` wrapper out into that shared
+container — neither had to start hardcoding pixel offsets to stack above
+the other, flexbox does it regardless of either one's actual rendered
+height (which varies: `LegendPanel`'s row count depends on which overlay
+layers are enabled). General lesson: before placing a new always-on HUD
+element, check what covers that screen region under the state where the
+element would actually be read, not just the empty/idle state it looks
+fine in during a first pass.
+
 ## 2026-07-21 — v3.0.1: the overlays were architecturally correct and functionally inert, because of two id spaces that look identical
 
 **The bug: every `EntityRef{type:'country', id:...}` in `geoEntities.ts`

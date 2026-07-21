@@ -7,6 +7,7 @@ import { Toolbar } from './hud/Toolbar'
 import { SearchBar } from './hud/SearchBar'
 import { SettingsPanel } from './hud/SettingsPanel'
 import { LayerPanel } from './hud/LayerPanel'
+import { LegendPanel } from './hud/LegendPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
 
 function App() {
@@ -15,7 +16,13 @@ function App() {
       <Scene />
       <HUDFrame />
       <Header />
-      <Telemetry />
+      {/* Shared bottom-left stack (v3.1) — Telemetry and LegendPanel no
+          longer position themselves; letting flexbox stack them means
+          neither has to hardcode the other's rendered height. */}
+      <div className="pointer-events-none fixed bottom-6 left-6 md:bottom-8 md:left-8 z-20 flex flex-col gap-3">
+        <Telemetry />
+        <LegendPanel />
+      </div>
       <CommandBar />
       <Toolbar />
       <SearchBar />

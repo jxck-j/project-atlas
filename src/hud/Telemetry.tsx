@@ -9,19 +9,22 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
+// No longer its own `fixed`-positioned element (v3.1) \u2014 App.tsx renders this
+// inside a shared bottom-left flex column alongside LegendPanel, so the two
+// stack without either hardcoding the other's height. See LegendPanel.tsx
+// for why bottom-left (not bottom-right/top-right) is where anything needs
+// to live if it should stay visible while IntelligencePanel is open.
 export function Telemetry() {
   const { azimuthDeg, polarDeg, distance } = useTelemetry()
 
   return (
-    <div className="pointer-events-none fixed bottom-6 left-6 md:bottom-8 md:left-8 z-20">
-      <div className="border border-cyan-400/25 bg-cyan-950/20 backdrop-blur-sm px-4 py-3 font-mono text-[10px] md:text-xs space-y-1.5 min-w-[190px]">
-        <div className="text-amber-400/90 tracking-[0.25em] mb-2">
-          ORBIT TELEMETRY
-        </div>
-        <Row label="AZ" value={`${azimuthDeg.toFixed(1)}\u00B0`} />
-        <Row label="EL" value={`${(90 - polarDeg).toFixed(1)}\u00B0`} />
-        <Row label="RANGE" value={`${distance.toFixed(2)} AU`} />
+    <div className="border border-cyan-400/25 bg-cyan-950/20 backdrop-blur-sm px-4 py-3 font-mono text-[10px] md:text-xs space-y-1.5 min-w-[190px]">
+      <div className="text-amber-400/90 tracking-[0.25em] mb-2">
+        ORBIT TELEMETRY
       </div>
+      <Row label="AZ" value={`${azimuthDeg.toFixed(1)}\u00B0`} />
+      <Row label="EL" value={`${(90 - polarDeg).toFixed(1)}\u00B0`} />
+      <Row label="RANGE" value={`${distance.toFixed(2)} AU`} />
     </div>
   )
 }

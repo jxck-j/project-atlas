@@ -1,4 +1,4 @@
-import { BufferGeometry, Float32BufferAttribute } from 'three'
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from 'three'
 import type { Feature } from 'geojson'
 import {
   geometryToAngularExtent,
@@ -18,6 +18,33 @@ import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 // file *only* exports components), and it was right to.
 const BORDER_RADIUS = GLOBE_RADIUS * 1.004
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
+
+// THREE.Line/LineSegments.prototype.computeLineDistances() writes this same
+// 'lineDistance' attribute, but only works as an instance method on an
+// actual Line/LineSegments *object* (it reads `this.geometry`) — there's no
+// object to call it on yet at the point borderGeometry is built here, just
+// the BufferGeometry. This is that same algorithm (verbatim, from three.js's
+// source) applied directly to a BufferGeometry instead, so every entry's
+// border geometry is dash-ready (LineDashedMaterial requires this attribute
+// to exist) the moment it's built — v3.1's geoOverlays/ClaimsOverlayLayer.tsx
+// is the first consumer, but any future dashed border can reuse this
+// unmodified. Harmless for the plain LineBasicMaterial borders elsewhere
+// (GeoEntities.tsx, Countries.tsx) — they simply never read the attribute.
+// Exported so ClaimsOverlayLayer.tsx's claimant-country border (built
+// straight from Country features, not through buildGeoEntityEntries below)
+// can dash too, without a second copy of this algorithm.
+export function computeLineDistances(geometry: BufferGeometry): void {
+  const position = geometry.getAttribute('position')
+  const distances = new Float32Array(position.count)
+  const start = new Vector3()
+  const end = new Vector3()
+  for (let i = 1; i < position.count; i++) {
+    start.fromBufferAttribute(position, i - 1)
+    end.fromBufferAttribute(position, i)
+    distances[i] = distances[i - 1] + start.distanceTo(end)
+  }
+  geometry.setAttribute('lineDistance', new Float32BufferAttribute(distances, 1))
+}
 
 export interface GeoEntityEntry {
   // The rendered shape's own id — used for hover state and as the
@@ -63,6 +90,7 @@ export function buildGeoEntityEntries(features: Feature[]): GeoEntityEntry[] {
       'position',
       new Float32BufferAttribute(geometryToBorderSegments(f.geometry, BORDER_RADIUS), 3)
     )
+    computeLineDistances(borderGeometry)
 
     return [
       {

@@ -141,6 +141,12 @@ src/
                                hard 60fps cap — see CLAUDE.md for a real bug this
                                caused if you touch it
     constants.ts              Shared GLOBE_RADIUS + camera distance bounds
+    highlightColors.ts         (v3.1.0) Single source of truth for every
+                               highlight/selection color the globe renders —
+                               Countries.tsx, GeoEntities.tsx, and both
+                               geoOverlays layers all source their colors
+                               from here; hud/LegendPanel.tsx explains the
+                               same values
   layers/                    The Layer Engine (v2.0) — pluggable visualization
                                modules; Globe.tsx only ever mounts <LayerEngine />
     types.ts                   The LayerDefinition contract every layer implements
@@ -157,11 +163,20 @@ src/
                                  lifecycle only (terrain/infrastructure/conflict);
                                  no real data or production visualization yet
     geoOverlays/                    (v3.0.0) The first real (non-placeholder)
-                                 layers: ParentOverlayLayer.tsx (default on —
-                                 highlights a selected sovereign's dependent
-                                 GeoEntities) and ClaimsOverlayLayer.tsx
-                                 (default off — highlights claim relationships
-                                 for the current selection)
+                                 layers: ParentOverlayLayer.tsx (default on,
+                                 green — highlights a selected sovereign's
+                                 dependent GeoEntities) and
+                                 ClaimsOverlayLayer.tsx (default on).
+                                 ClaimsOverlayLayer renders BOTH directions
+                                 of a claim (v3.1.0): claimed GeoEntities get
+                                 a magenta dashed border on GeoEntity
+                                 geometry; claimant Countries (a Country has
+                                 no presence in GeoEntity geometry at all)
+                                 get a separate blue dashed-border +
+                                 prominent-fill + labeled-marker treatment
+                                 on Country geometry, fetched independently
+                                 via useCountryFeatures(). Every color sourced
+                                 from scene/highlightColors.ts
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar
@@ -172,7 +187,15 @@ src/
     LayerPanel.tsx               Toggle list for registered layers, grouped by
                                  category (toggled via Toolbar)
     SettingsPanel.tsx           Camera sensitivity sliders (toggled via Toolbar)
-    Telemetry.tsx               Bottom-left live orbit readout (az/el/range)
+    Telemetry.tsx               Live orbit readout (az/el/range) — stacked
+                                 with LegendPanel.tsx in a shared bottom-left
+                                 flex column in App.tsx (v3.1.0), no longer
+                                 self-positioned
+    LegendPanel.tsx              (v3.1.0) Always-on color key, reading
+                                 scene/highlightColors.ts — deliberately
+                                 bottom-left, not right-side, since
+                                 IntelligencePanel covers the whole right
+                                 edge whenever it'd matter most
     CommandBar.tsx               Bottom status bar: ready/connected/country
                                  count/entity count (v3.0.0)/FPS/hover
                                  coordinates

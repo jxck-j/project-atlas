@@ -11,6 +11,7 @@ import {
 } from './countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
+import { HIGHLIGHT_COLORS } from './highlightColors'
 import { selectCountry, selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
@@ -20,9 +21,12 @@ const BORDER_RADIUS = GLOBE_RADIUS * 1.004
 // against z-fighting now that there's much denser 193-country geometry.
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
 
-const COLOR_DEFAULT = '#7FE9FF'
-const COLOR_HOVER = '#FFD24C' // golden yellow
-const COLOR_SELECTED = '#FF4D4D' // red
+// v3.1: sourced from scene/highlightColors.ts, the same palette
+// hud/LegendPanel.tsx explains — see that file for why this isn't a local
+// literal anymore.
+const COLOR_DEFAULT = HIGHLIGHT_COLORS.default.hex
+const COLOR_HOVER = HIGHLIGHT_COLORS.hovered.hex
+const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 
 // How far (in screen pixels) the pointer may move between down/up and still
 // count as a "click" rather than a drag-to-rotate gesture.
