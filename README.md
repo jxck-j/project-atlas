@@ -366,3 +366,7 @@ to build against without refactoring the globe itself.
   triangulation, why country geometry is merged per-country instead of
   per-ring/per-polygon (a real 7,234→386 draw-call fix), and a
   `frameloop="never"`/`advance()` units bug worth not repeating.
+- See `BACKLOG.md` (v3.1.2) for the fuller, hand-maintained list of open
+  ideas/gaps this section only samples — data points needing verification,
+  visualization approximations worth revisiting, and every planned engine's
+  actual status.

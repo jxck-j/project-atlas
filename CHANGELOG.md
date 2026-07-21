@@ -17,6 +17,25 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.2 — BACKLOG.md: everything flagged but not built, in one place
+
+Point release. Documentation only — no `src/` runtime code changed.
+
+### Added
+
+- `BACKLOG.md` (repo root): hand-maintained, unlike `CLAIMS.md` — there's no
+  structured data to generate a backlog from. Collects every "not yet
+  implemented"/"needs a second look" item scattered across this session's
+  `LOGBOOK.md`/`CHANGELOG.md` entries and `CLAUDE.md`'s "Planned" engine
+  list into one place: unverified data (Bajo Nuevo/Serranilla claimants,
+  the Gibraltar/Kosovo/Crimea judgment calls from v3.0.0), visualization
+  approximations worth revisiting (the claims overlay's dash-as-hatching
+  stand-in, `LegendPanel.tsx`'s hardcoded overlay-layer ids), each planned
+  engine's actual (empty) status, and things never verified for lack of
+  browser tooling this session (mobile layout, accessibility). Explicitly
+  scoped to stay accurate: an item should move to `CHANGELOG.md` (and be
+  deleted here) once it's actually built, not accumulate as stale aspiration.
+
 ## v3.1.1 — CLAIMS.md: a generated register of every claimant/claimed relationship
 
 Point release. Adds a documentation artifact, not app behavior — no
