@@ -385,7 +385,7 @@ will eventually connect.
 `getRelatedEntities` — for everything geopolitically significant that isn't
 a UN-member sovereign state: de facto/partially-recognized states (Taiwan,
 Kosovo, Palestine, Western Sahara), dependencies/autonomous regions/SARs
-(Puerto Rico, Hong Kong, Greenland, 36 more), strategically/militarily
+(Puerto Rico, Hong Kong, Greenland, 37 more), strategically/militarily
 significant areas (Guantanamo Bay, the Cyprus Sovereign Base Areas,
 Baikonur, the Siachen Glacier), disputed maritime features (the Spratly
 Islands, Scarborough Reef), and treaty-governed regions (Antarctica) — see
@@ -423,7 +423,8 @@ forward unchanged.
 **`data/registry/geoEntities.ts`** (v3.0.0, replacing v2.2.4's
 `registry/territories.ts`) is the real, always-imported dataset — imported
 as a side effect of `data/index.ts`, so `GeoEntityRegistry` is populated
-before anything reads it. 54 entities: the v3 spec's ~53 plus Crimea,
+before anything reads it. 56 entities: the v3 spec's 55 (including
+Gibraltar — see below) plus Crimea,
 carried forward from the pre-v3 dataset even though it isn't in that spec
 (removing shipped functionality wasn't asked for). Its own
 `provenance.source` carries the same "simplified, not comprehensive or
@@ -516,9 +517,9 @@ all**, being geometrically part of Ukraine's. See `LOGBOOK.md`.
 
 Since v3.0.0, clicking almost any GeoEntity's actual rendered shape on the
 globe reaches its card, the same as clicking any country — see "GeoEntity
-geometry" above (53 of 54 entities have real geometry; only the four
-pre-v3 Territory entries plus the new v3 additions that lacked a source
-polygon would be exceptions, and in practice only Crimea does). Crimea is
+geometry" above (55 of 56 entities have real geometry — every one except
+Crimea, which has no standalone polygon anywhere in the source data).
+Crimea is
 still reachable only via search or the console helper below, since it has
 no rendered shape to click. `hud/selectionStore.ts` also installs a
 dev-only console helper (v2.2.3, generalized in v3.0.0):
@@ -549,7 +550,7 @@ above), so a search-selected GeoEntity produces an identical
 `SelectedEntity` to a geometry click on one.
 
 **Currently searchable entity types: `country` (193, from the rendered
-UN-193 topology) and all five `GeoEntityType` values (54 total, from
+UN-193 topology) and all five `GeoEntityType` values (56 total, from
 `data/registry/geoEntities.ts`) — tagged `COUNTRY` / `GEOPOLITICAL` /
 `TERRITORY` / `STRATEGIC` / `MARITIME` / `REGION` respectively.**
 

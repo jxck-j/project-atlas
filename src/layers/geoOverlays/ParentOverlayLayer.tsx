@@ -18,7 +18,11 @@ import { getEntities } from '../../data'
 // same pure function scene/GeoEntities.tsx uses) so there's one place that
 // knows how to turn a raw feature into renderable geometry — this layer
 // only adds the "which entries, which color" logic on top.
-const OVERLAY_COLOR = '#B98CFF'
+// Green, per spec ("secondary highlight style like a green highlight") —
+// also keeps it unambiguously distinct from COLOR_SELECTED (red) and
+// COLOR_HOVER (amber) in GeoEntities.tsx/Countries.tsx, and from
+// ClaimsOverlayLayer's magenta.
+const OVERLAY_COLOR = '#39FF6A'
 const OVERLAY_RADIUS_FACTOR = 1.0015
 
 export function ParentOverlayComponent() {
@@ -46,14 +50,14 @@ export function ParentOverlayComponent() {
       {children.map((entry) => (
         <group key={`parent-overlay-${entry.geometryId}`}>
           <lineSegments geometry={entry.borderGeometry}>
-            <lineBasicMaterial color={OVERLAY_COLOR} transparent opacity={0.85} />
+            <lineBasicMaterial color={OVERLAY_COLOR} transparent opacity={0.95} />
           </lineSegments>
           {entry.fillGeometry && (
             <mesh geometry={entry.fillGeometry} scale={OVERLAY_RADIUS_FACTOR}>
               <meshBasicMaterial
                 color={OVERLAY_COLOR}
                 transparent
-                opacity={0.12}
+                opacity={0.28}
                 side={FrontSide}
                 depthWrite={false}
               />

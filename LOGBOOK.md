@@ -5,6 +5,74 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.0.1: the overlays were architecturally correct and functionally inert, because of two id spaces that look identical
+
+**The bug: every `EntityRef{type:'country', id:...}` in `geoEntities.ts`
+used the wrong id space.** `Country.id` in this app is not ISO 3166-1
+alpha-3 ("USA", "CHN") — it's whatever `scene/useCountryFeatures.ts`
+registers straight off the topojson feature id (`String(f.id)`), which for
+`world-atlas`'s source data is the ISO 3166-1 **numeric** code as a
+zero-padded string ("840", "156"). Nothing in the country pipeline ever
+remaps numeric to alpha-3 — `buildCountryTopology.mjs` only filters and
+renames by *display name*, never touches `id`. `data/registry/geoEntities.ts`
+was written using alpha-3 codes throughout (`toCountry('USA', ...)`,
+`toCountry('CHN', ...)`, 27 codes across ~40 call sites) because alpha-3 is
+the standard, human-readable convention — and because `data/types.ts`'s own
+`Country.id` doc comment explicitly says "Convention: ISO 3166-1 alpha-3."
+That comment describes the *intended* convention for a `Country` record's
+own id; it does not describe what id a rendered country polygon actually
+carries at runtime, and nothing forced those two to be checked against each
+other before shipping.
+
+**Why this didn't throw, warn, or fail typecheck.** `EntityRef.id` is `string`
+— any string typechecks. `ParentOverlayLayer`/`ClaimsOverlayLayer` compare
+`ref.id === selected.id` and simply get `false` for every comparison,
+forever, which reads identically to "nothing here is related to the
+selection" — the correct, silent, expected result for the overwhelming
+majority of clicks (most countries have no dependencies and are claimed by
+nobody). The bug was invisible in exactly the cases someone would casually
+click to check the feature, and only detectable by clicking specifically
+US/China/a claimed entity and noticing the *absence* of an overlay — the
+same "confirmed by screenshot, not by a type error" shape as the
+`TerritoryEntry` geometryId/entityId bug in v2.3.0's entry below. Worth
+repeating the lesson from that entry here since it bit twice: comparing two
+values that are "obviously" the same id space is exactly the kind of
+assumption that needs an explicit check, not a glance at the type
+signature — `string === string` compiles whether or not the two strings
+came from compatible universes.
+
+**How it was actually caught:** the user reported the overlays "aren't
+actually implemented" after presumably clicking through the running app.
+Rather than assume the fix was a missing `defaultEnabled: true` (Claims
+Overlay does default off, and that's a real secondary gap — see below), the
+id equality checks were traced end to end and verified against the
+*compiled* topology (`public/geo/countries-un193.json`), not assumed from
+the source alpha-3 codes — that's what surfaced the actual mismatch.
+Verified the fix the same way: ran the real dataset through `tsx` (no
+browser available this session) and confirmed selecting China's real id
+(`"156"`) now resolves exactly the three entities the v3 spec's own example
+names (Taiwan, Spratly Islands, Scarborough Reef), and selecting the US's
+real id (`"840"`) resolves its 6 registered dependencies.
+
+**The secondary gap, fixed at the same time:** `ClaimsOverlayLayer`
+defaulted to `defaultEnabled: false`, reading the spec's "when enabled" as
+"starts off." Changed to default-on — a toggle a first-time viewer has to
+discover in the Layer Panel before the spec's own headline example (click
+China, see Taiwan/Spratly flagged) becomes visible isn't "implemented," from
+a user's perspective, even once the underlying logic is correct. The layer
+is still a real toggle (switchable off in the Layer Panel like any other
+layer) — only the starting state changed.
+
+**Fix:** `ISO_ALPHA3_TO_NUMERIC`, a lookup table in `geoEntities.ts` scoped
+to exactly the 27 country codes that file references, with `countryRef()`
+resolving through it. Kept the alpha-3 codes at every call site rather than
+rewriting ~40 lines to numeric codes directly — "USA"/"CHN" stay readable
+for whoever edits this file next; only the one function that turns them
+into an `EntityRef` needed to change. Throws on an unmapped code rather than
+silently producing a broken ref again, so adding a 28th country reference
+without extending the table fails loudly at module load instead of
+compiling into another invisible no-op.
+
 ## 2026-07-21 — v3.0.0: one registry instead of five, and the judgment calls the spec left open
 
 **Why one `GeoEntity` interface instead of five (`GeopoliticalEntity`,
@@ -42,7 +110,7 @@ than guessed-and-hidden:**
 
 - **Gibraltar** appears in the spec's Known Relationships section
   (`parentEntity: United Kingdom`) but not in its explicit Territory list.
-  Added as a 39th Territory entry on the assumption this was an omission,
+  Added as a 40th Territory entry on the assumption this was an omission,
   not a deliberate exclusion — it has real source geometry and an
   unambiguous relationship, so leaving it out felt more likely to be wrong
   than including it. Trivial to remove (`src/data/registry/geoEntities.ts`,

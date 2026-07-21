@@ -17,6 +17,40 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.0.1 — Fixing the bug that made both v3 overlays silently do nothing
+
+Point release. v3.0.0 shipped `ParentOverlayLayer`/`ClaimsOverlayLayer` as
+real Layer Engine layers, but every `toCountry()` reference in
+`geoEntities.ts` used an ISO 3166-1 **alpha-3** code (`'USA'`, `'CHN'`) while
+this app's actual Country Registry ids — and therefore `selected.id`
+whenever a country is clicked — are the raw **numeric** ISO 3166-1 codes
+straight from `world-atlas`'s source topology (`'840'`, `'156'`; see
+`scene/useCountryFeatures.ts`, which never remaps them). Every equality
+check the two overlays depend on (`parentEntity.ref.id === selected.id`,
+`claimedBy[].ref.id === selected.id`) therefore never matched anything —
+clicking United States or China rendered no overlay at all, architecture
+correct, data silently disconnected from it. See `LOGBOOK.md` for how this
+was found and verified.
+
+### Fixed
+
+- `data/registry/geoEntities.ts`: added `ISO_ALPHA3_TO_NUMERIC`, a lookup
+  `countryRef()` now resolves through — every `toCountry()` call site keeps
+  its human-readable alpha-3 code, but the `EntityRef` it produces now
+  carries the actual numeric id the rest of the app uses. Verified against
+  the real dataset: selecting China (`"156"`) now surfaces exactly
+  `taiwan`/`spratly-islands`/`scarborough-reef` as claims-related; selecting
+  the United States (`"840"`) now surfaces its 6 registered dependencies as
+  parent-overlay children.
+- `ParentOverlayLayer.tsx`: color changed from violet (`#B98CFF`) to green
+  (`#39FF6A`, matching the spec's "like a green highlight"); fill opacity
+  raised from 0.12 to 0.28 so it reads as an actual highlight rather than a
+  faint tint.
+- `ClaimsOverlayLayer.tsx`: `defaultEnabled` changed from `false` to `true`
+  — the v3 spec's "when enabled" describes the layer being a toggle (still
+  listed, still switchable off in the Layer Panel), not a requirement that
+  it start off and stay undiscovered. Fill opacity raised from 0.06 to 0.1.
+
 ## v3.0.0 — Every entity type isn't a country: the GeoEntity system
 
 New major version — expands the geopolitical data architecture and Entity
@@ -33,8 +67,8 @@ de-facto/partially-recognized states (Taiwan, Kosovo, Palestine, Western
 Sahara) to overseas dependencies (Puerto Rico, Hong Kong, Greenland, and 36
 more), military installations (Guantanamo Bay, the Cyprus Sovereign Base
 Areas, Baikonur), disputed maritime features (the Spratly Islands,
-Scarborough Reef), and treaty-governed regions (Antarctica) — 54 entities in
-total, 53 with real rendered geometry (only Crimea stays geometry-less, for
+Scarborough Reef), and treaty-governed regions (Antarctica) — 56 entities in
+total, 55 with real rendered geometry (only Crimea stays geometry-less, for
 the same "no standalone polygon anywhere in the source data" reason it's had
 since v2.3.0).
 
@@ -61,7 +95,7 @@ without this generalization.
   in both directions to answer "what's connected to this entity at all,"
   for the claims overlay and any future relationship-graph consumer.
   Replaces `TerritoryRegistry.ts`.
-- `src/data/registry/geoEntities.ts`: the real dataset — 54 entities, real
+- `src/data/registry/geoEntities.ts`: the real dataset — 56 entities, real
   parent/administration/claim relationships for the ones the source data
   supports (see the file for the full list and its sourcing caveat).
   Replaces `registry/territories.ts`.

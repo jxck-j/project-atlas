@@ -31,8 +31,56 @@ const SIMPLIFIED_PROVENANCE = {
   source: 'Simplified entry — not a comprehensive or authoritative dataset.',
 }
 
-function countryRef(id: string): EntityRef {
-  return { type: 'country', id }
+// world-atlas's source topology (and therefore this app's Country Registry
+// ids, and `selected.id` whenever a country is selected) keys countries by
+// their raw ISO 3166-1 NUMERIC code, not the alpha-3 code ("840", not
+// "USA") — scene/useCountryFeatures.ts registers each country using
+// `String(feature.id)` straight off the topology, with no alpha-3 remapping
+// anywhere in the pipeline (see scripts/buildCountryTopology.mjs). Every
+// `toCountry()` call below is written with the human-readable alpha-3 code
+// for the sake of anyone reading this file; this map is what makes that
+// code actually resolve to the country a click/selection produces, instead
+// of silently never matching `selected.id` (which is exactly what shipped
+// initially — see LOGBOOK.md's v3.0.0 entry for the bug this was). Only
+// entries this file actually references.
+const ISO_ALPHA3_TO_NUMERIC: Record<string, string> = {
+  USA: '840',
+  CHN: '156',
+  GBR: '826',
+  FRA: '250',
+  DNK: '208',
+  MAR: '504',
+  SRB: '688',
+  NLD: '528',
+  FIN: '246',
+  AUS: '036',
+  NZL: '554',
+  IND: '356',
+  PAK: '586',
+  VNM: '704',
+  PHL: '608',
+  MYS: '458',
+  BRN: '096',
+  RUS: '643',
+  UKR: '804',
+  COL: '170',
+  JAM: '388',
+  NIC: '558',
+  HND: '340',
+  CUB: '192',
+  ARG: '032',
+  CHL: '152',
+  NOR: '578',
+}
+
+function countryRef(alpha3: string): EntityRef {
+  const numericId = ISO_ALPHA3_TO_NUMERIC[alpha3]
+  if (!numericId) {
+    throw new Error(
+      `[geoEntities] no numeric id mapping for country code "${alpha3}" — add it to ISO_ALPHA3_TO_NUMERIC.`
+    )
+  }
+  return { type: 'country', id: numericId }
 }
 
 function entityRef(id: string): EntityRef {

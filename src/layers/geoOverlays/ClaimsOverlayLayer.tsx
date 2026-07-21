@@ -12,9 +12,12 @@ import type { GeoEntity } from '../../data'
 // the spec — "when enabled: selected entity = primary highlight, claimed
 // territories = secondary outline/hatching style ... do not fill claimed
 // territories with the same color as the claimant." Registered through the
-// Layer Engine like ParentOverlayLayer, and defaultEnabled: false — the
-// spec frames this as opt-in ("when enabled"), unlike the territory overlay
-// which reads as an always-useful selection-context cue.
+// Layer Engine like ParentOverlayLayer. defaultEnabled: true — "when
+// enabled" describes the layer's *architecture* (it's a toggle, still
+// listed and switchable off in the Layer Panel like any other layer), not a
+// requirement that it start off; the spec's own examples (click China, see
+// Taiwan/Spratly flagged) are meant to be immediately visible, not
+// contingent on first finding the right toggle.
 //
 // Rendering note: this app's borders use plain LineBasicMaterial (native
 // WebGL ignores its `linewidth`, and a true diagonal-hatch fill would need
@@ -100,7 +103,7 @@ export function ClaimsOverlayComponent() {
                   COLOR_SELECTED), but keeping the fill itself minimal also
                   avoids visually implying ownership/control, which a solid
                   fill would read as. */}
-              <meshBasicMaterial color={CLAIM_COLOR} transparent opacity={0.06} side={FrontSide} depthWrite={false} />
+              <meshBasicMaterial color={CLAIM_COLOR} transparent opacity={0.1} side={FrontSide} depthWrite={false} />
             </mesh>
           )}
         </group>
@@ -115,6 +118,6 @@ registerLayer({
   description:
     'Highlights entities claimed by (or claiming) the current selection in a distinct pulsing outline — sovereignty disputes made visible without implying resolution.',
   category: 'geopolitical',
-  defaultEnabled: false,
+  defaultEnabled: true,
   component: ClaimsOverlayComponent,
 })

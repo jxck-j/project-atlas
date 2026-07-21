@@ -217,7 +217,7 @@ src/
                                are separate fields, see CLAUDE.md
     registry/geoEntities.ts     (v3.0.0, replacing registry/territories.ts
                                and exampleTerritories.ts) The REAL, always-
-                               loaded dataset — 54 entities across all five
+                               loaded dataset — 56 entities across all five
                                GeoEntityType classifications, imported as a
                                side effect of index.ts. 53 also have real
                                rendered geometry — see scene/GeoEntities.tsx
