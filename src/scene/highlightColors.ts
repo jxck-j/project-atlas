@@ -45,4 +45,15 @@ export const HIGHLIGHT_COLORS = {
     description:
       'A sovereign state directly connected to the current selection — its administering parent or a claimant (dashed blue outline + fill + labeled marker).',
   },
+  // v3.3.0: shared by all six layers/geoOverlays/CategoryHighlightLayer.tsx
+  // toggles — one color for "every entity in a highlighted category," not
+  // one per category, since a viewer flipping between "highlight countries"
+  // and "highlight strategic regions" is looking at the same *kind* of cue
+  // (a category-wide accent) each time, not a fact that needs its own
+  // color to stay distinguishable the way claimed-vs-claimant did.
+  categoryHighlight: {
+    hex: '#B98CFF',
+    label: 'CATEGORY HIGHLIGHT',
+    description: 'Every entity in a category enabled from the Layers panel (e.g. all sovereign states, or all strategic regions) at once.',
+  },
 } as const

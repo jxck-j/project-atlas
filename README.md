@@ -86,6 +86,13 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   toggles it. HUD: **L** toggles the Layer Panel, **/** opens search.
   Disabled while typing in a text field. Full reference in the
   ⚙ Settings panel.
+- **Category highlighting** (v3.3.0) — the 🗂 Layers panel has a HIGHLIGHT
+  group with one toggle per selectable classification (sovereign states,
+  geopolitical entities, territories, strategic/military regions, maritime
+  features, geographic regions). Enabling one highlights every entity in
+  that category at once, in violet, independent of and simultaneous with
+  the current selection — toggle more than one on together and both
+  categories stay highlighted.
 
 ## Architecture
 
@@ -125,6 +132,18 @@ src/
                                angular extent, all merged per-country and
                                projected onto the sphere. Fully generic —
                                geoEntityEntries.ts (v3.0.0) reuses it unchanged
+    countryEntries.ts           (v3.3.0) buildCountryEntries() — "raw country
+                               feature -> border/fill geometry", factored out
+                               of ClaimsOverlayLayer.tsx once
+                               CategoryHighlightLayer.tsx needed the same
+                               thing; mirrors geoEntityEntries.ts for the
+                               GeoEntity side
+    PointerMarker.tsx            (v3.3.0) Shared "pulsing dot + leader line +
+                               label" callout — Globe.tsx's CapitalMarker and
+                               ClaimsOverlayLayer.tsx's related-country
+                               marker both render through this one, tuned
+                               component after both were reported as too
+                               large/far-swinging
     useCountryFeatures.ts     Fetches + parses countries-un193.json once,
                                shared via a singleton useSyncExternalStore;
                                also registers each feature into the Country
@@ -190,6 +209,12 @@ src/
                                  on Country geometry, fetched independently
                                  via useCountryFeatures(). Every color sourced
                                  from scene/highlightColors.ts
+    CategoryHighlightLayer.tsx    (v3.3.0) Six layers, one per selectable
+                                 classification (country + the five
+                                 GeoEntityType values) — "highlight every
+                                 sovereign state at once," etc. Independently
+                                 toggleable (not one mutually-exclusive
+                                 picker), all default off
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar

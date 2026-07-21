@@ -17,15 +17,25 @@ import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
 // state.
 //
 // Every color/label/description comes from scene/highlightColors.ts — the
-// exact same values Countries.tsx, GeoEntities.tsx, and both geoOverlays
-// layers render with — so this can't drift out of sync with what's actually
+// exact same values Countries.tsx, GeoEntities.tsx, and every geoOverlays
+// layer render with — so this can't drift out of sync with what's actually
 // on screen. The overlay rows (TERRITORY; CLAIMED + RELATED COUNTRY
 // together, since ClaimsOverlayLayer/"Relationships Overlay" renders both
-// directions of these relationships — see that file's v3.1.5 comments) are
-// conditional on that overlay's layer actually being enabled (read via the
-// Layer Engine barrel, same as LayerPanel.tsx): showing "CLAIMED = magenta"
-// while the overlay is toggled off would describe a color nothing on
-// screen currently uses.
+// directions of these relationships — see that file's v3.1.5 comments;
+// CATEGORY HIGHLIGHT, v3.3.0) are conditional on the relevant layer(s)
+// actually being enabled (read via the Layer Engine barrel, same as
+// LayerPanel.tsx): showing "CLAIMED = magenta" while the overlay is
+// toggled off would describe a color nothing on screen currently uses.
+//
+// CATEGORY_HIGHLIGHT_LAYER_IDS lists all six of
+// CategoryHighlightLayer.tsx's registered layer ids rather than iterating
+// the Layer Engine registry generically (unlike LayerPanel.tsx, which
+// lists *every* registered layer and so never needs updating) — this is
+// still the one place named in BACKLOG.md as worth generalizing if a
+// fourth overlay concept shows up: a `legend` field on `LayerDefinition`
+// itself, so this file could iterate the registry instead of naming ids.
+// Six is small enough that hand-listing them here was the pragmatic call
+// for now, same reasoning the two hardcoded ids below already used.
 function LegendRow({ color, label, description }: { color: string; label: string; description: string }) {
   return (
     <div className="flex items-start gap-2">
@@ -41,8 +51,18 @@ function LegendRow({ color, label, description }: { color: string; label: string
   )
 }
 
+const CATEGORY_HIGHLIGHT_LAYER_IDS = [
+  'highlight-country',
+  'highlight-geopolitical-entity',
+  'highlight-territory',
+  'highlight-strategic-region',
+  'highlight-maritime-feature',
+  'highlight-geographic-region',
+]
+
 export function LegendPanel() {
   const enabledMap = useLayerEnabledMap()
+  const anyCategoryHighlightEnabled = CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id])
 
   return (
     <div className="border border-cyan-400/25 bg-cyan-950/20 backdrop-blur-sm px-4 py-3 font-mono text-[10px] md:text-xs space-y-2.5 min-w-[190px] max-w-[240px]">
@@ -83,6 +103,13 @@ export function LegendPanel() {
             description={HIGHLIGHT_COLORS.relatedCountry.description}
           />
         </>
+      )}
+      {anyCategoryHighlightEnabled && (
+        <LegendRow
+          color={HIGHLIGHT_COLORS.categoryHighlight.hex}
+          label={HIGHLIGHT_COLORS.categoryHighlight.label}
+          description={HIGHLIGHT_COLORS.categoryHighlight.description}
+        />
       )}
     </div>
   )

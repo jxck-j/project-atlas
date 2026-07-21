@@ -5,6 +5,58 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.3.0: six independent toggles instead of one picker, and why the second copy of a pattern is when you extract it
+
+**Registered six Layer Engine layers instead of building one "pick a
+category" control, because the Layer Engine already solves exactly that
+problem.** First instinct for "highlight all entities of one category" was
+a small new store (`highlightedCategory: Category | null`) plus a new HUD
+control to set it — but that's a parallel toggle mechanism sitting right
+next to a Layer Engine that already does "independently enable/disable any
+number of registered visualizations," built in v2.0 specifically so future
+overlays would never need new HUD plumbing. Registering six layers (one per
+classification, `category: 'highlight'` so they group together in
+`LayerPanel.tsx`) meant the feature needed zero new store, zero new HUD
+component, and zero edits to `LayerPanel.tsx` — it already iterates
+`getLayerDefinitions()` generically. It also came with a capability a
+single mutually-exclusive picker wouldn't have: enabling two categories at
+once (sovereign states *and* strategic regions, say) just works, because
+that's already how independently-toggleable layers behave. Worth noticing
+when a new feature's "obvious" first design (a dedicated store + control)
+is actually reinventing a mechanism that already exists one directory over.
+
+**`scene/PointerMarker.tsx` and `scene/countryEntries.ts` both got
+extracted for the same reason, on the same day: a second consumer arrived
+needing the exact same thing, not a similar thing.** `CategoryHighlightLayer.tsx`'s
+sovereign-states highlight needed precisely the "raw country feature →
+border/fill `BufferGeometry`" logic `ClaimsOverlayLayer.tsx`'s related-
+country rendering already had inline — not almost the same, byte-for-byte
+the same, just called from a different place. Same story for the marker:
+`Globe.tsx`'s `CapitalMarker` and `ClaimsOverlayLayer.tsx`'s claimant/
+parent marker had independently near-identical "dot + leader line + label"
+implementations that had already drifted apart in their exact sizing
+(0.009 vs. 0.014 dot radius, `RADIUS × 1.3` vs. `× 1.32` callout distance,
+±9° vs. ±10° swing) before this session even started — which is itself
+the evidence for extracting a shared component now rather than continuing
+to patch two copies: two independent "make it smaller" edits would have
+produced two independently-tuned-by-feel sizes, drifting a third time.
+One shared `PointerMarker.tsx`, tuned once, used twice, can't do that.
+
+**The "too big, comes out too far" complaint was resolved by comparing
+values across the file, not by picking new numbers from scratch.** Read
+both markers' actual constants before touching either
+(`CapitalMarker`: dot 0.009, callout `RADIUS × 1.3`, swing ±9°;
+`RelatedCountryMarker`: dot 0.014, callout `RADIUS × 1.32`, swing ±10°) —
+both already near the upper end of what this app's own established
+"small-entity leader-line callout" convention uses elsewhere
+(`Countries.tsx`/`GeoEntities.tsx`'s `HoverLabel` goes out to
+`RADIUS × 1.35` for country/entity *names*, which is a comparable
+convention but wasn't part of this complaint and was left untouched — the
+report was specifically about the claimant/capital markers, not every
+leader-line callout in the app). New shared constants (dot 0.007, callout
+`RADIUS × 1.1`, swing ±4°) are a genuine reduction across the board, not
+just "smaller than whichever one was worse."
+
 ## 2026-07-21 — v3.2.0: teaching selectEntity() a third argument without teaching its three existing callers anything new
 
 **The one place "purely additive" needed a real design decision, not just

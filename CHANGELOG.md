@@ -17,6 +17,61 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.3.0 — Category highlighting, and subtler markers
+
+New capability (category highlighting is a new interaction/visualization
+mode) plus a quality-of-life fix to two existing markers. Kept as "3.3"
+rather than a new major-version number for the same reason v3.1.0/v3.2.0
+were — deepens the existing Layer Engine rather than introducing a new
+engine.
+
+### Added
+
+- **`layers/geoOverlays/CategoryHighlightLayer.tsx`**: six new Layer Engine
+  layers (SOVEREIGN STATES, GEOPOLITICAL ENTITIES, TERRITORIES, STRATEGIC /
+  MILITARY REGIONS, MARITIME FEATURES, GEOGRAPHIC REGIONS), each
+  highlighting every entity in that one classification at once, independent
+  of and simultaneous with whatever's currently selected. Registered as
+  six ordinary toggles (not a single mutually-exclusive picker) — enabling
+  more than one at once (e.g. "sovereign states" + "strategic regions"
+  together) just works, and `LayerPanel.tsx` needed zero code changes since
+  it already renders whatever's registered generically. `hud/LegendPanel.tsx`
+  gained a CATEGORY HIGHLIGHT row, shown whenever any of the six is enabled.
+- `scene/countryEntries.ts`: `buildCountryEntries()`, the "raw country
+  feature → border/fill geometry" builder factored out once a second
+  consumer needed it (`ClaimsOverlayLayer.tsx`'s related-country rendering
+  used to build this inline; `CategoryHighlightLayer.tsx`'s sovereign-state
+  highlight needed the identical thing). Mirrors `geoEntityEntries.ts`'s
+  `buildGeoEntityEntries()` for the GeoEntity side.
+- `scene/PointerMarker.tsx`: a shared "pulsing dot + leader line + label"
+  callout, extracted after two independent complaints about the same
+  underlying pattern (see "Fixed," below) — `Globe.tsx`'s `CapitalMarker`
+  and `ClaimsOverlayLayer.tsx`'s related-country marker both now render
+  through this one, tuned component instead of each carrying its own
+  slightly-different, oversized copy.
+
+### Fixed
+
+- **Capital markers and claimant/parent-country markers were reported as
+  too large and their callouts swinging too far from the globe surface,
+  obscuring the view around small entities** (Puerto Rico was the reported
+  case). Both markers' dot radius, callout distance
+  (`GLOBE_RADIUS × 1.3`/`1.32` → `× 1.1`), diagonal swing (±9-10° → ±4°),
+  and pulse amplitude are all reduced in the new shared
+  `scene/PointerMarker.tsx` — a deliberate, across-the-board resizing, not
+  a per-marker patch, so the two can't drift back out of sync with each
+  other the way their previous independent implementations had.
+
+### Notes
+
+- "Only military territories, only sovereign territories" from the
+  request maps to this app's existing six-way classification
+  (`'country'` for sovereign states, `'strategic-region'` for
+  military/strategic significance — see `data/types.ts`'s `GeoEntityType`)
+  rather than new category concepts of their own. Flagged in `BACKLOG.md`
+  for confirmation, same as other wording interpretations in this project's
+  history.
+
 ## v3.2.0 — Keyboard Navigation & Entity Selection ("Phase 3.2")
 
 New capability — a new interaction mode (this repo's own versioning note

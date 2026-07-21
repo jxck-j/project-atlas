@@ -1,15 +1,13 @@
-import { useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
-import { BufferGeometry, Float32BufferAttribute, FrontSide, type Mesh } from 'three'
+import { useMemo } from 'react'
+import { FrontSide } from 'three'
 import { registerLayer } from '../layerRegistry'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
 import { useCountryFeatures } from '../../scene/useCountryFeatures'
-import { buildGeoEntityEntries, computeLineDistances } from '../../scene/geoEntityEntries'
-import { geometryToBorderSegments, geometryToCentroid, geometryToFillMesh } from '../../scene/countryGeometry'
+import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
+import { buildCountryEntries, type CountryEntry } from '../../scene/countryEntries'
 import { GLOBE_RADIUS } from '../../scene/constants'
-import { latLngToVector3 } from '../../utils/geo'
 import { HIGHLIGHT_COLORS } from '../../scene/highlightColors'
+import { PointerMarker } from '../../scene/PointerMarker'
 import { useSelection } from '../../hud/selectionStore'
 import { getEntities } from '../../data'
 import type { GeoEntity } from '../../data'
@@ -153,13 +151,8 @@ function useRelatedCountryRoles(): Map<string, Set<RelatedCountryRole>> {
   }, [selected])
 }
 
-interface RelatedCountryEntry {
-  id: string
-  name: string
+interface RelatedCountryEntry extends CountryEntry {
   roles: Set<RelatedCountryRole>
-  centroid: { lat: number; lng: number }
-  borderGeometry: BufferGeometry
-  fillGeometry: BufferGeometry | null
 }
 
 const ROLE_LABEL: Record<RelatedCountryRole, string> = {
@@ -167,84 +160,21 @@ const ROLE_LABEL: Record<RelatedCountryRole, string> = {
   claimant: 'CLAIMANT',
 }
 
-function RelatedCountryMarker({
-  name,
-  roles,
-  centroid,
-}: {
-  name: string
-  roles: Set<RelatedCountryRole>
-  centroid: { lat: number; lng: number }
-}) {
-  const dotRef = useRef<Mesh>(null)
-
-  useFrame(({ clock }) => {
-    if (!dotRef.current) return
-    const t = clock.getElapsedTime()
-    dotRef.current.scale.setScalar(1 + Math.sin(t * 2.4) * 0.2)
-  })
-
-  // Same pointed-callout convention as CapitalMarker/HoverLabel — a marker
-  // on the country itself, a leader line out to an explicit text label, so
-  // "why is this highlighted" never depends on the viewer already knowing
-  // what RELATED_COUNTRY_COLOR means (the point of also having
-  // hud/LegendPanel.tsx, but a label on the globe itself needs no lookup at
-  // all) — and the role(s) in the label are what distinguish "administers
-  // this" from "claims this," since the color alone doesn't.
-  const anchor = latLngToVector3(centroid.lat, centroid.lng, GLOBE_RADIUS * 1.01)
-  const calloutPoint = latLngToVector3(centroid.lat - 10, centroid.lng + 10, GLOBE_RADIUS * 1.32)
-  const roleLabel = Array.from(roles)
-    .map((role) => ROLE_LABEL[role])
-    .join(' & ')
-
-  return (
-    <group>
-      <mesh ref={dotRef} position={anchor}>
-        <sphereGeometry args={[0.014, 10, 10]} />
-        <meshBasicMaterial color={RELATED_COUNTRY_COLOR} />
-      </mesh>
-      <Line points={[anchor, calloutPoint]} color={RELATED_COUNTRY_COLOR} lineWidth={1} transparent opacity={0.85} />
-      <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[18, 0]} style={{ pointerEvents: 'none' }}>
-        <div
-          className="whitespace-nowrap font-mono text-[9px] tracking-[0.2em]"
-          style={{ color: RELATED_COUNTRY_COLOR, textShadow: `0 0 6px ${RELATED_COUNTRY_COLOR}` }}
-        >
-          {roleLabel} — {name.toUpperCase()}
-        </div>
-      </Html>
-    </group>
-  )
-}
-
 function RelatedCountriesOverlay({ countryRoles }: { countryRoles: Map<string, Set<RelatedCountryRole>> }) {
   const features = useCountryFeatures()
+  const entries = useMemo(
+    () => buildCountryEntries(features, RELATED_COUNTRY_BORDER_RADIUS, RELATED_COUNTRY_FILL_RADIUS, { dashed: true }),
+    [features]
+  )
 
   const related = useMemo<RelatedCountryEntry[]>(() => {
     if (countryRoles.size === 0) return []
-    return features.flatMap((f) => {
-      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
-      const roles = id ? countryRoles.get(id) : undefined
-      if (!id || !roles) return []
-
-      const borderGeometry = new BufferGeometry()
-      borderGeometry.setAttribute(
-        'position',
-        new Float32BufferAttribute(geometryToBorderSegments(f.geometry, RELATED_COUNTRY_BORDER_RADIUS), 3)
-      )
-      computeLineDistances(borderGeometry)
-
-      return [
-        {
-          id,
-          name: (f.properties?.name as string) ?? 'Unknown',
-          roles,
-          centroid: geometryToCentroid(f.geometry),
-          borderGeometry,
-          fillGeometry: geometryToFillMesh(f.geometry, RELATED_COUNTRY_FILL_RADIUS),
-        },
-      ]
+    return entries.flatMap((entry) => {
+      const roles = countryRoles.get(entry.id)
+      if (!roles) return []
+      return [{ ...entry, roles }]
     })
-  }, [features, countryRoles])
+  }, [entries, countryRoles])
 
   if (related.length === 0) return null
 
@@ -272,7 +202,17 @@ function RelatedCountriesOverlay({ countryRoles }: { countryRoles: Map<string, S
               />
             </mesh>
           )}
-          <RelatedCountryMarker name={country.name} roles={country.roles} centroid={country.centroid} />
+          {/* v3.3.0: shared, deliberately subtler marker — see
+              scene/PointerMarker.tsx for why this used to be a bigger,
+              bespoke marker here. The role(s) in the label are what
+              distinguish "administers this" from "claims this," since the
+              color alone doesn't. */}
+          <PointerMarker
+            lat={country.centroid.lat}
+            lng={country.centroid.lng}
+            color={RELATED_COUNTRY_COLOR}
+            label={`${Array.from(country.roles).map((role) => ROLE_LABEL[role]).join(' & ')} — ${country.name.toUpperCase()}`}
+          />
         </group>
       ))}
     </group>

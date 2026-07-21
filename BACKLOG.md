@@ -78,15 +78,18 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   browser tooling was available in the sessions that built v3.1.0/v3.1.1.
   Worth a visual pass to confirm dash rhythm reads well across both large
   claimants (Russia) and tiny disputed features (Scarborough Reef).
-- **`hud/LegendPanel.tsx`'s overlay rows are hardcoded to two specific layer
-  ids** (`'parent-territory-overlay'`, `'claims-overlay'`) rather than
-  driven generically by the Layer Engine registry. A third geopolitical
-  overlay layer would need a manual `LegendPanel.tsx` edit to appear in the
-  legend — unlike registering the layer itself, which needs no edits
-  anywhere else (see `CLAUDE.md`'s Layer Engine section). Consider adding
-  an optional `legendColor`/`legendDescription` field to `LayerDefinition`
-  if a third overlay layer is ever added, so the legend can iterate the
-  registry instead of naming ids.
+- **`hud/LegendPanel.tsx`'s overlay rows are hardcoded to specific layer
+  ids** — `'parent-territory-overlay'`, `'claims-overlay'`, and now (v3.3.0)
+  a list of all six `'highlight-*'` ids — rather than driven generically by
+  the Layer Engine registry. A future overlay layer would need a manual
+  `LegendPanel.tsx` edit to appear in the legend — unlike registering the
+  layer itself, which needs no edits anywhere else (see `CLAUDE.md`'s Layer
+  Engine section). This item was flagged after two layers and is still
+  unaddressed after three (one of them six ids at once) — worth actually
+  doing now: an optional `legend?: {color, label, description}[]` field on
+  `LayerDefinition`, so `LegendPanel.tsx` can iterate
+  `getLayerDefinitions()` the same way `LayerPanel.tsx` already does,
+  instead of naming ids by hand.
 - **Crimea still has no rendered geometry** — confirmed to genuinely not
   exist as a standalone polygon anywhere in `world-atlas`'s source data (not
   just unimplemented). Hand-authoring a real sub-region shape is possible
@@ -157,8 +160,34 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   actually needs it, to confirm the function's shape is right rather than
   speculative.
 
+## Category Highlighting (v3.3.0)
+
+- **"Only military territories, only sovereign territories" was mapped onto
+  this app's existing six-way classification** (`'strategic-region'` for
+  "military," `'country'` for "sovereign") rather than treated as new
+  category concepts — the request's own wording doesn't exactly match any
+  existing `GeoEntityType` label, so this is an interpretation, not a
+  literal read. Worth confirming, same as other wording-mapping judgment
+  calls in this project's history (Tab's "categories/layers" in v3.2.0,
+  Gibraltar's inclusion in v3.0.0).
+- **The `'highlight-country'` layer draws an extra pass over all 193
+  countries when enabled** — roughly doubling the draw-call count for the
+  country layer specifically while it's on (opt-in, `defaultEnabled: false`,
+  same as every other overlay). `CLAUDE.md`'s own LOGBOOK documents draw-call
+  count as the dominant performance cost this app has ever hit (the
+  7,234→386 fix); this is the first opt-in feature that scales with country
+  count in the same way. Untested against an actual frame-rate counter —
+  worth a real check before assuming it's fine at every zoom level/device.
+
 ## Not yet verified
 
+- **`scene/PointerMarker.tsx`'s new, smaller sizing constants (dot radius
+  0.007, callout distance `GLOBE_RADIUS × 1.1`, ±4° swing) were derived by
+  comparing them against the previous, reportedly-oversized values — not
+  by looking at a rendered result.** No browser tooling was available this
+  session either. Worth a real pass to confirm "more subtle" reads as
+  "still findable," not "too subtle to notice" — same open question the
+  `DASH_SIZE`/`GAP_SIZE` item below already flags for a different overlay.
 - **The v3.1.5 "related country" overlay's dual-role case (Gibraltar: UK as
   parent, Spain as claimant, both highlighted simultaneously) has only
   been checked against the data (`tsx`, not a browser)** — confirmed the

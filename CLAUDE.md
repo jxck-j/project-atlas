@@ -271,6 +271,12 @@ convert (`time / 1000`) before calling `advance()`.
   hovering). Water-body labels (`WaterLabels`) only show when nothing is
   selected; the capital marker (`CapitalMarker`, both in `Globe.tsx`) only shows
   when the selected country has profile data in `countryProfiles.ts`.
+  `CapitalMarker` renders through `scene/PointerMarker.tsx` (v3.3.0) — a
+  shared "pulsing dot + leader line + label" callout also used by
+  `ClaimsOverlayLayer.tsx`'s related-country marker, after both had
+  independently drifted into being reported as too large/far-swinging;
+  tune sizing there, not in either caller, so the two can't drift apart
+  again.
   `WaterLabels` uses `Html`'s `occlude` prop against a ref to the core sphere
   specifically, **not** the whole scene (`occlude={true}`/no ref) — occluding
   against everything also catches the atmosphere glow shells (which sit in front
@@ -295,7 +301,7 @@ convert (`time / 1000`) before calling `advance()`.
   'geo-entity'`, not one member per `GeoEntityType`. See `LOGBOOK.md`.
 - **`scene/highlightColors.ts`** (v3.1.0) is the single source of truth for
   every highlight/selection color the globe renders — `Countries.tsx`,
-  `GeoEntities.tsx`, and both `geoOverlays` layers (below) all import their
+  `GeoEntities.tsx`, and every `geoOverlays` layer (below) all import their
   colors from here rather than each hardcoding their own hex literal.
   **`hud/LegendPanel.tsx`** reads the exact same values to explain them, so
   the two can never drift apart. Deliberately always-on (stacked with
@@ -319,6 +325,21 @@ convert (`time / 1000`) before calling `advance()`.
   GeoEntity feature collection at all; don't assume "the other end of a
   relationship" is representable by whatever loop is already iterating one
   side of it. See `LOGBOOK.md`'s v3.1.0 entry for how this gap was found.
+- **`CategoryHighlightLayer.tsx`** (v3.3.0) registers six ordinary Layer
+  Engine layers — one per selectable classification (`'country'` plus the
+  five `GeoEntityType` values) — each drawing every entity in that one
+  classification with the same additive highlight treatment
+  (`scene/countryEntries.ts`'s `buildCountryEntries()` for the `'country'`
+  layer, `scene/geoEntityEntries.ts`'s `buildGeoEntityEntries()` filtered by
+  `type` for the other five), independent of and simultaneous with the
+  current selection. Six independent toggles rather than one "pick a
+  category" store/control — `hud/LayerPanel.tsx` already renders whatever's
+  registered generically, so this needed zero new HUD plumbing, and
+  enabling more than one category at once (e.g. sovereign states *and*
+  strategic regions) just works the way any two independently-toggleable
+  layers do. `hud/LegendPanel.tsx` shows one CATEGORY HIGHLIGHT row if any
+  of the six `'highlight-*'` ids is enabled — see `LOGBOOK.md`'s v3.3.0
+  entry.
 
 ### Input Layer (`src/input/`, v3.2.0, "Phase 3.2")
 

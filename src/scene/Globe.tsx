@@ -9,6 +9,7 @@ import { latLngPathToPoints, latLngToVector3, vector3ToLatLng } from '../utils/g
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
 import { GeoEntities } from './GeoEntities'
+import { PointerMarker } from './PointerMarker'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
@@ -69,6 +70,8 @@ function GraticuleGrid() {
   )
 }
 
+const CAPITAL_MARKER_COLOR = '#FF8A3D'
+
 // Marker for the currently selected country's capital — only rendered while
 // a country with known profile data is selected (see selectionStore).
 // Gated on entity.kind === 'country' specifically (not just "does
@@ -77,49 +80,25 @@ function GraticuleGrid() {
 // Territory (e.g. "Taiwan"), so a name-only lookup would show that
 // country's capital marker for an unrelated Territory selection once
 // territories became independently selectable (v2.3.0) — see LOGBOOK.md.
+//
+// v3.3.0: renders via the shared scene/PointerMarker.tsx rather than its
+// own bespoke dot+line+label — this marker (along with
+// ClaimsOverlayLayer.tsx's related-country marker) was reported as too
+// large and its callout swinging too far out, obscuring the view around
+// small countries. See PointerMarker.tsx for the tuned sizing.
 function CapitalMarker() {
   const { selected } = useSelection()
-  const meshRef = useRef<Mesh>(null)
   const profile = selected?.entity.kind === 'country' ? COUNTRY_PROFILES[selected.name] : undefined
-
-  useFrame(({ clock }) => {
-    if (!meshRef.current) return
-    const t = clock.getElapsedTime()
-    meshRef.current.scale.setScalar(1 + Math.sin(t * 2) * 0.15)
-  })
 
   if (!profile) return null
 
-  // Same pointed-callout convention as the small-country hover label: a dot
-  // on the city itself, a thin leader line out to the label so the text
-  // doesn't sit on top of (and dwarf) the marker. The callout is offset
-  // diagonally (not straight radially) — a capital is often near its
-  // country's geographic centroid, which is exactly where the country-name
-  // label anchors, so a purely radial line would land the two labels right
-  // on top of each other.
-  const anchor = latLngToVector3(profile.capitalLat, profile.capitalLng, RADIUS * 1.006)
-  const calloutPoint = latLngToVector3(
-    profile.capitalLat - 9,
-    profile.capitalLng + 9,
-    RADIUS * 1.3
-  )
-
   return (
-    <group>
-      <mesh ref={meshRef} position={anchor}>
-        <sphereGeometry args={[0.009, 8, 8]} />
-        <meshBasicMaterial color="#FF8A3D" />
-      </mesh>
-      <Line points={[anchor, calloutPoint]} color="#FF8A3D" lineWidth={1} transparent opacity={0.8} />
-      <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
-        <div
-          className="whitespace-nowrap font-mono text-[9px] tracking-[0.2em] text-orange-300"
-          style={{ textShadow: '0 0 4px rgba(255,138,61,0.7)' }}
-        >
-          {profile.capital.toUpperCase()}
-        </div>
-      </Html>
-    </group>
+    <PointerMarker
+      lat={profile.capitalLat}
+      lng={profile.capitalLng}
+      color={CAPITAL_MARKER_COLOR}
+      label={profile.capital.toUpperCase()}
+    />
   )
 }
 
