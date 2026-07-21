@@ -5,6 +5,38 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.1.3: "claimed by" and "claims" are supposed to be the same fact from two ends, and this dataset only ever writes one of them
+
+**A GeoEntity's `claims` field is real infrastructure with zero real data
+in it.** `data/types.ts`'s doc comment for `GeoEntity.claims` is explicit
+that it's the inverse of `claimedBy` — "every entity THIS entity claims
+sovereignty over" — and `LOGBOOK.md`'s own v3.0.0 entry already flagged
+that "most entries in this dataset only populate `claimedBy`... `claims`
+exists for the cases that do." What that entry didn't spell out: as of
+v3.1.2, *no* entry populates `claims` — Taiwan claims Spratly Islands and
+Scarborough Reef in every practical sense (both reefs list Taiwan in their
+own `claimedBy`), but Taiwan's own `claims` array is `[]`. The first version
+of `generateClaimsDoc.mjs`'s complete-roster rewrite read `entity.claims`
+directly and printed "Claims: None" for Taiwan — technically accurate to
+the field, factually wrong about the relationship. Caught by spot-checking
+Taiwan's entry against what `ClaimsOverlayLayer.tsx` already does at
+runtime (`useClaimRelatedEntityIds` scans `[...claimedBy, ...claims]`
+together specifically because of this — see that file's comments), not by
+assuming the raw field was the whole story.
+
+**Fix: infer the missing direction instead of requiring the data to state
+both.** Built `inferredClaimsByKey` — one pass over every entity's
+`claimedBy`, inverted into "what does the claimant claim" — and union it
+with each entity's explicit `claims` when rendering. Same general lesson as
+`ClaimsOverlayLayer.tsx`'s own `useClaimRelatedEntityIds`/
+`useClaimantCountryIds` split from v3.1.0: a bidirectional relationship
+recorded on only one side needs the *reader* (whether that's a render
+layer or a doc generator) to reconstruct the other side, not a hope that
+every future data entry remembers to populate both fields symmetrically.
+If `geoEntities.ts` ever does start populating `claims` directly, this
+still works unchanged — the union just becomes redundant with itself,
+not wrong.
+
 ## 2026-07-21 — v3.1.1: a generated doc still needs its own presentation layer, and why plain `node` can run one script but not the next
 
 **Generating `CLAIMS.md` straight from `GeoEntityRelation.displayName`

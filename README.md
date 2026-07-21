@@ -287,12 +287,15 @@ scripts/
                              every registered GeoEntity with a standalone
                              polygon in the same source (55 features) — see
                              entityGeometryIds.ts
-  generateClaimsDoc.mjs        (v3.1.1, npm run docs:claims) Reads
-                             GeoEntityRegistry directly and writes
-                             ../CLAIMS.md — run via tsx, not plain node
-                             (geoEntities.ts's extensionless relative
-                             imports don't resolve under Node's built-in
-                             TS support the way they do under tsx)
+  generateClaimsDoc.mjs        (v3.1.1, rewritten v3.1.3, npm run
+                             docs:claims) Reads countries-un193.json AND
+                             GeoEntityRegistry, writes ../CLAIMS.md — a
+                             complete roster of all 193 countries + every
+                             registered GeoEntity, not just disputed ones.
+                             Run via tsx, not plain node (geoEntities.ts's
+                             extensionless relative imports don't resolve
+                             under Node's built-in TS support the way they
+                             do under tsx)
 public/geo/
   countries-un193.json       Generated output of buildCountryTopology.mjs —
                              fetched at runtime by useCountryFeatures.ts

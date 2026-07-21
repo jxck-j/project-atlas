@@ -34,6 +34,28 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   neither a dependency nor one of the four named `geopolitical-entity`
   examples. Worth a real decision (a sixth classification? a special case?)
   rather than leaving it in the bucket that happened to compile.
+- **No `GeoEntity` in `geoEntities.ts` populates its own `claims` field** —
+  every claim relationship is recorded only as `claimedBy` on the claimed
+  side (Taiwan claims Spratly Islands/Scarborough Reef in every practical
+  sense, but `taiwan.claims` is `[]`; both reefs list Taiwan in their own
+  `claimedBy` instead). `ClaimsOverlayLayer.tsx` and
+  `generateClaimsDoc.mjs` both now infer the missing direction (see
+  `LOGBOOK.md`'s v3.1.3 entry), so nothing currently reads `.claims` and
+  gets a wrong answer — but a future consumer that reads `entity.claims`
+  directly, without knowing to union it against everyone else's
+  `claimedBy`, will. Worth either actually populating `claims` for real
+  entities that have one (Taiwan being the obvious first case) or updating
+  `GeoEntity`'s doc comment in `data/types.ts` to say outright that
+  `claims` is aspirational/unused so far, rather than implying it's just
+  sparsely populated.
+- **Country display names are inconsistent between sources**: the country
+  topology (`countries-un193.json`, via `DISPLAY_NAME_OVERRIDES`) uses
+  short forms ("China"), while `GeoEntityRelation.displayName` values
+  written by hand in `geoEntities.ts` mostly use long official forms
+  ("People's Republic of China"). Cosmetic — `CLAIMS.md` shows both forms
+  for the same country in different sections — but worth normalizing to
+  one convention if this data ever needs to cross-reference cleanly against
+  itself.
 
 ## Visualization
 

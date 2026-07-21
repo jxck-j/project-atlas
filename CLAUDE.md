@@ -461,15 +461,31 @@ where the spec was ambiguous or silent (Gibraltar's inclusion, Crimea's
 classification, which real-world parent/claimant relationships were added
 beyond the spec's explicit list).
 
-**`CLAIMS.md`** (repo root, v3.1.1) is a generated register of every
-claim relationship in this file — every `GeoEntity` with a nonempty
-`claimedBy`/`claims`, listed both by disputed entity and inverted by
-claimant. Produced by `scripts/generateClaimsDoc.mjs`
-(`npm run docs:claims`) reading `GeoEntityRegistry` directly, not
-hand-maintained — same "one source of truth, no drift" reasoning
-`public/geo/*.json` being generated rather than hand-edited already
-established in this codebase. Regenerate it after editing any
-`claimedBy`/`claims` field here; don't hand-edit `CLAIMS.md` itself.
+**`CLAIMS.md`** (repo root, v3.1.1, rewritten v3.1.3) is a generated,
+complete roster — all 193 UN member states (sourced from `public/geo/
+countries-un193.json`, the same topology `useCountryFeatures.ts` fetches at
+runtime, not a second hand-typed list) and all registered GeoEntities, each
+showing its claim relationships or "None," plus a "Summary: active
+disputes" section up top for the 11 that actually have one. Produced by
+`scripts/generateClaimsDoc.mjs` (`npm run docs:claims`) reading
+`GeoEntityRegistry` directly, not hand-maintained — same "one source of
+truth, no drift" reasoning `public/geo/*.json` being generated rather than
+hand-edited already established in this codebase. Regenerate it after
+editing any `claimedBy`/`claims`/`countries-un193.json` field; don't
+hand-edit `CLAIMS.md` itself.
+
+**Note for anyone reading `claims` off a `GeoEntity` directly instead of
+through this generator:** `claimedBy` and `claims` are meant to be the same
+fact recorded from two ends (see `GeoEntity`'s doc comment above), but
+nothing in this dataset currently populates `claims` — every claim is
+recorded only as `claimedBy` on the claimed entity (Taiwan claims Spratly
+Islands/Scarborough Reef in every practical sense, but `taiwan.claims` is
+`[]`; both reefs list Taiwan in their own `claimedBy` instead).
+`ClaimsOverlayLayer.tsx` already accounts for this (it reads
+`[...claimedBy, ...claims]` together — see that file) and
+`generateClaimsDoc.mjs` infers the missing direction the same way; a new
+consumer reading `entity.claims` alone will get an incomplete answer. See
+`LOGBOOK.md`'s v3.1.3 entry.
 
 `data/registry/exampleTerritories.ts` (the pre-v3 illustrative,
 deliberately-unimported schema-validation file) was removed in v3.0.0 —

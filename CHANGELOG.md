@@ -17,6 +17,33 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.3 — CLAIMS.md now covers all 193 countries and all 56 GeoEntities
+
+Point release. Documentation-generator fix, not app behavior.
+
+### Fixed
+
+- **`CLAIMS.md` only listed the 11 entities with an active dispute** —
+  correct for a "disputes register" but not what was asked for
+  ("every country and entity on this list"). `scripts/generateClaimsDoc.mjs`
+  rewritten to produce a complete roster: every UN member state (sourced
+  from `public/geo/countries-un193.json`, the exact topology
+  `useCountryFeatures.ts` fetches at runtime — not a second, hand-typed
+  country list) and every registered GeoEntity, each showing its claim
+  relationships or "None". The original filtered summary is kept as a
+  "Summary: active disputes" section at the top, not replaced.
+- **A GeoEntity's own `Claims` field is not reliably populated in this
+  dataset** — every entity's explicit `claims` array is currently empty;
+  the only claim relationships that exist are recorded as `claimedBy` on
+  the *claimed* entity (e.g. Spratly Islands' `claimedBy` lists Taiwan;
+  Taiwan's own `claims` array was never filled in to match). Reading
+  `entity.claims` directly would have shown "Claims: None" for Taiwan
+  despite it genuinely claiming Spratly Islands and Scarborough Reef. The
+  generator now infers each entity's effective claims by inverting every
+  `claimedBy` relation across the whole registry, so the roster is complete
+  regardless of which side of a claim pair the data happens to be recorded
+  on. See `LOGBOOK.md`.
+
 ## v3.1.2 — BACKLOG.md: everything flagged but not built, in one place
 
 Point release. Documentation only — no `src/` runtime code changed.
