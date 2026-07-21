@@ -17,6 +17,34 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.1 — CLAIMS.md: a generated register of every claimant/claimed relationship
+
+Point release. Adds a documentation artifact, not app behavior — no
+`src/` runtime code changed.
+
+### Added
+
+- `CLAIMS.md` (repo root): every `GeoEntity` with a nonempty `claimedBy` or
+  `claims`, listed two ways — by disputed entity ("Taiwan: claimed by
+  People's Republic of China") and by claimant, inverted ("People's
+  Republic of China: Scarborough Reef, Spratly Islands, Taiwan"). 11
+  disputed entities, 25 distinct claimants as of this writing.
+- `scripts/generateClaimsDoc.mjs` (`npm run docs:claims`): generates
+  `CLAIMS.md` directly from `data/registry/geoEntities.ts` via
+  `GeoEntityRegistry` — the same registry `EntityResolver`,
+  `scene/GeoEntities.tsx`, and the `geoOverlays` layers all read at
+  runtime. `CLAIMS.md` is a build artifact, not hand-maintained — same
+  reasoning `public/geo/*.json` are generated from `geoEntities.ts`/
+  `unMembers.ts` rather than hand-edited: one source of truth, no drift
+  between what the doc says and what the app actually renders. Rerun
+  whenever `geoEntities.ts` changes.
+- `tsx` added as a real devDependency (previously only used ad hoc via
+  `npx`). Needed because `geoEntities.ts`/`GeoEntityRegistry.ts` import
+  each other with extensionless relative specifiers, which plain Node's
+  built-in TypeScript support doesn't resolve — `scripts/buildEntityTopology.mjs`
+  gets away with plain `node` only because `entityGeometryIds.ts` (the one
+  `.ts` file it imports) has zero imports of its own. See `LOGBOOK.md`.
+
 ## v3.1.0 — Claimant countries get their own visual treatment, dashed claim borders, and a legend
 
 Point release under v3 (same call v2.2.0's "Geometry Map" and v2.3.0 made

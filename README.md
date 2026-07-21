@@ -34,6 +34,7 @@ npm run dev        # start dev server (http://localhost:5173)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
 npm run build:geo  # regenerate public/geo/countries-un193.json from world-atlas
+npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
 ```
 
 There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
@@ -286,6 +287,12 @@ scripts/
                              every registered GeoEntity with a standalone
                              polygon in the same source (55 features) — see
                              entityGeometryIds.ts
+  generateClaimsDoc.mjs        (v3.1.1, npm run docs:claims) Reads
+                             GeoEntityRegistry directly and writes
+                             ../CLAIMS.md — run via tsx, not plain node
+                             (geoEntities.ts's extensionless relative
+                             imports don't resolve under Node's built-in
+                             TS support the way they do under tsx)
 public/geo/
   countries-un193.json       Generated output of buildCountryTopology.mjs —
                              fetched at runtime by useCountryFeatures.ts

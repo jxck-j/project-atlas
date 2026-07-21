@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "3.1.0",
+  "version": "3.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,6 +9,7 @@
     "build:geo": "npm run build:geo:countries && npm run build:geo:entities",
     "build:geo:countries": "node scripts/buildCountryTopology.mjs",
     "build:geo:entities": "node scripts/buildEntityTopology.mjs",
+    "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -39,6 +40,7 @@
     "tailwindcss": "^4.3.3",
     "topojson-server": "^3.0.1",
     "topojson-simplify": "^3.0.3",
+    "tsx": "^4.23.1",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

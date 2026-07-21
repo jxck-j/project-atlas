@@ -5,6 +5,45 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.1.1: a generated doc still needs its own presentation layer, and why plain `node` can run one script but not the next
+
+**Generating `CLAIMS.md` straight from `GeoEntityRelation.displayName`
+almost shipped a register where seven Antarctic claimants all had the same
+17-word section header.** `displayName` strings in `geoEntities.ts` are
+written to read naturally inline in the Intelligence Panel's
+"Claimed by: X, Y, Z" sentence — Antarctica's claimants all carry a
+"(claim suspended under the Antarctic Treaty)" qualifier for exactly that
+context, and Guantanamo Bay's Cuba entry carries "(disputes the lease's
+continued legitimacy)" the same way. First pass at `generateClaimsDoc.mjs`
+used `displayName` verbatim as both the inline text *and* the "By
+claimant" section's `### heading` — correct for the former, noisy for the
+latter (a heading repeated seven times differing only in which country
+precedes an identical 8-word parenthetical isn't a scannable index). Fixed
+with a `canonicalLabel()` step that strips a trailing parenthetical for
+grouping/heading purposes only — the full annotated text still appears in
+the "By disputed entity" section via the unmodified `formatRelation()`.
+Same lesson as `data/countryProfiles.ts` vs. `data/types.ts`'s `Country`
+(see that split's own reasoning in `CLAUDE.md`): one field written for one
+presentation context doesn't automatically read well in a different one,
+even when the underlying fact is identical.
+
+**Why `buildEntityTopology.mjs` runs under plain `node` but
+`generateClaimsDoc.mjs` needed `tsx`.** Both are `.mjs` scripts importing a
+`.ts` module. The difference is what that module imports in turn:
+`entityGeometryIds.ts` (read by `buildEntityTopology.mjs`) has zero
+imports of its own — a leaf module, and Node's built-in TypeScript
+stripping (stable by Node 24, this repo's runtime) only strips types, it
+doesn't add bundler-style extension resolution. `geoEntities.ts` (needed
+here, to read the live registry rather than re-deriving claim data by
+hand) imports `./GeoEntityRegistry` and `../types` with no extension —
+resolves fine under Vite/`tsx` (enhanced resolution, the same reason the
+app itself never needs `.ts` suffixes in its own imports) but throws
+`ERR_MODULE_NOT_FOUND` under plain `node`. Added `tsx` as a real
+devDependency rather than continuing to reach for `npx --yes tsx`
+ad hoc — that path only worked at all in earlier verification steps this
+session because of network access this project's own CI/regeneration
+shouldn't have to depend on.
+
 ## 2026-07-21 — v3.1.0: computeLineDistances() isn't a BufferGeometry method, a legend almost got hidden behind the panel it exists to explain, and "claimed" needed a mirror-image "claimant"
 
 **The claims overlay only ever pointed one direction, because a Country

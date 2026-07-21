@@ -20,6 +20,7 @@ npm run preview    # preview the production build
 npm run build:geo  # regenerate both geo assets below (runs the two npm scripts in sequence)
 npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
+npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
 ```
 
 There is no test suite/framework configured in this repo.
@@ -459,6 +460,16 @@ authoritative" caveat every dataset in this directory uses. See
 where the spec was ambiguous or silent (Gibraltar's inclusion, Crimea's
 classification, which real-world parent/claimant relationships were added
 beyond the spec's explicit list).
+
+**`CLAIMS.md`** (repo root, v3.1.1) is a generated register of every
+claim relationship in this file — every `GeoEntity` with a nonempty
+`claimedBy`/`claims`, listed both by disputed entity and inverted by
+claimant. Produced by `scripts/generateClaimsDoc.mjs`
+(`npm run docs:claims`) reading `GeoEntityRegistry` directly, not
+hand-maintained — same "one source of truth, no drift" reasoning
+`public/geo/*.json` being generated rather than hand-edited already
+established in this codebase. Regenerate it after editing any
+`claimedBy`/`claims` field here; don't hand-edit `CLAIMS.md` itself.
 
 `data/registry/exampleTerritories.ts` (the pre-v3 illustrative,
 deliberately-unimported schema-validation file) was removed in v3.0.0 —
