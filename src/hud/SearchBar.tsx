@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
+import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
 import { flyToSelectedCountry, selectEntity } from './selectionStore'
 import { useHudPanel } from './hudPanelStore'
-import { getTerritories } from '../data'
+import { getEntities, getEntity } from '../data'
+import type { GeoEntityType } from '../data'
 import { resolveEntity } from '../entities/EntityResolver'
+import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 
 const UP_AXIS = new Vector3(0, 1, 0)
 const MAX_RESULTS = 8
@@ -16,24 +19,29 @@ const MAX_RESULTS = 8
 // Every kind of entity search currently knows how to return, normalized to
 // one flat shape so matching/ranking/rendering don't need to branch on
 // where an entry came from. Adding a future registry (e.g. Conflict) means
-// one more block like `territoryEntries` below plus one more `kind` union
+// one more block like `geoEntityEntries` below plus one more `kind` union
 // member — see CLAUDE.md for the full walkthrough.
 interface SearchEntry {
   id: string
   name: string
-  kind: 'country' | 'territory'
+  kind: 'country' | GeoEntityType
   lat: number
   lng: number
 }
 
 const ENTITY_TYPE_LABEL: Record<SearchEntry['kind'], string> = {
   country: 'COUNTRY',
+  'geopolitical-entity': 'GEOPOLITICAL',
   territory: 'TERRITORY',
+  'strategic-region': 'STRATEGIC',
+  'maritime-feature': 'MARITIME',
+  'geographic-region': 'REGION',
 }
 
 export function SearchBar() {
   const isOpen = useHudPanel() === 'search'
   const features = useCountryFeatures()
+  const geoFeatures = useGeoEntityFeatures()
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -50,23 +58,53 @@ export function SearchBar() {
     })
   }, [features])
 
-  // getTerritories() reads TerritoryRegistry, which data/index.ts's
-  // registry/territories.ts side-effect import has already populated by
-  // the time this module loads — no fetch/loading state needed here, unlike
-  // countries (whose geometry, and therefore registry population, arrives
-  // asynchronously). Territories without a `location` are skipped: there's
-  // nowhere to fly the camera to, and search shouldn't return a result it
-  // can't select.
-  const territoryEntries = useMemo<SearchEntry[]>(() => {
-    return getTerritories().flatMap((t) => {
-      if (!t.location) return []
-      return [{ id: t.id, name: t.name, kind: 'territory' as const, lat: t.location.lat, lng: t.location.lng }]
+  // Every GeoEntity that has a rendered shape (see
+  // entities/entityGeometryIds.ts — the large majority of the v3 dataset)
+  // derives its search centroid from that geometry, the same way
+  // countryEntries does above — no need to hand-maintain ~54 lat/lng pairs
+  // in the registry when the geometry already has an authoritative one.
+  const geoEntityGeometryEntries = useMemo<SearchEntry[]>(() => {
+    return geoFeatures.flatMap((f) => {
+      const geometryId = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!geometryId) return []
+      const entityId = ENTITY_GEOMETRY_IDS[geometryId] ?? geometryId
+      const registryEntity = getEntity(entityId)
+      const centroid = geometryToCentroid(f.geometry)
+      return [
+        {
+          id: entityId,
+          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          kind: registryEntity?.type ?? ('territory' as const),
+          lat: centroid.lat,
+          lng: centroid.lng,
+        },
+      ]
     })
-  }, [])
+  }, [geoFeatures])
+
+  // GeoEntityRegistry entries with no rendered geometry (currently only
+  // Crimea — see entityGeometryIds.ts) fall back to their own `location`
+  // field. Skipped entirely if that's also absent: there'd be nowhere to
+  // fly the camera to, and search shouldn't return a result it can't select.
+  const geoEntityLocationOnlyEntries = useMemo<SearchEntry[]>(() => {
+    const geometryBackedIds = new Set(geoEntityGeometryEntries.map((e) => e.id))
+    return getEntities().flatMap((entity) => {
+      if (geometryBackedIds.has(entity.id) || !entity.location) return []
+      return [
+        {
+          id: entity.id,
+          name: entity.name,
+          kind: entity.type,
+          lat: entity.location.lat,
+          lng: entity.location.lng,
+        },
+      ]
+    })
+  }, [geoEntityGeometryEntries])
 
   const entries = useMemo<SearchEntry[]>(
-    () => [...countryEntries, ...territoryEntries],
-    [countryEntries, territoryEntries],
+    () => [...countryEntries, ...geoEntityGeometryEntries, ...geoEntityLocationOnlyEntries],
+    [countryEntries, geoEntityGeometryEntries, geoEntityLocationOnlyEntries],
   )
 
   // Ranked, not just filtered: exact name matches first, then

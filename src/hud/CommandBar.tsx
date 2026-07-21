@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useCountryFeatures, useCountryFeaturesLoaded } from '../scene/useCountryFeatures'
-import { useTerritoryFeatures } from '../scene/useTerritoryFeatures'
+import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useTelemetry } from './telemetryStore'
 
 function formatCoord(lat: number | null, lng: number | null) {
@@ -21,11 +21,11 @@ function Segment({ children }: { children: ReactNode }) {
 export function CommandBar() {
   const loaded = useCountryFeaturesLoaded()
   const features = useCountryFeatures()
-  // Territory geometry is a much smaller fetch than the country topology
-  // and has no separate "loaded" indicator surfaced here — READY/LOADING
-  // above still tracks countries only, since that's the dataset the rest of
-  // the globe's readiness has always been judged by.
-  const territoryFeatures = useTerritoryFeatures()
+  // Entity geometry is a much smaller fetch than the country topology and
+  // has no separate "loaded" indicator surfaced here — READY/LOADING above
+  // still tracks countries only, since that's the dataset the rest of the
+  // globe's readiness has always been judged by.
+  const entityFeatures = useGeoEntityFeatures()
   const { fps, hoverLat, hoverLng } = useTelemetry()
 
   return (
@@ -52,8 +52,8 @@ export function CommandBar() {
           <span className="text-cyan-100 tabular-nums">{features.length}</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">TERRITORIES</span>
-          <span className="text-cyan-100 tabular-nums">{territoryFeatures.length}</span>
+          <span className="text-cyan-500/60">ENTITIES</span>
+          <span className="text-cyan-100 tabular-nums">{entityFeatures.length}</span>
         </Segment>
         <Segment>
           <span className="text-cyan-500/60">FPS</span>

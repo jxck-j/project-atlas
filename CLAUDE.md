@@ -18,8 +18,8 @@ npm run build      # tsc -b (project-references typecheck) + vite build to dist/
 npm run lint       # oxlint
 npm run preview    # preview the production build
 npm run build:geo  # regenerate both geo assets below (runs the two npm scripts in sequence)
-npm run build:geo:countries    # regenerate public/geo/countries-un193.json (see Data pipeline below)
-npm run build:geo:territories  # regenerate public/geo/territories.json (see Territory geometry below)
+npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
+npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
 ```
 
 There is no test suite/framework configured in this repo.
@@ -119,47 +119,69 @@ Two non-obvious things here matter a lot:
   triangles on the *far* side, causing wrong-country click-throughs.
 
 Every function in this file is generic over any GeoJSON `Geometry` — nothing
-in it is country-specific despite the file name. `scene/Territories.tsx`
-(v2.3.0) reuses all four functions unchanged to render territory geometry;
-this module needed zero changes to serve a second entity kind.
+in it is country-specific despite the file name. `scene/GeoEntities.tsx`
+(v3.0.0, replacing v2.3.0's `Territories.tsx`) reuses all four functions
+unchanged to render every non-country entity; this module needed zero
+changes to serve a second, then a five-classification-wide, entity kind.
 
-### Territory geometry (`scene/Territories.tsx`, v2.3.0)
+### GeoEntity geometry (`scene/GeoEntities.tsx`, `scene/geoEntityEntries.ts`, v3.0.0)
 
 Closely mirrors `scene/Countries.tsx` — same merged-geometry-per-entity
 approach (via `countryGeometry.ts`, see above), same hover/select/dim color
-logic and palette (deliberately identical to countries — a territory reads
+logic and palette (deliberately identical to countries — a GeoEntity reads
 as "another selectable thing on this globe," not a different visual
 category), same click-vs-drag threshold. Kept as its own file rather than
 generalizing `Countries.tsx` into a shared component — same reasoning
-`CountryRegistry.ts`/`TerritoryRegistry.ts` are two files instead of one
+`CountryRegistry.ts`/`GeoEntityRegistry.ts` are two files instead of one
 generic `Registry<T>` (see below): duplication here means this addition
 can't regress already-verified country click/highlight behavior.
+
+`GeoEntities.tsx` deliberately does **only** primary selection (hover,
+click, highlight the one clicked entity) — no parent-overlay or
+claims-overlay logic lives here. Those are `src/layers/geoOverlays/`'s job
+(see the Layer Engine section below); keeping this file selection-only is
+what "don't hardcode entity behavior inside Globe rendering components"
+means in practice. The entry-building logic (`buildGeoEntityEntries`) lives
+in its own plain `.ts` module, `scene/geoEntityEntries.ts`, specifically so
+`GeoEntities.tsx`, `ParentOverlayLayer.tsx`, and `ClaimsOverlayLayer.tsx` can
+all derive the same {geometryId, entityId, geometry, ...} entries from the
+same raw features without a `.tsx` component file exporting a non-component
+value from itself (oxlint's `react-refresh` rule flags that, correctly).
 
 **The one thing that is NOT safe to copy from `Countries.tsx` verbatim:**
 a country's rendered polygon id and its registry id are the same string by
 construction, so `Countries.tsx` compares `selected?.id === country.id`
-directly. A territory's rendered shape id (`"158"`, an ISO numeric code)
-and its entity id (`"taiwan"`, the `TerritoryRegistry` slug) are
-*deliberately* different — that's the whole reason `GeometryMap` exists —
-so `TerritoryEntry` carries both `geometryId` (hover state, `GeometryMap`
-lookups) and `entityId` (compared against `selected.id`) rather than one
-`id`. Getting this wrong doesn't throw or warn — it silently makes
-`isSelected` always `false`, so a selected territory renders with the same
-faint dimmed treatment as everything else instead of highlighted. See
-`LOGBOOK.md`'s v2.3.0 entry for how this was actually found (a screenshot,
-not a type error) and a second, related bug it surfaced
+directly. A GeoEntity's rendered shape id and its entity id are only
+*sometimes* the same string: 44 of the 55 rendered entities have a numeric
+ISO id in the source (`"158"` for Taiwan) that differs from their registry
+id (`"taiwan"`) — that's the whole reason `GeometryMap` exists — while the
+other 11 (Kosovo, the Cyprus Sovereign Base Areas, Guantanamo Bay, Baikonur,
+the Cyprus UN Buffer Zone, Siachen Glacier, and four disputed maritime
+features) have no numeric id in the source at all, so the build script
+stamps their target registry id directly onto the feature as its geometry
+id — for those, geometryId and entityId happen to already be the same
+string. Either way, `GeoEntityEntry` carries both `geometryId` (hover state,
+`GeometryMap` lookups) and `entityId` (compared against `selected.id`)
+rather than one `id`, because the equality can't be assumed in general.
+Getting this wrong doesn't throw or warn — it silently makes `isSelected`
+always `false`, so a selected entity renders with the same faint dimmed
+treatment as everything else instead of highlighted. See `LOGBOOK.md`'s
+v2.3.0 entry for how this exact bug was originally found for Territory (a
+screenshot, not a type error) and a second, related bug it surfaced
 (`Globe.tsx`'s `CapitalMarker` needing to check `selected.entity.kind`,
-not just look up `selected.name` by string).
+not just look up `selected.name` by string) — both lessons carried forward
+unchanged into v3's broader entity set.
 
-`scripts/buildTerritoryTopology.mjs` (`npm run build:geo:territories`)
-extracts real geometry from the same `world-atlas` 10m source
-`buildCountryTopology.mjs` reads, for the subset of registered territories
-that have a standalone polygon there — see `entities/territoryGeometryIds.ts`
-(the id -> territory-id map both the build script and
-`scene/useTerritoryFeatures.ts` share) for which ones and why not all four:
-Crimea still has no rendered geometry, for the same "no standalone polygon
-anywhere in the source data" reason noted below — it stays selectable via
-search only.
+`scripts/buildEntityTopology.mjs` (`npm run build:geo:entities`) extracts
+real geometry from the same `world-atlas` 10m source
+`buildCountryTopology.mjs` reads, for every registered GeoEntity that has a
+standalone polygon there — see `entities/entityGeometryIds.ts` (two maps:
+`ENTITY_GEOMETRY_IDS` for numeric-id features, `ENTITY_GEOMETRY_NAME_KEYS`
+for the 11 id-less ones, matched by raw source name and re-stamped with
+their target id before the topology rebuild) for which entities and why not
+all of them: Crimea still has no rendered geometry anywhere in the source
+data, at any resolution — it stays selectable via search or the dev console
+helper only, exactly as it has since v2.3.0.
 
 ### Camera system
 
@@ -204,7 +226,8 @@ convert (`time / 1000`) before calling `advance()`.
 ### Selection & HUD panel state
 
 - `hud/selectionStore.ts` — `selected: SelectedEntity | null` (since v2.2.1:
-  wraps a full `ResolvedEntity` — country *or* territory — from
+  wraps a full `ResolvedEntity` — country *or* GeoEntity (v3.0.0; any of the
+  five non-sovereign classifications) — from
   `entities/EntityResolver.ts`, plus denormalized `id`/`name`/world-space
   `direction` at the top level so generic consumers don't need to reach
   into `entity.*`), `flightSeq` (camera-flight trigger), `resetSeq`
@@ -236,14 +259,20 @@ convert (`time / 1000`) before calling `advance()`.
 - **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
   `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
-  same "no profile data" fallback) for `'country'`, `TerritoryDetails`
-  (new) for `'territory'` — ENTITY TYPE / CONTROLLER / CLAIMANTS /
-  POLITICAL STATUS, reusing the same `DataRow` component, each of
-  CONTROLLER/CLAIMANTS omitted individually if that array is empty rather
-  than falling back to one blanket "no data" message. Deliberately a
-  two-way check, not a registry/plugin system like the Layer Engine's — a
-  third entity kind means one more `XDetails` component and one more arm
-  of the check, not a new abstraction layer. See `LOGBOOK.md`.
+  same "no profile data" fallback) for `'country'`, `GeoEntityDetails`
+  (v3.0.0, replacing v2.2.2's Territory-only `TerritoryDetails`) for
+  `'geo-entity'` — ENTITY TYPE / PARENT ENTITY / ADMINISTERED BY / CLAIMED
+  BY / CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
+  `GeoEntity.metadata` carries them, reusing the same `DataRow` component.
+  Every relationship field is allowed to be empty/absent (see
+  `data/types.ts`), so each row is omitted individually rather than falling
+  back to one blanket "no data" message. Still deliberately a two-way
+  check, not a registry/plugin system like the Layer Engine's — one
+  `GeoEntityDetails` component covers all five non-sovereign
+  classifications because they share one relationship shape (see the
+  Geopolitical data architecture section below); the dispatch itself only
+  ever needed to grow to two arms, not five, because `kind` is `'country' |
+  'geo-entity'`, not one member per `GeoEntityType`. See `LOGBOOK.md`.
 
 ### Layer Engine (`src/layers/`)
 
@@ -286,10 +315,12 @@ layers that exist are architecture-validating placeholders — see
 1. Write a module that calls `registerLayer({...})` at the top level (module
    load time, not inside a component) — see any file in `placeholders/` for
    the shape.
-2. Add one import line for that module to `placeholders/index.ts` (or, for a
-   non-placeholder/production layer, wherever the app's "real" layer set ends
-   up being composed — that composition point doesn't exist yet since v2.0 is
-   placeholders-only, but it's the same one-line-import pattern).
+2. Add one import line for that module to `placeholders/index.ts` for an
+   architecture-validating placeholder, or to `geoOverlays/index.ts` (v3.0.0
+   — the first real, non-placeholder layer set; see `ParentOverlayLayer.tsx`/
+   `ClaimsOverlayLayer.tsx` for the pattern) for a production layer. Both
+   barrels are imported side-effect-only from `LayerEngine.tsx` — that's the
+   composition point CLAUDE.md used to describe as "doesn't exist yet."
 3. Nothing else changes. `Globe.tsx`, `LayerManager.tsx`, and `LayerPanel.tsx`
    never need to know the new layer exists — they only deal with
    `LayerDefinition`s and the enabled-state map.
@@ -320,11 +351,14 @@ glance:
   The two datasets are not merged; see `LOGBOOK.md` for why that's a
   separate decision, not a side effect of adding this schema.
 
-`EntityRef` (`{ type: 'country' | 'territory', id: string }`) is how
-`Conflict.participants` and `Relationship.parties` point at other records —
-discriminated rather than a bare string id because country ids (ISO
-3166-1 alpha-3) and territory ids (ad hoc slugs, no standard exists) aren't
-guaranteed disjoint.
+`EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
+is how `Conflict.participants`, `Relationship.parties`, and every
+`GeoEntity` relationship field point at other records — discriminated
+rather than a bare string id because country ids (ISO 3166-1 alpha-3) and
+GeoEntity ids (ad hoc slugs, no standard exists) aren't guaranteed disjoint.
+`'territory'` is a legacy discriminant value kept only so old data that
+still uses it type-checks; nothing in this codebase emits it anymore as of
+v3.0.0 — use `'geo-entity'`.
 
 **`data/registry/CountryRegistry.ts`** is the query seam: `registerCountry`/
 `getCountry`/`getCountries`/`removeCountry` over a plain `Map`, structurally
@@ -345,46 +379,67 @@ through the Layer Engine the same way the placeholders do — this data
 architecture and the Layer Engine are independent pieces that a real layer
 will eventually connect.
 
-**`data/registry/TerritoryRegistry.ts`** (v2.1.2) is the same pattern —
-`registerTerritory`/`getTerritory`/`getTerritories` — for politically
-complex territories (disputed areas, unrecognized states): Taiwan, Crimea,
-Western Sahara, that kind of thing. The `Territory` type's central design
-decision, and the reason this section exists rather than just pointing back
-to the Country Registry description above: **who controls a territory and
-who claims it are two separate fields**, `controllingAuthorities` and
-`claimants`, not one field with a type flag. They frequently disagree (a
-government can control territory that isn't internationally recognized as
-rightfully theirs), and `controllingAuthorities` is a *list* — real-world
-control is often split (Western Sahara has two administrators, divided by a
-berm) — so the type doesn't force picking one administrator or resolving
-the dispute itself. Both `ControllingAuthority` and `TerritoryClaimant`
-accept an optional `Country`/`Territory` reference plus a required
-`displayName`, because the relevant government is frequently *not* a
-registered UN-member `Country` (Taiwan's own government, the Polisario
-Front/SADR).
+**`data/registry/GeoEntityRegistry.ts`** (v3.0.0, replacing v2.1.2's
+`TerritoryRegistry.ts`) is the same `Map`-backed pattern —
+`registerEntity`/`getEntity`/`getEntities`/`getEntitiesByType`/
+`getRelatedEntities` — for everything geopolitically significant that isn't
+a UN-member sovereign state: de facto/partially-recognized states (Taiwan,
+Kosovo, Palestine, Western Sahara), dependencies/autonomous regions/SARs
+(Puerto Rico, Hong Kong, Greenland, 36 more), strategically/militarily
+significant areas (Guantanamo Bay, the Cyprus Sovereign Base Areas,
+Baikonur, the Siachen Glacier), disputed maritime features (the Spratly
+Islands, Scarborough Reef), and treaty-governed regions (Antarctica) — see
+`GeoEntityType` in `data/types.ts` for the full five-way classification.
+`getEntitiesByType(type)` filters the registry by that classification;
+`getRelatedEntities(id)` walks every relationship field (below) in *both*
+directions — entities `id` points at, and entities that point at `id` — for
+consumers like `ClaimsOverlayLayer` that need "what's connected to this at
+all" rather than one specific direction.
 
-Worked examples for all three live in `data/registry/exampleTerritories.ts`
-— **not imported anywhere the app loads**, on purpose. It's there to prove
-the schema holds up against real, complicated cases (and to type-check,
-which a JSON file can't) without those specific illustrative entries being
-mistaken for "the real dataset" or this project's editorial position on any
-of the disputes involved. See `LOGBOOK.md` for the full reasoning behind
-the control/claims split.
+One interface, `GeoEntity`, covers all five classifications — not five
+separate interfaces the way `TerritoryRegistry` once needed only one for.
+The central design decision, carried forward from the pre-v3 `Territory`
+type: **who controls an entity and who claims it are separate fields**,
+`administeredBy` and `claimedBy`, not one field with a type flag. They
+frequently disagree (a government can control territory that isn't
+internationally recognized as rightfully theirs), and `administeredBy` is a
+*list* — real-world control is often split (Western Sahara has two
+administrators, divided by a berm) — so the type doesn't force picking one
+administrator or resolving the dispute itself. A `parentEntity` (singular,
+optional) captures the uncontroversial "formally part of" relationship
+(Puerto Rico -> USA) separately from the contested `administeredBy`/
+`claimedBy` fields, so a plain dependency isn't modeled as more disputed
+than it is. `claims` is the inverse of `claimedBy` — what this entity
+claims, as opposed to who claims it — kept as its own field rather than one
+bidirectional list specifically so a claims-overlay consumer can walk
+outward from a selection independently of walking inward. Every relation
+(`GeoEntityRelation`) accepts an optional `Country`/`GeoEntity` reference
+plus a required `displayName`, because the relevant government is
+frequently *not* a registered UN-member `Country` (Taiwan's own government,
+the Polisario Front/SADR) — same reasoning the pre-v3
+`ControllingAuthority`/`TerritoryClaimant` types established, carried
+forward unchanged.
 
-**`data/registry/territories.ts`** (v2.2.4) is the real counterpart —
-**this one *is* imported** (as a side effect of `data/index.ts`, so
-`TerritoryRegistry` is populated before anything reads it). Same three
-disputed entries as `exampleTerritories.ts`, reworded slightly, plus a
-fourth: Puerto Rico, a genuinely uncontroversial dependency
-(`status: 'dependency'`, `parentCountryId: 'USA'`, no claimants) included
-specifically so not every real territory in search is a live dispute. Its
-own `provenance.source` still carries the same "simplified, not
-authoritative" caveat `exampleTerritories.ts` uses — being the dataset the
-app actually loads doesn't make it a sourced, comprehensive one. See
-`LOGBOOK.md` for why this needed to be a separate file rather than just
-importing `exampleTerritories.ts`, and for a real bug this split caused
-(v2.2.3's debug hook importing `exampleTerritories.ts` started throwing on
-every dev page load once both files tried to register the same ids).
+**`data/registry/geoEntities.ts`** (v3.0.0, replacing v2.2.4's
+`registry/territories.ts`) is the real, always-imported dataset — imported
+as a side effect of `data/index.ts`, so `GeoEntityRegistry` is populated
+before anything reads it. 54 entities: the v3 spec's ~53 plus Crimea,
+carried forward from the pre-v3 dataset even though it isn't in that spec
+(removing shipped functionality wasn't asked for). Its own
+`provenance.source` carries the same "simplified, not comprehensive or
+authoritative" caveat every dataset in this directory uses. See
+`LOGBOOK.md`'s v3.0.0 entry for the judgment calls this file had to make
+where the spec was ambiguous or silent (Gibraltar's inclusion, Crimea's
+classification, which real-world parent/claimant relationships were added
+beyond the spec's explicit list).
+
+`data/registry/exampleTerritories.ts` (the pre-v3 illustrative,
+deliberately-unimported schema-validation file) was removed in v3.0.0 —
+its job (prove the schema holds up against real, complicated cases without
+being mistaken for the real dataset) is now served by `geoEntities.ts`
+itself, which is real, imported, *and* already covers the complicated
+cases (split control, non-Country claimants, multi-party maritime disputes)
+that file existed to validate.
 
 ### Entity Resolution (`src/entities/`)
 
@@ -395,34 +450,36 @@ resolves through this (see "Selection & HUD panel state" above) instead of
 constructing a country selection directly from the clicked polygon.
 
 - **`types.ts`** — `GeopoliticalEntity`, the minimal shape
-  (`id`/`name`/`aliases`/`provenance`) both `Country` and `Territory`
+  (`id`/`name`/`aliases`/`provenance`) both `Country` and `GeoEntity`
   already satisfy exactly as they're defined in `data/types.ts` — nothing
   was added to either interface for this. `ResolvedEntity` is the
   discriminated union `EntityResolver` actually returns: a
-  `GeopoliticalEntity`'s fields plus `kind` (`'country' | 'territory'`, so
-  a consumer can narrow), a normalized `location` (`Country.capital` and
-  `Territory.location` are the same `GeoPoint` shape under different field
+  `GeopoliticalEntity`'s fields plus `kind` (`'country' | 'geo-entity'`, so
+  a consumer can narrow — deliberately just two members, not one per
+  `GeoEntityType`; a consumer that needs the finer classification reads
+  `data.type`), a normalized `location` (`Country.capital` and
+  `GeoEntity.location` are the same `GeoPoint` shape under different field
   names — `ResolvedEntity` picks one), and `data` (the full original
   record, for kind-specific fields like a country's `population` or a
-  territory's `claimants`).
+  GeoEntity's `claimedBy`).
 - **`EntityResolver.ts`** — `resolveEntity(id)` checks the Country
-  Registry, then the Territory Registry (`resolveCountry(id) ??
-  resolveTerritory(id)`); `resolveCountry(id)`/`resolveTerritory(id)` check
+  Registry, then the GeoEntity Registry (`resolveCountry(id) ??
+  resolveGeoEntity(id)`); `resolveCountry(id)`/`resolveGeoEntity(id)` check
   one specifically. All three return `undefined` for a miss rather than
-  throwing — unlike `registerCountry`/`registerTerritory`, where a
+  throwing — unlike `registerCountry`/`registerEntity`, where a
   duplicate id is a real bug worth throwing on, "this id isn't a country"
   is an expected, normal outcome here (that's what makes the `??` chain in
   `resolveEntity` work).
 
 **The intended convention going forward:** once something starts consuming
 resolved entities (a future click handler, a future layer), it should call
-`resolveEntity()`/`resolveCountry()`/`resolveTerritory()` and never import
-`CountryRegistry`/`TerritoryRegistry` directly — the same "import the
+`resolveEntity()`/`resolveCountry()`/`resolveGeoEntity()` and never import
+`CountryRegistry`/`GeoEntityRegistry` directly — the same "import the
 barrel, not the implementation" discipline as `data/index.ts` and
 `layers/index.ts` elsewhere in this codebase, one level up. A future
 Country Engine, Relationship Engine, or anything else that needs to look up
 "what entity is this id" is expected to go through here, not reimplement
-Country-then-Territory fallback logic itself.
+Country-then-GeoEntity fallback logic itself.
 
 **`GeometryMap.ts`** (v2.2.0, same directory) is the layer above this one:
 `registerGeometryMapping(geometryId, entityId)` / `hasGeometryMapping
@@ -442,73 +499,79 @@ hand-authored territory shape or a point marker later), which is what
 "support multiple geometry types" means in practice: there's no type
 branching to extend, every id is opaque.
 
-**This is the piece that makes territory selection possible without
+**This is the piece that makes GeoEntity selection possible without
 touching `scene/Countries.tsx`'s rendering.** As of v2.2.1, the click
 handler calls `getEntityForGeometry(polygonId) ?? resolveEntity(polygonId)`
 — it checks `GeometryMap` first, and only falls back to treating the
 polygon's own id as an entity id directly, which is what actually resolves
-every country today for actual UN-member polygons; since v2.3.0, real
-territory shapes also register through here — see "Territory geometry"
-above). `exampleGeometryMappings.ts` (v2.2.0's placeholder file, still
-**not imported anywhere the app loads**) is now superseded for two of its
-three entries: `scene/useTerritoryFeatures.ts` registers real mappings for
-Taiwan (`"158"`) and Western Sahara (`"732"`) using the same ISO numeric
-ids this placeholder file anticipated. Its Crimea mapping
-(`'placeholder-crimea-subregion'`) is still the only one that exists
-anywhere, synthetic id and all — **Crimea has no standalone polygon
-anywhere in the source data at all**, being geometrically part of
-Ukraine's. See `LOGBOOK.md`.
+every country today for actual UN-member polygons. Since v2.3.0 (Territory)
+and v3.0.0 (the full GeoEntity set), real entity shapes also register
+through here — `scene/useGeoEntityFeatures.ts` registers a mapping for all
+55 rendered features as soon as the geometry loads. `exampleGeometryMappings.ts`
+(v2.2.0's placeholder file, never imported anywhere the app loads) was
+removed in v3.0.0 — every mapping it anticipated (and many more) is now a
+real registration, except its synthetic Crimea mapping, which nothing
+replaced: **Crimea has no standalone polygon anywhere in the source data at
+all**, being geometrically part of Ukraine's. See `LOGBOOK.md`.
 
-Since v2.3.0, clicking Taiwan, Puerto Rico, or Western Sahara's actual
-rendered shape on the globe reaches a Territory card, the same as clicking
-any country — see "Territory geometry" above. Crimea is still reachable
-only via search or the console helper below, since it has no rendered
-shape to click. `hud/selectionStore.ts` also installs a dev-only console
-helper (v2.2.3): `window.__debugSelectTerritory('taiwan' | 'puerto-rico' |
-'crimea' | 'western-sahara')`, gated by `import.meta.env.DEV` and
-eliminated from production builds — a console shortcut, redundant with
-search/clicking for three of the four but still the only way to reach
-Crimea's card outside search.
+Since v3.0.0, clicking almost any GeoEntity's actual rendered shape on the
+globe reaches its card, the same as clicking any country — see "GeoEntity
+geometry" above (53 of 54 entities have real geometry; only the four
+pre-v3 Territory entries plus the new v3 additions that lacked a source
+polygon would be exceptions, and in practice only Crimea does). Crimea is
+still reachable only via search or the console helper below, since it has
+no rendered shape to click. `hud/selectionStore.ts` also installs a
+dev-only console helper (v2.2.3, generalized in v3.0.0):
+`window.__debugSelectEntity(id)`, e.g. `__debugSelectEntity('crimea')` —
+gated by `import.meta.env.DEV` and eliminated from production builds. A
+missing/misspelled id prints every currently-registered entity id to the
+console rather than a fixed, now-stale example list.
 
 ### Search (`hud/SearchBar.tsx`)
 
-Since v2.2.4, search covers every registered `Country` *and* `Territory`,
-not just the rendered country list. It builds one flat, ranked (exact →
-starts-with → contains) list from two sources — `useCountryFeatures()`'s
-features (via `geometryToCentroid`, same as before v2.2.4) and
-`getTerritories()` (filtering out any territory with no `location`, since
-there'd be nowhere to fly the camera) — and renders the top 8 as a live
-dropdown, each row tagged `COUNTRY` or `TERRITORY`. Selecting a result (by
-click, or Enter for the top match) calls `resolveEntity(id)` from
+Since v2.2.4, search covers every registered `Country` *and* GeoEntity, not
+just the rendered country list — broadened in v3.0.0 from Territory-only to
+all five `GeoEntityType` classifications. It builds one flat, ranked (exact
+→ starts-with → contains) list from three sources — `useCountryFeatures()`'s
+features (via `geometryToCentroid`, unchanged since before v2.2.4),
+`useGeoEntityFeatures()`'s features (same `geometryToCentroid` derivation,
+since the large majority of GeoEntity records have real rendered geometry —
+see "GeoEntity geometry" above — and there's no reason to hand-maintain
+~54 separate lat/lng pairs in the registry when the geometry already has an
+authoritative one), and `getEntities()` filtered to records with a
+`location` but *no* rendered geometry (currently just Crimea) — and renders
+the top 8 as a live dropdown, each row tagged by kind. Selecting a result
+(by click, or Enter for the top match) calls `resolveEntity(id)` from
 `entities/EntityResolver.ts` and passes the result to the generic
 `selectEntity()` — not the old country-only `selectCountry()` — the same
 resolution path a map click uses (see "Selection & HUD panel state"
-above), so a search-selected territory produces an identical
+above), so a search-selected GeoEntity produces an identical
 `SelectedEntity` to a geometry click on one.
 
 **Currently searchable entity types: `country` (193, from the rendered
-UN-193 topology) and `territory` (4, from `data/registry/territories.ts` —
-Taiwan, Puerto Rico, Crimea, Western Sahara).**
+UN-193 topology) and all five `GeoEntityType` values (54 total, from
+`data/registry/geoEntities.ts`) — tagged `COUNTRY` / `GEOPOLITICAL` /
+`TERRITORY` / `STRATEGIC` / `MARITIME` / `REGION` respectively.**
 
 **Adding a future registry to search** (Conflict, Relationship, or
 whatever a future engine introduces) is additive, mirroring exactly how
-Territory was added on top of Country:
+GeoEntity was added on top of Country:
 
 1. The new type needs a registry (`registerX`/`getX`s, same `Map`-backed
-   shape as `CountryRegistry.ts`/`TerritoryRegistry.ts`) and needs to
+   shape as `CountryRegistry.ts`/`GeoEntityRegistry.ts`) and needs to
    satisfy `entities/types.ts`'s `GeopoliticalEntity` shape
    (`id`/`name`/`aliases`/`provenance`) — no changes to the type itself if
-   it already has those fields, same as `Country`/`Territory` needed none.
+   it already has those fields, same as `Country`/`GeoEntity` needed none.
 2. Add a `resolveX(id)` function to `entities/EntityResolver.ts` and fold
    it into `resolveEntity()`'s fallback chain (`resolveCountry(id) ??
-   resolveTerritory(id) ?? resolveX(id)`), plus one more `ResolvedEntity`
+   resolveGeoEntity(id) ?? resolveX(id)`), plus one more `ResolvedEntity`
    union member in `entities/types.ts`.
-3. In `SearchBar.tsx`: one more block shaped like `territoryEntries`
+3. In `SearchBar.tsx`: one more block shaped like `geoEntityGeometryEntries`
    (map the registry's records to `SearchEntry`, skip any without a
-   location), append it into `entries`, and add the new `kind` to
+   location/geometry), append it into `entries`, and add the new `kind` to
    `SearchEntry`'s union and `ENTITY_TYPE_LABEL`.
 4. If real data should ship live (not just prove the schema), give it its
-   own always-imported file like `registry/territories.ts` — never repurpose
+   own always-imported file like `registry/geoEntities.ts` — never repurpose
    an explicitly-unimported example file for that (see `LOGBOOK.md`'s
    v2.2.4 entry for a real bug that came from almost doing exactly that).
 

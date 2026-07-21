@@ -1,6 +1,6 @@
 import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
-import type { Territory } from '../data'
+import type { GeoEntity, GeoEntityType } from '../data'
 
 function Divider() {
   return <div className="h-px w-full bg-cyan-400/30" />
@@ -22,11 +22,6 @@ function PendingSection({ label }: { label: string }) {
       <div className="text-xs text-cyan-500/40 italic">Awaiting data feed</div>
     </div>
   )
-}
-
-// "unrecognized-state" -> "Unrecognized State", "disputed-claim" -> "Disputed Claim".
-function titleCase(value: string): string {
-  return value.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 // Unchanged from before v2.2.2 — same COUNTRY_PROFILES lookup, same four
@@ -54,30 +49,46 @@ function CountryDetails({ name }: { name: string }) {
   )
 }
 
-// New in v2.2.2. `status` is a required field on Territory, so there's
-// always at least a Political Status to show for anything that resolved
-// here at all — but `controllingAuthorities`/`claimants` are allowed to be
-// empty arrays (see data/types.ts), so those two rows are omitted
-// individually rather than falling back to a single "no data" message.
-function TerritoryDetails({ territory }: { territory: Territory }) {
-  const controller =
-    territory.controllingAuthorities.length > 0
-      ? territory.controllingAuthorities
-          .map((a) => (a.extent ? `${a.displayName} (${a.extent})` : a.displayName))
-          .join('; ')
+const GEO_ENTITY_TYPE_LABEL: Record<GeoEntityType, string> = {
+  'geopolitical-entity': 'Geopolitical Entity',
+  territory: 'Territory',
+  'strategic-region': 'Strategic Region',
+  'maritime-feature': 'Maritime Feature',
+  'geographic-region': 'Geographic Region',
+}
+
+// v3: one component covers all five non-sovereign classifications
+// (GeoEntityType) — see data/types.ts's GeoEntity doc comment for why one
+// shape instead of one interface (and one Details component) per
+// classification: parentEntity/administeredBy/claimedBy/claims apply
+// uniformly, and `type` is only ever read for display here (the ENTITY TYPE
+// row) and by search's type tag. Replaces the pre-v3, Territory-only
+// TerritoryDetails. Every relationship field is allowed to be empty/absent
+// (see data/types.ts), so each row is omitted individually rather than
+// falling back to a single "no data" message.
+function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
+  const parent = entity.parentEntity?.displayName
+
+  const administeredBy =
+    entity.administeredBy.length > 0
+      ? entity.administeredBy.map((a) => (a.extent ? `${a.displayName} (${a.extent})` : a.displayName)).join('; ')
       : undefined
 
-  const claimants =
-    territory.claimants.length > 0
-      ? territory.claimants.map((c) => `${c.displayName} (${titleCase(c.claimType)})`).join('; ')
-      : undefined
+  const claimedBy = entity.claimedBy.length > 0 ? entity.claimedBy.map((c) => c.displayName).join('; ') : undefined
+
+  const claims = entity.claims.length > 0 ? entity.claims.map((c) => c.displayName).join('; ') : undefined
 
   return (
     <>
-      <DataRow label="ENTITY TYPE" value="Territory" />
-      {controller && <DataRow label="CONTROLLER" value={controller} />}
-      {claimants && <DataRow label="CLAIMANTS" value={claimants} />}
-      <DataRow label="POLITICAL STATUS" value={titleCase(territory.status)} />
+      <DataRow label="ENTITY TYPE" value={GEO_ENTITY_TYPE_LABEL[entity.type]} />
+      {parent && <DataRow label="PARENT ENTITY" value={parent} />}
+      {administeredBy && <DataRow label="ADMINISTERED BY" value={administeredBy} />}
+      {claimedBy && <DataRow label="CLAIMED BY" value={claimedBy} />}
+      {claims && <DataRow label="CLAIMS" value={claims} />}
+      {entity.metadata?.strategicSignificance && (
+        <DataRow label="STRATEGIC SIGNIFICANCE" value={entity.metadata.strategicSignificance} />
+      )}
+      {entity.metadata?.treatyFramework && <DataRow label="TREATY FRAMEWORK" value={entity.metadata.treatyFramework} />}
     </>
   )
 }
@@ -126,7 +137,7 @@ export function IntelligencePanel() {
             {selected.entity.kind === 'country' ? (
               <CountryDetails name={selected.entity.name} />
             ) : (
-              <TerritoryDetails territory={selected.entity.data} />
+              <GeoEntityDetails entity={selected.entity.data} />
             )}
 
             <Divider />

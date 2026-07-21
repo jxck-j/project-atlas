@@ -17,6 +17,103 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.0.0 — Every entity type isn't a country: the GeoEntity system
+
+New major version — expands the geopolitical data architecture and Entity
+Resolution foundations v2.1-v2.3 laid down (still inside `src/data/` and
+`src/entities/`; this doesn't stand up a new top-level engine directory)
+beyond "Territory is the only non-sovereign classification that exists."
+Those versions built the Territory Registry, Entity Resolution, and Geometry
+Map specifically to generalize past countries, but only ever had one
+non-sovereign shape (Territory: dependencies + disputed areas) to prove it
+against. v3 replaces that single shape with `GeoEntity` — one interface, discriminated by a
+`GeoEntityType` (`geopolitical-entity` | `territory` | `strategic-region` |
+`maritime-feature` | `geographic-region`), covering everything from
+de-facto/partially-recognized states (Taiwan, Kosovo, Palestine, Western
+Sahara) to overseas dependencies (Puerto Rico, Hong Kong, Greenland, and 36
+more), military installations (Guantanamo Bay, the Cyprus Sovereign Base
+Areas, Baikonur), disputed maritime features (the Spratly Islands,
+Scarborough Reef), and treaty-governed regions (Antarctica) — 54 entities in
+total, 53 with real rendered geometry (only Crimea stays geometry-less, for
+the same "no standalone polygon anywhere in the source data" reason it's had
+since v2.3.0).
+
+This reduces future complexity the way `CLAUDE.md`'s versioning note asks a
+new major version to: any future non-sovereign entity kind (a UN trusteeship,
+a breakaway region, whatever comes next) is a new `GeoEntityType` value and a
+few `registerEntity()` calls, not a new registry/resolver/renderer/search
+block/panel component the way going from Country to Territory once was, and
+the way Territory to a second non-sovereign shape would have been again
+without this generalization.
+
+### Added
+
+- `GeoEntity` (`src/data/types.ts`): one interface for all five non-sovereign
+  classifications, with a uniform relationship shape —
+  `parentEntity`/`administeredBy`/`claimedBy`/`claims`, all built from the
+  same `GeoEntityRelation` (`ref` optional, `displayName` always present —
+  carried forward from the pre-v3 `ControllingAuthority`/`TerritoryClaimant`
+  design). Replaces the Territory-only `Territory`/`ControllingAuthority`/
+  `TerritoryClaimant` types.
+- `src/data/registry/GeoEntityRegistry.ts`: `registerEntity`/`getEntity`/
+  `getEntities`/`getEntitiesByType`/`getRelatedEntities` — the last one new
+  (no Territory-Registry equivalent existed): walks every relationship field
+  in both directions to answer "what's connected to this entity at all,"
+  for the claims overlay and any future relationship-graph consumer.
+  Replaces `TerritoryRegistry.ts`.
+- `src/data/registry/geoEntities.ts`: the real dataset — 54 entities, real
+  parent/administration/claim relationships for the ones the source data
+  supports (see the file for the full list and its sourcing caveat).
+  Replaces `registry/territories.ts`.
+- `src/entities/entityGeometryIds.ts`: extends the pre-v3 numeric-id-only
+  lookup with a second map for the eleven entities that have no numeric id
+  in `world-atlas`'s source data at all (Kosovo, both Cyprus Sovereign Base
+  Areas, Guantanamo Bay, Baikonur, the Cyprus UN Buffer Zone, Siachen
+  Glacier, and four disputed maritime features) — matched by raw source
+  name instead, and stamped with their target entity id before the topology
+  rebuild. Replaces `territoryGeometryIds.ts`.
+- `scripts/buildEntityTopology.mjs` (`npm run build:geo:entities`): same
+  pipeline as the pre-v3 territory build, extended to match features by name
+  as well as numeric id. Produces `public/geo/entities.json` (55 features,
+  ~176KB). Replaces `buildTerritoryTopology.mjs`.
+- `src/scene/geoEntityEntries.ts` / `src/scene/GeoEntities.tsx`: renders
+  every GeoEntity with real geometry — same merged-geometry-per-entity
+  approach, same palette, same click/hover/select behavior as
+  `Countries.tsx` — with **primary selection only**. Replaces
+  `useTerritoryFeatures.ts`/`Territories.tsx`.
+- `src/layers/geoOverlays/` (`ParentOverlayLayer.tsx`, `ClaimsOverlayLayer.tsx`):
+  the "parent relationship overlay" and "claims overlay" from the v3 spec,
+  built as real Layer Engine layers rather than logic inside
+  `GeoEntities.tsx` — the first non-placeholder layers the Layer Engine has
+  ever hosted, exercising the "real layer set" composition point
+  `CLAUDE.md`'s Layer Engine section had anticipated but never used.
+  `ParentOverlayLayer` (default **on**) highlights a selected sovereign
+  state's dependent GeoEntities in a secondary color. `ClaimsOverlayLayer`
+  (default **off** — the spec frames claims as opt-in) highlights every
+  entity in a claim relationship with the current selection, in a color
+  never reused elsewhere on the globe, with zero fill (never the same
+  treatment as the primary selection).
+- `IntelligencePanel.tsx`'s `GeoEntityDetails`: one panel layout for all five
+  classifications (ENTITY TYPE / PARENT ENTITY / ADMINISTERED BY / CLAIMED
+  BY / CLAIMS / plus strategic/treaty metadata where present), replacing the
+  Territory-only `TerritoryDetails`.
+- `SearchBar.tsx` now returns all six kinds (country + five `GeoEntityType`
+  values), tagged accordingly in the dropdown.
+
+### Notes
+
+- Countries (`SovereignState` in the spec) are explicitly unchanged —
+  `CountryRegistry`, `Countries.tsx`, and the UN-193 pipeline weren't
+  touched.
+- Normal-selection behavior (click an entity, only it highlights — no
+  automatic selection of claimants/parents) required no new code: it's just
+  what `selectEntity()` already did. The two overlays are additive emphasis
+  layers on top, not a replacement for it.
+- See `LOGBOOK.md` for the judgment calls this version's spec left open
+  (Gibraltar, Crimea's classification, which real-world parent/claimant
+  relationships were added beyond the spec's explicit list) and why they
+  were resolved the way they were.
+
 ## v2.3.0 — Territories get real, clickable, highlighted geometry
 
 Point release under v2 (same call as v2.2.0's "Geometry Map" entry: new

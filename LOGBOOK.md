@@ -5,6 +5,80 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.0.0: one registry instead of five, and the judgment calls the spec left open
+
+**Why one `GeoEntity` interface instead of five (`GeopoliticalEntity`,
+`Territory`, `StrategicRegion`, `MaritimeFeature`, `GeographicRegion`), each
+with their own registry.** The spec named five classifications and asked for
+one `GeoEntityRegistry.ts` with `registerEntity`/`getEntity`/`getEntities`/
+`getEntitiesByType`/`getRelatedEntities` — that function list only makes
+sense over one registry, not five, since `getEntitiesByType` implies
+filtering a single collection rather than picking which of five to call. The
+alternative (mirroring `CountryRegistry`/`TerritoryRegistry` — a separate
+file per kind, deliberately duplicated so one addition can't regress another,
+per the v2.3.0 entry below) stops making sense once there are five kinds that
+share one relationship shape: `parentEntity`/`administeredBy`/`claimedBy`/
+`claims` apply identically to a disputed maritime feature and a Crown
+dependency. Five interfaces would mean five near-identical copies of the same
+four fields; one `GeoEntity` with a `type: GeoEntityType` discriminant is what
+the spec's own registry shape was already implying.
+
+**Every requested entity turned out to have real, standalone polygon
+geometry in `world-atlas`'s 10m source** — including things that looked like
+they might not (Guantanamo Bay, Baikonur, the Spratly Islands, the Cyprus UN
+Buffer Zone). Checked this before writing any data by dumping every feature
+id/name in the source topology rather than assuming. Eleven of the fifty-five
+have no numeric ISO id (Kosovo and ten others) but are still separate named
+features — matched by raw source name instead, at build time, and given a
+stable synthetic id (their target `GeoEntityRegistry` id, stamped on before
+the topology rebuild) so nothing downstream has to know which features
+started out id-less. This meant the "some territories can't be geometrically
+represented, they stay search-only" situation `TERRITORY_GEOMETRY_IDS`
+documented for Crimea did NOT generalize to the new entity set — Crimea
+remains the only geometry-less entity in v3, unchanged from pre-v3.
+
+**Judgment calls the spec left ambiguous or silent on — flagged here rather
+than guessed-and-hidden:**
+
+- **Gibraltar** appears in the spec's Known Relationships section
+  (`parentEntity: United Kingdom`) but not in its explicit Territory list.
+  Added as a 39th Territory entry on the assumption this was an omission,
+  not a deliberate exclusion — it has real source geometry and an
+  unambiguous relationship, so leaving it out felt more likely to be wrong
+  than including it. Trivial to remove (`src/data/registry/geoEntities.ts`,
+  one `register(dependency(...))` call) if that assumption doesn't hold.
+- **Crimea** isn't in the v3 spec's entity list at all, but existed in the
+  pre-v3 dataset. Carried forward rather than dropped (removing working,
+  previously-shipped functionality wasn't asked for), classified as
+  `'territory'` for lack of a better fit among the five v3 types — it isn't
+  a dependency, but none of the other four classifications (primary
+  political significance / strategic-military / maritime / treaty-region)
+  describe it better either.
+- **Several parent relationships beyond the spec's explicit list** were
+  added where uncontroversial and easily verified (Curaçao/Aruba/Sint
+  Maarten → Netherlands, Åland → Finland, Norfolk Island/Heard & McDonald →
+  Australia, Cook Islands/Niue → New Zealand) — the spec's Known
+  Relationships section reads as "at least these," not "only these," and
+  leaving 10 of 39 Territory entries with no parent at all seemed a worse
+  default than filling in well-established facts.
+- **Claimants for Bajo Nuevo Bank / Serranilla Bank** aren't in the spec at
+  all (only Spratly Islands, Scarborough Reef, and Siachen Glacier have
+  spec'd claimedBy lists). Added Colombia/Jamaica/Nicaragua/Honduras per
+  well-documented real disputes, at `confidence: 'estimated'` like
+  everything else in this dataset — flagged here specifically because this
+  is the least-verified corner of the v3 data and the one most likely to
+  need a correction from someone who actually knows the dispute.
+- **"Claims overlay" hatching** is approximated with a distinct pulsing
+  outline color + near-zero fill, not a true diagonal-hatch texture — native
+  `LineBasicMaterial`/`MeshBasicMaterial` can't do that without a custom
+  shader, which felt like scope the spec's "future-compatible... visualization
+  layer" framing didn't ask for yet. The infrastructure (a real Layer Engine
+  layer, real bidirectional claim data via `getRelatedEntities`) is there for
+  a future pass to swap in a real hatch shader without touching the data
+  model.
+
+See `CHANGELOG.md`'s v3.0.0 entry for the full file-by-file breakdown.
+
 ## 2026-07-20 — v2.3.0: a shape's own id is not the same thing as what it means, and two ways that bit us in one afternoon
 
 **The core bug: `TerritoryEntry` compared a geometry id to an entity id

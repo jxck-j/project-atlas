@@ -8,7 +8,7 @@ import { WATER_BODIES } from '../data/waterBodies'
 import { latLngPathToPoints, latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
-import { Territories } from './Territories'
+import { GeoEntities } from './GeoEntities'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
@@ -227,7 +227,7 @@ export function Globe() {
 
       <GraticuleGrid />
       <Countries />
-      <Territories />
+      <GeoEntities />
       <CapitalMarker />
       <WaterLabels occluder={coreSphereRef} />
       <LayerEngine />

@@ -16,15 +16,19 @@
 /**
  * A reference to another record in this data architecture, used wherever one
  * entity needs to point at another (a Conflict's participants, a
- * Relationship's parties, a Territory's administering power). Explicitly
- * discriminated between 'country' and 'territory' — rather than a bare
- * string id — because the two id spaces are NOT guaranteed disjoint (a
- * territory and a country could coincidentally share a slug), and because
+ * Relationship's parties, a GeoEntity's parent/administrator/claimant).
+ * Explicitly discriminated by which registry the id belongs to — rather than
+ * a bare string id — because the id spaces are NOT guaranteed disjoint (a
+ * GeoEntity and a Country could coincidentally share a slug), and because
  * consumers (e.g. a future Relationship Engine rendering an arc) need to
  * know which collection to look the id up in without guessing.
+ *
+ * `'territory'` is kept only as a legacy discriminant value for any old data
+ * that still references it; nothing in this file emits it anymore as of v3
+ * (see GeoEntity below) — new code should use `'geo-entity'`.
  */
 export interface EntityRef {
-  type: 'country' | 'territory'
+  type: 'country' | 'territory' | 'geo-entity'
   id: string
 }
 
@@ -123,112 +127,142 @@ export interface Country {
 }
 
 /**
- * An entity that exercises practical, on-the-ground administrative control
- * over some or all of a Territory, right now — a statement of fact about who
- * runs it day to day, not a judgment about who *should*. Kept structurally
- * separate from `TerritoryClaimant` on purpose: control and claimed
- * sovereignty are different facts that frequently disagree (Russia
- * *controls* Crimea; that is a separate fact from whether that control is
- * *recognized* — most of the world's claimants/recognition disagree with
- * it). Collapsing the two into one field would silently force a political
- * conclusion — "control implies legitimacy," or its opposite — into the
- * data model itself.
+ * A named reference used in a GeoEntity's relationship fields
+ * (`parentEntity`/`administeredBy`/`claimedBy`/`claims`) — one shape for all
+ * four rather than a bespoke type per field, because they're all the same
+ * fact structurally ("this other entity, related this way, since maybe this
+ * date"); what makes them mean different things is which field they sit in,
+ * not their own shape. `ref` is optional for the same reason it was on the
+ * pre-v3 `ControllingAuthority`/`TerritoryClaimant` types it replaces: the
+ * relevant party is frequently a government that isn't itself a registered
+ * Country or GeoEntity (the Polisario Front/SADR administering part of
+ * Western Sahara has no Country record) — `displayName` always works even
+ * when `ref` can't resolve to anything.
  */
-export interface ControllingAuthority {
-  /** Reference to a registered Country/Territory, if the controlling authority is itself one of those. */
+export interface GeoEntityRelation {
+  /** Reference to a registered Country or GeoEntity, if this party is one. */
   ref?: EntityRef
-  /**
-   * Always-available human-readable name, independent of whether `ref`
-   * resolves to anything — the de facto administrator of a disputed
-   * territory is very often a government that isn't itself a registered,
-   * internationally-recognized Country in this dataset (e.g. the
-   * Taiwan/ROC government, or the Polisario Front/SADR administering part
-   * of Western Sahara) and forcing `ref` to be required would make those
-   * cases unrepresentable.
-   */
+  /** Always-available human-readable name — see the interface doc for why this can't just be `ref`. */
   displayName: string
   /**
-   * Rough share of the territory this authority actually administers, in
-   * plain language (e.g. "majority of the territory", "eastern portion
-   * behind the berm") — not a precise percentage, because precise
-   * percentages are themselves rarely agreed upon. Omit for a territory
-   * with one uncontested administrator.
+   * Rough share of the entity this party administers, in plain language
+   * (e.g. "majority of the territory, west of the berm") — not a precise
+   * percentage, because precise percentages are themselves rarely agreed
+   * upon. Only meaningful on `administeredBy` entries; omitted elsewhere.
    */
   extent?: string
-  /** ISO 8601 date this authority's control began, if known/relevant. */
+  /** ISO 8601 date this relationship began, if known/relevant. */
   since?: string
 }
 
 /**
- * A claim of sovereignty by one entity over a Territory — deliberately its
- * own type rather than a bare EntityRef, because a claim needs to say *what
- * kind* of claim it is, and a territory frequently has more than one of
- * these simultaneously (the entire reason this field is a list). Note this
- * says nothing about control — see `ControllingAuthority` above; a claimant
- * and a controlling authority are very often different entities, and a
- * Territory can (and often does) have both at once.
+ * The six-way classification this app's rendering/search/panel logic
+ * dispatches on for anything that isn't a UN-member `Country`. Deliberately
+ * a closed union (unlike `Country.region`'s free-form string) — these six
+ * meanings are load-bearing: they're what a consumer reads to decide "does
+ * this look like a country," "does this get a parent-overlay," "does this
+ * support multiple claimants without a sovereign owner." A seventh kind
+ * requires a deliberate decision about how it renders, not just a new string
+ * value slipping in.
  */
-export interface TerritoryClaimant {
-  /** Reference to a registered Country, if the claimant is one. */
-  countryRef?: EntityRef
-  /** Always-available human-readable name — see ControllingAuthority.displayName for why this can't just be `countryRef`. */
-  displayName: string
-  claimType: 'recognized-sovereign' | 'disputed-claim' | 'historical-claim'
-  /** ISO 8601 date the claim began, if known/relevant. */
-  since?: string
-}
+export type GeoEntityType =
+  | 'geopolitical-entity'
+  | 'territory'
+  | 'strategic-region'
+  | 'maritime-feature'
+  | 'geographic-region'
 
 /**
- * A geographic entity that is not (or not universally recognized as) a
- * sovereign country: a dependency, an autonomous region, a disputed area, or
- * an unrecognized/partially-recognized state. Split out from Country instead
- * of folding into it with a "disputed" flag because territories have a
- * fundamentally different shape of data — most importantly, more than one
- * claimant, and control that can be split or contested — that would
- * otherwise force every consumer of Country to handle a rare case.
+ * Anything geopolitically significant that is not a UN-member sovereign
+ * state: a de facto/partially-recognized state with its own selectable
+ * presence (Taiwan, Kosovo), a dependency or autonomous region with a
+ * parent sovereign (Puerto Rico, Hong Kong), a militarily/strategically
+ * significant area that isn't itself a country or a dependency (Guantanamo
+ * Bay, the Siachen Glacier), a disputed maritime feature with no required
+ * sovereign owner (the Spratly Islands), or a region governed by treaty
+ * rather than sovereignty (Antarctica). One interface for all five
+ * classifications — not five separate interfaces — because they share the
+ * same relationship shape (who's the parent, who administers it, who claims
+ * it, what does it claim) and the same rendering treatment (selectable,
+ * merged border/fill geometry, one Intelligence Panel layout); `type` is
+ * what a consumer switches on for the handful of places that actually need
+ * to (search's tag, the panel's "ENTITY TYPE" row), not a signal that these
+ * are five unrelated shapes of data.
  *
- * The central design decision in this interface: "who controls it"
- * (`controllingAuthorities`) and "who claims it" (`claimants`) are separate
- * fields, not one field with a "type" flag. A consumer that wants to render,
- * say, "administered by Morocco, claimed by both Morocco and the Polisario
- * Front" reads two independent lists — it never has to interpret a single
- * overloaded field to figure out which entries mean what. See LOGBOOK.md for
- * why this shape specifically, and CLAUDE.md for why keeping this as *data*
- * (rather than encoding any of it as application logic) is the point.
+ * Replaces the pre-v3 `Territory`/`ControllingAuthority`/`TerritoryClaimant`
+ * types, which only modeled dependencies/disputed-territories and used a
+ * `controllingAuthorities`/`claimants`/`parentCountryId` shape specific to
+ * that one classification. `GeoEntityRelation` (above) is the same "ref
+ * optional, displayName always present" design carried forward, just reused
+ * across four relationship fields that apply uniformly to every classification
+ * instead of three fields that only made sense for one.
  */
-export interface Territory {
-  /** Stable identifier. Convention: lowercase slug (e.g. "western-sahara", "kashmir") — no equivalent to ISO 3166-1 exists for most disputed/dependent territories. */
+export interface GeoEntity {
+  /** Stable identifier. Convention: lowercase slug (e.g. "western-sahara", "guantanamo-bay") — no equivalent to ISO 3166-1 exists for most of these. */
   id: string
   name: string
   aliases: string[]
-  status: 'disputed' | 'dependency' | 'autonomous-region' | 'unrecognized-state' | 'other'
+  type: GeoEntityType
   /**
-   * Every entity that currently administers some or all of this territory.
-   * A list, not a single value — real-world control is very often split
-   * (this schema's own Western Sahara example has two administrators, one
-   * for most of the territory and one for the rest) or, rarely, genuinely
-   * unclear. An empty array is valid and means exactly that: no single
-   * clear administrator, not "unknown, ask elsewhere."
+   * The sovereign entity this is formally, uncontroversially a part/
+   * dependency of, if any (e.g. Puerto Rico -> USA, Greenland -> Denmark).
+   * Singular and optional — unlike `administeredBy`/`claimedBy`/`claims`,
+   * an entity has at most one formal parent; an entity with none (Taiwan,
+   * Antarctica, the Spratly Islands) simply omits this field rather than
+   * forcing a placeholder value.
    */
-  controllingAuthorities: ControllingAuthority[]
+  parentEntity?: GeoEntityRelation
   /**
-   * Every entity that claims sovereignty over this territory, and how. A
-   * claimant is not necessarily a controlling authority, and a controlling
-   * authority does not necessarily appear here (a government can administer
-   * a territory without formally claiming sovereign ownership of it, though
-   * in practice it usually does). A territory with zero claimants would be
-   * unusual but is not disallowed by the type.
+   * Every party currently exercising practical, on-the-ground
+   * administrative control, right now — a statement of fact about who runs
+   * it day to day, not a judgment about who *should*. A list because
+   * real-world control is very often split (Western Sahara: Morocco west of
+   * the berm, the Polisario Front/SADR east of it) or, rarely, genuinely
+   * unclear — an empty array means exactly that, not "unknown, ask
+   * elsewhere." Kept structurally separate from `claimedBy` for the same
+   * reason the pre-v3 schema split control from claims: they frequently
+   * disagree (Morocco controls Western Sahara; that control is a separate
+   * fact from whether it's internationally recognized), and collapsing them
+   * would silently force a political conclusion into the data model itself.
    */
-  claimants: TerritoryClaimant[]
+  administeredBy: GeoEntityRelation[]
   /**
-   * The country this territory is formally, uncontroversially a
-   * dependency/part of, if any (e.g. Puerto Rico -> USA). Distinct from
-   * `controllingAuthorities`/`claimants` — a recognized dependency isn't
-   * "disputed," so modeling it via the same fields used for a genuine
-   * dispute would misrepresent it as more contested than it is.
+   * Every entity claiming sovereignty over THIS entity. Not necessarily the
+   * same set as `administeredBy` — a claimant need not currently control
+   * the territory it claims (Ukraine still claims Crimea without
+   * controlling it), and a controlling authority does not necessarily
+   * formally claim sovereign ownership.
    */
-  parentCountryId?: string
-  /** Approximate centroid, for placing a label before any real geometry integration exists. */
+  claimedBy: GeoEntityRelation[]
+  /**
+   * Every entity THIS entity claims sovereignty over — the inverse
+   * direction of `claimedBy`, and why the two are separate fields rather
+   * than one "claims" field with a direction flag: a claims overlay
+   * rendered from a selected entity needs to walk outward (what does the
+   * selection claim) independently of walking inward (who claims the
+   * selection), and doing that from one bidirectional list would require
+   * every consumer to re-derive direction from context. Most entries in
+   * this dataset only populate `claimedBy` (they're claimed, they don't
+   * themselves claim anything) — `claims` exists for the cases that do
+   * (a sovereign state claiming a disputed territory or maritime feature).
+   */
+  claims: GeoEntityRelation[]
+  /**
+   * Free-form metadata a future layer can key on without this dataset
+   * needing to know those layers exist yet — see CLAUDE.md's Layer Engine
+   * section and the geoOverlays layers in src/layers/. Every field is
+   * optional and additive; a layer that doesn't care about, say,
+   * `strategicSignificance` simply never reads it.
+   */
+  metadata?: {
+    /** Why this place matters militarily/strategically, e.g. for a future military layer. Most relevant to 'strategic-region' entries but not exclusive to them. */
+    strategicSignificance?: string
+    /** Governing legal/treaty framework, e.g. "Antarctic Treaty System" — most relevant to 'geographic-region' entries. */
+    treatyFramework?: string
+    /** Freeform tags a future conflict/alliance/intelligence layer can filter or group on. */
+    tags?: string[]
+  }
+  /** Approximate centroid, for search/camera-fly when no rendered geometry exists for this entity (see entities/entityGeometryIds.ts) — most entities here DO have real geometry and derive their location from it instead; this is the fallback for the ones that don't (e.g. Crimea, which has no standalone polygon anywhere in the source data). */
   location?: GeoPoint
   provenance?: DataProvenance
 }

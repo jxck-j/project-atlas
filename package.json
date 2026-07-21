@@ -1,14 +1,14 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "2.3.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:geo": "npm run build:geo:countries && npm run build:geo:territories",
+    "build:geo": "npm run build:geo:countries && npm run build:geo:entities",
     "build:geo:countries": "node scripts/buildCountryTopology.mjs",
-    "build:geo:territories": "node scripts/buildTerritoryTopology.mjs",
+    "build:geo:entities": "node scripts/buildEntityTopology.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },

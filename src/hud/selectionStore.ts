@@ -105,34 +105,34 @@ export function resetView() {
   notify()
 }
 
-// Dev-only console helper. Territories are now searchable for real (v2.2.4
-// wired data/registry/territories.ts into the live TerritoryRegistry, and
-// hud/SearchBar.tsx resolves search results through EntityResolver — see
-// CLAUDE.md), so this is no longer the only way to reach a Territory card —
-// it's kept as a quick console shortcut. Deliberately does NOT import
-// data/registry/exampleTerritories.ts (the old, still-unimported
-// illustrative dataset) — it registers 'taiwan'/'crimea'/'western-sahara'
-// under the same ids the real dataset now uses, and throws on the
-// duplicate. EntityResolver's own `../data` import already pulls in the
-// real dataset, so nothing extra needs loading here.
+// Dev-only console helper. Every GeoEntity is now searchable for real
+// (v2.2.4 wired the pre-v3 territory dataset into search; v3 broadened that
+// to all five GeoEntity classifications — see CLAUDE.md), so this is no
+// longer the only way to reach a GeoEntity card — it's kept as a quick
+// console shortcut, most useful for entities with no rendered geometry
+// (currently only Crimea — see entities/entityGeometryIds.ts) that can't be
+// reached by clicking the globe at all.
 if (import.meta.env.DEV) {
-  void import('../entities/EntityResolver').then(({ resolveTerritory }) => {
-    ;(window as unknown as { __debugSelectTerritory?: (id: string) => void }).__debugSelectTerritory = (
-      id: string,
-    ) => {
-      const resolved = resolveTerritory(id)
-      if (!resolved) {
-        console.warn(
-          `[debug] no territory "${id}" — try 'taiwan', 'puerto-rico', 'crimea', or 'western-sahara'`,
-        )
-        return
+  void Promise.all([import('../entities/EntityResolver'), import('../data')]).then(
+    ([{ resolveGeoEntity }, { getEntities }]) => {
+      ;(window as unknown as { __debugSelectEntity?: (id: string) => void }).__debugSelectEntity = (
+        id: string,
+      ) => {
+        const resolved = resolveGeoEntity(id)
+        if (!resolved) {
+          const ids = getEntities()
+            .map((e) => e.id)
+            .join("', '")
+          console.warn(`[debug] no entity "${id}" — try one of: '${ids}'`)
+          return
+        }
+        selectEntity(resolved, new Vector3(1, 0, 0))
       }
-      selectEntity(resolved, new Vector3(1, 0, 0))
-    }
-    console.info(
-      "[debug] __debugSelectTerritory('taiwan' | 'puerto-rico' | 'crimea' | 'western-sahara') is available in this console — dev build only. Territories are also searchable directly now.",
-    )
-  })
+      console.info(
+        "[debug] __debugSelectEntity(id) is available in this console — dev build only, e.g. __debugSelectEntity('crimea'). Most GeoEntities are also selectable directly on the globe and via search now.",
+      )
+    },
+  )
 }
 
 function subscribe(listener: () => void) {

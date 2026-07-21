@@ -3,16 +3,17 @@ import { feature } from 'topojson-client'
 import type { Topology, GeometryCollection } from 'topojson-specification'
 import type { Feature } from 'geojson'
 import { registerGeometryMapping } from '../entities/GeometryMap'
-import { TERRITORY_GEOMETRY_IDS } from '../entities/territoryGeometryIds'
+import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 
-// Pre-built by scripts/buildTerritoryTopology.mjs (`npm run
-// build:geo:territories`): the subset of registered territories
-// (data/registry/territories.ts) that have a real, standalone polygon in
-// the source data — see TERRITORY_GEOMETRY_IDS for which ones and why not
-// all of them. Mirrors useCountryFeatures.ts's shape (singleton fetch,
-// shared across consumers) — see that file for the reasoning, it applies
-// unchanged here, just for a much smaller dataset.
-const TOPOLOGY_URL = '/geo/territories.json'
+// Pre-built by scripts/buildEntityTopology.mjs (`npm run build:geo:entities`):
+// every GeoEntity (data/registry/geoEntities.ts) that has a real, standalone
+// polygon in the source data — see entityGeometryIds.ts for which ones and
+// why not all of them (Crimea has none, at any resolution). Mirrors
+// useCountryFeatures.ts's shape (singleton fetch, shared across consumers)
+// — see that file for the reasoning, it applies unchanged here.
+//
+// Replaces the pre-v3 useTerritoryFeatures.ts.
+const TOPOLOGY_URL = '/geo/entities.json'
 
 let features: Feature[] = []
 let loaded = false
@@ -33,19 +34,22 @@ function ensureFetch() {
       return res.json()
     })
     .then((topology: Topology) => {
-      const object = topology.objects.territories as GeometryCollection
+      const object = topology.objects.entities as GeometryCollection
       features = feature(topology, object).features as Feature[]
 
       // Populate GeometryMap so a click on one of these shapes resolves to
-      // the right territory — the same "geometry id -> entity id" chain
-      // Countries.tsx's polygons have used since v2.2.1, now actually
-      // exercised for the first time (every id here comes straight out of
-      // TERRITORY_GEOMETRY_IDS, so the entity id is never unknown/missing
-      // the way a fallback would need to handle).
+      // the right GeoEntity — the same "geometry id -> entity id" chain
+      // Countries.tsx's polygons have used since v2.2.1. Numeric-ISO-id
+      // features need the ENTITY_GEOMETRY_IDS lookup; features that started
+      // out with no numeric id in the source were stamped with their target
+      // entity id directly at build time (see entityGeometryIds.ts /
+      // buildEntityTopology.mjs), so `String(f.id)` for those IS already the
+      // entity id — the `?? geometryId` fallback below covers them without
+      // this file needing to know which features were which.
       for (const f of features) {
         const geometryId = f.id !== undefined && f.id !== null ? String(f.id) : undefined
-        const entityId = geometryId ? TERRITORY_GEOMETRY_IDS[geometryId] : undefined
-        if (!geometryId || !entityId) continue
+        if (!geometryId) continue
+        const entityId = ENTITY_GEOMETRY_IDS[geometryId] ?? geometryId
         try {
           registerGeometryMapping(geometryId, entityId)
         } catch {
@@ -58,9 +62,9 @@ function ensureFetch() {
       notify()
     })
     .catch((err) => {
-      // Fail quietly, same as useCountryFeatures.ts — territories just
-      // don't render if the geo asset can't be fetched.
-      console.warn('Territory geometry unavailable:', err)
+      // Fail quietly, same as useCountryFeatures.ts — entities just don't
+      // render if the geo asset can't be fetched.
+      console.warn('Entity geometry unavailable:', err)
     })
 }
 
@@ -77,12 +81,12 @@ function getLoadedSnapshot() {
   return loaded
 }
 
-export function useTerritoryFeatures(): Feature[] {
+export function useGeoEntityFeatures(): Feature[] {
   ensureFetch()
   return useSyncExternalStore(subscribe, getFeaturesSnapshot)
 }
 
-export function useTerritoryFeaturesLoaded(): boolean {
+export function useGeoEntityFeaturesLoaded(): boolean {
   ensureFetch()
   return useSyncExternalStore(subscribe, getLoadedSnapshot)
 }
