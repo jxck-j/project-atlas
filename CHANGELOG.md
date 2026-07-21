@@ -17,6 +17,70 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.2.0 — Keyboard Navigation & Entity Selection ("Phase 3.2")
+
+New capability — a new interaction mode (this repo's own versioning note
+above says that's a major-version-tier change; kept as "3.2" specifically
+per this feature's own "Phase 3.2" naming rather than bumped to v4, since
+it deepens the existing Rendering/Layer engines' input handling rather than
+introducing a new engine of its own — see `CLAUDE.md`'s new "Input Layer"
+section for the reasoning).
+
+Entirely additive: every existing system (globe rendering, Country/GeoEntity
+registries, Layer Engine, HUD, camera, mouse selection) is unchanged and
+untouched at the logic level — see `LOGBOOK.md` for the one place this
+required a small, deliberate extension (`selectEntity`'s new optional third
+argument) rather than a pure addition, and why it doesn't change any
+existing caller's behavior.
+
+### Added
+
+- **`src/input/`** — a new top-level module, parallel to `scene/`/`hud/`/
+  `data/`/`entities/`/`layers/`: `types.ts` (the command vocabulary),
+  `KeyboardController.ts` (the one global keydown/keyup listener, focus
+  rules, key bindings), `SelectionController.ts` (the geographic-direction
+  algorithm + Tab category cycling), `CameraController.ts` (WASDQE camera
+  nudging + thin wrappers around existing reset/focus actions),
+  `InputManager.tsx` (routes one-shot commands to the right system, mounted
+  once from `App.tsx`).
+- **Camera controls**: W/S zoom, A/D rotate, Q/E tilt (held-continuous,
+  driven by `useFrame` the same way `useCameraFlight`/`useCameraReset`
+  already animate the camera — spherical coordinates around the fixed
+  globe-center target, clamped to the existing `CAMERA_MIN/MAX_DISTANCE`
+  and `CAMERA_MIN/MAX_POLAR_ANGLE` bounds), R (reset view — the existing
+  `resetView()`, same as Home/double-click-ocean/the toolbar button), Space
+  (focus camera on the selection — the existing `flyToSelectedCountry()`,
+  same as the panel's "FOCUS CAMERA" button).
+- **Entity navigation**: arrow keys select the nearest entity in that
+  geographic direction from the current selection, evaluated generically —
+  great-circle bearing (kept only within a ±90° cone of the requested
+  direction) then great-circle distance among what's left, over every
+  currently-rendered country and GeoEntity. No entity names or ids appear
+  anywhere in the algorithm itself. Tab/Shift+Tab cycle forward/backward
+  through the six selectable categories (country + the five `GeoEntityType`
+  values), landing on the alphabetically-first entity in each.
+- **Inspector controls**: Enter opens the Intelligence Panel for the
+  current selection; Escape is two-stage (closes the panel first, clears
+  the selection on a second press); I toggles the panel; L toggles the
+  Layer Panel; **/** opens search (see "S key conflict," below).
+- `hud/SettingsPanel.tsx`: a "KEYBOARD SHORTCUTS" reference section,
+  hand-written (not generated — the binding table is small and fixed, not
+  data worth wiring through a store).
+- `hud/CommandBar.tsx`: a SELECTED segment showing the current selection's
+  name — synchronized automatically, since it reads the same
+  `selectionStore.ts` every other consumer does.
+- `utils/geo.ts`: `bearingBetween`/`angularDistance`/`normalizeAngle` —
+  generic great-circle math, added alongside the existing lat/lng ⟷
+  `Vector3` functions since `SelectionController.ts`'s algorithm needed it
+  and nothing selection-specific belongs in it.
+
+### Fixed / resolved during implementation
+
+- **The spec bound `S` to both "zoom out" (Camera Controls) and "open
+  search" (HUD Controls).** Asked the user directly rather than guessing;
+  resolved to S = zoom out (keeps the WASD block coherent), search bound to
+  `/` instead (the standard web convention for focus-search).
+
 ## v3.1.5 — Parent countries get the same visual treatment claimants already had
 
 Point release. Fixes a real gap: selecting Curaçao never highlighted the

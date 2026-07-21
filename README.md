@@ -74,6 +74,18 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   side of the sphere so they don't float through it.
 - Closing the intelligence panel (✕) clears the selection and resumes ambient
   rotation.
+- **Keyboard** (v3.2.0, "Phase 3.2") — full navigation without a mouse,
+  reading from and writing to the exact same selection state as clicking/
+  search. Camera: **W/S** zoom, **A/D** rotate, **Q/E** tilt, **R** reset
+  view, **Space** focus camera on the selection. Entity navigation:
+  **arrow keys** select the nearest entity in that geographic direction
+  (evaluated by real bearing/distance, not screen position — see
+  `CLAUDE.md`'s Input Layer section), **Tab**/**Shift+Tab** cycle through
+  the six selectable categories. Inspector: **Enter** opens it, **Escape**
+  closes it first and clears the selection on a second press, **I**
+  toggles it. HUD: **L** toggles the Layer Panel, **/** opens search.
+  Disabled while typing in a text field. Full reference in the
+  ⚙ Settings panel.
 
 ## Architecture
 
@@ -187,7 +199,9 @@ src/
                                  (ranked dropdown, entity type shown per result)
     LayerPanel.tsx               Toggle list for registered layers, grouped by
                                  category (toggled via Toolbar)
-    SettingsPanel.tsx           Camera sensitivity sliders (toggled via Toolbar)
+    SettingsPanel.tsx           Camera sensitivity sliders + (v3.2.0)
+                                 KEYBOARD SHORTCUTS reference (toggled via
+                                 Toolbar)
     Telemetry.tsx               Live orbit readout (az/el/range) — stacked
                                  with LegendPanel.tsx in a shared bottom-left
                                  flex column in App.tsx (v3.1.0), no longer
@@ -198,8 +212,8 @@ src/
                                  IntelligencePanel covers the whole right
                                  edge whenever it'd matter most
     CommandBar.tsx               Bottom status bar: ready/connected/country
-                                 count/entity count (v3.0.0)/FPS/hover
-                                 coordinates
+                                 count/entity count (v3.0.0)/selected entity
+                                 (v3.2.0)/FPS/hover coordinates
     IntelligencePanel.tsx       Right-side sliding panel with the selected
                                  entity's data + FOCUS CAMERA button — country
                                  cards (v1, unchanged) or GeoEntityDetails
@@ -208,8 +222,10 @@ src/
                                  on entity kind
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
-                                 since v2.2.1 — see entities/) + camera
-                                 flight/reset triggers. Dev builds also get
+                                 since v2.2.1 — see entities/) + inspectorOpen
+                                 (v3.2.0, separate from selection itself —
+                                 see CLAUDE.md) + camera flight/reset
+                                 triggers. Dev builds also get
                                  window.__debugSelectEntity(id) (v2.2.3,
                                  generalized v3.0.0) — most useful for
                                  Crimea, the one entity with no rendered
@@ -274,7 +290,30 @@ src/
                                build-time allowlist and runtime lookup
                                can't drift apart
   utils/
-    geo.ts                    lat/lng <-> Vector3 sphere projection and its inverse
+    geo.ts                    lat/lng <-> Vector3 sphere projection and its
+                               inverse, plus (v3.2.0) bearingBetween/
+                               angularDistance/normalizeAngle — great-circle
+                               math for input/SelectionController.ts
+  input/                     (v3.2.0, "Phase 3.2") Keyboard navigation —
+                               see CLAUDE.md's Input Layer section for the
+                               full picture
+    types.ts                    Command vocabulary shared by every file below
+    KeyboardController.ts        The one global keydown/keyup listener,
+                               focus rules, key bindings, the held-key Set
+                               CameraController.ts reads every frame
+    SelectionController.ts       findNearestInDirection() (pure,
+                               generic — no entity ids/names in the logic)
+                               + useEntityNavigation() (arrow keys, Tab
+                               category cycling), writing through the
+                               existing selectEntity()
+    CameraController.ts          WASDQE held-key camera nudging (mounted
+                               inside scene/CameraControls.tsx) + one-line
+                               wrappers around the existing resetView()/
+                               flyToSelectedCountry() for R/Space
+    InputManager.tsx              Mounted once from App.tsx; routes
+                               one-shot commands (arrows, Enter, Escape,
+                               Tab, L, /) to the right system — renders
+                               nothing
   App.tsx                     Composes Scene + all HUD layers
   index.css                   Tailwind v4 entry + font tokens + reduced-motion
 scripts/

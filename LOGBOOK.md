@@ -5,6 +5,94 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.2.0: teaching selectEntity() a third argument without teaching its three existing callers anything new
+
+**The one place "purely additive" needed a real design decision, not just
+new files.** Keyboard arrow-key navigation has to call the same
+`selectEntity()` every other selection path uses — that's the whole point
+of "keyboard and mouse selection must use the same underlying state" — but
+every existing caller (`Countries.tsx`, `GeoEntities.tsx`, `SearchBar.tsx`)
+was written assuming selecting something always opens the Intelligence
+Panel, because pre-v3.2 that was simply true. Arrow-key browsing needs to
+update the globe highlight and status bar on *every keypress* without
+yanking the panel open each time (ENTER does that, deliberately, per the
+spec). Two ways to reconcile this without touching any of the three
+existing call sites: (a) give `selectEntity()` a new required parameter
+and update all three anyway, or (b) make the new parameter optional with a
+default that reproduces every existing caller's behavior exactly. Went
+with (b) — `options?.openInspector` defaults to `true`, so
+`selectEntity(resolved, direction)` (all three existing call sites,
+unedited) behaves identically to before v3.2.0 existed. Verified by
+grepping for every `selectEntity(` call site before considering this done,
+not just reasoning about it.
+
+**`openInspector: false` means "don't force it open," not "force it
+closed."** First draft had the false branch set `inspectorOpen: false`
+unconditionally — which would mean arrow-keying to a new entity while the
+panel happened to already be open (say, from an earlier click) would slam
+it shut on every keypress, actively fighting the user's own prior action.
+Changed to `shouldOpen ? true : state.inspectorOpen` — `false` leaves
+whatever was already there alone. Net effect: if the panel's closed,
+arrow-key browsing stays closed (matches the spec — only ENTER opens it);
+if it's already open, arrow-key browsing updates it live as you navigate,
+which reads as a feature (a live preview while browsing) rather than
+something that needed to be prevented.
+
+**Reused `useCameraFlight.ts`/`useCameraReset.ts`'s exact spherical-camera
+pattern for WASDQE instead of finding a new way to drive OrbitControls.**
+Both existing hooks already manipulate the camera the only way this app
+ever does: read `camera.position.clone().sub(target)` into a `Spherical`,
+adjust theta/phi/radius, write back via `camera.position.copy(target).add
+(offset)` + `controls.update()`. Three.js's `OrbitControls` doesn't expose
+public rotate/zoom methods to call directly (only internal, underscore-
+prefixed ones not meant for external use) — rather than reach for those,
+`CameraController.ts`'s per-frame nudge is the same three-line pattern
+`useCameraFlight`/`useCameraReset` already use, just applied every frame
+instead of tweened between two fixed points. One consequence this pattern
+gave for free: checking `controls.enabled` before nudging (the same flag
+`useCameraFlight`/`useCameraReset` already set to `false` while a flight
+owns the camera) means a held WASD key can never fight an in-progress
+"FOCUS CAMERA" tween — no new coordination code needed, just reading a flag
+that already existed for exactly this reason.
+
+**A keydown listener that reads `useSelection()`/`useInspectorOpen()`
+values needs a ref, or it dispatches against stale state.**
+`useKeyboardController` attaches its `window.addEventListener` exactly
+once (empty-deps `useEffect`, deliberately — re-attaching on every render
+would mean the DOM listener count and the Set of held keys could drift).
+But `InputManager`'s `onCommand` closure captures whatever `selected`/
+`inspectorOpen` were *at the render that created it* — if the listener
+call the exact function object from that one render forever, Escape would
+keep testing against whatever the selection was when the app first
+mounted. Standard fix, applied here: `useKeyboardController` stores the
+callback in a ref, reassigned on every render (`onCommandRef.current =
+onCommand`, a plain assignment, not inside an effect), and the
+once-attached listener always calls `onCommandRef.current(...)` — always
+the latest closure, without ever tearing down and re-creating the actual
+DOM listener.
+
+**Verified the directional algorithm against real geography before
+trusting it, and found a pre-existing precision limit instead of a new
+bug.** Couldn't import `SelectionController.ts` directly for testing — it
+transitively pulls in `hud/selectionStore.ts`, which reads
+`import.meta.env.DEV` (a Vite-only global `tsx` doesn't provide) — so
+verified a standalone copy of the pure bearing/distance functions against
+`countries-un193.json` instead. Fiji (sitting almost exactly on the
+antimeridian) resolved sensibly in all four directions, confirming the
+great-circle bearing formula handles ±180° wraparound correctly (a naive
+`lng2 - lng1` would not have — see `countryGeometry.ts`'s ring-unwrapping
+doc comment for the same underlying issue in a different context). Germany
+returned Luxembourg for *both* "south" and "west," which looked wrong at
+first — until checking `geometryToCentroid()` itself, whose own doc
+comment already says "simple (non-area-weighted) centroid... not meant to
+be a precise geographic centroid." The new algorithm is faithfully
+reusing the same centroid every other consumer (hover labels, camera
+flight targets, search) already relies on — inheriting its imprecision
+is consistent behavior, not a new defect, and "fixing" `geometryToCentroid`
+itself was out of scope (see the "do not rewrite existing functionality"
+constraint this feature was built under). Flagged in `BACKLOG.md` instead
+of silently accepted.
+
 ## 2026-07-21 — v3.1.5: the blue overlay was scoped to "claimant" when the real concept was "connected country"
 
 **39 territory entries got real `claimedBy` data (v3.0.0-v3.1.4) without

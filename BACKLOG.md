@@ -171,8 +171,55 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   `IntelligencePanel`'s full-width-on-mobile behavior) was reasoned about
   but never checked in an actual narrow browser viewport — no browser
   tooling was available in the sessions that built it.
-- **No accessibility pass** (keyboard navigation, ARIA labeling) has been
-  done specifically for the v3 additions (`LegendPanel`, the
-  claims/territory overlay toggles in `LayerPanel`, `GeoEntityDetails`).
-  The rest of the HUD has the same gap; it isn't v3-specific, just never
-  addressed.
+- **No accessibility pass** (ARIA labeling) has been done specifically for
+  the v3 additions (`LegendPanel`, the claims/territory overlay toggles in
+  `LayerPanel`, `GeoEntityDetails`). The rest of the HUD has the same gap;
+  it isn't v3-specific, just never addressed.
+- **v3.2.0's entire keyboard input system has never been exercised in an
+  actual browser** — every check that could be done without one was done
+  (typecheck, lint, production build, dev server boot, the directional
+  algorithm verified against real geography via a standalone script — see
+  `LOGBOOK.md`'s v3.2.0 entry), but no keypress has actually been sent to a
+  running page. Needs a real pass: does W/A/S/D/Q/E feel right at the
+  chosen rates (`ROTATE_RATE`/`TILT_RATE`/`ZOOM_RATE` in
+  `input/CameraController.ts` — picked relative to the existing camera
+  bounds, not tuned by feel), does arrow-key navigation reliably land on
+  the geographically-obvious neighbor, does the two-stage Escape feel
+  natural, does Tab's category-cycling read as useful once you can actually
+  try it.
+
+## Input Layer (v3.2.0)
+
+- **Tab/Shift+Tab were repurposed for entity-category cycling, which means
+  they no longer move DOM focus between HUD elements while the app has
+  "keyboard navigation focus"** (anywhere outside a text input). That's a
+  real accessibility regression for keyboard-only users who'd otherwise
+  Tab through the toolbar/panel buttons — a deliberate trade-off to satisfy
+  the spec's explicit Tab binding, not an oversight, but one that should be
+  revisited alongside a real accessibility pass rather than left as
+  permanent.
+- **"Cycle forward through available selectable entity categories/layers"
+  was ambiguous** — could mean cycling entity-type categories (what was
+  built: country → geopolitical-entity → territory → strategic-region →
+  maritime-feature → geographic-region, landing on the alphabetically-first
+  entity each time) or cycling registered Layer Engine layers, or something
+  else entirely. Went with the entity-category reading since Tab sits in
+  the spec's "ENTITY SELECTION" section, not "HUD CONTROLS" — worth
+  confirming this was the intended behavior.
+- **`SelectionController.ts`'s directional algorithm inherits
+  `geometryToCentroid()`'s known imprecision** (that function's own doc
+  comment: "simple, non-area-weighted centroid... not meant to be a
+  precise geographic centroid"). Verified against real data that this
+  produces occasionally-surprising results for oddly-shaped countries
+  (Germany → south and → west both resolved to Luxembourg) — not a bug in
+  the new arrow-key algorithm, the same imprecision every existing consumer
+  of that function (hover labels, camera flight targets, search) already
+  has, just newly visible because directional navigation is more sensitive
+  to centroid placement than those uses are. Would improve automatically if
+  `geometryToCentroid()` ever moves to an area-weighted calculation — not
+  attempted here (out of scope; "do not rewrite existing functionality").
+- **No haptic/audio feedback for arrow-key navigation landing on nothing**
+  (pressing an arrow when there's no candidate in that direction, e.g.
+  east of the easternmost entity) — currently a silent no-op. Might be
+  worth a subtle HUD cue so it's clear the key was received, not just
+  that nothing happened to be there.

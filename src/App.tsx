@@ -9,6 +9,7 @@ import { SettingsPanel } from './hud/SettingsPanel'
 import { LayerPanel } from './hud/LayerPanel'
 import { LegendPanel } from './hud/LegendPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
+import { InputManager } from './input/InputManager'
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
       <SettingsPanel />
       <LayerPanel />
       <IntelligencePanel />
+      {/* v3.2.0 — no visual output, wires up the global keyboard listener. */}
+      <InputManager />
     </div>
   )
 }

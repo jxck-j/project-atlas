@@ -6,6 +6,7 @@ import { resetView, useSelection } from '../hud/selectionStore'
 import { useFlickAutoRotate } from './useFlickAutoRotate'
 import { useCameraFlight } from './useCameraFlight'
 import { useCameraReset } from './useCameraReset'
+import { useCameraController } from '../input/CameraController'
 import {
   CAMERA_IDLE_AUTOROTATE_SPEED,
   CAMERA_MAX_DISTANCE,
@@ -56,6 +57,8 @@ export function CameraControls() {
   useFlickAutoRotate(controlsRef)
   useCameraFlight(controlsRef)
   useCameraReset(controlsRef)
+  // v3.2.0: WASDQE keyboard camera nudges — see src/input/CameraController.ts.
+  useCameraController(controlsRef)
 
   return (
     <OrbitControls

@@ -94,8 +94,14 @@ function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
 }
 
 export function IntelligencePanel() {
-  const { selected } = useSelection()
-  const isOpen = selected != null
+  const { selected, inspectorOpen } = useSelection()
+  // v3.2.0: selection and "is the panel actually showing" are now two
+  // separate facts — see selectionStore.ts's SelectEntityOptions doc
+  // comment. Every pre-v3.2 way of selecting something (map click, search)
+  // still opens this unconditionally, so `isOpen` reduces to exactly
+  // `selected != null` for all of them; only keyboard arrow-key navigation
+  // can select without opening it.
+  const isOpen = selected != null && inspectorOpen
 
   return (
     <div

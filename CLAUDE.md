@@ -202,6 +202,12 @@ rather than fighting over React props:
   button), which also clears the current selection.
 - Both flight hooks share the easing helpers in `tweenMath.ts` and the same
   "rotate leads, zoom follows, both ease to a stop together" shape.
+- `input/CameraController.ts`'s `useCameraController.ts` (v3.2.0) — held-key
+  WASDQE nudging, reusing the same spherical-coordinates-around-target
+  approach as the flight hooks above, applied every frame instead of
+  tweened. See "Input Layer" below for the full picture; mentioned here
+  because it's mounted in this same hook composition, right alongside the
+  four above.
 
 The core sphere mesh doubles as the double-click-on-ocean target: country fill
 meshes sit in front of it and call `stopPropagation()` on `onDoubleClick`, so the
@@ -231,17 +237,30 @@ convert (`time / 1000`) before calling `advance()`.
   five non-sovereign classifications) — from
   `entities/EntityResolver.ts`, plus denormalized `id`/`name`/world-space
   `direction` at the top level so generic consumers don't need to reach
-  into `entity.*`), `flightSeq` (camera-flight trigger), `resetSeq`
-  (reset-view trigger). Read via `useSelection()`. Two ways to select:
-  `selectEntity(resolvedEntity, direction)` (generic — what
-  `scene/Countries.tsx`'s click handler *and*, since v2.2.4, `hud/
-  SearchBar.tsx`'s result selection use, both resolving through
-  `EntityResolver.resolveEntity()` first) and `selectCountry({id, name,
-  direction})` (a narrower country-only wrapper, kept for any caller that
-  only ever has a country id/name in hand and doesn't want to resolve it
-  itself; resolves through the Country Registry internally). See the Entity
-  Resolution section below and `LOGBOOK.md` for why the migration was
-  shaped this way.
+  into `entity.*`), `inspectorOpen` (v3.2.0 — see below), `flightSeq`
+  (camera-flight trigger), `resetSeq` (reset-view trigger). Read via
+  `useSelection()`. Two ways to select: `selectEntity(resolvedEntity,
+  direction, options?)` (generic — what `scene/Countries.tsx`'s click
+  handler, `hud/SearchBar.tsx`'s result selection, and (v3.2.0)
+  `input/SelectionController.ts`'s arrow-key navigation all use, resolving
+  through `EntityResolver.resolveEntity()` first) and `selectCountry({id,
+  name, direction})` (a narrower country-only wrapper, kept for any caller
+  that only ever has a country id/name in hand and doesn't want to resolve
+  it itself; resolves through the Country Registry internally). See the
+  Entity Resolution section below and `LOGBOOK.md` for why the migration
+  was shaped this way.
+- **`inspectorOpen: boolean`** (v3.2.0) is deliberately a separate fact from
+  `selected` — see `hud/IntelligencePanel.tsx`'s `isOpen = selected != null
+  && inspectorOpen`. Every selection path before v3.2.0 (map click, search)
+  always opened the panel, so `selectEntity`'s third argument,
+  `options?.openInspector`, defaults to `true` when omitted — every one of
+  those call sites is unchanged and behaves identically. Only
+  keyboard arrow-key navigation passes `{ openInspector: false }`,
+  and even then `false` means "leave `inspectorOpen` as it was," not "force
+  it closed" — an already-open panel keeps live-updating as you arrow
+  through entities; a closed one stays closed until Enter (`openInspector()`)
+  explicitly opens it. See the Input Layer section below and
+  `LOGBOOK.md`'s v3.2.0 entry.
 - `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' | 'settings'
   | null`) is open; mutually exclusive, toggled from `Toolbar.tsx`.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
@@ -300,6 +319,95 @@ convert (`time / 1000`) before calling `advance()`.
   GeoEntity feature collection at all; don't assume "the other end of a
   relationship" is representable by whatever loop is already iterating one
   side of it. See `LOGBOOK.md`'s v3.1.0 entry for how this gap was found.
+
+### Input Layer (`src/input/`, v3.2.0, "Phase 3.2")
+
+A dedicated module for keyboard input, parallel to `scene/`/`hud/`/`data/`/
+`entities/`/`layers/` — added specifically so keyboard logic never lives
+inside a Globe component (per this feature's own brief) and so mouse and
+keyboard selection are guaranteed to end up in the same place: every
+command this layer resolves is routed through the *existing*
+`hud/selectionStore.ts`/`hud/hudPanelStore.ts` functions, never a parallel
+selection concept.
+
+**Pieces, and why they're separate:**
+
+- `types.ts` — the command vocabulary (`CameraNudgeCommand`,
+  `NavigationDirection`, `ActionCommand`), imported by every other file here
+  so none of them import each other just to share a type.
+- `KeyboardController.ts` — the *only* `window` keydown/keyup listener this
+  entire app installs for gameplay-style input (`scene/CameraControls.tsx`
+  separately keeps its own pre-existing, narrower Home-key listener —
+  untouched, not folded into this). Owns the key-binding table, the focus
+  rule (`isTypingInField()` — typing in the search bar or any text input
+  suppresses every shortcut), and a plain `Set<CameraNudgeCommand>` of
+  currently-held camera keys. That Set is deliberately *not* React state —
+  read imperatively, once per animation frame, by `CameraController.ts` —
+  for the same "a value that changes 60×/second shouldn't trigger
+  React re-renders" reason `telemetryStore.ts`/`globeRotation.ts` are
+  plain pub/sub instead of context (see "Two-layer split" above).
+  `useKeyboardController(onCommand)` is mounted exactly once, by
+  `InputManager.tsx`; its callback is stored in a ref reassigned every
+  render rather than depended on directly, so the one-shot commands
+  (arrows, Enter, Escape, ...) always dispatch against the *current*
+  render's closure without the underlying `window` listener ever being
+  torn down and re-attached.
+- `CameraController.ts` — two things: `useCameraController(controlsRef)`
+  (mounted inside `scene/CameraControls.tsx`, alongside
+  `useFlickAutoRotate`/`useCameraFlight`/`useCameraReset` — an addition to
+  that hook composition, not a change to any of the existing three) applies
+  WASDQE nudges every frame using the *same* spherical-coordinates-around-
+  target pattern `useCameraFlight.ts`/`useCameraReset.ts` already use to
+  animate the camera, clamped to the same `CAMERA_MIN/MAX_DISTANCE` and
+  `CAMERA_MIN/MAX_POLAR_ANGLE` bounds, and bails out whenever
+  `controls.enabled` is false — the same flag those two hooks already set
+  while a cinematic flight owns the camera, so a held key can never fight
+  an in-progress flight. Separately, `resetCamera()`/`focusOnSelection()`
+  are one-line wrappers around the *existing* `resetView()`/
+  `flyToSelectedCountry()` — R and Space don't introduce any new camera
+  behavior, they're keyboard aliases for actions the Home key/toolbar
+  button and the panel's "FOCUS CAMERA" button already trigger.
+- `SelectionController.ts` — `findNearestInDirection(origin, direction,
+  candidates, excludeId?)`, a pure function with no entity ids, names, or
+  types anywhere in its logic: great-circle bearing (`utils/geo.ts`'s
+  `bearingBetween`, kept only within a ±90° cone of the requested
+  direction) then great-circle distance (`angularDistance`) among what's
+  left. `useEntityNavigation()` builds the live candidate list from the same
+  two sources `hud/SearchBar.tsx` already draws its own index from
+  (`useCountryFeatures()` + `useGeoEntityFeatures()`, centroids via
+  `scene/countryGeometry.ts`'s `geometryToCentroid`), and calls the
+  *existing* `selectEntity()` with `{ openInspector: false }`. Also owns
+  Tab/Shift+Tab category cycling — six fixed categories (`'country'` plus
+  the five `GeoEntityType` values), landing on the alphabetically-first
+  entity in whichever category comes next. See `LOGBOOK.md`'s v3.2.0 entry
+  for why `geometryToCentroid`'s known (pre-existing, documented)
+  imprecision means this occasionally picks a geographically-surprising
+  neighbor — inherited, not new.
+- `InputManager.tsx` — mounted once from `App.tsx` (outside the Canvas,
+  like every other HUD component), renders nothing. The one file that knows
+  the full mapping from one-shot command to system: arrows →
+  `SelectionController`, R/Space → `CameraController`'s wrappers,
+  Enter/Escape/I → `openInspector`/`closeInspector`/`clearSelection`
+  (Escape is two-stage: closes the panel first if open, only clears the
+  selection on a second press once it's already closed), L/`/` →
+  `toggleHudPanel('layers' | 'search')`.
+
+**Why WASDQE camera nudging lives in `scene/CameraControls.tsx`'s hook tree
+but the keyboard listener itself lives in `InputManager.tsx`, outside the
+Canvas:** `useCameraController` needs the `OrbitControls` ref, which only
+exists inside the Canvas; `useKeyboardController`/`useEntityNavigation`
+need `useCountryFeatures()`/`useGeoEntityFeatures()`/`useSelection()`,
+which work identically on either side of that boundary. Rather than thread
+a ref across the boundary, `KeyboardController.ts`'s `Set` of held keys is
+the bridge — written to from the (outside-Canvas) listener, read from
+inside the Canvas every frame — the same "plain module-level value crosses
+the boundary, nothing reactive has to" pattern `globeRotation.ts` already
+established for the opposite direction (scene → HUD).
+
+`hud/SettingsPanel.tsx`'s "KEYBOARD SHORTCUTS" section is a hand-written
+mirror of `KeyboardController.ts`'s key maps, not generated from them — the
+binding table is small and fixed, not data worth wiring through a store.
+Keep the two in sync by hand if a binding changes.
 
 ### Layer Engine (`src/layers/`)
 

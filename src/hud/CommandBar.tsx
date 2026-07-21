@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useCountryFeatures, useCountryFeaturesLoaded } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useTelemetry } from './telemetryStore'
+import { useSelection } from './selectionStore'
 
 function formatCoord(lat: number | null, lng: number | null) {
   if (lat === null || lng === null) return '—'
@@ -27,6 +28,11 @@ export function CommandBar() {
   // globe's readiness has always been judged by.
   const entityFeatures = useGeoEntityFeatures()
   const { fps, hoverLat, hoverLng } = useTelemetry()
+  // v3.2.0: keeps the status bar in sync with the current selection
+  // regardless of how it was made — mouse click, search, or keyboard
+  // navigation all write through the same selectionStore, so this needed
+  // no new wiring beyond reading the existing store.
+  const { selected } = useSelection()
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center">
@@ -54,6 +60,10 @@ export function CommandBar() {
         <Segment>
           <span className="text-cyan-500/60">ENTITIES</span>
           <span className="text-cyan-100 tabular-nums">{entityFeatures.length}</span>
+        </Segment>
+        <Segment>
+          <span className="text-cyan-500/60">SELECTED</span>
+          <span className="max-w-[140px] truncate text-cyan-100">{selected?.name.toUpperCase() ?? '—'}</span>
         </Segment>
         <Segment>
           <span className="text-cyan-500/60">FPS</span>

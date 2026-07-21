@@ -27,6 +27,14 @@ export interface SelectedEntity {
 
 interface SelectionState {
   selected: SelectedEntity | null
+  // v3.2.0: whether the Intelligence Panel is actually showing. Split out
+  // from `selected` specifically for keyboard navigation — arrow-key
+  // entity browsing (src/input/SelectionController.ts) needs to update
+  // `selected` (the globe highlight, the status bar) on every keypress
+  // *without* forcing the panel open every time, the way every pre-v3.2
+  // caller (a map click, a search result) always has. See `selectEntity`'s
+  // `openInspector` option below and `openInspector()`/`closeInspector()`.
+  inspectorOpen: boolean
   // Increments only when a camera flight is explicitly requested (see
   // flyToSelectedCountry), so the camera flight hook can detect "start a new
   // flight" independent of selection changes. Selecting a country does NOT
@@ -38,11 +46,27 @@ interface SelectionState {
   resetSeq: number
 }
 
-let state: SelectionState = { selected: null, flightSeq: 0, resetSeq: 0 }
+let state: SelectionState = { selected: null, inspectorOpen: false, flightSeq: 0, resetSeq: 0 }
 const listeners = new Set<() => void>()
 
 function notify() {
   listeners.forEach((l) => l())
+}
+
+export interface SelectEntityOptions {
+  /**
+   * `true` (the default — every caller before v3.2.0 gets this
+   * unconditionally, since none of them pass this option at all) opens the
+   * inspector, exactly as `selectEntity` has always behaved. `false` does
+   * *not* close it — it leaves `inspectorOpen` exactly as it was. That
+   * asymmetry is deliberate: arrow-key navigation
+   * (`src/input/SelectionController.ts`) passes `false` so browsing entities
+   * doesn't force the panel open on every keypress, but if the panel
+   * already happens to be open (from an earlier click, search, or ENTER
+   * press) it should keep showing whatever's currently selected, live, not
+   * slam shut the moment the user starts navigating with arrows.
+   */
+  openInspector?: boolean
 }
 
 /**
@@ -52,10 +76,12 @@ function notify() {
  * `'country'` or `'territory'`. `scene/Countries.tsx`'s click handler is
  * the intended caller for map clicks.
  */
-export function selectEntity(entity: ResolvedEntity, direction: Vector3) {
+export function selectEntity(entity: ResolvedEntity, direction: Vector3, options?: SelectEntityOptions) {
+  const shouldOpen = options?.openInspector ?? true
   state = {
     ...state,
     selected: { entity, id: entity.id, name: entity.name, direction },
+    inspectorOpen: shouldOpen ? true : state.inspectorOpen,
   }
   notify()
 }
@@ -84,7 +110,23 @@ export function selectCountry(country: { id: string; name: string; direction: Ve
 }
 
 export function clearSelection() {
-  state = { ...state, selected: null }
+  state = { ...state, selected: null, inspectorOpen: false }
+  notify()
+}
+
+// v3.2.0. Opening does nothing without a selection to show — there's
+// nothing for ENTER/the "I" key to open onto. Both are idempotent (opening
+// an already-open panel, or closing an already-closed one, is a harmless
+// no-op) since keyboard commands shouldn't need to track panel state
+// themselves before calling these.
+export function openInspector() {
+  if (!state.selected) return
+  state = { ...state, inspectorOpen: true }
+  notify()
+}
+
+export function closeInspector() {
+  state = { ...state, inspectorOpen: false }
   notify()
 }
 
@@ -101,7 +143,7 @@ export function flyToSelectedCountry() {
 // Deselects whatever's selected and kicks off a camera flight back to the
 // default global view.
 export function resetView() {
-  state = { ...state, selected: null, resetSeq: state.resetSeq + 1 }
+  state = { ...state, selected: null, inspectorOpen: false, resetSeq: state.resetSeq + 1 }
   notify()
 }
 
