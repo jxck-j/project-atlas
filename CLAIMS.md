@@ -27,10 +27,14 @@ Regenerated: 2026-07-21
 
 ---
 
-## Summary: active disputes (11)
+## Summary: active disputes (19)
 
 Quick reference — only entities with a nonempty `claimedBy`/`claims`. See
-the full rosters below for everything else, including the 45 GeoEntities and effectively all 193 countries with no dispute at all.
+the full rosters below for everything else, including the 37 GeoEntities and effectively all 193 countries with no dispute at all.
+
+### Akrotiri (Strategic Region)
+
+- **Claimed by:** Republic of Cyprus
 
 ### Antarctica (Geographic Region)
 
@@ -38,15 +42,39 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Bajo Nuevo Bank (Maritime Feature)
 
-- **Claimed by:** Republic of Colombia; Jamaica; Republic of Nicaragua
+- **Claimed by:** Republic of Colombia; Jamaica; United States of America (since 1856)
+
+### British Indian Ocean Territory (Territory)
+
+- **Claimed by:** Republic of Mauritius
 
 ### Crimea (Territory)
 
 - **Claimed by:** Ukraine; Russian Federation (since 2014)
 
+### Dhekelia (Strategic Region)
+
+- **Claimed by:** Republic of Cyprus
+
+### Falkland Islands (Territory)
+
+- **Claimed by:** Argentine Republic
+
+### French Southern and Antarctic Lands (Territory)
+
+- **Claimed by:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
+
+### Gibraltar (Territory)
+
+- **Claimed by:** Kingdom of Spain
+
 ### Kosovo (Geopolitical Entity)
 
 - **Claimed by:** Republic of Serbia
+
+### Palestine (Geopolitical Entity)
+
+- **Claimed by:** State of Israel
 
 ### Scarborough Reef (Maritime Feature)
 
@@ -54,11 +82,15 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Serranilla Bank (Maritime Feature)
 
-- **Claimed by:** Republic of Colombia; Republic of Honduras; Republic of Nicaragua
+- **Claimed by:** Republic of Colombia; United States of America (since 1856); Jamaica
 
 ### Siachen Glacier (Strategic Region)
 
 - **Claimed by:** Republic of India; Islamic Republic of Pakistan
+
+### South Georgia and South Sandwich Islands (Territory)
+
+- **Claimed by:** Argentine Republic
 
 ### Spratly Islands (Maritime Feature)
 
@@ -107,7 +139,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Argentina
 
-- **Claims:** Antarctica (Geographic Region)
+- **Claims:** Antarctica (Geographic Region); Falkland Islands (Territory); South Georgia and South Sandwich Islands (Territory)
 
 ### Armenia
 
@@ -255,7 +287,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Cyprus
 
-- **Claims:** None
+- **Claims:** Akrotiri (Strategic Region); Dhekelia (Strategic Region)
 
 ### Czechia
 
@@ -375,7 +407,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Honduras
 
-- **Claims:** Serranilla Bank (Maritime Feature)
+- **Claims:** None
 
 ### Hungary
 
@@ -407,7 +439,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Israel
 
-- **Claims:** None
+- **Claims:** Palestine (Geopolitical Entity)
 
 ### Italy
 
@@ -415,7 +447,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Jamaica
 
-- **Claims:** Bajo Nuevo Bank (Maritime Feature)
+- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
 
 ### Japan
 
@@ -483,7 +515,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Madagascar
 
-- **Claims:** None
+- **Claims:** French Southern and Antarctic Lands (Territory)
 
 ### Malawi
 
@@ -515,7 +547,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Mauritius
 
-- **Claims:** None
+- **Claims:** British Indian Ocean Territory (Territory); French Southern and Antarctic Lands (Territory)
 
 ### Mexico
 
@@ -575,7 +607,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Nicaragua
 
-- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
+- **Claims:** None
 
 ### Niger
 
@@ -731,7 +763,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### Spain
 
-- **Claims:** None
+- **Claims:** Gibraltar (Territory)
 
 ### Sri Lanka
 
@@ -819,7 +851,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 ### United States of America
 
-- **Claims:** None
+- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
 
 ### Uruguay
 
@@ -861,7 +893,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** None
 - **Administered By:** United Kingdom (Sovereign Base Area) (since 1960)
-- **Claimed By:** None
+- **Claimed By:** Republic of Cyprus
 - **Claims:** None
 
 ### Åland (Territory)
@@ -910,7 +942,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** None
 - **Administered By:** Republic of Colombia
-- **Claimed By:** Republic of Colombia; Jamaica; Republic of Nicaragua
+- **Claimed By:** Republic of Colombia; Jamaica; United States of America (since 1856)
 - **Claims:** None
 
 ### Bermuda (Territory)
@@ -924,7 +956,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** United Kingdom
 - **Administered By:** United Kingdom
-- **Claimed By:** None
+- **Claimed By:** Republic of Mauritius
 - **Claims:** None
 
 ### British Virgin Islands (Territory)
@@ -973,14 +1005,14 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** None
 - **Administered By:** United Kingdom (Sovereign Base Area) (since 1960)
-- **Claimed By:** None
+- **Claimed By:** Republic of Cyprus
 - **Claims:** None
 
 ### Falkland Islands (Territory)
 
 - **Parent Entity:** United Kingdom
 - **Administered By:** United Kingdom
-- **Claimed By:** None
+- **Claimed By:** Argentine Republic
 - **Claims:** None
 
 ### Faroe Islands (Territory)
@@ -1001,14 +1033,14 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** French Republic
 - **Administered By:** French Republic
-- **Claimed By:** None
+- **Claimed By:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
 - **Claims:** None
 
 ### Gibraltar (Territory)
 
 - **Parent Entity:** United Kingdom
 - **Administered By:** United Kingdom
-- **Claimed By:** None
+- **Claimed By:** Kingdom of Spain
 - **Claims:** None
 
 ### Greenland (Territory)
@@ -1113,7 +1145,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** None
 - **Administered By:** Palestinian Authority
-- **Claimed By:** None
+- **Claimed By:** State of Israel
 - **Claims:** None
 
 ### Pitcairn Islands (Territory)
@@ -1169,7 +1201,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** None
 - **Administered By:** Republic of Colombia
-- **Claimed By:** Republic of Colombia; Republic of Honduras; Republic of Nicaragua
+- **Claimed By:** Republic of Colombia; United States of America (since 1856); Jamaica
 - **Claims:** None
 
 ### Siachen Glacier (Strategic Region)
@@ -1190,7 +1222,7 @@ the full rosters below for everything else, including the 45 GeoEntities and eff
 
 - **Parent Entity:** United Kingdom
 - **Administered By:** United Kingdom
-- **Claimed By:** None
+- **Claimed By:** Argentine Republic
 - **Claims:** None
 
 ### Spratly Islands (Maritime Feature)

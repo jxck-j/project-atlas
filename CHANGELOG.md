@@ -17,6 +17,42 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.1.4 — Ten claim relationships corrected against real-world sources
+
+Point release. `data/registry/geoEntities.ts` data correction, prompted by
+an explicit list of gaps/errors — not a broad re-audit.
+
+### Fixed
+
+- **Added missing `claimedBy` entries**: Falkland Islands and South Georgia
+  & South Sandwich Islands (Argentina), Gibraltar (Spain), British Indian
+  Ocean Territory (Mauritius — backed by the ICJ's 2019 advisory opinion,
+  subsequent UN General Assembly resolutions, and the 2024/2025 UK-Mauritius
+  treaty negotiations), French Southern and Antarctic Lands (Madagascar's
+  claim to the Îles Éparses, Mauritius's claim to Tromelin Island —
+  separate sub-claims, not a claim to the whole territory), Palestine
+  (Israel), and both Cyprus Sovereign Base Areas, Akrotiri and Dhekelia
+  (Republic of Cyprus, on decolonization grounds predating and separate
+  from the Cyprus Buffer Zone dispute).
+- **Bajo Nuevo Bank / Serranilla Bank claimants corrected against the ICJ's
+  2012 *Territorial and Maritime Dispute (Nicaragua v. Colombia)* ruling**:
+  Nicaragua's claim to both banks was formally rejected by that judgment
+  and is removed from both entries; Honduras separately recognized
+  Colombian sovereignty over Serranilla in the 1986 Ramírez-López Treaty
+  and is removed from that entry. The United States' 1856 Guano Islands Act
+  claim — never formally relinquished for either bank — is added to both.
+- `dependency()` (the shorthand constructor for the ~40 uncontroversial
+  Territory entries) now accepts an optional `claimedBy` array, so a
+  territory can have exactly one uncontested administering parent (no
+  change needed there) while still carrying a real external sovereignty
+  claim — the two facts are independent, and five entries now need both at
+  once.
+- `CLAIMS.md` regenerated: disputed-entity count goes from 11 to 19; every
+  newly-affected UN member state's derived "Claims" line was verified
+  individually (Argentina, Spain, Mauritius, Madagascar, USA, Israel,
+  Cyprus each show the expected additions; Honduras/Nicaragua both now show
+  "None"). See `LOGBOOK.md`.
+
 ## v3.1.3 — CLAIMS.md now covers all 193 countries and all 56 GeoEntities
 
 Point release. Documentation-generator fix, not app behavior.

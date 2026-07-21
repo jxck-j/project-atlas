@@ -65,12 +65,15 @@ const ISO_ALPHA3_TO_NUMERIC: Record<string, string> = {
   UKR: '804',
   COL: '170',
   JAM: '388',
-  NIC: '558',
-  HND: '340',
   CUB: '192',
   ARG: '032',
   CHL: '152',
   NOR: '578',
+  ESP: '724',
+  MUS: '480',
+  MDG: '450',
+  ISR: '376',
+  CYP: '196',
 }
 
 function countryRef(alpha3: string): EntityRef {
@@ -111,14 +114,27 @@ function register(entity: GeoEntity) {
   }
 }
 
-// Uncontroversial dependency shorthand: the overwhelming majority of the
-// Territory classification (see data/types.ts's GeoEntity doc comment) is
-// exactly this shape — one parent, one administrator (the parent itself),
-// no dispute. Written as a helper instead of ~39 near-identical literal
-// objects; entries with anything more (a genuine dispute, a non-standard
-// administrator) are still written out by hand below instead of forced
-// through this helper.
-function dependency(id: string, name: string, aliases: string[], parentIso: string, parentName: string): GeoEntity {
+// Dependency shorthand: the overwhelming majority of the Territory
+// classification (see data/types.ts's GeoEntity doc comment) shares this
+// shape — one parent, one administrator (the parent itself). Written as a
+// helper instead of ~39 near-identical literal objects; entries with
+// anything more than parent/administrator/claimants (a non-standard
+// administrator, a claim on something *else*) are still written out by hand
+// below instead of forced through this helper. `claimedBy` is optional —
+// most dependencies are genuinely uncontested (no one but the parent claims
+// Puerto Rico), but several are not (Spain claims Gibraltar, Argentina
+// claims the Falklands) despite having exactly one uncontested
+// administering parent — those pass a `claimedBy` array; parent/
+// administration status is unrelated to whether a third country separately
+// asserts a sovereignty claim.
+function dependency(
+  id: string,
+  name: string,
+  aliases: string[],
+  parentIso: string,
+  parentName: string,
+  claimedBy: GeoEntityRelation[] = []
+): GeoEntity {
   return {
     id,
     name,
@@ -126,7 +142,7 @@ function dependency(id: string, name: string, aliases: string[], parentIso: stri
     type: 'territory',
     parentEntity: toCountry(parentIso, parentName),
     administeredBy: [toCountry(parentIso, parentName)],
-    claimedBy: [],
+    claimedBy,
     claims: [],
     provenance: SIMPLIFIED_PROVENANCE,
   }
@@ -156,7 +172,7 @@ register({
   administeredBy: [
     toUnregistered('Palestinian Authority', { extent: 'parts of the West Bank and Gaza' }),
   ],
-  claimedBy: [],
+  claimedBy: [toCountry('ISR', 'State of Israel')],
   claims: [],
   provenance: SIMPLIFIED_PROVENANCE,
 })
@@ -219,7 +235,17 @@ register(dependency('saint-pierre-and-miquelon', 'Saint Pierre and Miquelon', []
 register(dependency('pitcairn-islands', 'Pitcairn Islands', [], 'GBR', 'United Kingdom'))
 register(dependency('french-polynesia', 'French Polynesia', [], 'FRA', 'French Republic'))
 register(
-  dependency('french-southern-and-antarctic-lands', 'French Southern and Antarctic Lands', ['TAAF'], 'FRA', 'French Republic'),
+  dependency(
+    'french-southern-and-antarctic-lands',
+    'French Southern and Antarctic Lands',
+    ['TAAF'],
+    'FRA',
+    'French Republic',
+    [
+      toCountry('MDG', 'Republic of Madagascar (claims the Îles Éparses/Scattered Islands)'),
+      toCountry('MUS', 'Republic of Mauritius (claims Tromelin Island)'),
+    ]
+  ),
 )
 register(dependency('us-minor-outlying-islands', 'U.S. Minor Outlying Islands', [], 'USA', 'United States of America'))
 register(dependency('montserrat', 'Montserrat', [], 'GBR', 'United Kingdom'))
@@ -235,14 +261,34 @@ register(dependency('guernsey', 'Guernsey', ['Bailiwick of Guernsey'], 'GBR', 'U
 register(dependency('isle-of-man', 'Isle of Man', [], 'GBR', 'United Kingdom'))
 register(dependency('aland', 'Åland', ['Åland Islands'], 'FIN', 'Republic of Finland'))
 register(dependency('faroe-islands', 'Faroe Islands', [], 'DNK', 'Kingdom of Denmark'))
-register(dependency('british-indian-ocean-territory', 'British Indian Ocean Territory', [], 'GBR', 'United Kingdom'))
+// Mauritius's claim is backed by the ICJ's 2019 advisory opinion and
+// subsequent UN General Assembly resolutions calling for the UK's
+// withdrawal, and by the 2024/2025 UK-Mauritius treaty negotiations
+// (agreement to transfer sovereignty while retaining the Diego Garcia
+// base) — not a fringe position the way some entries in this file are.
+register(
+  dependency('british-indian-ocean-territory', 'British Indian Ocean Territory', [], 'GBR', 'United Kingdom', [
+    toCountry('MUS', 'Republic of Mauritius'),
+  ])
+)
 register(dependency('norfolk-island', 'Norfolk Island', [], 'AUS', 'Commonwealth of Australia'))
 register(dependency('cook-islands', 'Cook Islands', [], 'NZL', 'New Zealand'))
 register(dependency('wallis-and-futuna', 'Wallis and Futuna Islands', [], 'FRA', 'French Republic'))
 register(
-  dependency('south-georgia-and-south-sandwich-islands', 'South Georgia and South Sandwich Islands', [], 'GBR', 'United Kingdom'),
+  dependency(
+    'south-georgia-and-south-sandwich-islands',
+    'South Georgia and South Sandwich Islands',
+    [],
+    'GBR',
+    'United Kingdom',
+    [toCountry('ARG', 'Argentine Republic')]
+  ),
 )
-register(dependency('falkland-islands', 'Falkland Islands', ['Islas Malvinas'], 'GBR', 'United Kingdom'))
+register(
+  dependency('falkland-islands', 'Falkland Islands', ['Islas Malvinas'], 'GBR', 'United Kingdom', [
+    toCountry('ARG', 'Argentine Republic'),
+  ])
+)
 register(dependency('niue', 'Niue', [], 'NZL', 'New Zealand'))
 register(dependency('american-samoa', 'American Samoa', [], 'USA', 'United States of America'))
 register(dependency('guam', 'Guam', [], 'USA', 'United States of America'))
@@ -250,14 +296,20 @@ register(dependency('northern-mariana-islands', 'Northern Mariana Islands', [], 
 register(
   dependency('heard-island-and-mcdonald-islands', 'Heard Island and McDonald Islands', [], 'AUS', 'Commonwealth of Australia'),
 )
-register(dependency('gibraltar', 'Gibraltar', [], 'GBR', 'United Kingdom'))
+register(
+  dependency('gibraltar', 'Gibraltar', [], 'GBR', 'United Kingdom', [toCountry('ESP', 'Kingdom of Spain')])
+)
 
 // ---------------------------------------------------------------------------
 // 3. StrategicRegion — military, intelligence, or strategic significance.
 //    Not treated as countries or territories: no parentEntity field is set
 //    even where a sovereign owns the land (Dhekelia/Akrotiri), since the
 //    defining fact about these places is the base/installation, not
-//    dependency status.
+//    dependency status. Both Sovereign Base Areas carry a Republic of
+//    Cyprus claimedBy entry — Cyprus has pressed decolonization-based
+//    sovereignty claims over both since independence in 1960, separate from
+//    (and predating) the Cyprus dispute the Buffer Zone entry below exists
+//    for.
 // ---------------------------------------------------------------------------
 
 register({
@@ -266,7 +318,7 @@ register({
   aliases: ['Dhekelia Sovereign Base Area', 'Dhekelia Cantonment'],
   type: 'strategic-region',
   administeredBy: [toCountry('GBR', 'United Kingdom (Sovereign Base Area)', { since: '1960' })],
-  claimedBy: [],
+  claimedBy: [toCountry('CYP', 'Republic of Cyprus')],
   claims: [],
   metadata: {
     strategicSignificance:
@@ -282,7 +334,7 @@ register({
   aliases: ['Akrotiri Sovereign Base Area'],
   type: 'strategic-region',
   administeredBy: [toCountry('GBR', 'United Kingdom (Sovereign Base Area)', { since: '1960' })],
-  claimedBy: [],
+  claimedBy: [toCountry('CYP', 'Republic of Cyprus')],
   claims: [],
   metadata: {
     strategicSignificance:
@@ -396,6 +448,17 @@ register({
   provenance: SIMPLIFIED_PROVENANCE,
 })
 
+// Nicaragua's claim to both banks was formally rejected by the ICJ in its
+// 2012 Territorial and Maritime Dispute (Nicaragua v. Colombia) judgment,
+// which recognized Colombian sovereignty over the Bajo Nuevo and
+// Serranilla banks — removed from both entries' claimedBy below rather
+// than left in as though still a live claim. Honduras separately
+// recognized Colombian sovereignty over Serranilla (among other features)
+// in the 1986 Ramírez-López Treaty and is removed from that entry for the
+// same reason. The United States asserted claims to both banks under the
+// 1856 Guano Islands Act and has never formally relinquished them (the
+// 1972 Colombia-US Vázquez-Saccio Treaty addressed nearby Quita Sueño/
+// Roncador/Serrana but not these two banks by name) — added to both.
 register({
   id: 'bajo-nuevo-bank',
   name: 'Bajo Nuevo Bank',
@@ -405,7 +468,7 @@ register({
   claimedBy: [
     toCountry('COL', 'Republic of Colombia'),
     toCountry('JAM', 'Jamaica'),
-    toCountry('NIC', 'Republic of Nicaragua'),
+    toCountry('USA', 'United States of America', { since: '1856' }),
   ],
   claims: [],
   metadata: { tags: ['caribbean-sea', 'disputed-maritime'] },
@@ -420,8 +483,8 @@ register({
   administeredBy: [toCountry('COL', 'Republic of Colombia')],
   claimedBy: [
     toCountry('COL', 'Republic of Colombia'),
-    toCountry('HND', 'Republic of Honduras'),
-    toCountry('NIC', 'Republic of Nicaragua'),
+    toCountry('USA', 'United States of America', { since: '1856' }),
+    toCountry('JAM', 'Jamaica'),
   ],
   claims: [],
   metadata: { tags: ['caribbean-sea', 'disputed-maritime'] },

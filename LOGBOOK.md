@@ -5,6 +5,48 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-21 — v3.1.4: verified every numeric id again before trusting a user-supplied correction list
+
+**Re-ran the exact verification `LOGBOOK.md`'s v3.0.1 entry describes,
+before touching any data.** That entry's whole point was: alpha-3 codes
+("USA", "ESP") are not what this app's Country Registry actually keys on —
+the raw ISO 3166-1 *numeric* code from the topology is, and assuming
+otherwise shipped a real bug that made two overlay layers silently do
+nothing for an entire version. This iteration added five new country
+references (Spain, Mauritius, Madagascar, Israel, Cyprus) that had never
+appeared in `geoEntities.ts` before — rather than trusting general
+knowledge of ISO numeric codes, queried `public/geo/countries-un193.json`
+directly the same way the v3.0.1 fix did, confirmed all five (and the
+already-used Argentina/USA/Jamaica/Honduras/Nicaragua, to be sure nothing
+had drifted) before writing a single `toCountry()` call. Cheap insurance
+against repeating a bug that already had its own postmortem in this file.
+
+**`dependency()`'s "uncontroversial" framing needed a correction, not just
+a new parameter.** The helper's original doc comment described every
+Territory it builds as having "no dispute" — true when it was written (the
+40 entries it covered were all uncontested dependencies), false the moment
+Gibraltar/Falklands/South Georgia/BIOT/French Southern & Antarctic Lands
+needed a `claimedBy` list while keeping their single uncontested
+administering parent. Fixed the comment alongside the code change, not
+just the code: "who administers this" and "does anyone dispute it" are
+independent facts (the same distinction `GeoEntity`'s own doc comment in
+`data/types.ts` already draws between `administeredBy` and `claimedBy` for
+every other entry) — a helper named for the common case shouldn't have a
+comment that quietly asserts the common case is the only case.
+
+**Nicaragua's Bajo Nuevo/Serranilla claims were not "possibly disputable
+opinion" — they were superseded by name.** The 2012 ICJ judgment
+(*Territorial and Maritime Dispute, Nicaragua v. Colombia*) is a specific,
+citable ruling that resolved the exact claim this dataset had been
+carrying since v3.0.0 as if still live. Removing Nicaragua (and Honduras,
+per its own 1986 bilateral treaty with Colombia) and adding the US's
+still-unrelinquished 1856 Guano Islands Act claim isn't a judgment call the
+way Kosovo's `claimedBy: Serbia` or the Territory `parentEntity` additions
+in v3.0.0 were (see that entry) — it's a correction against a specific
+legal source, and the code comment above both entries now cites it by
+name and year so the next person to touch this file doesn't have to take
+it on faith either.
+
 ## 2026-07-21 — v3.1.3: "claimed by" and "claims" are supposed to be the same fact from two ends, and this dataset only ever writes one of them
 
 **A GeoEntity's `claims` field is real infrastructure with zero real data

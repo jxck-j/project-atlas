@@ -12,16 +12,24 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 ## Data quality — needs a second pair of eyes
 
-- **Bajo Nuevo Bank / Serranilla Bank claimants** (`data/registry/geoEntities.ts`)
-  are the least-verified entries in the v3 dataset — added from general
-  knowledge of the disputes, not from the v3 spec's explicit relationship
-  list the way Spratly/Scarborough/Siachen were. Worth a real source check
-  before treating this data as more than illustrative. See `LOGBOOK.md`'s
-  v3.0.0 entry.
 - **Gibraltar's inclusion** in the Territory list was an inference (it
   appears in the v3 spec's Known Relationships but not its explicit entity
   list) — confirm this was the intended reading, not an oversight to
   actually exclude.
+- **Only 10 relationships have had a real, citation-level accuracy pass**
+  (v3.1.4: Falkland Islands/South Georgia/Gibraltar/BIOT/French Southern &
+  Antarctic Lands/Palestine/Akrotiri/Dhekelia claimedBy additions, plus the
+  Bajo Nuevo/Serranilla Bank corrections — see `LOGBOOK.md`'s v3.1.4 entry
+  for the ICJ/treaty citations behind the latter). Everything else in
+  `geoEntities.ts` still carries the original "simplified, hand-curated...
+  not a comprehensive or authoritative reference" provenance note — the
+  other ~46 GeoEntities' claim/administration data hasn't had the same
+  scrutiny and may have similar gaps. One noticed in passing:
+  `british-indian-ocean-territory`'s entry doesn't model the US military
+  presence at Diego Garcia at all (the UK administers BIOT; the US
+  operates a leased naval/air base there, similar in shape to the
+  Guantanamo Bay entry's `administeredBy` treatment, but nothing here
+  reflects it).
 - **Kosovo's `claimedBy: Serbia`** and several Territory `parentEntity`
   values (Curaçao/Aruba/Sint Maarten → Netherlands, Åland → Finland, Cook
   Islands/Niue → New Zealand, Norfolk Island/Heard & McDonald → Australia)
