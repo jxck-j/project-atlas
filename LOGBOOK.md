@@ -5,6 +5,28 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-23 — v3.3.1: ambient rotation moved from an inferred behavior to a persistent setting
+
+**Replaced a "stop while selected, resume on deselect" heuristic with a
+plain on/off setting the user controls directly, because the heuristic had
+no state of its own — it inferred the right `autoRotate` value from
+`selected` changing, which only works if selection is the only thing that
+ever needs to suspend rotation.** `scene/CameraControls.tsx` used to watch
+`selected` with a `wasSelected` ref and flip `autoRotate` back to `true`
+the instant it saw a transition from *something selected* to *nothing
+selected* — correct as far as it went, but it meant "is rotation currently
+on" was never an explicit fact anywhere, only ever re-derived from
+selection state at the moment of a transition. A `ambientRotationEnabled`
+boolean in `settingsStore.ts` (default `false` — previously ambient
+rotation was always on while nothing was selected, flipped per direct
+request), toggled by a new **T** key binding, makes "should the globe be
+spinning right now" a real, independently-inspectable value instead of
+something reconstructed from a side effect of selection changes. The two
+camera-flight completion handlers (`useCameraFlight.ts`, `useCameraReset.ts`)
+that used to hardcode `controls.autoRotate = true` once a flight finished
+now read the same setting instead, so a flight that completes while
+ambient rotation is off doesn't silently turn it back on.
+
 ## 2026-07-21 — v3.3.0: six independent toggles instead of one picker, and why the second copy of a pattern is when you extract it
 
 **Registered six Layer Engine layers instead of building one "pick a

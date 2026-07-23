@@ -4,6 +4,7 @@ import { Spherical, Vector3 } from 'three'
 import type { RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useSelection } from '../hud/selectionStore'
+import { useCameraSettings } from '../hud/settingsStore'
 import { CAMERA_DEFAULT_DISTANCE } from './constants'
 import { clamp01, easeInOutCubic, easeOutCubic, shortestAngleDelta } from './tweenMath'
 
@@ -25,6 +26,7 @@ interface FlightState {
 // target instead of a selected country's direction.
 export function useCameraReset(controlsRef: RefObject<OrbitControlsImpl | null>) {
   const { resetSeq } = useSelection()
+  const { ambientRotationEnabled } = useCameraSettings()
   const flight = useRef<FlightState | null>(null)
   const lastSeq = useRef(0)
   const offsetScratch = useRef(new Vector3())
@@ -69,7 +71,10 @@ export function useCameraReset(controlsRef: RefObject<OrbitControlsImpl | null>)
     if (t >= 1) {
       flight.current = null
       controls.enabled = true
-      controls.autoRotate = true
+      // Restore the persistent ambient-rotation setting (settingsStore.ts)
+      // rather than unconditionally turning rotation back on — see
+      // useCameraFlight.ts's identical comment.
+      controls.autoRotate = ambientRotationEnabled
     }
   })
 }

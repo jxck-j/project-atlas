@@ -61,6 +61,7 @@ const ONE_SHOT_KEY_MAP: Record<string, ActionCommand> = {
   l: 'toggle-layers',
   i: 'toggle-inspector',
   '/': 'open-search',
+  t: 'toggle-ambient-rotation',
 }
 
 // Currently-held continuous camera commands — see the module doc comment

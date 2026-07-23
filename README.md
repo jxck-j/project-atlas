@@ -72,12 +72,16 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
-- Closing the intelligence panel (✕) clears the selection and resumes ambient
-  rotation.
+- Closing the intelligence panel (✕) clears the selection.
+- **Ambient rotation** (v3.3.1) is off by default and toggled with **T** —
+  see the Keyboard bullet below. It's still frozen automatically while a
+  country/entity is selected, so the focused thing never drifts out from
+  under the camera.
 - **Keyboard** (v3.2.0, "Phase 3.2") — full navigation without a mouse,
   reading from and writing to the exact same selection state as clicking/
   search. Camera: **W/S** zoom, **A/D** rotate, **Q/E** tilt, **R** reset
-  view, **Space** focus camera on the selection. Entity navigation:
+  view, **Space** focus camera on the selection, **T** toggle ambient
+  rotation (v3.3.1). Entity navigation:
   **arrow keys** select the nearest entity in that geographic direction
   (evaluated by real bearing/distance, not screen position — see
   `CLAUDE.md`'s Input Layer section), **Tab**/**Shift+Tab** cycle through

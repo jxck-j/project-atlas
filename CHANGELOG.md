@@ -17,6 +17,23 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.3.1 — Ambient rotation becomes a persistent toggle
+
+Point release: changes how the globe's idle ambient rotation is controlled,
+without adding a new panel or interaction mode. Previously the globe always
+auto-rotated while nothing was selected and froze the instant something
+was selected, with no user control over that behavior at all. Ambient
+rotation is now off by default and controlled directly by the user with a
+new **T** key binding (`settingsStore.ts`'s `ambientRotationEnabled`,
+default `false`) — replacing the old "stop while selected, resume on
+deselect" heuristic in `scene/CameraControls.tsx`/`scene/Globe.tsx`, which
+had no persistent state of its own and inferred the right behavior from
+selection changes instead. Camera flights (`useCameraFlight.ts`,
+`useCameraReset.ts`) still force rotation off for their own duration, then
+restore whatever the setting is currently set to, rather than
+unconditionally turning it back on. `SettingsPanel.tsx`'s keyboard
+shortcuts reference lists the new binding.
+
 ## v3.3.0 — Category highlighting, and subtler markers
 
 New capability (category highlighting is a new interaction/visualization

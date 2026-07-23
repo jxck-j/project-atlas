@@ -26,6 +26,7 @@ import { useEntityNavigation } from './SelectionController'
 import { focusOnSelection, resetCamera } from './CameraController'
 import { clearSelection, closeInspector, openInspector, useSelection } from '../hud/selectionStore'
 import { toggleHudPanel } from '../hud/hudPanelStore'
+import { toggleAmbientRotation } from '../hud/settingsStore'
 import type { ActionCommand } from './types'
 
 export function InputManager() {
@@ -79,6 +80,9 @@ export function InputManager() {
         break
       case 'open-search':
         toggleHudPanel('search')
+        break
+      case 'toggle-ambient-rotation':
+        toggleAmbientRotation()
         break
     }
   })

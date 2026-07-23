@@ -24,5 +24,6 @@ export type ActionCommand =
   | 'toggle-layers'
   | 'toggle-inspector'
   | 'open-search'
+  | 'toggle-ambient-rotation'
 
 export type Command = CameraNudgeCommand | ActionCommand

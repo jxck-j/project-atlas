@@ -15,6 +15,7 @@ import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
 import { resetView, useSelection } from '../hud/selectionStore'
 import { publishTelemetry } from '../hud/telemetryStore'
+import { useCameraSettings } from '../hud/settingsStore'
 
 // Camera distance below which the smaller seas/gulfs/straits reveal
 // themselves. Above it (the default overview distance is ~6.5) only the 5
@@ -157,13 +158,18 @@ export function Globe() {
   const groupRef = useRef<Group>(null)
   const coreSphereRef = useRef<Mesh>(null)
   const { selected } = useSelection()
+  const { ambientRotationEnabled } = useCameraSettings()
 
   // Slow ambient self-rotation of the data layers (independent of camera
-  // orbit) — frozen while a country is selected so the focused country
-  // doesn't drift out from under the camera.
+  // orbit — see scene/CameraControls.tsx's separate OrbitControls.autoRotate,
+  // which orbits the *camera* rather than spinning this group). Gated on
+  // the persistent ambientRotationEnabled setting (T key, settingsStore.ts)
+  // rather than always-on; still frozen while a country/entity is selected
+  // so the focused thing doesn't drift out from under the camera even with
+  // the setting on.
   useFrame((_, delta) => {
     if (!groupRef.current) return
-    if (!selected) {
+    if (ambientRotationEnabled && !selected) {
       groupRef.current.rotation.y += delta * 0.03
     }
     setGlobeRotationY(groupRef.current.rotation.y)

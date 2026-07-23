@@ -69,6 +69,7 @@ const CAMERA_SHORTCUTS: [string, string][] = [
   ['Q / E', 'TILT UP / DOWN'],
   ['R', 'RESET VIEW'],
   ['SPACE', 'FOCUS SELECTION'],
+  ['T', 'TOGGLE AMBIENT ROTATION'],
 ]
 
 const NAVIGATION_SHORTCUTS: [string, string][] = [

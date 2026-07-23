@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useCameraSettings } from '../hud/settingsStore'
-import { resetView, useSelection } from '../hud/selectionStore'
+import { resetView } from '../hud/selectionStore'
 import { useFlickAutoRotate } from './useFlickAutoRotate'
 import { useCameraFlight } from './useCameraFlight'
 import { useCameraReset } from './useCameraReset'
@@ -17,29 +17,27 @@ import {
 
 export function CameraControls() {
   const controlsRef = useRef<OrbitControlsImpl | null>(null)
-  const { rotateSensitivity, zoomSensitivity } = useCameraSettings()
-  const { selected } = useSelection()
-  const wasSelected = useRef(false)
+  const { rotateSensitivity, zoomSensitivity, ambientRotationEnabled } = useCameraSettings()
 
-  // autoRotate / autoRotateSpeed are managed imperatively (here + in the
-  // flick and flight hooks) rather than as reactive props, so user
-  // interaction and the camera flight can toggle them without fighting
-  // React's prop sync.
+  // Ambient rotation is a plain persistent on/off setting the user controls
+  // directly (T key, settingsStore.ts's toggleAmbientRotation) — replaces
+  // an earlier "auto-stop while something's selected, auto-resume on
+  // deselect" heuristic that kept finding new edge cases (sequential store
+  // updates could leave a stale intermediate read mid-transition).
+  // autoRotate / autoRotateSpeed are still managed imperatively (here + in
+  // the flick and flight hooks) rather than as reactive OrbitControls
+  // props, so user interaction and camera flights can toggle them without
+  // fighting React's prop sync — this effect is what applies the setting
+  // whenever it changes (including on mount). useCameraFlight.ts/
+  // useCameraReset.ts's flight-completion logic reads the same setting to
+  // decide what to restore autoRotate to once a flight ends, rather than
+  // hardcoding true.
   useEffect(() => {
     if (controlsRef.current) {
-      controlsRef.current.autoRotate = true
+      controlsRef.current.autoRotate = ambientRotationEnabled
       controlsRef.current.autoRotateSpeed = CAMERA_IDLE_AUTOROTATE_SPEED
     }
-  }, [])
-
-  // Resume idle ambient rotation once a country is deselected.
-  useEffect(() => {
-    if (wasSelected.current && !selected && controlsRef.current) {
-      controlsRef.current.autoRotate = true
-      controlsRef.current.autoRotateSpeed = CAMERA_IDLE_AUTOROTATE_SPEED
-    }
-    wasSelected.current = selected != null
-  }, [selected])
+  }, [ambientRotationEnabled])
 
   // Home key returns to the default global view — ignored while typing in a
   // text field (e.g. the search bar), where Home is a text-cursor shortcut.
