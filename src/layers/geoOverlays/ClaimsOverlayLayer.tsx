@@ -202,17 +202,20 @@ function RelatedCountriesOverlay({ countryRoles }: { countryRoles: Map<string, S
               />
             </mesh>
           )}
-          {/* v3.3.0: shared, deliberately subtler marker — see
-              scene/PointerMarker.tsx for why this used to be a bigger,
-              bespoke marker here. The role(s) in the label are what
-              distinguish "administers this" from "claims this," since the
-              color alone doesn't. */}
-          <PointerMarker
-            lat={country.centroid.lat}
-            lng={country.centroid.lng}
-            color={RELATED_COUNTRY_COLOR}
-            label={`${Array.from(country.roles).map((role) => ROLE_LABEL[role]).join(' & ')} — ${country.name.toUpperCase()}`}
-          />
+          {/* Marker only for the 'parent' role (an uncontested dependency,
+              e.g. Puerto Rico -> USA) — a claimant gets the same dashed
+              border + fill highlight above, but no callout: a disputed
+              claim reads clearly enough from the highlight itself, and the
+              "CLAIMANT — <NAME>" label/pulsing marker was removed as its
+              own visual (see LOGBOOK.md). */}
+          {country.roles.has('parent') && (
+            <PointerMarker
+              lat={country.centroid.lat}
+              lng={country.centroid.lng}
+              color={RELATED_COUNTRY_COLOR}
+              label={`${Array.from(country.roles).map((role) => ROLE_LABEL[role]).join(' & ')} — ${country.name.toUpperCase()}`}
+            />
+          )}
         </group>
       ))}
     </group>

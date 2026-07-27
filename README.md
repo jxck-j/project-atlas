@@ -227,8 +227,9 @@ src/
                                  geometry; claimant Countries (a Country has
                                  no presence in GeoEntity geometry at all)
                                  get a separate blue dashed-border +
-                                 prominent-fill + labeled-marker treatment
-                                 on Country geometry, fetched independently
+                                 prominent-fill treatment (no callout marker
+                                 as of v4.1.1 — the highlight alone reads
+                                 clearly) on Country geometry, fetched independently
                                  via useCountryFeatures(). Every color sourced
                                  from scene/highlightColors.ts
     CategoryHighlightLayer.tsx    (v3.3.0, extended v4.0) Seven layers, one

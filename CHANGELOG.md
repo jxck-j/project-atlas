@@ -17,6 +17,16 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.1.1 — Remove claimant callout marker, keep the highlight
+
+Point release. A claimed GeoEntity's related-country overlay
+(`ClaimsOverlayLayer.tsx`) still gets its dashed border + prominent fill
+when the claimant role applies, but no longer a pulsing "CLAIMANT —
+\<NAME\>" labeled marker — that stays only for the uncontested `'parent'`
+role (e.g. Puerto Rico → USA), where there's no dispute for the highlight
+alone to already communicate. A disputed claim reads clearly enough from
+the highlight itself.
+
 ## v4.1 — Capitals and major world cities
 
 New capability: 223 point-marker cities (195 national capitals + 28 other

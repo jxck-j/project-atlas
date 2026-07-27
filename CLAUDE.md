@@ -318,13 +318,18 @@ convert (`time / 1000`) before calling `advance()`.
   geometry `scene/GeoEntities.tsx` uses. Selecting a claimed GeoEntity
   (Taiwan) highlights the Country claiming it (China) with a **different**
   treatment — dashed blue border, a prominent fill covering the whole
-  country (not a thin outline), plus a pulsing marker with an explicit
-  "CLAIMANT — <NAME>" label — drawn on `Countries.tsx`'s geometry instead,
-  fetched independently via `useCountryFeatures()`. The two directions
-  can't share rendering code because a `Country` has no presence in the
-  GeoEntity feature collection at all; don't assume "the other end of a
-  relationship" is representable by whatever loop is already iterating one
-  side of it. See `LOGBOOK.md`'s v3.1.0 entry for how this gap was found.
+  country (not a thin outline) — drawn on `Countries.tsx`'s geometry
+  instead, fetched independently via `useCountryFeatures()`. The two
+  directions can't share rendering code because a `Country` has no
+  presence in the GeoEntity feature collection at all; don't assume "the
+  other end of a relationship" is representable by whatever loop is
+  already iterating one side of it. See `LOGBOOK.md`'s v3.1.0 entry for
+  how this gap was found. A claimant no longer gets `PointerMarker`'s
+  pulsing "CLAIMANT — \<NAME\>" callout as of v4.1.1 — the dashed
+  border + fill highlight alone reads clearly enough for a disputed claim.
+  The marker is still shown for the uncontested `'parent'` role (e.g.
+  Puerto Rico → USA), where there's no dispute to read from a highlight
+  alone.
 - **`CategoryHighlightLayer.tsx`** (v3.3.0) registers six ordinary Layer
   Engine layers — one per selectable classification (`'country'` plus the
   five `GeoEntityType` values) — each drawing every entity in that one
