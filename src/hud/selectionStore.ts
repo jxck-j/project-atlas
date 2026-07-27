@@ -44,9 +44,34 @@ interface SelectionState {
   // (Home key, double-click on ocean, or the toolbar's globe button). See
   // useCameraReset.
   resetSeq: number
+  // World-space direction for flyToUsCity() below — deliberately NOT
+  // reusing `selected`/`flightSeq`. US city search results (see
+  // hud/SearchBar.tsx) need "fly the camera there" without the highlight,
+  // Intelligence Panel entry, or Tab-cycling membership every other
+  // selectable thing gets, because US city boundaries have no
+  // GeoEntityRegistry entry at all — see scene/UsCityOutlineHighlight.tsx.
+  flyToTarget: Vector3 | null
+  flyToTargetSeq: number
+  // Which US city (if any) should currently draw its boundary outline —
+  // the "Google Maps approach" this layer settled on after the always-on
+  // 32,608-polygon layer read as visual noise: names/search only by
+  // default, one city's real outline appears only once it's actually
+  // searched for. Cleared by selectEntity/clearSelection/resetView so it
+  // doesn't linger once the user moves on to a normal selection — see
+  // flyToUsCity below, which is the only setter (set together with
+  // flyToTarget in one atomic update, never on its own).
+  usCityOutline: { id: string; stateAbbrev: string; name: string } | null
 }
 
-let state: SelectionState = { selected: null, inspectorOpen: false, flightSeq: 0, resetSeq: 0 }
+let state: SelectionState = {
+  selected: null,
+  inspectorOpen: false,
+  flightSeq: 0,
+  resetSeq: 0,
+  flyToTarget: null,
+  flyToTargetSeq: 0,
+  usCityOutline: null,
+}
 const listeners = new Set<() => void>()
 
 function notify() {
@@ -82,6 +107,7 @@ export function selectEntity(entity: ResolvedEntity, direction: Vector3, options
     ...state,
     selected: { entity, id: entity.id, name: entity.name, direction },
     inspectorOpen: shouldOpen ? true : state.inspectorOpen,
+    usCityOutline: null,
   }
   notify()
 }
@@ -110,7 +136,7 @@ export function selectCountry(country: { id: string; name: string; direction: Ve
 }
 
 export function clearSelection() {
-  state = { ...state, selected: null, inspectorOpen: false }
+  state = { ...state, selected: null, inspectorOpen: false, usCityOutline: null }
   notify()
 }
 
@@ -140,10 +166,34 @@ export function flyToSelectedCountry() {
   notify()
 }
 
+// Flies to a US city search result AND sets its boundary outline in one
+// atomic update — `selected` stays untouched, so nothing highlights and the
+// Intelligence Panel doesn't open. Deliberately one function/one notify()
+// rather than two sequential setters (a "fly the camera" call followed by a
+// separate "show this outline" call) — two sequential state updates leave a
+// window where a subscriber could re-render on the first update before the
+// second lands, briefly observing flyToTarget set but usCityOutline still
+// null (or vice versa). scene/CameraControls.tsx's idle-rotation-resume
+// effect reads both via `isFocused = selected != null || usCityOutline !=
+// null` — an inconsistent intermediate read there is exactly the kind of
+// thing that wouldn't reproduce in an automated/scripted test's tighter
+// timing but could on a real, human-timed interaction. One update removes
+// the window entirely rather than relying on React's batching to paper
+// over it.
+export function flyToUsCity(direction: Vector3, target: { id: string; stateAbbrev: string; name: string }) {
+  state = {
+    ...state,
+    flyToTarget: direction,
+    flyToTargetSeq: state.flyToTargetSeq + 1,
+    usCityOutline: target,
+  }
+  notify()
+}
+
 // Deselects whatever's selected and kicks off a camera flight back to the
 // default global view.
 export function resetView() {
-  state = { ...state, selected: null, inspectorOpen: false, resetSeq: state.resetSeq + 1 }
+  state = { ...state, selected: null, inspectorOpen: false, resetSeq: state.resetSeq + 1, usCityOutline: null }
   notify()
 }
 

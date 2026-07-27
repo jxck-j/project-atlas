@@ -9,7 +9,11 @@ import { FrameRateCap } from './FrameRateCap'
 export function Scene() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 6.5], fov: 45, near: 0.1, far: 100 }}
+      // near dropped from 0.1 to 0.03 alongside constants.ts's more
+      // conservative CAMERA_MIN_DISTANCE reduction (~335km altitude at
+      // closest zoom) — see that constant's comment for why an earlier,
+      // much closer attempt (~32km altitude, near: 0.005) broke visually.
+      camera={{ position: [0, 0, 6.5], fov: 45, near: 0.03, far: 100 }}
       // Antialiasing and >1x device pixel ratio roughly double-to-quadruple
       // the fragment work the GPU does per frame — with 193 fully-detailed
       // countries already pushing a lot of geometry, that's not free.

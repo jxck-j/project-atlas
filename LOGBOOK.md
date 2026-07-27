@@ -5,6 +5,47 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-26 — v4.2: 32,608 places is a scale where "always render everything" stops being an option
+
+**The first implementation shipped as one always-on merged-polygon layer
+(every boundary precomputed into a single buffer, the same
+one-merged-geometry-per-entity approach that works well for 193 countries
+and 294 provinces) and it read as visual noise in review — "clustered
+dots/blobs," not legible city shapes.** Tracing one real city's geometry
+(Austin, TX) all the way through the pipeline confirmed the underlying data
+was structurally correct; the actual problem was scale interacting with an
+existing limitation — this app's `LineBasicMaterial`-only borders have no
+real line width on any platform, which is fine when 193 countries' worth of
+borders are spread across a whole globe, but becomes illegible once
+thousands of small, often-fragmented polygons (Austin alone has many,
+from its own annexation history) are packed into city-block-sized screen
+regions all at once. The fix was a **product-shape change** — search-
+triggered, one-city-at-a-time reveal — not a rendering tweak, because no
+amount of color/opacity tuning fixes "too many thin lines in too small a
+space" when the actual requirement is "find one specific city," not
+"see every city's outline simultaneously."
+
+**Camera zoom has much less headroom than it looks like.** Pushing
+`CAMERA_MIN_DISTANCE` from `GLOBE_RADIUS * 1.35` down to `* 1.005` (~35x
+closer, aiming to resolve individual city polygons) packed the camera into
+the same thin geometry shell as every other surface radius in the scene
+(core sphere, country fill, borders, atmosphere shells) — grazing/near-
+tangent viewing angles ended up looking through surface geometry instead of
+at it. Settled on a more conservative `* 1.05` (~13x closer) instead; this
+constant would be revisited twice more later (v4.3).
+
+**Two real, separate bugs surfaced building the on-demand outline fetch:**
+- `useSyncExternalStore`'s `getSnapshot` must return a stable reference
+  when nothing's changed — an early version of the outline-fetch hook built
+  a fresh object literal on every call, causing an infinite re-render loop
+  that froze/crashed the browser tab. Fixed by caching the resolved result
+  and only recomputing when the underlying (city id, shard-loaded) key
+  changes.
+- Two sequential store mutations for one logical action — `flyToDirection()`
+  then `showUsCityOutline()` as separate calls — left a window where a
+  subscriber could read inconsistent intermediate state between them.
+  Collapsed into one atomic `flyToUsCity()`.
+
 ## 2026-07-26 — v4.1: a classification doesn't have to join every existing system to fit in
 
 **`city` was deliberately left out of `CategoryHighlightLayer.tsx`/

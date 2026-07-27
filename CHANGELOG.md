@@ -17,6 +17,46 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.2 — All 32,608 US city boundaries: search + on-demand outline
+
+New capability: every US Census incorporated place and Census-Designated
+Place (32,608 total) is now findable by name and, once found, shows its
+real boundary — but **deliberately not as a rendered layer you can toggle
+on**, and not part of the selectable-entity/`GeoEntityType` system every
+other classification above joined. `scripts/buildUsCitiesData.mjs` (`npm
+run build:geo:us-cities`, parsing a vendored US Census Bureau cartographic
+boundary shapefile via the new `shapefile` dependency — not part of the
+default `build:geo` chain, much slower/heavier than every other geo build
+script) writes 56 per-state geometry shards
+(`public/geo/us-cities/{state}.json`) plus one lightweight, always-loaded
+search index (`public/geo/us-cities-index.json`, id/name/lat/lng/state —
+no polygon data). Searching and selecting a result fetches that one city's
+shard on demand and draws only its boundary
+(`scene/UsCityOutlineHighlight.tsx`); nothing else about 32,608 places is
+ever loaded or rendered at once. Search results show `"City, ST"` (e.g.
+"Austin, TX") to disambiguate same-named places across states.
+
+### Changed (mid-implementation pivot)
+
+- **First pass shipped as one always-on merged-polygon layer (all 32,608
+  boundaries in a single precomputed buffer) and was reworked after it read
+  as visual noise in review** — "clustered dots/blobs," not legible city
+  shapes. One city's geometry (Austin, TX) was traced through the full
+  pipeline and confirmed structurally correct; the actual problem was
+  real-world city-boundary complexity (many small/fragmented polygons —
+  Austin's own annexation history alone) combined with this app's
+  line-only, no-real-width borders, becoming illegible at city-block scale
+  with all 32,608 rendered simultaneously. Replaced with the search +
+  on-demand single-outline shape described above.
+- `scene/constants.ts`'s `CAMERA_MIN_DISTANCE` reduced from `GLOBE_RADIUS *
+  1.35` to `* 1.05` (an earlier attempt at `* 1.005`, meant to resolve
+  individual city polygons, packed the camera into the same thin geometry
+  shell as the core sphere/country fill/borders/atmosphere and caused
+  visible clipping artifacts at grazing angles — backed off). New
+  `US_CITY_FOCUS_DISTANCE` constant for the closer framing a US city search
+  flies to. `scene/Scene.tsx`'s camera `near` clip plane moved from `0.1`
+  to `0.03` to match.
+
 ## v4.1.1 — Remove claimant callout marker, keep the highlight
 
 Point release. A claimed GeoEntity's related-country overlay

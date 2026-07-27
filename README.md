@@ -64,11 +64,13 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
 - **Reset to the global view** — press **Home**, double-click empty ocean, or
   click the 🌍 button in the top-left toolbar. Clears the current selection and
   cinematically flies the camera back to the default framing.
-- The top-left **toolbar** also has 🔍 **Search** (type a country name, press
-  Enter — selects it and flies the camera there), 🗂 **Layers** (toggle
-  visualization layers on/off — as of v2.0 these are architecture-validating
-  placeholders, not real data; see Layer Engine below), and ⚙ **Settings**
-  (camera rotate/zoom sensitivity, with a reset).
+- The top-left **toolbar** also has 🔍 **Search** (type a name, press
+  Enter — matches any country, any GeoEntity classification, or any of the
+  32,608 US Census places as of v4.2, then selects/flies the camera there;
+  a matched US city also draws its real boundary on demand), 🗂 **Layers**
+  (toggle visualization layers on/off — as of v2.0 these are architecture-
+  validating placeholders, not real data; see Layer Engine below), and
+  ⚙ **Settings** (camera rotate/zoom sensitivity, with a reset).
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
@@ -149,6 +151,23 @@ src/
     useCitiesFeatures.ts        (v4.1) Same "create GeoEntity records from
                                fetched geometry" pattern as
                                useStatesProvincesFeatures.ts, for points
+    useUsCitiesIndex.ts          (v4.2) The lightweight, always-loaded
+                               search index for all 32,608 US Census places
+                               (id/name/lat/lng/state) — deliberately
+                               separate from the on-demand geometry fetch
+                               below, since SearchBar.tsx only ever needs
+                               this to find a city and fly there
+    UsCityOutlineHighlight.tsx  (v4.2) Draws exactly one US city's boundary
+                               on demand — always mounted, renders nothing
+                               until a search result sets one via
+                               selectionStore.ts's usCityOutline. NOT part
+                               of the GeoEntityType/selectable-entity system
+                               every other classification above joined —
+                               see LOGBOOK.md's v4.2 entry for why an
+                               always-on version of this layer was tried
+                               first and reworked
+    useUsCityOutline.ts          (v4.2) Fetches one state's US-cities
+                               geometry shard on demand, cached per state
     countryGeometry.ts         GeoJSON -> antimeridian-safe border segments /
                                earcut-triangulated fill geometry / centroid /
                                angular extent, all merged per-country and
@@ -194,7 +213,11 @@ src/
     FrameRateCap.tsx          Manually drives R3F's render loop (advance()) at a
                                hard 60fps cap — see CLAUDE.md for a real bug this
                                caused if you touch it
-    constants.ts              Shared GLOBE_RADIUS + camera distance bounds
+    constants.ts              Shared GLOBE_RADIUS + camera distance bounds.
+                               CAMERA_MIN_DISTANCE tightened twice since v1
+                               (v4.2, then v4.3) — see LOGBOOK.md for why
+                               each step was more conservative than a first
+                               attempt that broke rendering
     highlightColors.ts         (v3.1.0) Single source of truth for every
                                highlight/selection color the globe renders —
                                Countries.tsx, GeoEntities.tsx, and both
@@ -253,7 +276,13 @@ src/
     Toolbar.tsx                Top-left icon bar: reset view / search / layers / settings
     SearchBar.tsx               Name -> select + fly-to, across countries AND
                                  every GeoEntity classification since v3.0.0
-                                 (ranked dropdown, entity type shown per result)
+                                 (ranked dropdown, entity type shown per result).
+                                 Since v4.2 also matches any of the 32,608 US
+                                 Census places (search index only — see
+                                 scene/useUsCitiesIndex.ts below); selecting one
+                                 flies there and draws that one city's real
+                                 boundary on demand, shown as "City, ST" to
+                                 disambiguate same-named places across states
     LayerPanel.tsx               Toggle list for registered layers, grouped by
                                  category (toggled via Toolbar)
     SettingsPanel.tsx           Camera sensitivity sliders + (v3.2.0)
@@ -279,7 +308,13 @@ src/
                                  dispatched on entity kind
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
-                                 since v2.2.1 — see entities/) + inspectorOpen
+                                 since v2.2.1 — see entities/) + usCityOutline
+                                 (v4.2 — which one US city's on-demand
+                                 boundary is currently shown, if any) +
+                                 flyToUsCity() (one atomic update, not two
+                                 sequential ones — see LOGBOOK.md's v4.2
+                                 entry for the timing hazard that fixed) +
+                                 inspectorOpen
                                  (v3.2.0, separate from selection itself —
                                  see CLAUDE.md) + camera flight/reset
                                  triggers. Dev builds also get
@@ -400,6 +435,16 @@ scripts/
                              topologically simplify, so this is the first
                              build:geo:* script that skips
                              lib/topologyPipeline.mjs entirely
+  buildUsCitiesData.mjs        (v4.2, npm run build:geo:us-cities — NOT
+                             part of the default build:geo chain; much
+                             slower/heavier than every script above) Parses
+                             a vendored US Census Bureau cartographic
+                             boundary shapefile (scripts/vendor/census/, via
+                             the shapefile npm package) into 56 per-state
+                             geometry shards plus one lightweight search
+                             index. No topojson simplification — a single
+                             city's raw 1:500,000 Census polygon is small
+                             enough on its own
   generateClaimsDoc.mjs        (v3.1.1, rewritten v3.1.3, npm run
                              docs:claims) Reads countries-un193.json AND
                              GeoEntityRegistry, writes ../CLAIMS.md — a
@@ -421,6 +466,12 @@ public/geo/
   cities.json                   (v4.1) Generated output of
                              buildCitiesData.mjs — fetched at runtime by
                              useCitiesFeatures.ts
+  us-cities-index.json          (v4.2) Always-loaded search index for all
+                             32,608 US Census places — fetched at runtime
+                             by useUsCitiesIndex.ts
+  us-cities/{state}.json         (v4.2) 56 per-state geometry shards — one
+                             fetched on demand per search result, by
+                             useUsCityOutline.ts
 ```
 
 This separation (scene layer vs. HUD layer, data vs. rendering, a small pub/sub

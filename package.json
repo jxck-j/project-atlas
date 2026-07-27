@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "4.1.1",
+  "version": "4.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
     "build:geo:entities": "node scripts/buildEntityTopology.mjs",
     "build:geo:states": "node scripts/buildStatesProvincesTopology.mjs",
     "build:geo:cities": "node scripts/buildCitiesData.mjs",
+    "build:geo:us-cities": "node scripts/buildUsCitiesData.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -39,6 +40,7 @@
     "autoprefixer": "^10.5.4",
     "oxlint": "^1.71.0",
     "postcss": "^8.5.19",
+    "shapefile": "^0.6.6",
     "tailwindcss": "^4.3.3",
     "topojson-server": "^3.0.1",
     "topojson-simplify": "^3.0.3",
