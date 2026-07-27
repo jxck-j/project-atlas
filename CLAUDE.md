@@ -17,9 +17,14 @@ npm run dev        # dev server, http://localhost:5173
 npm run build      # tsc -b (project-references typecheck) + vite build to dist/
 npm run lint       # oxlint
 npm run preview    # preview the production build
-npm run build:geo  # regenerate both geo assets below (runs the two npm scripts in sequence)
+npm run build:geo  # regenerate the four geo assets below (runs the npm scripts in sequence)
 npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
+npm run build:geo:states     # regenerate public/geo/states-provinces.json (294 admin-1 features, 9 countries)
+npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/major-city point markers)
+npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
+                              # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
+                              # Census shapefile changes)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
 ```
 
@@ -32,11 +37,15 @@ correct way to typecheck without emitting — matches what `npm run build` does.
 
 Since v2.0, Atlas is organized around long-lived **engines** rather than a flat
 feature list — each engine is a self-contained subsystem with its own directory.
-Current: the Rendering Engine (`src/scene/`) and the Layer Engine (`src/layers/`,
-see below). Planned: Country Engine, Relationship Engine, Intelligence Engine,
-Data Engine, Timeline Engine. Before starting a new major version, name which
-engine is being expanded and how it reduces future complexity — see
-`CHANGELOG.md`'s versioning note and `LOGBOOK.md` for the reasoning behind this.
+Current: the Rendering Engine (`src/scene/`), the Layer Engine (`src/layers/`,
+see below), and the LOD Engine (`src/lod/`, v4.3 — owns the camera-distance
+ladder zoom-gated content like `UsCityLabels.tsx` reveals against, and the
+plug-in point for future zoom-gated datasets: Roads, Rail, Rivers, Airports,
+Ports, Military Bases, Infrastructure). Planned: Country Engine, Relationship
+Engine, Intelligence Engine, Data Engine, Timeline Engine. Before starting a
+new major version, name which engine is being expanded and how it reduces
+future complexity — see `CHANGELOG.md`'s versioning note and `LOGBOOK.md` for
+the reasoning behind this.
 
 ### Two-layer split: `scene/` vs `hud/`
 
@@ -493,6 +502,76 @@ etc. is expected to own its own data/state internally and hand the Layer
 Engine a component via `registerLayer()`, the same way the placeholders do.
 That decoupling — engines produce layers, the Layer Engine only knows how to
 register/toggle/mount/unmount them — is the reason this version exists.
+
+### LOD Engine (`src/lod/`, v4.3)
+
+A registry + store for the camera-distance ladder any zoom-gated content
+reveals against, architecturally parallel to the Layer Engine above but
+solving a different problem: the Layer Engine is about *what's toggleable*,
+the LOD Engine is about *what distance unlocks it*. Added once
+`scene/UsCityLabels.tsx`'s population/zoom-tier gate (a private
+`REVEAL_TIERS` distance table nothing else could see or reuse) needed
+generalizing ahead of future zoom-gated datasets (rivers, roads, ...) that
+would otherwise each invent their own disconnected threshold.
+
+**Pieces, and why they're separate:**
+
+- `types.ts` — `LodLevelId`, a union naming the *entire* intended zoom
+  progression up front: `'earth' | 'countries' | 'states' | 'metro-areas' |
+  'large-cities' | 'medium-cities' | 'small-cities' |
+  'every-incorporated-city'` (all implemented) plus `'roads' | 'rail' |
+  'rivers' | 'airports' | 'ports' | 'military-bases' | 'infrastructure'`
+  (reserved, `implemented: false`, no geometry/store/camera work behind
+  them yet). Reserving the ids now — before any of those datasets exist —
+  is what lets a future dataset plug in without a second camera/LOD
+  redesign: it only ever needs a real `revealDistance` and
+  `implemented: true` in `lodLevels.ts`, never a new id or a new resolver.
+- `lodLevels.ts` — the ordered `LOD_LEVELS` array plus three pure functions:
+  `resolveActiveLevels(distance)` (every implemented level currently
+  active), `resolveDeepestLevel(distance)` (the single most-detailed active
+  level — what a HUD readout means by "current zoom"), and
+  `isLodLevelActive(id, distance)`. A level is active whenever `distance <=
+  level.revealDistance` (or always, if `revealDistance` is `null`),
+  checked **independently per level**, not via a descending first-match-
+  wins scan — that's what makes the ladder cumulative (unlocking
+  small-cities doesn't hide metro-areas) without needing a separate upper-
+  bound guard the way an earlier, scan-based version needed
+  `NO_CITIES_ABOVE_DISTANCE` purely to stop its first threshold from
+  matching from very far away.
+- `lodStore.ts` — a non-reactive publisher, same shape as
+  `globeRotation.ts`/`telemetryStore.ts` (see "Two-layer split" above): for
+  consumers *without* their own per-frame camera access (a HUD panel, a
+  future layer mounted outside the component that already computes
+  distance). Fed by one added line in `scene/TelemetryProbe.tsx`
+  (`publishLodDistance(spherical.current.radius)`) — it already computes
+  camera distance every frame for the orbit telemetry HUD, so this is one
+  more publish target, not a second `useFrame` subscriber duplicating that
+  work. A component that already has `camera` via `useThree()` every frame
+  (`UsCityLabels.tsx`) should call `lodLevels.ts`'s pure functions directly
+  with its own locally-computed distance instead of round-tripping through
+  this store.
+- `index.ts` — the barrel. Import from here, not individual files — same
+  discipline as `data/index.ts`/`layers/index.ts` elsewhere in this repo.
+
+**What deliberately does NOT live here:** population thresholds, label
+styling, and spacing radii are all cities-specific concepts that stay in
+`scene/UsCityLabels.tsx` (`CITY_POPULATION_FLOOR`, keyed by `LodLevelId`)
+rather than being generalized into the LOD Engine itself — the engine only
+ever answers "is this zoom stage active," never anything about what a
+consumer does once it is. Keeping that boundary is what lets a future Roads
+layer, say, check `isLodLevelActive('roads', distance)` without the LOD
+Engine needing to know or care that "roads" has nothing like a population
+score.
+
+**How to add a future zoom-gated dataset:** give its reserved `LodLevelId`
+a real `revealDistance` and flip `implemented` to `true` in
+`lodLevels.ts`, then have the new layer/component check
+`isLodLevelActive(id, distance)` (or `resolveDeepestLevel`, if it needs to
+know the single deepest active tier). Never touch `scene/constants.ts`'s
+camera bounds for this — see that file's own comment for why going tighter
+than the current `CAMERA_MIN_DISTANCE` is a rendering-engine concern
+(country/state fill-border-atmosphere shell separation), not something the
+LOD Engine's distance thresholds should ever need to force by themselves.
 
 ### Geopolitical data architecture (`src/data/`)
 
