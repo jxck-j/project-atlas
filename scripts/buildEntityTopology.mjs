@@ -19,11 +19,8 @@
 // the output is uniform: every kept feature has a resolvable `id`, and
 // scene/useGeoEntityFeatures.ts never needs to know which features started
 // out id-less.
-import fs from 'node:fs'
-import { feature, quantize } from 'topojson-client'
-import { topology } from 'topojson-server'
-import { presimplify, simplify, quantile, sphericalTriangleArea } from 'topojson-simplify'
 import { ENTITY_GEOMETRY_IDS, ENTITY_GEOMETRY_NAME_KEYS } from '../src/entities/entityGeometryIds.ts'
+import { readSourceFeatures, buildSimplifiedTopology, writeTopologyOutput } from './lib/topologyPipeline.mjs'
 
 const SOURCE = 'node_modules/world-atlas/countries-10m.json'
 const OUTPUT = 'public/geo/entities.json'
@@ -34,8 +31,7 @@ const OUTPUT = 'public/geo/entities.json'
 // territory sitting right next to it (Taiwan/China, W. Sahara/Morocco).
 const SIMPLIFY_QUANTILE = 0.35
 
-const raw = JSON.parse(fs.readFileSync(SOURCE, 'utf8'))
-const rawFeatures = feature(raw, raw.objects.countries).features
+const rawFeatures = readSourceFeatures(SOURCE, 'countries')
 
 const kept = []
 for (const f of rawFeatures) {
@@ -69,19 +65,9 @@ console.log(`Matched all ${kept.length} entity geometries.`)
 // Rebuild a fresh topology from just the kept features, same reasoning as
 // buildCountryTopology.mjs: arcs belonging only to everything else in the
 // 255-feature source never make it into this output.
-const rebuilt = topology({ entities: { type: 'FeatureCollection', features: kept } })
+const quantized = buildSimplifiedTopology('entities', kept, SIMPLIFY_QUANTILE)
 
-const presimplified = presimplify(rebuilt, sphericalTriangleArea)
-const minWeight = quantile(presimplified, SIMPLIFY_QUANTILE)
-const simplified = simplify(presimplified, minWeight)
+const afterKB = writeTopologyOutput(OUTPUT, quantized)
 
-// presimplify() strips delta-encoding — re-quantize afterward or the output
-// stores full-precision floats and balloons in size (see
-// buildCountryTopology.mjs for the same gotcha, discovered there first).
-const quantized = quantize(simplified, 1e5)
-
-fs.writeFileSync(OUTPUT, JSON.stringify(quantized))
-
-const afterKB = fs.statSync(OUTPUT).size / 1024
 console.log(`Wrote ${OUTPUT}`)
 console.log(`Output (${kept.length} features, simplified): ${afterKB.toFixed(1)} KB`)

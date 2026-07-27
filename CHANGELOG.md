@@ -17,6 +17,20 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v3.3.2 — Shared build:geo pipeline
+
+Point release: internal build-script refactor, zero runtime/UI change.
+`scripts/buildCountryTopology.mjs` and `scripts/buildEntityTopology.mjs`
+had grown nearly identical rebuild/presimplify/quantile/simplify/quantize
+back halves; that shared machinery moved into
+`scripts/lib/topologyPipeline.mjs`, with each script keeping only its own
+per-layer feature filtering/matching logic. Verified zero behavior change
+— both generated JSON assets are byte-identical to their pre-refactor
+output. First step of the geo-data-engine roadmap's build-pipeline
+generalization (see `GEO_ENGINE_README.md`), needed once a third
+topology-building script (states/provinces, next) would otherwise have
+duplicated the same back half a second time.
+
 ## v3.3.1 — Ambient rotation becomes a persistent toggle
 
 Point release: changes how the globe's idle ambient rotation is controlled,

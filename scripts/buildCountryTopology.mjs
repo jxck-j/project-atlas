@@ -10,10 +10,8 @@
 // country while cutting the point density that was making the app choppy
 // at full 10m detail across 193 countries.
 import fs from 'node:fs'
-import { feature, quantize } from 'topojson-client'
-import { topology } from 'topojson-server'
-import { presimplify, simplify, quantile, sphericalTriangleArea } from 'topojson-simplify'
 import { DISPLAY_NAME_OVERRIDES, UN_MEMBER_RAW_NAMES } from '../src/data/unMembers.ts'
+import { readSourceFeatures, buildSimplifiedTopology, writeTopologyOutput } from './lib/topologyPipeline.mjs'
 
 const SOURCE = 'node_modules/world-atlas/countries-10m.json'
 const OUTPUT = 'public/geo/countries-un193.json'
@@ -24,8 +22,7 @@ const OUTPUT = 'public/geo/countries-un193.json'
 // render cost. Raise it for more aggressive simplification.
 const SIMPLIFY_QUANTILE = 0.35
 
-const raw = JSON.parse(fs.readFileSync(SOURCE, 'utf8'))
-const rawFeatures = feature(raw, raw.objects.countries).features
+const rawFeatures = readSourceFeatures(SOURCE, 'countries')
 
 const kept = rawFeatures
   .filter((f) => UN_MEMBER_RAW_NAMES.has(f.properties?.name))
@@ -47,22 +44,11 @@ console.log(`Matched all ${kept.length} UN member states.`)
 // filtering the original topology's geometries — this way arcs that only
 // belonged to dropped territories never make it into the output at all,
 // instead of sitting there unused.
-const rebuilt = topology({ countries: { type: 'FeatureCollection', features: kept } })
+const quantized = buildSimplifiedTopology('countries', kept, SIMPLIFY_QUANTILE)
 
-const presimplified = presimplify(rebuilt, sphericalTriangleArea)
-const minWeight = quantile(presimplified, SIMPLIFY_QUANTILE)
-const simplified = simplify(presimplified, minWeight)
-
-// presimplify() strips delta-encoding (it needs raw floats to compute
-// weights), and simplify() doesn't restore it — without re-quantizing, the
-// output is stored as full-precision floating-point coordinates and ends
-// up LARGER than the unsimplified, still-quantized source file.
-const quantized = quantize(simplified, 1e5)
-
-fs.writeFileSync(OUTPUT, JSON.stringify(quantized))
+const afterKB = writeTopologyOutput(OUTPUT, quantized)
 
 const beforeKB = fs.statSync(SOURCE).size / 1024
-const afterKB = fs.statSync(OUTPUT).size / 1024
 console.log(`Wrote ${OUTPUT}`)
 console.log(`Source 10m (255 features): ${beforeKB.toFixed(0)} KB`)
 console.log(`Output (193 features, simplified): ${afterKB.toFixed(0)} KB`)
