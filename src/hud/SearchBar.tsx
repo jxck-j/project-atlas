@@ -3,6 +3,7 @@ import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
+import { useCitiesFeatures } from '../scene/useCitiesFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
@@ -38,6 +39,7 @@ const ENTITY_TYPE_LABEL: Record<SearchEntry['kind'], string> = {
   'maritime-feature': 'MARITIME',
   'geographic-region': 'REGION',
   'administrative-division': 'ADMIN DIVISION',
+  city: 'CITY',
 }
 
 export function SearchBar() {
@@ -45,6 +47,7 @@ export function SearchBar() {
   const features = useCountryFeatures()
   const geoFeatures = useGeoEntityFeatures()
   const provinceFeatures = useStatesProvincesFeatures()
+  const cityFeatures = useCitiesFeatures()
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -107,6 +110,28 @@ export function SearchBar() {
     })
   }, [provinceFeatures])
 
+  // Cities: same "geometry id already equals entity id" shortcut as
+  // provinceEntries, but reading lat/lng straight off Point coordinates —
+  // geometryToCentroid assumes Polygon/MultiPolygon and would silently
+  // return {lat:0,lng:0} for a Point, so it's deliberately not reused here.
+  const cityEntries = useMemo<SearchEntry[]>(() => {
+    return cityFeatures.flatMap((f) => {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!id || f.geometry.type !== 'Point') return []
+      const [lng, lat] = f.geometry.coordinates
+      const registryEntity = getEntity(id)
+      return [
+        {
+          id,
+          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          kind: registryEntity?.type ?? ('city' as const),
+          lat,
+          lng,
+        },
+      ]
+    })
+  }, [cityFeatures])
+
   // GeoEntityRegistry entries with no rendered geometry (currently only
   // Crimea — see entityGeometryIds.ts) fall back to their own `location`
   // field. Skipped entirely if that's also absent: there'd be nowhere to
@@ -115,6 +140,7 @@ export function SearchBar() {
     const geometryBackedIds = new Set([
       ...geoEntityGeometryEntries.map((e) => e.id),
       ...provinceEntries.map((e) => e.id),
+      ...cityEntries.map((e) => e.id),
     ])
     return getEntities().flatMap((entity) => {
       if (geometryBackedIds.has(entity.id) || !entity.location) return []
@@ -128,11 +154,11 @@ export function SearchBar() {
         },
       ]
     })
-  }, [geoEntityGeometryEntries, provinceEntries])
+  }, [geoEntityGeometryEntries, provinceEntries, cityEntries])
 
   const entries = useMemo<SearchEntry[]>(
-    () => [...countryEntries, ...geoEntityGeometryEntries, ...provinceEntries, ...geoEntityLocationOnlyEntries],
-    [countryEntries, geoEntityGeometryEntries, provinceEntries, geoEntityLocationOnlyEntries],
+    () => [...countryEntries, ...geoEntityGeometryEntries, ...provinceEntries, ...cityEntries, ...geoEntityLocationOnlyEntries],
+    [countryEntries, geoEntityGeometryEntries, provinceEntries, cityEntries, geoEntityLocationOnlyEntries],
   )
 
   // Ranked, not just filtered: exact name matches first, then

@@ -33,7 +33,7 @@ npm install
 npm run dev        # start dev server (http://localhost:5173)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
-npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces}.json
+npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
 ```
 
@@ -85,8 +85,8 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   **arrow keys** select the nearest entity in that geographic direction
   (evaluated by real bearing/distance, not screen position — see
   `CLAUDE.md`'s Input Layer section), **Tab**/**Shift+Tab** cycle through
-  the seven selectable categories (v4.0 adds administrative divisions).
-  Inspector: **Enter** opens it, **Escape**
+  the eight selectable categories (v4.0 added administrative divisions,
+  v4.1 added cities). Inspector: **Enter** opens it, **Escape**
   closes it first and clears the selection on a second press, **I**
   toggles it. HUD: **L** toggles the Layer Panel, **/** opens search.
   Disabled while typing in a text field. Full reference in the
@@ -142,6 +142,13 @@ src/
                                fetched geometry (unlike useGeoEntityFeatures.ts,
                                which only maps geometry onto an already
                                hand-curated dataset)
+    Cities.tsx                 (v4.1) 223 capital/major-city point markers —
+                               small spheres + hover/select labels, a new
+                               geometry shape (every prior selectable thing
+                               was a merged border/fill polygon)
+    useCitiesFeatures.ts        (v4.1) Same "create GeoEntity records from
+                               fetched geometry" pattern as
+                               useStatesProvincesFeatures.ts, for points
     countryGeometry.ts         GeoJSON -> antimeridian-safe border segments /
                                earcut-triangulated fill geometry / centroid /
                                angular extent, all merged per-country and
@@ -225,14 +232,20 @@ src/
                                  via useCountryFeatures(). Every color sourced
                                  from scene/highlightColors.ts
     CategoryHighlightLayer.tsx    (v3.3.0, extended v4.0) Seven layers, one
-                                 per selectable classification (country + the
-                                 six GeoEntityType values) — "highlight every
-                                 sovereign state at once," etc. Independently
-                                 toggleable (not one mutually-exclusive
-                                 picker), all default off
+                                 per selectable classification (country +
+                                 six of the seven GeoEntityType values —
+                                 city, v4.1, is deliberately excluded: its
+                                 point-marker geometry has no honest
+                                 equivalent to the dashed-border + fill
+                                 overlay this system uses for polygons).
+                                 Independently toggleable (not one mutually-
+                                 exclusive picker), all default off
     StatesProvincesLayer.tsx      (v4.0) Registers the administrative-division
                                  classification with the Layer Engine, off by
                                  default in the Layer Panel
+    CitiesLayer.tsx                (v4.1) Registers the city classification
+                                 (category 'population', a new free-form
+                                 value), off by default
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar
@@ -260,8 +273,8 @@ src/
     IntelligencePanel.tsx       Right-side sliding panel with the selected
                                  entity's data + FOCUS CAMERA button — country
                                  cards (v1, unchanged) or GeoEntityDetails
-                                 cards (v3.0.0, one layout for all six
-                                 non-sovereign classifications as of v4.0),
+                                 cards (v3.0.0, one layout for all seven
+                                 non-sovereign classifications as of v4.1),
                                  dispatched on entity kind
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
@@ -295,8 +308,8 @@ src/
     registry/GeoEntityRegistry.ts (v3.0.0, replacing TerritoryRegistry.ts)
                                registerEntity/getEntity/getEntities/
                                getEntitiesByType/getRelatedEntities — one
-                               registry for all six non-sovereign
-                               classifications as of v4.0; administeredBy and
+                               registry for all seven non-sovereign
+                               classifications as of v4.1; administeredBy and
                                claimedBy are separate fields, see CLAUDE.md
     registry/geoEntities.ts     (v3.0.0, replacing registry/territories.ts
                                and exampleTerritories.ts) The REAL, always-
@@ -379,6 +392,13 @@ scripts/
                              Earth 1:50m admin-1 boundaries, vendored
                              directly (scripts/vendor/) since no npm package
                              wraps it — 294 features across 9 large countries
+  buildCitiesData.mjs          (v4.1, npm run build:geo:cities) Natural
+                             Earth 1:50m populated places — 223 features
+                             (195 national capitals + 28 major world
+                             cities). Point geometry has nothing to
+                             topologically simplify, so this is the first
+                             build:geo:* script that skips
+                             lib/topologyPipeline.mjs entirely
   generateClaimsDoc.mjs        (v3.1.1, rewritten v3.1.3, npm run
                              docs:claims) Reads countries-un193.json AND
                              GeoEntityRegistry, writes ../CLAIMS.md — a
@@ -397,6 +417,9 @@ public/geo/
   states-provinces.json        (v4.0) Generated output of
                              buildStatesProvincesTopology.mjs — fetched at
                              runtime by useStatesProvincesFeatures.ts
+  cities.json                   (v4.1) Generated output of
+                             buildCitiesData.mjs — fetched at runtime by
+                             useCitiesFeatures.ts
 ```
 
 This separation (scene layer vs. HUD layer, data vs. rendering, a small pub/sub

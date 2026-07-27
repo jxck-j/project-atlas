@@ -74,6 +74,10 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   not a bug: the 1:10m version of the same dataset covers every country and
   is the documented upgrade path (swap `scripts/vendor/`'s vendored file,
   rerun `npm run build:geo:states`).
+- **South Sudan and Nauru have no capital marker (v4.1)** — Natural Earth's
+  1:50m populated places layer doesn't flag either country's capital at
+  this resolution. Every other of the 193 UN members does. Worth a manual
+  addition if this ever needs to be complete rather than resolution-limited.
 
 ## Visualization
 

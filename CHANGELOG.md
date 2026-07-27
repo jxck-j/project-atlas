@@ -17,6 +17,43 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.1 — Capitals and major world cities
+
+New capability: 223 point-marker cities (195 national capitals + 28 other
+major world cities) — Natural Earth's 1:50m populated places, filtered to
+countries that resolve to one of the 193 registered UN members (cross-
+checked against `countries-un193.json`'s own output, not just ISO-code
+validity). Excludes 5 non-UN capitals present in the source (Vatican City,
+Kosovo, Bermuda, Somaliland, Taiwan) rather than ship a dangling parent
+country reference; South Sudan and Nauru have no capital flagged at this
+resolution (see `BACKLOG.md`).
+
+Point geometry is a first for this app's data pipeline — a single
+coordinate has nothing to topologically simplify, so
+`buildCitiesData.mjs` is the first `build:geo:*` script that skips
+`topologyPipeline.mjs` entirely, and `scene/Cities.tsx` renders small
+sphere markers with hover/select labels rather than the merged border/fill
+geometry every polygon-based layer above uses.
+
+### Added
+
+- **`city`** — a seventh `GeoEntityType` (`src/data/types.ts`). Folded into
+  the existing `GeoEntityRegistry`/`EntityResolver`/search/Tab-cycling
+  plumbing rather than given its own top-level `ResolvedEntity.kind`, even
+  though its rendering treatment (point marker, not merged polygon) differs
+  from every other classification — see that file's doc comment.
+  Deliberately **not** wired into `CategoryHighlightLayer.tsx`/
+  `LegendPanel.tsx` the way the other six classifications are: that
+  system's highlight visual (dashed border + fill overlay) is inherently
+  polygon-shaped and has no honest equivalent for a point marker yet.
+- `scripts/buildCitiesData.mjs` (`npm run build:geo:cities`, part of the
+  default `build:geo` chain).
+- `scene/Cities.tsx` / `scene/useCitiesFeatures.ts` — point-marker
+  rendering and registry population, fully selectable/searchable.
+- `layers/geoOverlays/CitiesLayer.tsx` — registered with the Layer Engine
+  under a new free-form category, `'population'` (`LayerPanel.tsx` never
+  needed to know it exists), off by default.
+
 ## v4.0 — States/provinces: a second geographic classification, and the geo-data pipeline generalized to bring one in
 
 New capability: 294 state/province boundaries across 9 large countries

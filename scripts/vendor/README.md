@@ -22,3 +22,20 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   Swapping this vendored file for the 10m version and re-running
   `npm run build:geo:states` is the upgrade path once broader coverage is
   wanted — no pipeline redesign required.
+
+## `ne_50m_populated_places.geojson`
+
+- **Source:** Natural Earth 1:50m Cultural Vectors, "Populated Places"
+  layer, via the same `nvkelso/natural-earth-vector` GitHub mirror.
+- **Fetched:** 2026-07-22.
+- **License:** Public domain.
+- **Coverage caveat:** `scripts/buildCitiesData.mjs` keeps only national
+  capitals (`ADM0CAP === 1`) and major global cities (`WORLDCITY === 1`),
+  and only those whose country resolves to one of the 193 registered UN
+  members (see that script) — 229 features. Two UN members (South Sudan,
+  Nauru) have no capital flagged in this dataset at 50m resolution, and
+  five non-UN capitals present in the source (Vatican City, Kosovo,
+  Bermuda, Somaliland, Taiwan) are excluded rather than left with a
+  dangling parent-country reference. Point data needs no topojson
+  simplification — this is the one build script in `scripts/` that doesn't
+  go through `scripts/lib/topologyPipeline.mjs`.

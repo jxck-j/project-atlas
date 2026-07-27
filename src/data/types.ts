@@ -156,14 +156,26 @@ export interface GeoEntityRelation {
 }
 
 /**
- * The six-way classification this app's rendering/search/panel logic
+ * The seven-way classification this app's rendering/search/panel logic
  * dispatches on for anything that isn't a UN-member `Country`. Deliberately
- * a closed union (unlike `Country.region`'s free-form string) — these six
+ * a closed union (unlike `Country.region`'s free-form string) — these seven
  * meanings are load-bearing: they're what a consumer reads to decide "does
  * this look like a country," "does this get a parent-overlay," "does this
- * support multiple claimants without a sovereign owner." A seventh kind
+ * support multiple claimants without a sovereign owner." An eighth kind
  * requires a deliberate decision about how it renders, not just a new string
  * value slipping in.
+ *
+ * `'city'` is the one classification that does NOT share the polygon-based
+ * rendering treatment every other member does (see the interface doc below)
+ * — it's point geometry (scene/Cities.tsx renders a marker, not a merged
+ * border/fill mesh), and it was still folded into this union rather than
+ * given a wholly separate top-level classification specifically so it
+ * reuses the relationship shape (parentEntity -> Country) and Intelligence
+ * Panel plumbing every other classification already gets, rather than
+ * duplicating GeoEntityRegistry/EntityResolver/search/Tab-cycling wiring
+ * for one more top-level kind. A future classification that also can't use
+ * the shared rendering treatment should make the same call, not default to
+ * inventing a new top-level `ResolvedEntity.kind`.
  */
 export type GeoEntityType =
   | 'geopolitical-entity'
@@ -172,6 +184,7 @@ export type GeoEntityType =
   | 'maritime-feature'
   | 'geographic-region'
   | 'administrative-division'
+  | 'city'
 
 /**
  * Anything geopolitically significant that is not a UN-member sovereign
@@ -181,20 +194,21 @@ export type GeoEntityType =
  * significant area that isn't itself a country or a dependency (Guantanamo
  * Bay, the Siachen Glacier), a disputed maritime feature with no required
  * sovereign owner (the Spratly Islands), a region governed by treaty rather
- * than sovereignty (Antarctica), or an uncontested first-level
- * administrative division of a sovereign state (a state, province, or
- * similar subdivision — Western Australia, California). One interface for
- * all six classifications — not six separate interfaces — because they
- * share the same relationship shape (who's the parent, who administers it,
- * who claims it, what does it claim) and the same rendering treatment
- * (selectable, merged border/fill geometry, one Intelligence Panel layout);
- * `type` is what a consumer switches on for the handful of places that
- * actually need to (search's tag, the panel's "ENTITY TYPE" row), not a
- * signal that these are six unrelated shapes of data. An administrative
- * division's `claimedBy`/`claims` are almost always empty and its
- * `administeredBy` always equals its `parentEntity` — the relationship
- * shape doesn't force every classification to use every field
- * meaningfully, and forcing a seventh interface just to omit two fields
+ * than sovereignty (Antarctica), an uncontested first-level administrative
+ * division of a sovereign state (a state, province, or similar subdivision
+ * — Western Australia, California), or a national capital/major world city
+ * (Paris, Tokyo). One interface for all seven classifications — not seven
+ * separate interfaces — because they share the same relationship shape
+ * (who's the parent, who administers it, who claims it, what does it
+ * claim) and (six of seven — see `GeoEntityType`'s doc comment on `'city'`)
+ * the same rendering treatment (selectable, merged border/fill geometry,
+ * one Intelligence Panel layout); `type` is what a consumer switches on for
+ * the handful of places that actually need to (search's tag, the panel's
+ * "ENTITY TYPE" row), not a signal that these are unrelated shapes of data.
+ * An administrative division's or city's `claimedBy`/`claims` are almost
+ * always empty and its `administeredBy` always equals its `parentEntity` —
+ * the relationship shape doesn't force every classification to use every
+ * field meaningfully, and forcing a new interface just to omit two fields
  * would cost more than it'd clarify.
  *
  * Replaces the pre-v3 `Territory`/`ControllingAuthority`/`TerritoryClaimant`
@@ -206,7 +220,7 @@ export type GeoEntityType =
  * instead of three fields that only made sense for one.
  */
 export interface GeoEntity {
-  /** Stable identifier. Convention: lowercase slug (e.g. "western-sahara", "guantanamo-bay") — no equivalent to ISO 3166-1 exists for most of these. Administrative divisions are the exception: their slug is a lowercased ISO 3166-2 code (e.g. "au-wa" for Western Australia), since that standard exists and already guarantees global uniqueness. */
+  /** Stable identifier. Convention: lowercase slug (e.g. "western-sahara", "guantanamo-bay") — no equivalent to ISO 3166-1 exists for most of these. Administrative divisions are an exception: their slug is a lowercased ISO 3166-2 code (e.g. "au-wa" for Western Australia), since that standard exists and already guarantees global uniqueness. Cities have no standard code at all, so their slug is `${asciiName}-${countryAlpha3}` lowercased (e.g. "paris-fra") — see scripts/buildCitiesData.mjs. */
   id: string
   name: string
   aliases: string[]

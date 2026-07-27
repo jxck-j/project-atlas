@@ -5,6 +5,37 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-26 — v4.1: a classification doesn't have to join every existing system to fit in
+
+**`city` was deliberately left out of `CategoryHighlightLayer.tsx`/
+`LegendPanel.tsx` even though every other `GeoEntityType` member is wired
+into both.** That highlight system's visual (a dashed border plus a fill
+overlay) is inherently a polygon operation — there's no honest equivalent
+for a single point marker, and forcing one in just to keep a "every
+classification supports every feature" rule would have meant either a fake
+highlight effect or quietly changing what "highlighted" means. Everything
+else (`GeoEntityRegistry`, `EntityResolver`, search, Tab-cycling,
+`IntelligencePanel`'s `GeoEntityDetails` card) still treats `city`
+identically to the other six — the exclusion is scoped to exactly the one
+system where it doesn't make sense, not a reason to treat cities as a
+second-class classification everywhere.
+
+**Filtering to "real UN members" needed to check the actual runtime output,
+not just ISO code validity.** A capital whose country has a valid-looking
+ISO code isn't necessarily one of the 193 *registered* UN members this app
+actually renders — cross-checking against `countries-un193.json`'s own
+generated output (not the raw source data's country list) is what caught
+the 5 non-UN capitals in the source (Vatican City, Kosovo, Bermuda,
+Somaliland, Taiwan) that would otherwise have shipped a `parentCountryId`
+pointing at a country that doesn't exist in this app's own registry.
+
+**Point geometry needed a real branch in the build pipeline, not just a
+smaller polygon.** `topologyPipeline.mjs`'s rebuild/presimplify/simplify/
+quantize steps all exist to reduce coastline point density — meaningless
+for a single lat/lng pair. `buildCitiesData.mjs` skips that pipeline
+entirely rather than routing a point through machinery built for polygons
+and hoping it's a no-op.
+
 ## 2026-07-26 — v4.0: states/provinces proves the Data Engine pattern before the Data Engine exists
 
 **Added a dataset from a source this app had never used before (Natural

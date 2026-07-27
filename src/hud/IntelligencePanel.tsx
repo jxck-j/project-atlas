@@ -56,6 +56,7 @@ const GEO_ENTITY_TYPE_LABEL: Record<GeoEntityType, string> = {
   'maritime-feature': 'Maritime Feature',
   'geographic-region': 'Geographic Region',
   'administrative-division': 'Administrative Division',
+  city: 'City',
 }
 
 // v3: one component covers all five non-sovereign classifications

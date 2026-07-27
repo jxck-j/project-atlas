@@ -14,6 +14,7 @@ import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
+import { useCitiesFeatures } from '../scene/useCitiesFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
@@ -56,9 +57,9 @@ export interface NavigableEntity {
   lng: number
 }
 
-// Fixed, generic — not tied to any specific entity's data, just the seven
+// Fixed, generic — not tied to any specific entity's data, just the eight
 // classifications every selectable thing already belongs to (country plus
-// all six GeoEntityType values — see data/types.ts's GeoEntityType and
+// all seven GeoEntityType values — see data/types.ts's GeoEntityType and
 // CLAUDE.md's Geopolitical data architecture section). Tab/Shift+Tab cycle
 // through this list.
 const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
@@ -69,6 +70,7 @@ const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
   'maritime-feature',
   'geographic-region',
   'administrative-division',
+  'city',
 ]
 
 /**
@@ -139,6 +141,7 @@ export function useEntityNavigation() {
   const countryFeatures = useCountryFeatures()
   const geoEntityFeatures = useGeoEntityFeatures()
   const provinceFeatures = useStatesProvincesFeatures()
+  const cityFeatures = useCitiesFeatures()
   const { selected } = useSelection()
 
   const candidates = useMemo<NavigableEntity[]>(() => {
@@ -189,8 +192,27 @@ export function useEntityNavigation() {
       ]
     })
 
-    return [...countryEntries, ...geoEntityEntries, ...provinceEntries]
-  }, [countryFeatures, geoEntityFeatures, provinceFeatures])
+    // Cities: same shape as provinceEntries, but reading lat/lng straight
+    // off Point coordinates — geometryToCentroid assumes Polygon/
+    // MultiPolygon (see hud/SearchBar.tsx's identical note).
+    const cityEntries = cityFeatures.flatMap((f) => {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!id || f.geometry.type !== 'Point') return []
+      const [lng, lat] = f.geometry.coordinates
+      const registryEntity = getEntity(id)
+      return [
+        {
+          id,
+          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          category: registryEntity?.type ?? ('city' as const),
+          lat,
+          lng,
+        },
+      ]
+    })
+
+    return [...countryEntries, ...geoEntityEntries, ...provinceEntries, ...cityEntries]
+  }, [countryFeatures, geoEntityFeatures, provinceFeatures, cityFeatures])
 
   function goTo(candidate: NavigableEntity) {
     const resolved = resolveEntity(candidate.id)
