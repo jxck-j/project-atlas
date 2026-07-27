@@ -10,6 +10,9 @@ import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
 import { GeoEntities } from './GeoEntities'
 import { PointerMarker } from './PointerMarker'
+import { UsCityOutlineHighlight } from './UsCityOutlineHighlight'
+import { UsCityLabels } from './UsCityLabels'
+import { CountryLabels } from './CountryLabels'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { setGlobeRotationY } from './globeRotation'
@@ -214,6 +217,9 @@ export function Globe() {
       <Countries />
       <GeoEntities />
       <CapitalMarker />
+      <CountryLabels />
+      <UsCityOutlineHighlight />
+      <UsCityLabels />
       <WaterLabels occluder={coreSphereRef} />
       <LayerEngine />
 

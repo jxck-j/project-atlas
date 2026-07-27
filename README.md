@@ -93,6 +93,11 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   toggles it. HUD: **L** toggles the Layer Panel, **/** opens search.
   Disabled while typing in a text field. Full reference in the
   ⚙ Settings panel.
+- **Progressive labels** (v4.3) — country names are always shown (biggest
+  countries first, screen-space decluttered so nearby small countries don't
+  overlap); zooming in past roughly a single US state's scale progressively
+  reveals US city names too, biggest metros first, down to every
+  incorporated place at the closest zoom — see the LOD Engine below.
 - **Category highlighting** (v3.3.0, extended v4.0) — the 🗂 Layers panel has
   a HIGHLIGHT group with one toggle per selectable classification (sovereign
   states, geopolitical entities, territories, strategic/military regions,
@@ -179,6 +184,20 @@ src/
                                CategoryHighlightLayer.tsx needed the same
                                thing; mirrors geoEntityEntries.ts for the
                                GeoEntity side
+    CountryLabels.tsx            (v4.3) Always-on country name labels,
+                               ranked by on-screen angular extent, sharing
+                               labelDeclutter.ts with UsCityLabels.tsx below
+    UsCityLabels.tsx              (v4.3) Progressive US city label reveal —
+                               Google-Maps-style, ranked by real Census
+                               population, gated by the LOD Engine below
+    labelDeclutter.ts             (v4.3) Shared screen-space decluttering:
+                               rejects a lower-priority label if it would
+                               land within spacing distance of an
+                               already-accepted one
+    hoveredCountry.ts              (v4.3) Non-reactive publisher so
+                               CountryLabels.tsx can exclude whichever
+                               country Countries.tsx's own hover state is
+                               already labeling
     PointerMarker.tsx            (v3.3.0) Shared "pulsing dot + leader line +
                                label" callout — Globe.tsx's CapitalMarker and
                                ClaimsOverlayLayer.tsx's related-country
@@ -224,6 +243,30 @@ src/
                                geoOverlays layers all source their colors
                                from here; hud/LegendPanel.tsx explains the
                                same values
+  lod/                       The LOD Engine (v4.3) — architecturally parallel
+                               to the Layer Engine below, owns the camera-
+                               distance ladder zoom-gated content reveals
+                               against
+    types.ts                    LodLevelId union naming the full intended
+                               zoom progression (Earth -> Countries ->
+                               States/Provinces -> Metro Areas -> city
+                               tiers -> Every Incorporated City -> Roads/
+                               Rail/Rivers/Airports/Ports/Military Bases/
+                               Infrastructure), the last seven reserved
+                               (implemented: false, no work behind them yet)
+    lodLevels.ts                 The ordered ladder + pure
+                               resolveActiveLevels/resolveDeepestLevel/
+                               isLodLevelActive functions — a level is
+                               active whenever distance <= its
+                               revealDistance, checked independently per
+                               level (not first-match-wins), which is what
+                               makes the ladder cumulative
+    lodStore.ts                   Non-reactive publisher (same pattern as
+                               globeRotation.ts/telemetryStore.ts) for
+                               consumers without their own per-frame camera
+                               access, fed by TelemetryProbe.tsx
+    index.ts                       Barrel — import from here, not individual
+                               files
   layers/                    The Layer Engine (v2.0) — pluggable visualization
                                modules; Globe.tsx only ever mounts <LayerEngine />
     types.ts                   The LayerDefinition contract every layer implements
@@ -486,6 +529,16 @@ to build against without refactoring the globe itself.
   `registerLayer()` and adding one import line to `layers/placeholders/index.ts`
   (or wherever a "real" layer set eventually gets composed) — never editing
   `Globe.tsx`. See `CLAUDE.md`'s Layer Engine section for the full workflow.
+- **Adding a zoom-gated dataset** (roads, rail, rivers, airports, ports,
+  military bases, infrastructure — all already reserved as `LodLevelId`
+  members in `lod/types.ts`) means giving that id a real `revealDistance`
+  in `lod/lodLevels.ts` and flipping `implemented` to `true`, then having
+  the new layer check `isLodLevelActive(id, distance)` — never touching
+  camera bounds or any existing layer's logic. `UsCityLabels.tsx`'s own
+  population floor per tier is a plain object keyed by `LodLevelId`
+  (`CITY_POPULATION_FLOOR`), kept in that file rather than in `lod/`
+  itself, since population scoring is a cities-specific concept the LOD
+  Engine shouldn't need to know about.
 - **`data/types.ts`** — `GeoEntity` (v3.0.0, real and populated — see
   `data/registry/geoEntities.ts`) covers every non-sovereign classification;
   `Conflict`/`Relationship` are still schema-only, backed by empty

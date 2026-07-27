@@ -5,6 +5,55 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-26 — v4.3: a private distance table doesn't scale past its first consumer
+
+**`UsCityLabels.tsx`'s population/zoom-tier gate started as a private
+`REVEAL_TIERS` array with no way for another feature to reuse or even see
+its thresholds.** Generalized into the LOD Engine (`src/lod/`) specifically
+so the next zoom-gated dataset (rivers, roads, ...) has one shared,
+ordered ladder to plug into instead of a second hand-copied distance table.
+Reformulating each level's "active" check as independent and cumulative
+(`distance <= revealDistance`, checked per level) rather than a
+descending, first-match-wins scan also turned out to remove an entire
+footgun: the old scan needed a separate `NO_CITIES_ABOVE_DISTANCE` upper-
+bound constant purely to stop its first threshold from incorrectly
+matching from very far away, which the independent-check formulation never
+needed in the first place.
+
+**A candidate-pool filter needs an "is this actually on screen" test, not
+just "is this on the near side of the globe."** The sphere-horizon
+dot-product test alone (is this point facing the camera, not hidden by the
+globe's curvature) stays true for 40+ degrees of arc regardless of zoom.
+The camera's actual framed field of view at close zoom can be only a few
+degrees wide. Those two facts together meant a candidate-pool filter built
+on the horizon test alone let cities hundreds of miles outside the current
+view, but still technically front-facing, consume every candidate/label-
+budget slot ahead of a real, smaller city that actually was on screen —
+reported as a specific real town, well inside the population floor for its
+zoom tier, never appearing no matter how far you zoomed into its own
+state. Fixed by projecting to screen space and checking the actual
+viewport bounds too, not just curvature.
+
+**A flat label-spacing constant assumes every label is roughly the same
+size.** It isn't — this layer's labels range from 6px town names to 11px
+bold metro names, a real difference in on-screen width. Applying one
+shared minimum-spacing constant to that whole range meant a legibility
+threshold tuned for the biggest labels was also silently rejecting much
+narrower labels that were never actually at risk of overlapping. Fixed by
+having each candidate carry its own spacing radius, summed pairwise,
+instead of one constant for everyone.
+
+**Promotion note:** cherry-picking this work onto `main` surfaced a real
+gap from excluding an unrelated commit — `UsCityOutlineHighlight.tsx`
+(v4.2) was originally mounted in `Globe.tsx` by a later branch commit that
+also happened to touch ambient rotation (already shipped independently on
+`main` as v3.3.1, so excluded here as redundant). Excluding that commit
+silently left `UsCityOutlineHighlight` unmounted dead code on `main` after
+v4.2 landed; resolving this commit's cherry-pick conflict in `Globe.tsx`
+restored the mount alongside the new label components. Worth remembering
+next time a promotion excludes a commit: check whether anything *else* in
+that commit was actually load-bearing.
+
 ## 2026-07-26 — v4.2: 32,608 places is a scale where "always render everything" stops being an option
 
 **The first implementation shipped as one always-on merged-polygon layer

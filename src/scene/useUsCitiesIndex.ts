@@ -14,6 +14,14 @@ export interface UsCityIndexEntry {
   stateId: string
   stateAbbrev: string
   stateName: string
+  // 2023 Census population estimate — city-proper, not metro area. 0 for
+  // Census-Designated Places (unincorporated communities), which this
+  // Census program doesn't estimate at all — see buildUsCitiesData.mjs.
+  population: number
+  // Hand-curated (scripts/lib/usStateCapitals.mjs) — no dataset flags this
+  // for the US. True regardless of `population` (Honolulu, HI's capital,
+  // is itself a CDP and so has population 0 despite being a capital).
+  isStateCapital: boolean
 }
 
 const DATA_URL = '/geo/us-cities-index.json'

@@ -17,6 +17,87 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.3 — Progressive US city/country label reveal, and a new LOD Engine
+
+New capability: Google-Maps-style progressive label reveal. `UsCityLabels.tsx`
+shows US city names (not polygons — that's still v4.2's separate,
+search-triggered `UsCityOutlineHighlight.tsx`) ranked by real 2023 Census
+city-proper population, joined against a new Census population-estimates
+product (`scripts/lib/usStateCapitals.mjs` hand-curates the state-capitals
+list, since no dataset flags that itself), with a synthetic population
+floor so small notable capitals (Montpelier, VT; Pierre, SD) still qualify.
+Biggest metros appear first as you zoom in; smaller towns integrate at
+progressively tighter zoom. `CountryLabels.tsx` adds the same always-on
+treatment for country names, ranked by on-screen angular extent (no
+population data exists for all 193 countries).
+
+This introduces a new engine: **the LOD Engine (`src/lod/`)**, architecturally
+parallel to the Layer Engine, generalizing the population/zoom-tier logic
+above into a reusable, ordered ladder spanning this app's full intended
+zoom progression — Earth → Countries → States/Provinces → Metro Areas →
+Large/Medium/Small Cities → Every Incorporated City → (reserved, not yet
+built) Roads/Rail/Rivers/Airports/Ports/Military Bases/Infrastructure.
+Every future zoom-gated dataset gets one shared place to declare "I'm
+active below distance X" instead of inventing its own disconnected
+threshold the way `UsCityLabels.tsx` had to the first time.
+
+### Added
+
+- **`scene/labelDeclutter.ts`** — shared Google-Maps-style screen-space
+  decluttering: candidates are checked in priority order and a
+  lower-priority one is rejected if it would land within spacing distance
+  of an already-accepted label. Real-world spacing maps to more screen
+  pixels the closer the camera gets, so "zoom in for more labels" falls out
+  of this one mechanism with no separate zoom-tier bookkeeping needed. Used
+  by both `UsCityLabels.tsx` and `CountryLabels.tsx`.
+- **`src/lod/`** — `types.ts`'s `LodLevelId` union names the full
+  progression above, the last seven ids reserved (`implemented: false`, no
+  geometry/store/camera work behind them yet); `lodLevels.ts` is the
+  ordered ladder plus pure `resolveActiveLevels`/`resolveDeepestLevel`/
+  `isLodLevelActive` functions; `lodStore.ts` is a non-reactive publisher
+  (same shape as `globeRotation.ts`/`telemetryStore.ts`) for consumers
+  without their own per-frame camera access, fed by one added line in
+  `scene/TelemetryProbe.tsx`. Each level's "active" check is independent
+  and cumulative (`distance <= level.revealDistance`), which also removes
+  the need for a separate upper-bound guard a first-match-wins scan would
+  otherwise need.
+
+### Fixed
+
+- **A candidate-pool filter needs an "is this actually on screen" test,
+  not just "is this on the near side of the globe."** The sphere-horizon
+  dot-product test alone stays true for 40+ degrees of arc regardless of
+  zoom, while the camera's actual framed view at close zoom can be a few
+  degrees wide — so cities hundreds of miles outside the current view, but
+  still technically front-facing, were consuming every candidate/label-
+  budget slot ahead of a real, smaller, actually-on-screen city (a real
+  city, ranked in the mid-hundreds nationally by population, never
+  appearing no matter how far you zoomed into its own state, because
+  bigger cities elsewhere in the country — off-screen but still passing the
+  sphere-horizon check — consumed every slot first). Fixed by projecting to
+  screen space and checking against the actual viewport bounds too
+  (`labelDeclutter.ts`'s `isCandidateVisible`/`projectToScreen`).
+- **A single flat label-spacing constant breaks down once label sizes vary
+  a lot.** One shared spacing constant (tuned for legible big-metro labels)
+  also applied to two adjacent small-town labels a third that size — the
+  smaller-population one of the pair always lost even though neither label
+  was anywhere near that width. `labelDeclutter.ts`'s spacing check now
+  sums each candidate's own radius (scaled to its label tier) instead of
+  comparing against one shared constant.
+
+### Changed
+
+- `scene/constants.ts`'s `CAMERA_MIN_DISTANCE`: `GLOBE_RADIUS * 1.05`
+  (2.52, ~335km altitude) → a flat `2.5` (~265km) — a small further
+  tightening, nowhere near the `* 1.005` jump that broke rendering in v4.2.
+  The LOD Engine's `every-incorporated-city` level keeps its own
+  independent `2.52` rather than deriving it from this constant — the two
+  are conceptually different (rendering safety vs. product/legibility
+  threshold) and shouldn't silently retune each other.
+- The `every-incorporated-city` tier floors population at `1`, not `0` —
+  excludes the unincorporated Census-Designated Places this dataset leaves
+  at population 0, matching the tier's own name.
+
 ## v4.2 — All 32,608 US city boundaries: search + on-demand outline
 
 New capability: every US Census incorporated place and Census-Designated

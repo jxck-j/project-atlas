@@ -27,13 +27,41 @@
 //   exists.
 import fs from 'node:fs'
 import * as shapefile from 'shapefile'
+import { US_STATE_CAPITALS } from './lib/usStateCapitals.mjs'
 
 const SHP = 'scripts/vendor/census/cb_2023_us_place_500k.shp'
 const DBF = 'scripts/vendor/census/cb_2023_us_place_500k.dbf'
+const POPULATION_CSV = 'scripts/vendor/census/place_population_2023.csv'
 const SHARDS_DIR = 'public/geo/us-cities'
 const INDEX_OUTPUT = 'public/geo/us-cities-index.json'
 
+// State capitals aren't flagged in either Census source above, and
+// Natural Earth's populated-places dataset (this app's other populated-
+// places source, see buildCitiesData.mjs) doesn't carry a usable ADM1CAP
+// flag for the US either (checked directly: 0 of its 769 US entries at
+// 1:10m resolution have it set) — hence the hand-curated list.
+const stateCapitals = new Set(US_STATE_CAPITALS.map(([state, name]) => `${state}|${name}`))
+
 fs.mkdirSync(SHARDS_DIR, { recursive: true })
+
+// Population estimates, joined by GEOID (STATE FIPS + PLACE FIPS, 7 digits —
+// matches the shapefile's own GEOID property below). This is a SEPARATE
+// Census product from the boundary shapefile (the "Places" cartographic
+// boundary file itself carries no population field, only ALAND/AWATER —
+// land area alone turned out to be a bad proxy for "major city": ranking by
+// it surfaces sprawling, sparsely-populated places like Sitka/Wrangell/
+// Juneau, AK ahead of NYC/LA/Chicago). See vendor/README.md for exact
+// provenance. Only covers incorporated places (~19,500 of this dataset's
+// 32,608) — Census-Designated Places (unincorporated communities, no local
+// government) aren't estimated by this program at all and are left
+// unpopulated (population 0) rather than guessed at; see that same README
+// note for what that means for CDP ranking.
+const population = new Map()
+for (const line of fs.readFileSync(POPULATION_CSV, 'utf8').split('\n').slice(1)) {
+  if (!line.trim()) continue
+  const [state, place, pop] = line.split(',')
+  population.set(`${state}${place}`, Number(pop))
+}
 
 const source = await shapefile.open(SHP, DBF)
 
@@ -58,6 +86,8 @@ while (!result.done) {
     stateId,
     stateAbbrev,
     stateName: properties.STATE_NAME,
+    population: population.get(properties.GEOID) ?? 0,
+    isStateCapital: stateCapitals.has(`${stateAbbrev}|${properties.NAME}`),
   })
 
   result = await source.read()
@@ -101,7 +131,17 @@ for (const [stateAbbrev, features] of featuresByState) {
   totalShardKB += fs.statSync(output).size / 1024
 }
 
+const matchedCapitals = indexEntries.filter((e) => e.isStateCapital).length
+if (matchedCapitals !== US_STATE_CAPITALS.length) {
+  throw new Error(
+    `[buildUsCitiesData] matched ${matchedCapitals}/${US_STATE_CAPITALS.length} state capitals — a name in usStateCapitals.mjs no longer matches this vintage of the Census source exactly.`
+  )
+}
+
 fs.writeFileSync(INDEX_OUTPUT, JSON.stringify(indexEntries))
+
+const withPopulation = indexEntries.filter((e) => e.population > 0).length
+console.log(`Matched population estimates for ${withPopulation.toLocaleString()}/${indexEntries.length.toLocaleString()} places (the rest are Census-Designated Places, not estimated by this Census program)`)
 
 const indexKB = fs.statSync(INDEX_OUTPUT).size / 1024
 console.log(`Wrote ${featuresByState.size} state shards to ${SHARDS_DIR}/ (${indexEntries.length.toLocaleString()} cities total, ${totalShardKB.toFixed(0)} KB combined, avg ${(totalShardKB / featuresByState.size).toFixed(0)} KB/state)`)

@@ -2,6 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useRef } from 'react'
 import { Spherical } from 'three'
 import { publishTelemetry } from '../hud/telemetryStore'
+import { publishLodDistance } from '../lod'
 
 const FPS_UPDATE_INTERVAL_MS = 500
 
@@ -32,6 +33,9 @@ export function TelemetryProbe() {
       polarDeg: (spherical.current.phi * 180) / Math.PI,
       distance: spherical.current.radius,
     })
+    // Same already-computed distance, fanned out to the LOD Engine's store
+    // too — no second per-frame camera read needed (see lodStore.ts).
+    publishLodDistance(spherical.current.radius)
   })
 
   return null

@@ -56,7 +56,21 @@ export function UsCityOutlineHighlight() {
           <meshBasicMaterial color={COLOR} transparent opacity={0.2} side={FrontSide} depthWrite={false} />
         </mesh>
       )}
-      <Html position={geometries.labelAnchor} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+      {/* No distanceFactor — see UsCityLabels.tsx for the full story, but
+          the short version here is worse: flyToUsCity() centers the camera
+          exactly on this label, and drei's Html only recomputes its
+          distanceFactor scale when the label's PROJECTED SCREEN position
+          moves by more than a small epsilon (see Html.js's useFrame — the
+          scale/transform update is gated behind that check, not a plain
+          "every frame" update). A point dead-center in the viewport barely
+          moves in screen X/Y as the camera dollies straight toward or away
+          from it, so scrolling to zoom out after arriving here left the
+          label frozen at whatever (already oversized, at this close a
+          range) scale it had the instant the fly-in animation landed —
+          reported as "stays the same size no matter how far you zoom out."
+          Omitting distanceFactor makes the scale a constant 1 with nothing
+          to freeze in a stale state. */}
+      <Html position={geometries.labelAnchor} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
         <div
           className="whitespace-nowrap font-mono text-xs tracking-[0.2em] text-cyan-100"
           style={{ textShadow: '0 0 8px rgba(76,224,255,0.85)' }}

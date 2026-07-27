@@ -15,6 +15,7 @@ import { HIGHLIGHT_COLORS } from './highlightColors'
 import { selectCountry, selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
+import { getHoveredCountryId, setHoveredCountryId } from './hoveredCountry'
 
 const BORDER_RADIUS = GLOBE_RADIUS * 1.004
 // Well clear of the core sphere (0.98*RADIUS in Globe.tsx) to leave room
@@ -218,10 +219,15 @@ export function Countries() {
                 onPointerOver={(e) => {
                   e.stopPropagation()
                   setHoveredId(country.id)
+                  setHoveredCountryId(country.id)
                 }}
                 onPointerOut={(e) => {
                   e.stopPropagation()
                   setHoveredId((current) => (current === country.id ? null : current))
+                  // Plain module value, not React state — read it back
+                  // instead of a functional updater to get the same
+                  // "only clear if I was the one who set it" guard.
+                  if (getHoveredCountryId() === country.id) setHoveredCountryId(null)
                 }}
                 onPointerUp={(e) => handlePointerUp(country, e)}
                 // Stops a double-click on a country from falling through to

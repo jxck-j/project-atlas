@@ -10,7 +10,7 @@ export function Scene() {
   return (
     <Canvas
       // near dropped from 0.1 to 0.03 alongside constants.ts's more
-      // conservative CAMERA_MIN_DISTANCE reduction (~335km altitude at
+      // conservative CAMERA_MIN_DISTANCE reduction (~265km altitude at
       // closest zoom) — see that constant's comment for why an earlier,
       // much closer attempt (~32km altitude, near: 0.005) broke visually.
       camera={{ position: [0, 0, 6.5], fov: 45, near: 0.03, far: 100 }}
