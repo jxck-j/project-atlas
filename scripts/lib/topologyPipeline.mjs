@@ -14,8 +14,15 @@ import { feature, quantize } from 'topojson-client'
 import { topology } from 'topojson-server'
 import { presimplify, simplify, quantile, sphericalTriangleArea } from 'topojson-simplify'
 
+// Handles both source shapes this pipeline has needed so far: a TopoJSON
+// Topology (world-atlas's countries-10m.json — pass sourceObjectName to
+// pick which of its `objects` to convert) or a plain GeoJSON
+// FeatureCollection (a vendored file with no topology to begin with, e.g.
+// Natural Earth's admin-1 states/provinces export) — sourceObjectName is
+// ignored for that shape since there's only one feature list to read.
 export function readSourceFeatures(sourcePath, sourceObjectName) {
   const raw = JSON.parse(fs.readFileSync(sourcePath, 'utf8'))
+  if (raw.type === 'FeatureCollection') return raw.features
   return feature(raw, raw.objects[sourceObjectName]).features
 }
 

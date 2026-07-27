@@ -33,7 +33,7 @@ npm install
 npm run dev        # start dev server (http://localhost:5173)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
-npm run build:geo  # regenerate public/geo/countries-un193.json from world-atlas
+npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
 ```
 
@@ -85,15 +85,17 @@ There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
   **arrow keys** select the nearest entity in that geographic direction
   (evaluated by real bearing/distance, not screen position — see
   `CLAUDE.md`'s Input Layer section), **Tab**/**Shift+Tab** cycle through
-  the six selectable categories. Inspector: **Enter** opens it, **Escape**
+  the seven selectable categories (v4.0 adds administrative divisions).
+  Inspector: **Enter** opens it, **Escape**
   closes it first and clears the selection on a second press, **I**
   toggles it. HUD: **L** toggles the Layer Panel, **/** opens search.
   Disabled while typing in a text field. Full reference in the
   ⚙ Settings panel.
-- **Category highlighting** (v3.3.0) — the 🗂 Layers panel has a HIGHLIGHT
-  group with one toggle per selectable classification (sovereign states,
-  geopolitical entities, territories, strategic/military regions, maritime
-  features, geographic regions). Enabling one highlights every entity in
+- **Category highlighting** (v3.3.0, extended v4.0) — the 🗂 Layers panel has
+  a HIGHLIGHT group with one toggle per selectable classification (sovereign
+  states, geopolitical entities, territories, strategic/military regions,
+  maritime features, geographic regions, administrative divisions).
+  Enabling one highlights every entity in
   that category at once, in violet, independent of and simultaneous with
   the current selection — toggle more than one on together and both
   categories stay highlighted.
@@ -131,6 +133,15 @@ src/
                                a plain .ts module so the geoOverlays layers
                                can share it without a .tsx file exporting a
                                non-component value from itself
+    StatesProvinces.tsx        (v4.0) 294 admin-1 state/province boundaries
+                               across 9 large countries — same rendering
+                               approach as GeoEntities.tsx, own file for the
+                               same "can't regress verified behavior" reason
+    useStatesProvincesFeatures.ts (v4.0) Fetches states-provinces.json;
+                               creates GeoEntity records directly from the
+                               fetched geometry (unlike useGeoEntityFeatures.ts,
+                               which only maps geometry onto an already
+                               hand-curated dataset)
     countryGeometry.ts         GeoJSON -> antimeridian-safe border segments /
                                earcut-triangulated fill geometry / centroid /
                                angular extent, all merged per-country and
@@ -213,12 +224,15 @@ src/
                                  on Country geometry, fetched independently
                                  via useCountryFeatures(). Every color sourced
                                  from scene/highlightColors.ts
-    CategoryHighlightLayer.tsx    (v3.3.0) Six layers, one per selectable
-                                 classification (country + the five
-                                 GeoEntityType values) — "highlight every
+    CategoryHighlightLayer.tsx    (v3.3.0, extended v4.0) Seven layers, one
+                                 per selectable classification (country + the
+                                 six GeoEntityType values) — "highlight every
                                  sovereign state at once," etc. Independently
                                  toggleable (not one mutually-exclusive
                                  picker), all default off
+    StatesProvincesLayer.tsx      (v4.0) Registers the administrative-division
+                                 classification with the Layer Engine, off by
+                                 default in the Layer Panel
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     HUDFrame.tsx               Corner brackets, vignette, scanline overlay
     Header.tsx                 Top title bar
@@ -246,9 +260,9 @@ src/
     IntelligencePanel.tsx       Right-side sliding panel with the selected
                                  entity's data + FOCUS CAMERA button — country
                                  cards (v1, unchanged) or GeoEntityDetails
-                                 cards (v3.0.0, one layout for all five
-                                 non-sovereign classifications), dispatched
-                                 on entity kind
+                                 cards (v3.0.0, one layout for all six
+                                 non-sovereign classifications as of v4.0),
+                                 dispatched on entity kind
     hudPanelStore.ts             Which single toolbar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
                                  since v2.2.1 — see entities/) + inspectorOpen
@@ -281,9 +295,9 @@ src/
     registry/GeoEntityRegistry.ts (v3.0.0, replacing TerritoryRegistry.ts)
                                registerEntity/getEntity/getEntities/
                                getEntitiesByType/getRelatedEntities — one
-                               registry for all five non-sovereign
-                               classifications; administeredBy and claimedBy
-                               are separate fields, see CLAUDE.md
+                               registry for all six non-sovereign
+                               classifications as of v4.0; administeredBy and
+                               claimedBy are separate fields, see CLAUDE.md
     registry/geoEntities.ts     (v3.0.0, replacing registry/territories.ts
                                and exampleTerritories.ts) The REAL, always-
                                loaded dataset — 56 entities across all five
@@ -355,6 +369,16 @@ scripts/
                              every registered GeoEntity with a standalone
                              polygon in the same source (55 features) — see
                              entityGeometryIds.ts
+  lib/topologyPipeline.mjs    (v3.3.2) Shared rebuild/presimplify/quantile/
+                             simplify/quantize steps, extracted once a third
+                             build script needed them
+  lib/iso3166.mjs              (v4.0) ISO 3166-1 alpha-3 -> numeric country
+                             code table, so a build script can resolve a
+                             feature's parent Country
+  buildStatesProvincesTopology.mjs (v4.0, npm run build:geo:states) Natural
+                             Earth 1:50m admin-1 boundaries, vendored
+                             directly (scripts/vendor/) since no npm package
+                             wraps it — 294 features across 9 large countries
   generateClaimsDoc.mjs        (v3.1.1, rewritten v3.1.3, npm run
                              docs:claims) Reads countries-un193.json AND
                              GeoEntityRegistry, writes ../CLAIMS.md — a
@@ -370,6 +394,9 @@ public/geo/
   entities.json                (v3.0.0, replacing territories.json)
                              Generated output of buildEntityTopology.mjs —
                              fetched at runtime by useGeoEntityFeatures.ts
+  states-provinces.json        (v4.0) Generated output of
+                             buildStatesProvincesTopology.mjs — fetched at
+                             runtime by useStatesProvincesFeatures.ts
 ```
 
 This separation (scene layer vs. HUD layer, data vs. rendering, a small pub/sub

@@ -65,6 +65,16 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   one convention if this data ever needs to cross-reference cleanly against
   itself.
 
+## Geographic coverage
+
+- **States/provinces (v4.0) only cover 9 large countries** (Australia,
+  Brazil, Canada, China, India, Indonesia, Russia, South Africa, United
+  States), 294 features total — the Natural Earth 1:50m admin-1 resolution
+  this was vendored at only usefully resolves those. Deliberately partial,
+  not a bug: the 1:10m version of the same dataset covers every country and
+  is the documented upgrade path (swap `scripts/vendor/`'s vendored file,
+  rerun `npm run build:geo:states`).
+
 ## Visualization
 
 - **Claims overlay's dashed border is a real dash, but the "hatching"

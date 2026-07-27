@@ -58,6 +58,7 @@ const CATEGORY_HIGHLIGHT_LAYER_IDS = [
   'highlight-strategic-region',
   'highlight-maritime-feature',
   'highlight-geographic-region',
+  'highlight-administrative-division',
 ]
 
 export function LegendPanel() {

@@ -5,6 +5,39 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-26 — v4.0: states/provinces proves the Data Engine pattern before the Data Engine exists
+
+**Added a dataset from a source this app had never used before (Natural
+Earth's admin-1 boundaries, vendored directly, no npm wrapper) specifically
+to test whether the existing architecture could absorb a new geographic
+classification without special-casing it — before committing to build a
+formal Data Engine.** Every consumer that dispatches on `GeoEntityType`
+(`IntelligencePanel`, `SearchBar`, `CategoryHighlightLayer`,
+`SelectionController`'s Tab-cycling, `LegendPanel`) already switched
+generically on `kind`/`type` rather than enumerating classifications by
+name, so adding `administrative-division` as a sixth member was additive
+everywhere except the handful of `Record<GeoEntityType, ...>` maps
+TypeScript itself flagged as needing the new key. That result is the actual
+value of this version: the pattern (new vendored source → new build script
+→ new `GeoEntityType` member → zero changes to existing rendering/
+selection/HUD code) is now proven, not just planned.
+
+**Deliberately partial coverage (9 countries) instead of waiting for
+complete data.** The 1:50m resolution Natural Earth ships only usefully
+resolves admin-1 boundaries for a handful of large countries — smaller
+countries' subdivisions are either missing or too coarse to be worth
+rendering at this zoom range. Shipping the resolution-limited pilot now,
+with the 1:10m upgrade path documented (`BACKLOG.md`), was chosen over
+blocking the whole feature on sourcing better data for every country.
+
+**`topologyPipeline.mjs`'s `readSourceFeatures()` needed to accept a plain
+GeoJSON `FeatureCollection`, not just the TopoJSON `Topology` every prior
+build script fed it** — Natural Earth ships admin-1 boundaries as GeoJSON
+directly, no topology-conversion step. Generalizing that one function
+(rather than duplicating the pipeline's back half a second time, which is
+exactly what v3.3.2's extraction happened one commit earlier specifically
+to prevent) was the actual reason that refactor's timing mattered.
+
 ## 2026-07-23 — v3.3.1: ambient rotation moved from an inferred behavior to a persistent setting
 
 **Replaced a "stop while selected, resume on deselect" heuristic with a

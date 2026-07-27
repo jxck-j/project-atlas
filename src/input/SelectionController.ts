@@ -13,6 +13,7 @@ import { useMemo } from 'react'
 import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
+import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
@@ -55,10 +56,11 @@ export interface NavigableEntity {
   lng: number
 }
 
-// Fixed, generic — not tied to any specific entity's data, just the six
-// classifications every selectable thing already belongs to (see
-// data/types.ts's GeoEntityType and CLAUDE.md's Geopolitical data
-// architecture section). Tab/Shift+Tab cycle through this list.
+// Fixed, generic — not tied to any specific entity's data, just the seven
+// classifications every selectable thing already belongs to (country plus
+// all six GeoEntityType values — see data/types.ts's GeoEntityType and
+// CLAUDE.md's Geopolitical data architecture section). Tab/Shift+Tab cycle
+// through this list.
 const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
   'country',
   'geopolitical-entity',
@@ -66,6 +68,7 @@ const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
   'strategic-region',
   'maritime-feature',
   'geographic-region',
+  'administrative-division',
 ]
 
 /**
@@ -135,6 +138,7 @@ export function findNearestInDirection(
 export function useEntityNavigation() {
   const countryFeatures = useCountryFeatures()
   const geoEntityFeatures = useGeoEntityFeatures()
+  const provinceFeatures = useStatesProvincesFeatures()
   const { selected } = useSelection()
 
   const candidates = useMemo<NavigableEntity[]>(() => {
@@ -166,8 +170,27 @@ export function useEntityNavigation() {
       ]
     })
 
-    return [...countryEntries, ...geoEntityEntries]
-  }, [countryFeatures, geoEntityFeatures])
+    // States/provinces: same shape as geoEntityEntries above, but every
+    // feature's geometry id already equals its entity id (see
+    // useStatesProvincesFeatures.ts) — no ENTITY_GEOMETRY_IDS lookup needed.
+    const provinceEntries = provinceFeatures.flatMap((f) => {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!id) return []
+      const registryEntity = getEntity(id)
+      const centroid = geometryToCentroid(f.geometry)
+      return [
+        {
+          id,
+          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          category: registryEntity?.type ?? ('administrative-division' as const),
+          lat: centroid.lat,
+          lng: centroid.lng,
+        },
+      ]
+    })
+
+    return [...countryEntries, ...geoEntityEntries, ...provinceEntries]
+  }, [countryFeatures, geoEntityFeatures, provinceFeatures])
 
   function goTo(candidate: NavigableEntity) {
     const resolved = resolveEntity(candidate.id)

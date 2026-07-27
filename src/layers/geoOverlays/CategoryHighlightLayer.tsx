@@ -1,8 +1,10 @@
 // v3.3.0 quality-of-life addition: "highlight every entity of one
 // classification at once" — e.g. every sovereign state, or every strategic
 // region — independent of (and simultaneous with) whatever's currently
-// selected. Registered as six ordinary Layer Engine layers, one per
-// classification, rather than one layer with an internal category picker —
+// selected. Registered as one ordinary Layer Engine layer per
+// classification (seven as of the states/provinces addition — country plus
+// all six GeoEntityType values), rather than one layer with an internal
+// category picker —
 // LayerPanel.tsx already renders whatever's registered generically (see
 // CLAUDE.md's Layer Engine section), so this needed zero HUD changes, and
 // enabling more than one at once (e.g. "countries" + "strategic regions"
@@ -20,9 +22,11 @@
 import { useMemo } from 'react'
 import { FrontSide } from 'three'
 import type { BufferGeometry } from 'three'
+import type { Feature } from 'geojson'
 import { registerLayer } from '../layerRegistry'
 import { useCountryFeatures } from '../../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
+import { useStatesProvincesFeatures } from '../../scene/useStatesProvincesFeatures'
 import { buildCountryEntries } from '../../scene/countryEntries'
 import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
 import { GLOBE_RADIUS } from '../../scene/constants'
@@ -73,15 +77,18 @@ export function CountryCategoryHighlight() {
   return <CategoryHighlightGeometry entries={entries} />
 }
 
-// The five GeoEntityType categories all share this one component,
-// parameterized by which classification to keep — a factory rather than
-// five near-duplicate components, since the only thing that differs is the
-// filter predicate. buildGeoEntityEntries() returns `entityId`, not `id` —
-// mapped here rather than widening HighlightEntry, since every other
-// consumer of that shape (the country side above) already has a plain `id`.
-function makeGeoEntityCategoryHighlight(category: GeoEntityType) {
+// The six GeoEntityType categories all share this one component,
+// parameterized by which classification to keep and which geometry source
+// to read it from — a factory rather than six near-duplicate components,
+// since the only things that differ are the filter predicate and (since
+// administrative-division lives in its own geometry file, not entities.json
+// — see StatesProvincesLayer.tsx) the features hook. buildGeoEntityEntries()
+// returns `entityId`, not `id` — mapped here rather than widening
+// HighlightEntry, since every other consumer of that shape (the country
+// side above) already has a plain `id`.
+function makeGeoEntityCategoryHighlight(category: GeoEntityType, useFeatures: () => Feature[]) {
   return function GeoEntityCategoryHighlight() {
-    const features = useGeoEntityFeatures()
+    const features = useFeatures()
     const entries = useMemo<HighlightEntry[]>(
       () =>
         buildGeoEntityEntries(features)
@@ -112,7 +119,7 @@ registerLayer({
   description: 'Highlights every geopolitical entity at once (Taiwan, Palestine, Kosovo, Western Sahara).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('geopolitical-entity'),
+  component: makeGeoEntityCategoryHighlight('geopolitical-entity', useGeoEntityFeatures),
 })
 
 registerLayer({
@@ -121,7 +128,7 @@ registerLayer({
   description: 'Highlights every dependency/territory at once (Puerto Rico, Greenland, Hong Kong, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('territory'),
+  component: makeGeoEntityCategoryHighlight('territory', useGeoEntityFeatures),
 })
 
 registerLayer({
@@ -130,7 +137,7 @@ registerLayer({
   description: 'Highlights every strategic region at once (Guantanamo Bay, Akrotiri, Dhekelia, Baikonur, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('strategic-region'),
+  component: makeGeoEntityCategoryHighlight('strategic-region', useGeoEntityFeatures),
 })
 
 registerLayer({
@@ -139,7 +146,7 @@ registerLayer({
   description: 'Highlights every disputed maritime feature at once (Spratly Islands, Scarborough Reef, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('maritime-feature'),
+  component: makeGeoEntityCategoryHighlight('maritime-feature', useGeoEntityFeatures),
 })
 
 registerLayer({
@@ -148,5 +155,14 @@ registerLayer({
   description: 'Highlights every treaty-governed geographic region at once (currently just Antarctica).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('geographic-region'),
+  component: makeGeoEntityCategoryHighlight('geographic-region', useGeoEntityFeatures),
+})
+
+registerLayer({
+  id: 'highlight-administrative-division',
+  label: 'ADMINISTRATIVE DIVISIONS',
+  description: 'Highlights every state/province at once (currently 9 countries — see StatesProvincesLayer.tsx).',
+  category: 'highlight',
+  defaultEnabled: false,
+  component: makeGeoEntityCategoryHighlight('administrative-division', useStatesProvincesFeatures),
 })

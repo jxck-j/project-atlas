@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
+import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
@@ -36,12 +37,14 @@ const ENTITY_TYPE_LABEL: Record<SearchEntry['kind'], string> = {
   'strategic-region': 'STRATEGIC',
   'maritime-feature': 'MARITIME',
   'geographic-region': 'REGION',
+  'administrative-division': 'ADMIN DIVISION',
 }
 
 export function SearchBar() {
   const isOpen = useHudPanel() === 'search'
   const features = useCountryFeatures()
   const geoFeatures = useGeoEntityFeatures()
+  const provinceFeatures = useStatesProvincesFeatures()
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -82,12 +85,37 @@ export function SearchBar() {
     })
   }, [geoFeatures])
 
+  // States/provinces: same "derive the search centroid from the rendered
+  // geometry" reasoning as geoEntityGeometryEntries above, but every
+  // feature's geometry id already equals its entity id (see
+  // useStatesProvincesFeatures.ts) — no ENTITY_GEOMETRY_IDS lookup needed.
+  const provinceEntries = useMemo<SearchEntry[]>(() => {
+    return provinceFeatures.flatMap((f) => {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (!id) return []
+      const registryEntity = getEntity(id)
+      const centroid = geometryToCentroid(f.geometry)
+      return [
+        {
+          id,
+          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          kind: registryEntity?.type ?? ('administrative-division' as const),
+          lat: centroid.lat,
+          lng: centroid.lng,
+        },
+      ]
+    })
+  }, [provinceFeatures])
+
   // GeoEntityRegistry entries with no rendered geometry (currently only
   // Crimea — see entityGeometryIds.ts) fall back to their own `location`
   // field. Skipped entirely if that's also absent: there'd be nowhere to
   // fly the camera to, and search shouldn't return a result it can't select.
   const geoEntityLocationOnlyEntries = useMemo<SearchEntry[]>(() => {
-    const geometryBackedIds = new Set(geoEntityGeometryEntries.map((e) => e.id))
+    const geometryBackedIds = new Set([
+      ...geoEntityGeometryEntries.map((e) => e.id),
+      ...provinceEntries.map((e) => e.id),
+    ])
     return getEntities().flatMap((entity) => {
       if (geometryBackedIds.has(entity.id) || !entity.location) return []
       return [
@@ -100,11 +128,11 @@ export function SearchBar() {
         },
       ]
     })
-  }, [geoEntityGeometryEntries])
+  }, [geoEntityGeometryEntries, provinceEntries])
 
   const entries = useMemo<SearchEntry[]>(
-    () => [...countryEntries, ...geoEntityGeometryEntries, ...geoEntityLocationOnlyEntries],
-    [countryEntries, geoEntityGeometryEntries, geoEntityLocationOnlyEntries],
+    () => [...countryEntries, ...geoEntityGeometryEntries, ...provinceEntries, ...geoEntityLocationOnlyEntries],
+    [countryEntries, geoEntityGeometryEntries, provinceEntries, geoEntityLocationOnlyEntries],
   )
 
   // Ranked, not just filtered: exact name matches first, then

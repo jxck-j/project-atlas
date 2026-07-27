@@ -7,3 +7,4 @@
 import './ParentOverlayLayer'
 import './ClaimsOverlayLayer'
 import './CategoryHighlightLayer'
+import './StatesProvincesLayer'

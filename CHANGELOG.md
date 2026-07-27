@@ -17,6 +17,53 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.0 — States/provinces: a second geographic classification, and the geo-data pipeline generalized to bring one in
+
+New capability: 294 state/province boundaries across 9 large countries
+(Australia, Brazil, Canada, China, India, Indonesia, Russia, South Africa,
+United States) — Natural Earth's 1:50m admin-1 GeoJSON, vendored directly
+since no npm package wraps it the way `world-atlas` wraps country (admin-0)
+boundaries. Deliberately partial coverage, not a scope cut hiding a bug —
+9 countries is what the 1:50m resolution actually covers well; the 1:10m
+version of the same dataset covers every country and is the documented
+upgrade path (swap the vendored file, rerun `npm run build:geo:states`).
+Fully selectable/searchable/highlightable, same as a country.
+
+This is the first dataset added to this app that comes from neither
+`world-atlas` nor the hand-curated `data/registry/geoEntities.ts` — proving
+out, end to end, the pattern a future formal Data Engine (see `CLAUDE.md`'s
+Architecture section) would need: a new vendored source, a new build
+script, and a new `GeoEntityType` member, without changing how any
+existing consumer (`IntelligencePanel`, `SearchBar`,
+`CategoryHighlightLayer`, `SelectionController`'s Tab-cycling,
+`LegendPanel`) dispatches on entity kind, since all of them already
+switch generically on `kind`/`type` rather than enumerating
+classifications ad hoc.
+
+### Added
+
+- **`administrative-division`** — a sixth `GeoEntityType` (`src/data/types.ts`).
+- `scripts/buildStatesProvincesTopology.mjs` (`npm run build:geo:states`,
+  now part of the default `build:geo` chain) — reuses the shared pipeline
+  from v3.3.2, generalized (`topologyPipeline.mjs`'s `readSourceFeatures()`)
+  to accept a plain GeoJSON `FeatureCollection` alongside the TopoJSON
+  `Topology` case every prior script fed it.
+- `scripts/lib/iso3166.mjs` — a complete ISO 3166-1 alpha-3 → numeric
+  country-code table, so a build script can resolve a province's parent
+  country to its existing `CountryRegistry` id.
+- `scene/StatesProvinces.tsx` / `scene/useStatesProvincesFeatures.ts` — same
+  rendering approach as `GeoEntities.tsx` (merged-geometry-per-entity, same
+  hover/select/dim palette), kept as its own file rather than generalizing
+  `GeoEntities.tsx` for the same reason `Countries.tsx`/`GeoEntities.tsx`
+  are already two files instead of one — this addition can't regress
+  already-verified rendering behavior. Creates `GeoEntity` records directly
+  from fetched geometry (mirroring `useCountryFeatures.ts`) rather than only
+  mapping geometry onto an already-curated dataset the way
+  `useGeoEntityFeatures.ts` does — 294 provinces don't warrant the
+  per-entity research `geoEntities.ts`'s 56 hand-curated entities got.
+- `layers/geoOverlays/StatesProvincesLayer.tsx` — registered with the
+  existing Layer Engine, off by default in the Layer Panel.
+
 ## v3.3.2 — Shared build:geo pipeline
 
 Point release: internal build-script refactor, zero runtime/UI change.
