@@ -235,20 +235,41 @@ core sphere's handler only fires when the double-click didn't land on a country.
 
 ### Frame loop
 
-`Scene.tsx`'s `<Canvas>` runs `frameloop="never"` — R3F's own render loop is
-disabled — and `scene/FrameRateCap.tsx` drives it manually via R3F's exported
-`advance(timestamp)`, skipping renders inside the same `1000/60ms` window. This
-was added specifically because 193 fully-detailed countries pushed enough
-GPU/CPU work that letting the browser render on every display refresh (120Hz+
-monitors) made things worse, not better.
+`Scene.tsx`'s `<Canvas>` runs `frameloop="demand"` (v4.3.2) — R3F only
+renders when something calls `invalidate()`, not on every display refresh.
+This still exists for the same reason the earlier approach did: 193
+fully-detailed countries push enough GPU/CPU work that rendering on every
+frame of a 120Hz+ monitor made things worse, not better; demand mode means
+a fully idle globe (nothing selected, ambient rotation off, no camera
+input) renders zero frames.
 
-**Gotcha if you touch this:** `advance()` feeds its argument straight into
-`state.clock.elapsedTime`, which Three.js's `Clock` (and therefore every
-`delta`-based animation — ambient rotation, `OrbitControls` damping/autoRotate,
-camera flights) tracks in **seconds**. `requestAnimationFrame`'s timestamp is in
-**milliseconds**. Passing it through unconverted makes every computed delta
-~1000x too large — this exact bug once made the globe spin wildly. Always
-convert (`time / 1000`) before calling `advance()`.
+`invalidate()` is automatic for any React-driven prop change on a Three
+object (a color/opacity update coming from JSX), but **not** for a Three
+object mutated directly inside a `useFrame` callback — that's the case
+every animation in this codebase falls into, so each needs its own explicit
+call: `Globe.tsx`'s ambient self-rotation, `PointerMarker.tsx`'s pulse,
+`useCameraFlight.ts`/`useCameraReset.ts` (both the effect that starts a
+flight and the per-tick mutation during it), `input/CameraController.ts`'s
+WASDQE nudging (plus the actual key-down handler in
+`input/KeyboardController.ts`, which is what lets a held key's `useFrame`
+notice it's held at all in the first place), `useFlickAutoRotate.ts`'s
+flick-to-spin, and `CameraControls.tsx`'s ambient-rotation toggle effect
+(the T key). If you add a new animation that mutates a Three object
+directly inside `useFrame` rather than through a React prop, it needs its
+own `invalidate()` call too, or it'll silently never render past its first
+frame while idle.
+
+**History, if you're wondering why this looks different from what an older
+version of this file described:** before v4.3.2, this ran
+`frameloop="never"` with `scene/FrameRateCap.tsx` manually calling R3F's
+exported `advance(timestamp)` every frame, capping at `1000/60ms`.
+`advance()` feeds its argument straight into `state.clock.elapsedTime`,
+which Three.js's `Clock` (and therefore every `delta`-based animation)
+tracks in **seconds** — `requestAnimationFrame`'s timestamp is in
+**milliseconds**, and passing it through unconverted once made every
+computed delta ~1000x too large, spinning the globe wildly. That whole
+class of bug is gone under `frameloop="demand"`: there's no `advance()`
+call and no manual clock feeding left to get wrong.
 
 ### Selection & HUD panel state
 

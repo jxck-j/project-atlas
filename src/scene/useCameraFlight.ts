@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { invalidate, useFrame } from '@react-three/fiber'
 import { Spherical, Vector3 } from 'three'
 import type { RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -56,6 +56,16 @@ export function useCameraFlight(controlsRef: RefObject<OrbitControlsImpl | null>
     controls.enabled = false
 
     flight.current = { startTime: performance.now(), startSpherical, endSpherical, thetaDelta }
+    // Phase 2 (Plan.md): this effect mutates the shared OrbitControls
+    // instance directly, not a JSX prop CameraControls.tsx's <OrbitControls>
+    // element re-renders with — nothing here guarantees React's reconciler
+    // diffs different props on that instance just because `selected`
+    // changed, so demand mode has no guaranteed reason to render the first
+    // frame of this flight on its own. Once moving, controls.update() below
+    // dispatches its own 'change' event (drei's <OrbitControls> already
+    // listens for that and calls invalidate() itself), which is what
+    // sustains every frame after this first one.
+    invalidate()
   }, [selected, flightSeq, controlsRef])
 
   useFrame(() => {
@@ -78,6 +88,10 @@ export function useCameraFlight(controlsRef: RefObject<OrbitControlsImpl | null>
     const offset = offsetScratch.current.setFromSpherical(new Spherical(radius, phi, theta))
     controls.object.position.copy(controls.target).add(offset)
     controls.update()
+    // Belt-and-suspenders alongside controls.update()'s own 'change' event
+    // (see the effect above) — guarantees this tween can't stall mid-flight
+    // even if something else ever changes how that event is wired up.
+    invalidate()
 
     if (t >= 1) {
       flight.current = null

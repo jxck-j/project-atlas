@@ -17,6 +17,27 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.3.2 — `frameloop="demand"` replaces the manual `advance()` render loop
+
+Deletes `FrameRateCap.tsx` (the `frameloop="never"` + manual `advance()`
+60fps cap) and switches `Scene.tsx`'s Canvas to `frameloop="demand"`. R3F
+now only renders when something calls `invalidate()` — automatic for any
+React-driven prop change, but not for a Three object mutated directly
+inside a `useFrame` callback, so every animation that does that (ambient
+self-rotation, `PointerMarker`'s pulse, camera flights/reset, WASDQE
+nudging, flick-to-spin, the ambient-rotation toggle) got an explicit
+`invalidate()` call added at its mutation site. Net effect: a fully idle
+globe now renders zero frames instead of a steady 60fps, and the
+milliseconds-vs-seconds `advance()` units bug documented in `CLAUDE.md`
+can't recur — there's no manual clock-feeding left to get wrong.
+
+Verified interactively: drag, scroll-zoom, hover, click-select, FOCUS
+CAMERA flight, Home/reset, held WASDQE nudging, and the T ambient-rotation
+toggle (including rendering actually stopping when idle) all work
+correctly with zero console errors.
+
+Promoted from `geo-data-engine`.
+
 ## v4.3.1 — Vitest safety net
 
 Adds Vitest (`vitest.config.ts`, kept separate from `vite.config.ts` — build-

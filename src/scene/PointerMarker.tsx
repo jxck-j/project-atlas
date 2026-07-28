@@ -15,7 +15,7 @@
 // that sits close to the surface and doesn't swing far sideways reads as
 // "a subtle pointer" rather than "a label that ate the neighborhood."
 import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { invalidate, useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
 import type { Mesh } from 'three'
 import { latLngToVector3 } from '../utils/geo'
@@ -58,10 +58,15 @@ export interface PointerMarkerProps {
 export function PointerMarker({ lat, lng, color, label, calloutOffsetDeg = DEFAULT_CALLOUT_OFFSET_DEG }: PointerMarkerProps) {
   const dotRef = useRef<Mesh>(null)
 
+  // Phase 2 (Plan.md): a raw scale mutation, not a JSX prop, so demand mode
+  // never auto-invalidates for it — invalidate() every tick is what keeps
+  // this pulsing continuously for as long as the marker stays mounted,
+  // instead of freezing after one frame.
   useFrame(({ clock }) => {
     if (!dotRef.current) return
     const t = clock.getElapsedTime()
     dotRef.current.scale.setScalar(1 + Math.sin(t * PULSE_SPEED) * PULSE_AMPLITUDE)
+    invalidate()
   })
 
   const anchor = latLngToVector3(lat, lng, GLOBE_RADIUS * 1.006)

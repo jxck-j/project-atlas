@@ -18,6 +18,7 @@
 //   dispatched exactly once per keydown via a callback, registered through
 //   `useKeyboardController()`.
 import { useEffect, useRef } from 'react'
+import { invalidate } from '@react-three/fiber'
 import type { ActionCommand, CameraNudgeCommand } from './types'
 
 /**
@@ -110,6 +111,15 @@ export function useKeyboardController(onCommand: (command: ActionCommand) => voi
       if (continuous) {
         e.preventDefault()
         activeCameraCommands.add(continuous)
+        // Phase 2 (Plan.md): this Set mutation happens entirely outside
+        // React and outside the Canvas tree (see the module doc comment
+        // above for why) — under demand mode, nothing else would ever
+        // cause the first frame that lets
+        // input/CameraController.ts's useFrame notice this key is held at
+        // all. invalidate() (bare import, not tied to any component) is
+        // the same function R3F exposes for exactly this "wake the render
+        // loop from outside a component" case.
+        invalidate()
         return
       }
 

@@ -114,7 +114,8 @@ project's pure geometry/math functions, not component behavior.
 ```
 src/
   scene/                    Everything inside the R3F <Canvas>
-    Scene.tsx                Canvas setup (frameloop="never" — see FrameRateCap),
+    Scene.tsx                Canvas setup (frameloop="demand" — R3F renders only
+                               when something calls invalidate(), see CLAUDE.md),
                                lighting, starfield; composes Globe + camera + probes
     Globe.tsx                 Composes graticule, Countries, GeoEntities,
                                CapitalMarker, WaterLabels, and the core/
@@ -231,9 +232,6 @@ src/
     AtmosphereMaterial.tsx    Custom Fresnel-glow shader material (drei shaderMaterial)
     TelemetryProbe.tsx        Samples camera spherical coords + FPS each frame
                                -> HUD telemetryStore
-    FrameRateCap.tsx          Manually drives R3F's render loop (advance()) at a
-                               hard 60fps cap — see CLAUDE.md for a real bug this
-                               caused if you touch it
     constants.ts              Shared GLOBE_RADIUS + camera distance bounds.
                                CAMERA_MIN_DISTANCE tightened twice since v1
                                (v4.2, then v4.3) — see LOGBOOK.md for why
@@ -592,8 +590,10 @@ to build against without refactoring the globe itself.
   isn't something to do casually. That's real future work.
 - See `CLAUDE.md` for the harder-won technical details: antimeridian
   triangulation, why country geometry is merged per-country instead of
-  per-ring/per-polygon (a real 7,234→386 draw-call fix), and a
-  `frameloop="never"`/`advance()` units bug worth not repeating.
+  per-ring/per-polygon (a real 7,234→386 draw-call fix), and the
+  `frameloop="demand"` `invalidate()` convention every direct-mutation
+  animation has to follow (v4.3.2 — replaced an earlier `frameloop="never"`/
+  manual `advance()` approach whose units bug is documented there too).
 - See `BACKLOG.md` (v3.1.2) for the fuller, hand-maintained list of open
   ideas/gaps this section only samples — data points needing verification,
   visualization approximations worth revisiting, and every planned engine's

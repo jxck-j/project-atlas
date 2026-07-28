@@ -5,7 +5,7 @@
 // — this file never reads or writes `selected` beyond what
 // `flyToSelectedCountry()` already does internally, and never touches
 // `hud/selectionStore.ts`'s selection state directly.
-import { useFrame } from '@react-three/fiber'
+import { invalidate, useFrame } from '@react-three/fiber'
 import { Spherical, Vector3 } from 'three'
 import type { RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -77,6 +77,14 @@ export function useCameraController(controlsRef: RefObject<OrbitControlsImpl | n
 
     camera.position.copy(target).add(new Vector3().setFromSpherical(spherical))
     controls.update()
+    // Phase 2 (Plan.md): the actual kick-off for a held key's first frame
+    // happens in KeyboardController.ts, right where the key is added to
+    // activeCameraCommands (this useFrame doesn't run at all under demand
+    // mode until some frame already exists to run it in). This call is
+    // what sustains every frame after that one, for as long as the key
+    // stays held — belt-and-suspenders alongside controls.update()'s own
+    // 'change' event.
+    invalidate()
   })
 }
 

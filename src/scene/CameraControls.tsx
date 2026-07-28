@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { invalidate } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { useCameraSettings } from '../hud/settingsStore'
@@ -36,6 +37,16 @@ export function CameraControls() {
     if (controlsRef.current) {
       controlsRef.current.autoRotate = ambientRotationEnabled
       controlsRef.current.autoRotateSpeed = CAMERA_IDLE_AUTOROTATE_SPEED
+      // Phase 2 (Plan.md): `autoRotate` is a property on the shared
+      // OrbitControls instance, not a prop this component's JSX passes to
+      // <OrbitControls> — flipping it doesn't change anything React's
+      // reconciler diffs, so demand mode has no built-in reason to render a
+      // first frame here. Once moving, OrbitControls' own `update()` (drei
+      // calls this every rendered frame — see node_modules/@react-three/
+      // drei/core/OrbitControls.js) dispatches 'change', which drei's
+      // wrapper already listens for and calls invalidate() on — but that
+      // chain can't start without this first nudge.
+      invalidate()
     }
   }, [ambientRotationEnabled])
 

@@ -1,10 +1,24 @@
-import { Canvas } from '@react-three/fiber'
+import { Canvas, invalidate } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Globe } from './Globe'
 import { TelemetryProbe } from './TelemetryProbe'
 import { CameraControls } from './CameraControls'
-import { FrameRateCap } from './FrameRateCap'
+
+// Phase 2 (Plan.md): the Canvas's own mount effect only flags the root
+// active, it never calls invalidate() itself — this is a cheap, explicit
+// "kick" to guarantee the render loop's first tick happens the moment the
+// scene mounts, rather than depending on every future consumer of this
+// codebase correctly reasoning about exactly which reconciler operations
+// self-invalidate and which don't (see Globe.tsx/PointerMarker.tsx/the
+// camera hooks for the cases that need their own explicit calls on an
+// ongoing basis — this one is for the very first frame only).
+function InitialRenderKick() {
+  useEffect(() => {
+    invalidate()
+  }, [])
+  return null
+}
 
 export function Scene() {
   return (
@@ -19,7 +33,18 @@ export function Scene() {
       // countries already pushing a lot of geometry, that's not free.
       gl={{ antialias: false }}
       dpr={1}
-      frameloop="never"
+      // Phase 2 (see Plan.md): replaces the old frameloop="never" +
+      // FrameRateCap.tsx manual advance() loop (see CLAUDE.md/LOGBOOK.md for
+      // the ms-vs-seconds bug that approach caused). "demand" means R3F only
+      // renders when something calls invalidate() — automatically for any
+      // React-driven prop change on a Three object inside this tree (color/
+      // opacity/position from JSX), but NOT for a Three object mutated
+      // directly inside a useFrame callback (rotation, pulsing, camera
+      // tweens) — those call invalidate() explicitly themselves; see
+      // Globe.tsx, PointerMarker.tsx, useCameraFlight.ts/useCameraReset.ts,
+      // input/CameraController.ts/KeyboardController.ts, and
+      // useFlickAutoRotate.ts.
+      frameloop="demand"
     >
       <color attach="background" args={['#04070a']} />
       <ambientLight intensity={0.6} />
@@ -31,7 +56,7 @@ export function Scene() {
       </Suspense>
       <TelemetryProbe />
       <CameraControls />
-      <FrameRateCap />
+      <InitialRenderKick />
     </Canvas>
   )
 }

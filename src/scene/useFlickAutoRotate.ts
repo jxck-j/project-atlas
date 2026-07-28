@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useThree } from '@react-three/fiber'
+import { invalidate, useThree } from '@react-three/fiber'
 import type { RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 
@@ -59,6 +59,13 @@ export function useFlickAutoRotate(controlsRef: RefObject<OrbitControlsImpl | nu
         )
         controls.autoRotateSpeed = direction * mapped
         controls.autoRotate = true
+        // Phase 2 (Plan.md): this pointerup handler runs entirely outside
+        // React (a raw DOM listener, see below) — by the time it fires, the
+        // drag that was sustaining frames via its own pointermove-driven
+        // 'change' events may have already let the demand loop go idle.
+        // Without this, a flick could silently set autoRotate=true and
+        // never actually get a frame to act on it.
+        invalidate()
       } else {
         controls.autoRotate = false
       }

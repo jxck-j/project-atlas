@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { invalidate, useFrame } from '@react-three/fiber'
 import { Spherical, Vector3 } from 'three'
 import type { RefObject } from 'react'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
@@ -48,6 +48,11 @@ export function useCameraReset(controlsRef: RefObject<OrbitControlsImpl | null>)
     controls.enabled = false
 
     flight.current = { startTime: performance.now(), startSpherical, thetaDelta }
+    // Phase 2 (Plan.md): see useCameraFlight.ts's identical comment — this
+    // effect mutates the shared controls instance directly, not a JSX prop,
+    // so demand mode needs an explicit kick to render this tween's first
+    // frame at all.
+    invalidate()
   }, [resetSeq, controlsRef])
 
   useFrame(() => {
@@ -67,6 +72,7 @@ export function useCameraReset(controlsRef: RefObject<OrbitControlsImpl | null>)
     const offset = offsetScratch.current.setFromSpherical(new Spherical(radius, phi, theta))
     controls.object.position.copy(controls.target).add(offset)
     controls.update()
+    invalidate() // belt-and-suspenders alongside controls.update()'s own 'change' event
 
     if (t >= 1) {
       flight.current = null

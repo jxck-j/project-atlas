@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import type { RefObject } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { invalidate, useFrame, useThree } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
 import { BackSide, FrontSide, Group, type Mesh, type Object3D } from 'three'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
@@ -170,10 +170,19 @@ export function Globe() {
   // rather than always-on; still frozen while a country/entity is selected
   // so the focused thing doesn't drift out from under the camera even with
   // the setting on.
+  //
+  // Phase 2 (Plan.md): this mutates `groupRef.current.rotation` directly
+  // rather than through a JSX prop, so R3F's demand-mode reconciler never
+  // sees it change and never auto-invalidates — unlike Countries.tsx's
+  // color/opacity props, which DO flow through JSX and get this for free.
+  // Calling invalidate() ourselves, only in the branch that actually
+  // rotated, is what keeps this a self-sustaining loop (each rendered frame
+  // requests the next one) instead of freezing after a single tick.
   useFrame((_, delta) => {
     if (!groupRef.current) return
     if (ambientRotationEnabled && !selected) {
       groupRef.current.rotation.y += delta * 0.03
+      invalidate()
     }
     setGlobeRotationY(groupRef.current.rotation.y)
   })
