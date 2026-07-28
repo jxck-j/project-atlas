@@ -162,11 +162,26 @@ Closely mirrors `scene/Countries.tsx` — same merged-geometry-per-entity
 approach (via `countryGeometry.ts`, see above), same hover/select/dim color
 logic and palette (deliberately identical to countries — a GeoEntity reads
 as "another selectable thing on this globe," not a different visual
-category), same click-vs-drag threshold. Kept as its own file rather than
-generalizing `Countries.tsx` into a shared component — same reasoning
-`CountryRegistry.ts`/`GeoEntityRegistry.ts` are two files instead of one
-generic `Registry<T>` (see below): duplication here means this addition
-can't regress already-verified country click/highlight behavior.
+category), same click-vs-drag threshold. Through v4.4.0 this was kept as
+its own file rather than generalizing `Countries.tsx` into a shared
+component — same reasoning `CountryRegistry.ts`/`GeoEntityRegistry.ts` are
+two files instead of one generic `Registry<T>` (see below): duplication
+meant this addition couldn't regress already-verified country
+click/highlight behavior.
+
+**v4.5.0 extracted that shared rendering into `scene/EntityRenderLayer.tsx`**
+once `countryGeometry.ts` had Phase 1 test coverage (v4.3.1) to guard
+against exactly the regression the duplication above was written to avoid.
+`Countries.tsx` and `GeoEntities.tsx` (and `StatesProvinces.tsx`, below) now
+each build their own `GeoEntityEntry[]` and pass an `onSelect` callback into
+one shared `<EntityRenderLayer>`, which owns the border/fill mesh per
+entry, hover/select/dim color computation, the click-vs-drag threshold, and
+`HoverLabel`. What stays in each caller is only what's a *real* difference:
+how entries get built (see below), and what happens when a click resolves
+to nothing — `Countries.tsx` falls back to `selectCountry()` so a click
+never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
+no-op, since every rendered shape in those two already has a `GeometryMap`
+registration by the time it's clickable.
 
 `GeoEntities.tsx` deliberately does **only** primary selection (hover,
 click, highlight the one clicked entity) — no parent-overlay or
@@ -180,20 +195,24 @@ all derive the same {geometryId, entityId, geometry, ...} entries from the
 same raw features without a `.tsx` component file exporting a non-component
 value from itself (oxlint's `react-refresh` rule flags that, correctly).
 
-**The one thing that is NOT safe to copy from `Countries.tsx` verbatim:**
-a country's rendered polygon id and its registry id are the same string by
-construction, so `Countries.tsx` compares `selected?.id === country.id`
-directly. A GeoEntity's rendered shape id and its entity id are only
-*sometimes* the same string: 44 of the 55 rendered entities have a numeric
-ISO id in the source (`"158"` for Taiwan) that differs from their registry
-id (`"taiwan"`) — that's the whole reason `GeometryMap` exists — while the
-other 11 (Kosovo, the Cyprus Sovereign Base Areas, Guantanamo Bay, Baikonur,
-the Cyprus UN Buffer Zone, Siachen Glacier, and four disputed maritime
-features) have no numeric id in the source at all, so the build script
-stamps their target registry id directly onto the feature as its geometry
-id — for those, geometryId and entityId happen to already be the same
-string. Either way, `GeoEntityEntry` carries both `geometryId` (hover state,
-`GeometryMap` lookups) and `entityId` (compared against `selected.id`)
+**The one thing that is NOT safe to assume equal between `Countries.tsx`
+and a GeoEntity:** a country's rendered polygon id and its registry id are
+the same string by construction — since v4.5.0, `Countries.tsx` builds its
+own entries with `geometryId`/`entityId` both set to that one id (so they
+feed into the same `EntityRenderLayer` a GeoEntity does), but the two
+fields are only ever the *same value by coincidence of a country's shape*,
+not because `EntityRenderLayer` assumes it. A GeoEntity's rendered shape id
+and its entity id are only *sometimes* the same string: 44 of the 55
+rendered entities have a numeric ISO id in the source (`"158"` for Taiwan)
+that differs from their registry id (`"taiwan"`) — that's the whole reason
+`GeometryMap` exists — while the other 11 (Kosovo, the Cyprus Sovereign
+Base Areas, Guantanamo Bay, Baikonur, the Cyprus UN Buffer Zone, Siachen
+Glacier, and four disputed maritime features) have no numeric id in the
+source at all, so the build script stamps their target registry id
+directly onto the feature as its geometry id — for those, geometryId and
+entityId happen to already be the same string. Either way, `GeoEntityEntry`
+carries both `geometryId` (hover state, `GeometryMap` lookups) and
+`entityId` (what `EntityRenderLayer` compares against `selectedEntityId`)
 rather than one `id`, because the equality can't be assumed in general.
 Getting this wrong doesn't throw or warn — it silently makes `isSelected`
 always `false`, so a selected entity renders with the same faint dimmed

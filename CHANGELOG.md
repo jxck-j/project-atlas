@@ -17,6 +17,30 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.5.0 — Countries/GeoEntities/StatesProvinces dedup into EntityRenderLayer
+
+`scene/Countries.tsx` and `scene/GeoEntities.tsx` had nearly identical
+rendering logic — one merged border/fill mesh per entry, hover/select/dim
+color computation, the click-vs-drag threshold, the `HoverLabel`
+large-vs-small callout choice — kept as two separate copies specifically so
+neither could regress the other's already-verified click/highlight
+behavior. Now that `countryGeometry.ts` has Vitest coverage (v4.3.1) as a
+regression guard, that rendering is extracted into a new
+`scene/EntityRenderLayer.tsx`, shared by both. Each caller keeps only its
+real differences: `Countries.tsx` builds its own entries (a country's
+`geometryId`/`entityId` are always the same string, unlike a GeoEntity's)
+and falls back to `selectCountry()` on a click-resolution miss;
+`GeoEntities.tsx` just no-ops, since every rendered GeoEntity already has a
+`GeometryMap` registration by the time it's clickable.
+
+`scene/StatesProvinces.tsx` had the same copy of this pattern a third time
+— adopted onto `EntityRenderLayer.tsx` too, same reasoning.
+
+Verified with `tsc -b --noEmit`, `oxlint`, `npm test`, and a manual visual
+click-through of country, GeoEntity, and states/provinces selection/hover.
+
+Promoted from `geo-data-engine`.
+
 ## v4.4.0 — Stores migrated to zustand
 
 `selectionStore.ts`, `settingsStore.ts`, `telemetryStore.ts`, `layerStore.ts`,

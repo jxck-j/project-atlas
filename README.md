@@ -125,28 +125,44 @@ src/
                                CapitalMarker (country-only, since v2.3.0
                                explicitly checks entity.kind) shows the
                                selected country's capital
-    Countries.tsx             Renders one merged border lineSegments + one merged
-                               fill mesh PER COUNTRY (not per ring/polygon — see
-                               countryGeometry.ts); owns hover state, cursor, and
-                               kicks off selection on click
+    Countries.tsx             Builds one GeoEntityEntry per country (merged
+                               border lineSegments + merged fill mesh PER
+                               COUNTRY, not per ring/polygon — see
+                               countryGeometry.ts) and renders through
+                               EntityRenderLayer.tsx; owns country-specific
+                               entry-building and the selectCountry() click
+                               fallback
     GeoEntities.tsx            (v3.0.0, replacing v2.3.0's Territories.tsx)
-                               Same rendering approach as Countries.tsx, for
-                               every registered GeoEntity with real geometry
+                               Every registered GeoEntity with real geometry
                                (53 of 54 — everything except Crimea, see
-                               CLAUDE.md). Primary selection only — no
-                               parent/claims overlay logic here, that's
-                               layers/geoOverlays/. Own file, not a shared
-                               component with Countries.tsx, so this can't
-                               regress already-verified country behavior
+                               CLAUDE.md), rendered through
+                               EntityRenderLayer.tsx. Primary selection only
+                               — no parent/claims overlay logic here, that's
+                               layers/geoOverlays/
+    EntityRenderLayer.tsx       (v4.5.0) The rendering Countries.tsx and
+                               GeoEntities.tsx used to each keep their own
+                               copy of — border/fill mesh per entry,
+                               hover/select/dim color logic, click-vs-drag
+                               threshold, the HoverLabel large-vs-small
+                               callout choice — extracted once
+                               countryGeometry.ts had test coverage (v4.3.1)
+                               to guard against a regression. Each caller
+                               keeps only its real differences (how entries
+                               get built, what happens on a click-resolution
+                               miss) and passes an onSelect callback in;
+                               StatesProvinces.tsx (below) adopted it too
+                               once GeoEntities.tsx's copy was folded in
     geoEntityEntries.ts        (v3.0.0) The "raw GeoJSON feature -> renderable
                                entry" logic pulled out of GeoEntities.tsx into
                                a plain .ts module so the geoOverlays layers
                                can share it without a .tsx file exporting a
                                non-component value from itself
     StatesProvinces.tsx        (v4.0) 294 admin-1 state/province boundaries
-                               across 9 large countries — same rendering
-                               approach as GeoEntities.tsx, own file for the
-                               same "can't regress verified behavior" reason
+                               across 9 large countries — same
+                               EntityRenderLayer.tsx rendering as
+                               GeoEntities.tsx, own file since provinces are
+                               conditionally rendered (toggled) in a way the
+                               other five classifications aren't
     useStatesProvincesFeatures.ts (v4.0) Fetches states-provinces.json;
                                creates GeoEntity records directly from the
                                fetched geometry (unlike useGeoEntityFeatures.ts,
