@@ -74,6 +74,38 @@ exactly the functions tied to this project's documented bug history (the
 antimeridian-unwrapping earcut deviation). It does not cover component
 behavior — verify UI changes by actually driving the dev server.
 
+## Research assistant & peer reviewer: Gemini CLI
+
+The `gemini` CLI is installed and available in this environment specifically for two roles on this project: **research** (web lookups, investigating unfamiliar libraries/APIs, cross-checking claims) and **peer review** (a second model's read on a diff or design decision before treating it as final). It is not a replacement for anything above — `npm run build`/`lint` still verify correctness; Gemini is an additional opinion, not a build step.
+
+Headless invocation (non-interactive, scriptable):
+
+```bash
+gemini -p "<prompt>"                 # one-shot, prints response and exits
+gemini -p "<prompt>" -m <model>      # pin a specific model
+```
+
+Verify it's present before relying on it (`gemini --version`) — it's an
+external tool outside this repo's dependency tree and isn't guaranteed to be
+there in every environment this CLAUDE.md is read in.
+
+Reach for it when:
+- Researching something outside this repo (a library's API surface, current
+  best practices, verifying a factual claim about e.g. a real-world
+  geopolitical relationship before it goes into `geoEntities.ts`) rather than
+  guessing or relying on training-data recall alone.
+- Getting a second opinion on a non-trivial change before calling it done —
+  especially anything touching the geopolitical data (`data/registry/
+  geoEntities.ts`, `CLAIMS.md`) where a factual error is worse than a code
+  bug, or an architectural decision that's hard to reverse later.
+- Running it as a background agent alongside Claude Code work when a task
+  benefits from parallel investigation.
+
+It does not replace this file's own architectural conventions — if Gemini's
+suggestion conflicts with a documented pattern above (e.g. the two-layer
+scene/HUD split, the Layer Engine registration workflow), the convention
+documented here wins unless the user says otherwise.
+
 ## Architecture
 
 Since v2.0, Atlas is organized around long-lived **engines** rather than a flat
