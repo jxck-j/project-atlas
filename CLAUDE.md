@@ -26,12 +26,23 @@ npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + publ
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
                               # Census shapefile changes)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
+npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
 ```
-
-There is no test suite/framework configured in this repo.
 
 `tsc -b --noEmit` (project references mode, not plain `tsc --noEmit`) is the
 correct way to typecheck without emitting — matches what `npm run build` does.
+
+Vitest (`vitest.config.ts`, separate from `vite.config.ts` — build-only
+concerns like `manualChunks` have no meaning for the test runner) covers this
+project's pure geometry/math functions (`utils/geo.ts`'s
+`bearingBetween`/`angularDistance`/`normalizeAngle`, `lod/lodLevels.ts`'s
+`resolveActiveLevels`/`resolveDeepestLevel`/`isLodLevelActive`,
+`scene/labelDeclutter.ts`, `scene/countryGeometry.ts`'s merge/triangulate
+logic) with hand-verified expected values rather than snapshots — these are
+exactly the functions tied to this project's documented bug history (the
+`CAMERA_MIN_DISTANCE` tightening, the `flyToUsCity()` timing hazard, the
+antimeridian-unwrapping earcut deviation). It does not cover component
+behavior — verify UI changes by actually driving the dev server.
 
 ## Architecture
 
@@ -861,8 +872,11 @@ needs to change — they're already generic over `SearchEntry`/
 
 ## Code style
 
-- No test framework is set up — verify changes by typechecking (`tsc -b
-  --noEmit`), linting (`oxlint`), and actually running the dev server.
+- Verify changes by typechecking (`tsc -b --noEmit`), linting (`oxlint`),
+  running the Vitest suite (`npm test`), and actually running the dev
+  server — Vitest covers this repo's pure geometry/math functions, not
+  component behavior, so the dev-server check is still required for
+  anything UI-facing.
 - Comments are used sparingly, mainly to explain *why* something non-obvious is
   done (see examples throughout `countryGeometry.ts`, `Globe.tsx`), not to
   restate what the code does.

@@ -17,6 +17,30 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.3.1 — Vitest safety net
+
+Adds Vitest (`vitest.config.ts`, kept separate from `vite.config.ts` — build-
+only concerns like `manualChunks` have no meaning for the test runner) and 53
+tests across the pure-function modules with the most documented bug history
+in this project: `utils/geo.ts` (`bearingBetween`/`angularDistance` exact
+cardinal-direction and antimeridian-crossing cases, `normalizeAngle`'s ±π
+boundary), `lod/lodLevels.ts` (`resolveActiveLevels`/`resolveDeepestLevel`/
+`isLodLevelActive` against the real `LOD_LEVELS` ladder, confirming it's
+cumulative and reserved levels never activate), `scene/labelDeclutter.ts`
+(an `OrthographicCamera` makes the projection math exactly hand-computable;
+includes a direct regression pair for the Gulfport/Biloxi per-candidate-
+spacing bug), and `scene/countryGeometry.ts` (antimeridian-unwrapping
+correctness via `earcut.deviation()`, segment/mesh structural validity,
+MultiPolygon merge behavior). All hand-verified expected values, not
+snapshots.
+
+One real, previously-undocumented behavior surfaced while writing these:
+`geometryToAngularExtent` computes one bounding box across an entire
+MultiPolygon rather than each polygon's own extent maxed separately — worth
+knowing if this is ever reused to size something per-polygon.
+
+Promoted from `geo-data-engine`.
+
 ## v4.3 — Progressive US city/country label reveal, and a new LOD Engine
 
 New capability: Google-Maps-style progressive label reveal. `UsCityLabels.tsx`

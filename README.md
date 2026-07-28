@@ -35,10 +35,12 @@ npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
 npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
+npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
 ```
 
-There's no test suite in this repo — verify changes with `tsc -b --noEmit`,
-`npm run lint` (oxlint), and by actually driving the dev server.
+Verify changes with `tsc -b --noEmit`, `npm run lint` (oxlint), `npm test`,
+and by actually driving the dev server — the test suite covers this
+project's pure geometry/math functions, not component behavior.
 
 ## Interaction
 

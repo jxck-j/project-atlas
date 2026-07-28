@@ -154,13 +154,15 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 ## Tooling
 
-- **No test suite exists anywhere in this repo** — verification has always
-  been `tsc -b --noEmit` + `oxlint` + manual dev-server driving. Fine for a
-  demo-scale project; worth reconsidering if `src/data/registry/` keeps
-  growing (the kind of id-mismatch bug documented in `LOGBOOK.md`'s v3.0.1
-  entry — alpha-3 vs. numeric country ids — is exactly the class of bug a
-  handful of registry-level unit tests would have caught immediately
-  instead of shipping silently broken).
+- **No registry-level tests exist** — v4.3.1 added Vitest coverage for this
+  repo's pure geometry/math functions (`utils/geo.ts`, `lod/lodLevels.ts`,
+  `scene/labelDeclutter.ts`, `scene/countryGeometry.ts`), but
+  `src/data/registry/`/`src/entities/` (CountryRegistry, GeoEntityRegistry,
+  EntityResolver, GeometryMap) still have none. Worth adding if that layer
+  keeps growing — the kind of id-mismatch bug documented in `LOGBOOK.md`'s
+  v3.0.1 entry (alpha-3 vs. numeric country ids) is exactly the class of bug
+  a handful of registry-level unit tests would have caught immediately
+  instead of shipping silently broken.
 - **`CLAIMS.md` only covers `claimedBy`/`claims`** — `administeredBy` and
   `parentEntity` relationships (who actually controls Western Sahara,
   which country each Territory belongs to) have no equivalent generated
