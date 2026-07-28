@@ -10,6 +10,36 @@ wireframe projection (graticule grid, glowing country borders, Fresnel atmospher
 rim) rather than a photo-real Earth texture — closer to a tactical display than a
 map app. Country data covers exactly the 193 UN member states.
 
+## Branch context
+
+`main` is the shipped baseline (currently v4.5.0) — `README.md`,
+`CHANGELOG.md`, and `BACKLOG.md` at the repo root describe *only* `main`'s
+state, and stay that way regardless of what other branches are doing.
+
+`geo-data-engine` is a **prototyping/test-suite branch**, not a
+feature branch headed for a normal merge — it's where the next tier of
+geographic data (rivers/lakes, then streets; states/provinces, capitals,
+and all 32,608 US city boundaries already promoted to `main` as v4.0–v4.3,
+plus the Vitest safety net/`frameloop="demand"`/zustand-store/
+`EntityRenderLayer` engineering work promoted as v4.3.1–v4.5.0) gets built
+and logic-tested before any of it is judged ready for `main`. Work on this
+branch is expected to include false starts and reworks that wouldn't
+normally show up in `main`'s history (see `GEO_ENGINE_README.md`'s "Lessons
+learned" for a real example — an always-on rendering approach that
+shipped, then got reworked after review, within the same branch).
+
+**This branch keeps its own doc set — `GEO_ENGINE_README.md` and
+`GEO_ENGINE_CHANGELOG.md` — instead of writing into the root `README.md`/
+`CHANGELOG.md`/`BACKLOG.md`.** Don't add this branch's prototyping content
+to those files; they represent `main`, and this branch isn't `main` yet. If
+`geo-data-engine` (or specific pieces of it) is ever promoted, the
+promoting change is expected to fold the relevant `GEO_ENGINE_*.md`
+sections into the root docs directly and retire the `GEO_ENGINE_*.md`
+files — not keep two doc sets running in parallel indefinitely. This
+branch was last reset to match `main`'s tip on 2026-07-28 (after the
+v4.3.1–v4.5.0 promotion) — its own `GEO_ENGINE_*.md` files don't exist yet
+again until new prototyping work on this branch creates them.
+
 ## Commands
 
 ```bash
