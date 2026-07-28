@@ -1,35 +1,19 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 
 // Which single toolbar dropdown (if any) is open. Mutually exclusive —
 // opening one closes the other, matching a normal toolbar's behavior.
 export type HudPanel = 'search' | 'settings' | 'layers' | null
 
-let openPanel: HudPanel = null
-const listeners = new Set<() => void>()
-
-function notify() {
-  listeners.forEach((l) => l())
-}
+const useHudPanelStore = create<{ panel: HudPanel }>(() => ({ panel: null }))
 
 export function toggleHudPanel(panel: Exclude<HudPanel, null>) {
-  openPanel = openPanel === panel ? null : panel
-  notify()
+  useHudPanelStore.setState((state) => ({ panel: state.panel === panel ? null : panel }))
 }
 
 export function closeHudPanel() {
-  openPanel = null
-  notify()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return openPanel
+  useHudPanelStore.setState({ panel: null })
 }
 
 export function useHudPanel(): HudPanel {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useHudPanelStore((state) => state.panel)
 }

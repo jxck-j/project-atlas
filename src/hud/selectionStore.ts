@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 import { Vector3 } from 'three'
 import type { ResolvedEntity } from '../entities/types'
 import { resolveCountry } from '../entities/EntityResolver'
@@ -63,7 +63,7 @@ interface SelectionState {
   usCityOutline: { id: string; stateAbbrev: string; name: string } | null
 }
 
-let state: SelectionState = {
+const useSelectionStore = create<SelectionState>(() => ({
   selected: null,
   inspectorOpen: false,
   flightSeq: 0,
@@ -71,12 +71,7 @@ let state: SelectionState = {
   flyToTarget: null,
   flyToTargetSeq: 0,
   usCityOutline: null,
-}
-const listeners = new Set<() => void>()
-
-function notify() {
-  listeners.forEach((l) => l())
-}
+}))
 
 export interface SelectEntityOptions {
   /**
@@ -103,13 +98,11 @@ export interface SelectEntityOptions {
  */
 export function selectEntity(entity: ResolvedEntity, direction: Vector3, options?: SelectEntityOptions) {
   const shouldOpen = options?.openInspector ?? true
-  state = {
-    ...state,
+  useSelectionStore.setState((state) => ({
     selected: { entity, id: entity.id, name: entity.name, direction },
     inspectorOpen: shouldOpen ? true : state.inspectorOpen,
     usCityOutline: null,
-  }
-  notify()
+  }))
 }
 
 /**
@@ -136,8 +129,7 @@ export function selectCountry(country: { id: string; name: string; direction: Ve
 }
 
 export function clearSelection() {
-  state = { ...state, selected: null, inspectorOpen: false, usCityOutline: null }
-  notify()
+  useSelectionStore.setState({ selected: null, inspectorOpen: false, usCityOutline: null })
 }
 
 // v3.2.0. Opening does nothing without a selection to show — there's
@@ -146,14 +138,12 @@ export function clearSelection() {
 // no-op) since keyboard commands shouldn't need to track panel state
 // themselves before calling these.
 export function openInspector() {
-  if (!state.selected) return
-  state = { ...state, inspectorOpen: true }
-  notify()
+  if (!useSelectionStore.getState().selected) return
+  useSelectionStore.setState({ inspectorOpen: true })
 }
 
 export function closeInspector() {
-  state = { ...state, inspectorOpen: false }
-  notify()
+  useSelectionStore.setState({ inspectorOpen: false })
 }
 
 // Explicitly kicks off a camera flight to the currently selected entity.
@@ -161,9 +151,8 @@ export function closeInspector() {
 // auto-moves the camera — this is only called from an opt-in UI action
 // (e.g. a panel button).
 export function flyToSelectedCountry() {
-  if (!state.selected) return
-  state = { ...state, flightSeq: state.flightSeq + 1 }
-  notify()
+  if (!useSelectionStore.getState().selected) return
+  useSelectionStore.setState((state) => ({ flightSeq: state.flightSeq + 1 }))
 }
 
 // Flies to a US city search result AND sets its boundary outline in one
@@ -181,20 +170,22 @@ export function flyToSelectedCountry() {
 // the window entirely rather than relying on React's batching to paper
 // over it.
 export function flyToUsCity(direction: Vector3, target: { id: string; stateAbbrev: string; name: string }) {
-  state = {
-    ...state,
+  useSelectionStore.setState((state) => ({
     flyToTarget: direction,
     flyToTargetSeq: state.flyToTargetSeq + 1,
     usCityOutline: target,
-  }
-  notify()
+  }))
 }
 
 // Deselects whatever's selected and kicks off a camera flight back to the
 // default global view.
 export function resetView() {
-  state = { ...state, selected: null, inspectorOpen: false, resetSeq: state.resetSeq + 1, usCityOutline: null }
-  notify()
+  useSelectionStore.setState((state) => ({
+    selected: null,
+    inspectorOpen: false,
+    resetSeq: state.resetSeq + 1,
+    usCityOutline: null,
+  }))
 }
 
 // Dev-only console helper. Every GeoEntity is now searchable for real
@@ -227,15 +218,6 @@ if (import.meta.env.DEV) {
   )
 }
 
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return state
-}
-
 export function useSelection() {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useSelectionStore()
 }

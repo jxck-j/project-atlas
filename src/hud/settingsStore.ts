@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 
 export interface CameraSettings {
   rotateSensitivity: number // 0.1 - 2.0, maps to OrbitControls rotateSpeed
@@ -21,42 +21,24 @@ const DEFAULTS: CameraSettings = {
   ambientRotationEnabled: false,
 }
 
-let settings: CameraSettings = { ...DEFAULTS }
-const listeners = new Set<() => void>()
-
-function notify() {
-  listeners.forEach((l) => l())
-}
+const useSettingsStore = create<CameraSettings>(() => ({ ...DEFAULTS }))
 
 export function setRotateSensitivity(value: number) {
-  settings = { ...settings, rotateSensitivity: value }
-  notify()
+  useSettingsStore.setState({ rotateSensitivity: value })
 }
 
 export function setZoomSensitivity(value: number) {
-  settings = { ...settings, zoomSensitivity: value }
-  notify()
+  useSettingsStore.setState({ zoomSensitivity: value })
 }
 
 export function toggleAmbientRotation() {
-  settings = { ...settings, ambientRotationEnabled: !settings.ambientRotationEnabled }
-  notify()
+  useSettingsStore.setState((settings) => ({ ambientRotationEnabled: !settings.ambientRotationEnabled }))
 }
 
 export function resetCameraSettings() {
-  settings = { ...DEFAULTS }
-  notify()
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return settings
+  useSettingsStore.setState({ ...DEFAULTS })
 }
 
 export function useCameraSettings() {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useSettingsStore()
 }

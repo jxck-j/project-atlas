@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 
 export interface TelemetrySnapshot {
   azimuthDeg: number
@@ -9,34 +9,23 @@ export interface TelemetrySnapshot {
   hoverLng: number | null
 }
 
-let snapshot: TelemetrySnapshot = {
+const useTelemetryStore = create<TelemetrySnapshot>(() => ({
   azimuthDeg: 0,
   polarDeg: 0,
   distance: 0,
   fps: 0,
   hoverLat: null,
   hoverLng: null,
-}
-const listeners = new Set<() => void>()
+}))
 
 // Two independent producers write here — TelemetryProbe (camera/fps, every
 // frame) and Globe's core-sphere pointer handlers (hover coords, on
 // move/out) — so this merges rather than replaces, or each would clobber
 // the other's fields.
 export function publishTelemetry(partial: Partial<TelemetrySnapshot>) {
-  snapshot = { ...snapshot, ...partial }
-  listeners.forEach((l) => l())
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return snapshot
+  useTelemetryStore.setState(partial)
 }
 
 export function useTelemetry() {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useTelemetryStore()
 }

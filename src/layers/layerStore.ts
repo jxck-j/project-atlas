@@ -1,58 +1,46 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 import { getLayerDefinitions } from './layerRegistry'
 
-// Same useSyncExternalStore pub/sub pattern as hud/selectionStore.ts,
+// Same zustand-backed pub/sub pattern as hud/selectionStore.ts,
 // hud/settingsStore.ts, hud/hudPanelStore.ts — see CLAUDE.md's "Two-layer
 // split" section for why (bridges the R3F scene and the DOM HUD without a
 // full React re-render on every change).
-let enabled: Record<string, boolean> | null = null
-const listeners = new Set<() => void>()
-
-function notify() {
-  listeners.forEach((l) => l())
-}
+const useLayerStore = create<Record<string, boolean>>(() => ({}))
 
 // Built lazily from the registry's defaultEnabled flags, on first read —
 // can't run this at module load because the registry isn't populated until
 // layer modules (registered as an import side effect) have actually been
 // imported, which LayerEngine.tsx is what guarantees.
+let initialized = false
 function ensureInitialized() {
-  if (enabled) return
-  enabled = {}
+  if (initialized) return
+  initialized = true
+  const defaults: Record<string, boolean> = {}
   for (const def of getLayerDefinitions()) {
-    enabled[def.id] = def.defaultEnabled
+    defaults[def.id] = def.defaultEnabled
   }
+  useLayerStore.setState(defaults)
 }
 
 export function toggleLayer(id: string) {
   ensureInitialized()
-  setLayerEnabled(id, !enabled![id])
+  setLayerEnabled(id, !useLayerStore.getState()[id])
 }
 
 export function setLayerEnabled(id: string, value: boolean) {
   ensureInitialized()
-  if (enabled![id] === value) return
-  enabled = { ...enabled, [id]: value }
-  notify()
+  if (useLayerStore.getState()[id] === value) return
+  useLayerStore.setState({ [id]: value })
 }
 
 export function isLayerEnabled(id: string): boolean {
   ensureInitialized()
-  return enabled![id] ?? false
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  ensureInitialized()
-  return enabled!
+  return useLayerStore.getState()[id] ?? false
 }
 
 // The full id -> enabled map, reactive. Used by LayerManager (to decide
 // what to mount) and LayerPanel (to render toggle state).
 export function useLayerEnabledMap(): Record<string, boolean> {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  ensureInitialized()
+  return useLayerStore()
 }

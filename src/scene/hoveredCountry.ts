@@ -1,3 +1,5 @@
+import { createStore } from 'zustand/vanilla'
+
 // Plain (non-reactive) publisher for the currently-hovered country id,
 // written by Countries.tsx's onPointerOver/onPointerOut. Read imperatively
 // by CountryLabels.tsx's throttled declutter tick (inside useFrame,
@@ -7,12 +9,12 @@
 // "plain module value crosses the boundary, nothing reactive has to"
 // pattern globeRotation.ts already established for the equivalent
 // scene-internal cross-component read.
-let hoveredCountryId: string | null = null
+const hoveredCountryStore = createStore<{ id: string | null }>(() => ({ id: null }))
 
 export function setHoveredCountryId(id: string | null) {
-  hoveredCountryId = id
+  hoveredCountryStore.setState({ id })
 }
 
 export function getHoveredCountryId(): string | null {
-  return hoveredCountryId
+  return hoveredCountryStore.getState().id
 }

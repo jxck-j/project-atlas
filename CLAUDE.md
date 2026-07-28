@@ -72,13 +72,24 @@ the reasoning behind this.
   shared by both layers.
 
 The scene and HUD layers never share React context. They're bridged by small
-`useSyncExternalStore`-based pub/sub stores (`selectionStore.ts`, `settingsStore.ts`,
-`telemetryStore.ts`, `hudPanelStore.ts`, plus the non-reactive `globeRotation.ts`
-module variable). This exists specifically so a value written every animation
-frame (camera orbit angles, FPS, hover lat/lng) doesn't re-render the whole React
-tree at 60fps — only components that actually call the corresponding `useX()` hook
-re-render, and only when the value actually changes. Follow this pattern for any
-new scene→HUD data; don't reach for React context for anything frame-driven.
+zustand-backed pub/sub stores (v4.4.0 — `selectionStore.ts`, `settingsStore.ts`,
+`telemetryStore.ts`, `layerStore.ts`, `lodStore.ts`, `hudPanelStore.ts`, plus the
+non-reactive `globeRotation.ts`/`hoveredCountry.ts` modules, built on zustand's
+vanilla `createStore` since neither ever needed a React hook). This exists
+specifically so a value written every animation frame (camera orbit angles,
+FPS, hover lat/lng) doesn't re-render the whole React tree at 60fps — only
+components that actually call the corresponding `useX()` hook re-render, and
+only when the value actually changes (a bare `useStore()` call subscribes to
+the whole state and re-renders on any change, matching the pre-v4.4.0
+`useSyncExternalStore` behavior exactly; a hook that only needs one field —
+`lodStore.ts`'s `useLodLevel()` is the example to copy — should pass a
+selector instead, e.g. `useLodStore((state) => state.level)`, so it only
+re-renders when that field's reference actually changes). Every store keeps
+its pre-migration exported function/hook names and signatures unchanged —
+`selectEntity()`, `flyToUsCity()`, etc. — only the internal implementation
+moved off hand-rolled `useSyncExternalStore` boilerplate. Follow this pattern
+for any new scene→HUD data; don't reach for React context for anything
+frame-driven.
 
 ### Data pipeline: build-time asset, not runtime filtering
 
@@ -495,8 +506,9 @@ layers that exist are architecture-validating placeholders — see
   effect** — see the registration workflow below.
 - `layerStore.ts` — the *runtime enabled/disabled state*, separate from the
   registry (which is just the static catalog of what's available). Same
-  `useSyncExternalStore` pub/sub pattern as every other store in this repo
-  (`selectionStore.ts` etc.) — see the "Two-layer split" section above for why.
+  zustand-backed pub/sub pattern as every other store in this repo
+  (`selectionStore.ts` etc., v4.4.0) — see the "Two-layer split" section
+  above for why.
 - `LayerManager.tsx` — reads the registry + store every render and mounts/
   unmounts each enabled layer's component. Wraps each layer in its own
   `LayerErrorBoundary` (a class component — error boundaries require one) so
@@ -570,15 +582,21 @@ would otherwise each invent their own disconnected threshold.
   bound guard the way an earlier, scan-based version needed
   `NO_CITIES_ABOVE_DISTANCE` purely to stop its first threshold from
   matching from very far away.
-- `lodStore.ts` — a non-reactive publisher, same shape as
-  `globeRotation.ts`/`telemetryStore.ts` (see "Two-layer split" above): for
-  consumers *without* their own per-frame camera access (a HUD panel, a
+- `lodStore.ts` — a zustand store (v4.4.0) holding `{ distance, level }`,
+  for consumers *without* their own per-frame camera access (a HUD panel, a
   future layer mounted outside the component that already computes
   distance). Fed by one added line in `scene/TelemetryProbe.tsx`
   (`publishLodDistance(spherical.current.radius)`) — it already computes
   camera distance every frame for the orbit telemetry HUD, so this is one
   more publish target, not a second `useFrame` subscriber duplicating that
-  work. A component that already has `camera` via `useThree()` every frame
+  work. `useLodLevel()` selects only the `level` field
+  (`useLodStore((state) => state.level)`), so a component re-renders on an
+  actual LOD-tier change, not on every frame's `distance` update — the same
+  "only rerender when the id changes, not the raw distance" behavior the
+  pre-zustand version got from a manual reference-equality check.
+  `getLodDistance()`/`getCurrentLodLevel()` remain plain imperative reads
+  off `useLodStore.getState()` for non-React or per-frame consumers. A
+  component that already has `camera` via `useThree()` every frame
   (`UsCityLabels.tsx`) should call `lodLevels.ts`'s pure functions directly
   with its own locally-computed distance instead of round-tripping through
   this store.

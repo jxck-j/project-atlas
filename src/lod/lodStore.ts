@@ -1,9 +1,9 @@
-import { useSyncExternalStore } from 'react'
+import { create } from 'zustand'
 import { LOD_LEVELS, resolveDeepestLevel } from './lodLevels'
 import type { LodLevel } from './types'
 
-// Non-reactive publisher for the current camera distance and derived LOD
-// level, same shape as globeRotation.ts/telemetryStore.ts — for consumers
+// Zustand-backed publisher for the current camera distance and derived LOD
+// level, same role as globeRotation.ts/telemetryStore.ts — for consumers
 // that don't have their own convenient per-frame camera access (a HUD
 // panel, a future layer mounted outside the Canvas). A component that
 // already reads `camera` via useThree() every frame (UsCityLabels.tsx
@@ -11,40 +11,35 @@ import type { LodLevel } from './types'
 // isLodLevelActive() directly with its own locally-computed distance
 // instead of round-tripping through this store — this store exists for
 // the "don't have a distance of my own" case, not as the only way in.
-let currentDistance = Infinity
-let currentLevel: LodLevel = LOD_LEVELS[0]
-const listeners = new Set<() => void>()
+interface LodState {
+  distance: number
+  level: LodLevel
+}
+
+const useLodStore = create<LodState>(() => ({
+  distance: Infinity,
+  level: LOD_LEVELS[0],
+}))
 
 // Called from TelemetryProbe.tsx, which already computes camera distance
 // every frame for the orbit telemetry HUD — one more publish target, not a
 // second useFrame subscriber duplicating that work.
 export function publishLodDistance(distance: number) {
-  currentDistance = distance
-  const next = resolveDeepestLevel(distance)
-  if (next.id !== currentLevel.id) {
-    currentLevel = next
-    listeners.forEach((listener) => listener())
-  }
+  useLodStore.setState((state) => {
+    const next = resolveDeepestLevel(distance)
+    return next.id !== state.level.id ? { distance, level: next } : { distance }
+  })
 }
 
 // Imperative read for non-React or per-frame consumers.
 export function getLodDistance(): number {
-  return currentDistance
+  return useLodStore.getState().distance
 }
 
 export function getCurrentLodLevel(): LodLevel {
-  return currentLevel
-}
-
-function subscribe(listener: () => void) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function getSnapshot() {
-  return currentLevel
+  return useLodStore.getState().level
 }
 
 export function useLodLevel(): LodLevel {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useLodStore((state) => state.level)
 }

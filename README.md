@@ -197,10 +197,10 @@ src/
                                rejects a lower-priority label if it would
                                land within spacing distance of an
                                already-accepted one
-    hoveredCountry.ts              (v4.3) Non-reactive publisher so
-                               CountryLabels.tsx can exclude whichever
-                               country Countries.tsx's own hover state is
-                               already labeling
+    hoveredCountry.ts              (v4.3, zustand vanilla store since v4.4.0)
+                               Non-reactive publisher so CountryLabels.tsx
+                               can exclude whichever country Countries.tsx's
+                               own hover state is already labeling
     PointerMarker.tsx            (v3.3.0) Shared "pulsing dot + leader line +
                                label" callout — Globe.tsx's CapitalMarker and
                                ClaimsOverlayLayer.tsx's related-country
@@ -225,7 +225,8 @@ src/
     useCameraFlight.ts        Cinematic tween to a selected country — triggered
                                only by flyToSelectedCountry(), not by selection
     useCameraReset.ts         Cinematic tween back to the default global view
-    globeRotation.ts          Non-reactive publisher of the globe's current Y
+    globeRotation.ts          Non-reactive publisher (zustand vanilla store
+                               since v4.4.0) of the globe's current Y
                                rotation, read by SearchBar to aim a fly-to
                                without a clicked mesh to read a world matrix from
     tweenMath.ts              Shared easing + angle-interpolation helpers
@@ -261,18 +262,21 @@ src/
                                revealDistance, checked independently per
                                level (not first-match-wins), which is what
                                makes the ladder cumulative
-    lodStore.ts                   Non-reactive publisher (same pattern as
-                               globeRotation.ts/telemetryStore.ts) for
-                               consumers without their own per-frame camera
-                               access, fed by TelemetryProbe.tsx
+    lodStore.ts                   Zustand store (v4.4.0) holding
+                               {distance, level} for consumers without their
+                               own per-frame camera access, fed by
+                               TelemetryProbe.tsx; useLodLevel() selects only
+                               the level field so it doesn't rerender every
+                               frame's distance update
     index.ts                       Barrel — import from here, not individual
                                files
   layers/                    The Layer Engine (v2.0) — pluggable visualization
                                modules; Globe.tsx only ever mounts <LayerEngine />
     types.ts                   The LayerDefinition contract every layer implements
     layerRegistry.ts            Plain registerLayer()/getLayerDefinitions() catalog
-    layerStore.ts                Enabled/disabled runtime state (useSyncExternalStore,
-                                 same pattern as the hud/*Store.ts files)
+    layerStore.ts                Enabled/disabled runtime state (zustand,
+                                 same pattern as the hud/*Store.ts files
+                                 since v4.4.0)
     LayerManager.tsx              Mounts/unmounts enabled layers, per-layer error
                                  boundary, mount/unmount lifecycle logging
     LayerEngine.tsx                Public entry point — the only thing Globe.tsx
@@ -574,9 +578,9 @@ to build against without refactoring the globe itself.
   without reaching into `Globe.tsx` and risking circular imports.
 - `telemetryStore.ts` / `settingsStore.ts` / `selectionStore.ts` / `hudPanelStore.ts`'s
   pattern (publish from inside the R3F frame loop or a DOM event handler,
-  subscribe from plain components via `useSyncExternalStore`) is the intended
-  pattern for any other camera- or scene-driven HUD data — avoids re-rendering
-  the whole React tree at 60fps.
+  subscribe from plain components via a zustand store since v4.4.0) is the
+  intended pattern for any other camera- or scene-driven HUD data — avoids
+  re-rendering the whole React tree at 60fps.
 - **`countryProfiles.ts` is illustrative demo data, not a live feed.**
   Government/capital are stable facts; population and GDP are rounded,
   approximate snapshots that will drift out of date. Swap in a real data

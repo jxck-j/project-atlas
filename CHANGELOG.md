@@ -17,6 +17,30 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v4.4.0 — Stores migrated to zustand
+
+`selectionStore.ts`, `settingsStore.ts`, `telemetryStore.ts`, `layerStore.ts`,
+`lodStore.ts`, `hudPanelStore.ts`, and the two non-reactive publishers
+(`globeRotation.ts`, `hoveredCountry.ts`) all replace their hand-rolled
+`useSyncExternalStore` + module-`let` + listener-`Set` boilerplate with
+zustand — `create()` for the reactive stores, `zustand/vanilla`'s
+`createStore()` for the two publishers that never needed a React hook.
+Every exported function and hook name/signature is unchanged
+(`selectEntity()`, `flyToUsCity()`, `useSelection()`, etc.), so no consuming
+component needed to change — only what's underneath them did.
+
+`lodStore.ts` keeps its "only rerender on an actual LOD-tier change, not
+every frame's raw distance update" behavior via a zustand selector
+(`useLodStore((state) => state.level)`) rather than the manual
+reference-equality check the old version needed.
+
+Verified with `tsc -b --noEmit`, `oxlint`, `npm test`, and a full manual
+click-through of selection, search, every keyboard shortcut, layer toggles,
+and camera reset — the highest-regression-risk phase of this refactor,
+since it touches nearly every file that reads shared state.
+
+Promoted from `geo-data-engine`.
+
 ## v4.3.2 — `frameloop="demand"` replaces the manual `advance()` render loop
 
 Deletes `FrameRateCap.tsx` (the `frameloop="never"` + manual `advance()`
