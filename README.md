@@ -12,13 +12,18 @@ Natural Earth GeoJSON/TopoJSON data) rendered as thin glowing lines, a subtle
 Fresnel atmosphere rim, and pulsing capital-city markers — closer to a
 Halo/TRON/JARVIS tactical display than a map app.
 
-The HUD follows the same aesthetic throughout: a dark cyan/near-black
-background, cyan for default UI state, amber for section labels and
-emphasis, monospaced/tracked-out uppercase text (`JetBrains Mono` for body
-text, `Chakra Petch` for display headings — see `src/index.css`), thin
-bordered panels with a translucent backdrop blur, and a corner-bracket +
-scanline overlay (`hud/HUDFrame.tsx`) reinforcing the "instrument panel"
-feel.
+The HUD follows a "glass command console" aesthetic (v5.0.0): a dark
+near-black background, a blue/cyan/violet highlight palette (see
+`scene/highlightColors.ts`), condensed tracked-out uppercase text
+(`Rajdhani` for nearly everything, `JetBrains Mono` reserved for live
+numeric readouts — telemetry, FPS, coordinates — see `src/index.css`), and
+glass panels throughout: rounded corners, a translucent backdrop blur, and
+thin borders (the shared chrome lives in `hud/panelStyles.ts`). A full-width
+top bar (`hud/TopNav.tsx`) carries the brand mark, primary navigation, and
+search/utilities; a left sidebar (`hud/SideRail.tsx`) carries the
+map's selectable categories. There's no corner-bracket/scanline overlay —
+that pre-v5 "instrument panel" treatment (`hud/HUDFrame.tsx`) was removed in
+favor of the cleaner glass-panel look.
 
 ## Stack
 
@@ -64,15 +69,25 @@ project's pure geometry/math functions, not component behavior.
   a pointed leader-line callout appears. A quick drag-then-release over a
   country is correctly ignored as a rotate gesture, not a click.
 - **Reset to the global view** — press **Home**, double-click empty ocean, or
-  click the 🌍 button in the top-left toolbar. Clears the current selection and
+  click the brand mark in the top bar (v5.0.0 — previously a dedicated 🌍
+  button in a top-left toolbar). Clears the current selection and
   cinematically flies the camera back to the default framing.
-- The top-left **toolbar** also has 🔍 **Search** (type a name, press
-  Enter — matches any country, any GeoEntity classification, or any of the
-  32,608 US Census places as of v4.2, then selects/flies the camera there;
-  a matched US city also draws its real boundary on demand), 🗂 **Layers**
-  (toggle visualization layers on/off — as of v2.0 these are architecture-
-  validating placeholders, not real data; see Layer Engine below), and
-  ⚙ **Settings** (camera rotate/zoom sensitivity, with a reset).
+- The top bar's right-hand utility cluster (v5.0.0) has an always-visible
+  **Search** field (type a name, press Enter — matches any country, any
+  GeoEntity classification, or any of the 32,608 US Census places as of
+  v4.2, then selects/flies the camera there; a matched US city also draws
+  its real boundary on demand), a **Layers** button (toggle visualization
+  layers on/off — as of v2.0 these are architecture-validating placeholders,
+  not real data; see Layer Engine below), and a **Settings** button (camera
+  rotate/zoom sensitivity, with a reset). Favorites/notifications/account
+  icons are also present but not wired to anything yet.
+- The left **sidebar** (v5.0.0) lists the map's ten selectable sections —
+  Overview, Countries, Cities, Military, Economy, Infrastructure, Conflicts,
+  Environment, Weather, Filters. Selecting one scopes the Layer Panel to
+  that section's real registered Layer Engine categories (e.g. Countries →
+  the `political`/`geopolitical`/`highlight` categories); Economy, Weather,
+  and Filters have no layers registered under them yet and render visibly
+  disabled rather than as dead buttons.
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
@@ -254,12 +269,15 @@ src/
                                (v4.2, then v4.3) — see LOGBOOK.md for why
                                each step was more conservative than a first
                                attempt that broke rendering
-    highlightColors.ts         (v3.1.0) Single source of truth for every
-                               highlight/selection color the globe renders —
-                               Countries.tsx, GeoEntities.tsx, and both
-                               geoOverlays layers all source their colors
-                               from here; hud/LegendPanel.tsx explains the
-                               same values
+    highlightColors.ts         (v3.1.0, repalletted v5.0.0) Single source of
+                               truth for every highlight/selection color the
+                               globe renders — Countries.tsx, GeoEntities.tsx,
+                               and both geoOverlays layers all source their
+                               colors from here; hud/LegendPanel.tsx explains
+                               the same values. v5.0.0 shifted the 7-color
+                               palette from the original red/yellow/green/
+                               magenta/purple scheme into a blue/cyan/violet
+                               family, keeping all 7 slots distinguishable
   lod/                       The LOD Engine (v4.3) — architecturally parallel
                                to the Layer Engine below, owns the camera-
                                distance ladder zoom-gated content reveals
@@ -334,23 +352,50 @@ src/
                                  (category 'population', a new free-form
                                  value), off by default
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
-    HUDFrame.tsx               Corner brackets, vignette, scanline overlay
-    Header.tsx                 Top title bar
-    Toolbar.tsx                Top-left icon bar: reset view / search / layers / settings
-    SearchBar.tsx               Name -> select + fly-to, across countries AND
-                                 every GeoEntity classification since v3.0.0
-                                 (ranked dropdown, entity type shown per result).
-                                 Since v4.2 also matches any of the 32,608 US
-                                 Census places (search index only — see
-                                 scene/useUsCitiesIndex.ts below); selecting one
-                                 flies there and draws that one city's real
-                                 boundary on demand, shown as "City, ST" to
-                                 disambiguate same-named places across states
+    panelStyles.ts              (v5.0.0) Single source of truth for the glass-
+                                 panel chrome (rounded corners, translucent
+                                 blur, thin border) every panel below shares
+    TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
+                                 also resets view) / MAP·INTELLIGENCE·LAYERS·
+                                 ANALYTICS·DATABASE tabs (middle, only MAP
+                                 wired) / search·favorites·notifications·
+                                 account·layers·settings (right). Replaces
+                                 Header.tsx + Toolbar.tsx (both removed)
+    SideRail.tsx                 (v5.0.0) Left sidebar of ten selectable
+                                 sections; each scopes LayerPanel.tsx to that
+                                 section's real registered Layer Engine
+                                 categories (see sideNavItems.ts)
+    sideNavItems.ts               (v5.0.0) The sidebar's section -> Layer
+                                 Engine category mapping — plain .ts (not
+                                 .tsx) so LayerPanel.tsx can import it too
+                                 without breaking Fast Refresh
+    navStore.ts                  (v5.0.0) Which sidebar section / top-nav tab
+                                 is active (zustand, same pattern as every
+                                 other store in this directory)
+    icons.tsx / iconPaths.ts     (v5.0.0) Shared stroked-path icon set for
+                                 the HUD chrome; path data lives in the plain
+                                 .ts module for the same Fast-Refresh reason
+                                 as sideNavItems.ts
+    SearchBar.tsx               Now rendered inline inside TopNav.tsx's
+                                 utility cluster (v5.0.0, previously its own
+                                 fixed-position dropdown). Name -> select +
+                                 fly-to, across countries AND every GeoEntity
+                                 classification since v3.0.0 (ranked dropdown,
+                                 entity type shown per result). Since v4.2
+                                 also matches any of the 32,608 US Census
+                                 places (search index only — see
+                                 scene/useUsCitiesIndex.ts below); selecting
+                                 one flies there and draws that one city's
+                                 real boundary on demand, shown as "City, ST"
+                                 to disambiguate same-named places across
+                                 states
     LayerPanel.tsx               Toggle list for registered layers, grouped by
-                                 category (toggled via Toolbar)
+                                 category (opened from TopNav's Layers button
+                                 or the L key; scoped by SideRail's active
+                                 section as of v5.0.0)
     SettingsPanel.tsx           Camera sensitivity sliders + (v3.2.0)
-                                 KEYBOARD SHORTCUTS reference (toggled via
-                                 Toolbar)
+                                 KEYBOARD SHORTCUTS reference (opened from
+                                 TopNav's Settings button)
     Telemetry.tsx               Live orbit readout (az/el/range) — stacked
                                  with LegendPanel.tsx in a shared bottom-left
                                  flex column in App.tsx (v3.1.0), no longer
@@ -368,8 +413,17 @@ src/
                                  cards (v1, unchanged) or GeoEntityDetails
                                  cards (v3.0.0, one layout for all seven
                                  non-sovereign classifications as of v4.1),
-                                 dispatched on entity kind
-    hudPanelStore.ts             Which single toolbar dropdown is open
+                                 dispatched on entity kind. Restyled v5.0.0
+                                 to a gradient masthead + sectioned body;
+                                 gained an INTELLIGENCE SUMMARY block of
+                                 progress-bar metric rows (chrome only — no
+                                 score field exists anywhere in the schema,
+                                 so every bar renders in its empty state) and
+                                 a RELATIONSHIPS feed-row list for GeoEntities,
+                                 driven by the real parentEntity/
+                                 administeredBy/claimedBy/claims data that was
+                                 already here, just recast as feed rows
+    hudPanelStore.ts             Which single top-bar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
                                  since v2.2.1 — see entities/) + usCityOutline
                                  (v4.2 — which one US city's on-demand

@@ -129,7 +129,7 @@ export function CountryLabels() {
     <group>
       {visible.map(({ id, name, extent, localPosition }) => (
         <Html key={id} position={localPosition} center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
-          <div className={`whitespace-nowrap font-mono ${labelClassName(extent)}`}>{name.toUpperCase()}</div>
+          <div className={`whitespace-nowrap ${labelClassName(extent)}`}>{name.toUpperCase()}</div>
         </Html>
       ))}
     </group>

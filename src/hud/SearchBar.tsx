@@ -15,6 +15,8 @@ import { getEntities, getEntity } from '../data'
 import type { GeoEntityType } from '../data'
 import { resolveEntity } from '../entities/EntityResolver'
 import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
+import { Icon } from './icons'
+import { ICONS } from './iconPaths'
 
 const UP_AXIS = new Vector3(0, 1, 0)
 const MAX_RESULTS = 8
@@ -227,8 +229,6 @@ export function SearchBar() {
     if (isOpen) inputRef.current?.focus()
   }, [isOpen])
 
-  if (!isOpen) return null
-
   function selectEntry(entry: SearchEntry) {
     // Same technique as the click handler: project the entity's centroid
     // through the globe's CURRENT rotation to get a live world-space
@@ -269,41 +269,56 @@ export function SearchBar() {
   }
 
   return (
-    <div className="pointer-events-auto fixed top-24 left-4 md:top-28 md:left-8 z-30 w-40 md:w-48">
-      <div className="border border-cyan-400/25 bg-cyan-950/25 backdrop-blur-sm px-4 py-3 font-mono">
-        <div className="mb-2 text-amber-400/90 tracking-[0.25em] text-[10px] md:text-xs">SEARCH</div>
-        <form onSubmit={handleSubmit}>
+    // Inline in the top bar's utility cluster (see TopNav.tsx) rather than
+    // its own fixed-position dropdown — the reference keeps the search
+    // field permanently visible there. `useHudPanel() === 'search'` no
+    // longer gates rendering, only focus, so the existing "/" shortcut and
+    // toolbar toggle still land the caret here.
+    <div className="relative w-[150px] md:w-[210px]">
+      <div
+        className={`flex h-9 items-center gap-2 rounded-full border bg-[rgba(15,23,40,0.9)] px-3.5 transition-colors ${
+          isOpen ? 'border-[#3f8bff]' : 'border-[#1c2c4b]'
+        }`}
+      >
+        <span className="shrink-0 text-[#5a729a]">
+          <Icon paths={ICONS.search} size={14} />
+        </span>
+        <form onSubmit={handleSubmit} className="min-w-0 flex-1">
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="SEARCH..."
-            className="w-full border border-cyan-400/25 bg-cyan-950/30 px-2 py-1.5 font-mono text-[11px] tracking-[0.05em] text-cyan-100 placeholder:text-cyan-500/40 outline-none focus:border-cyan-300"
+            placeholder="Search location..."
+            aria-label="Search location"
+            className="w-full bg-transparent text-[12.5px] text-[#dce8fb] outline-none placeholder:text-[#51648a]"
           />
         </form>
-        {matches.length > 0 && (
-          <ul className="mt-1.5 max-h-56 overflow-y-auto border border-cyan-400/25 bg-cyan-950/40">
-            {matches.map((entry) => (
-              <li key={`${entry.kind}-${entry.id}`}>
-                <button
-                  type="button"
-                  onClick={() => selectEntry(entry)}
-                  className="flex w-full items-baseline justify-between gap-2 px-2 py-1.5 text-left font-mono text-[11px] text-cyan-100 hover:bg-cyan-400/10"
-                >
-                  <span className="truncate">{entry.name}</span>
-                  <span className="shrink-0 text-[9px] tracking-[0.15em] text-cyan-500/60">
-                    {ENTITY_TYPE_LABEL[entry.kind]}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-        {notFound && (
-          <div className="mt-1.5 text-[10px] tracking-[0.1em] text-red-400/80">NOT FOUND</div>
-        )}
       </div>
+
+      {matches.length > 0 && (
+        <ul className="absolute top-full right-0 z-50 mt-2 max-h-72 w-[260px] overflow-y-auto rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.97)] shadow-[0_10px_34px_rgba(0,0,0,0.55)] backdrop-blur-[12px]">
+          {matches.map((entry) => (
+            <li key={`${entry.kind}-${entry.id}`}>
+              <button
+                type="button"
+                onClick={() => selectEntry(entry)}
+                className="flex w-full items-baseline justify-between gap-2 px-3 py-2 text-left text-[11.5px] text-[#dce8fb] hover:bg-[rgba(63,139,255,0.14)]"
+              >
+                <span className="truncate">{entry.name}</span>
+                <span className="shrink-0 text-[9px] tracking-[0.15em] text-[#6d82a8]">
+                  {ENTITY_TYPE_LABEL[entry.kind]}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {notFound && (
+        <div className="absolute top-full right-0 z-50 mt-2 w-[260px] rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.97)] px-3 py-2 text-[10px] tracking-[0.1em] text-[#ff4a42] backdrop-blur-[12px]">
+          NOT FOUND
+        </div>
+      )}
     </div>
   )
 }

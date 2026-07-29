@@ -5,6 +5,75 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-07-28 — v5.0.0: a country's fill mesh can raycast correctly, triangulate perfectly, and still render as a black hole
+
+**Raising a country's fill opacity from ~5% to solid surfaced a real,
+previously-invisible rendering defect.** While trying a navy-land/charcoal-
+water/gold-border restyle of the globe (a session detour that was ultimately
+reverted — see below), a chunk of Brazil's interior rendered as an opaque
+black gap instead of the country's fill color. Once flagged, the same defect
+was confirmed on Russia, Canada, USA, Australia, and Antarctica. It had
+presumably always been there; `EntityRenderLayer.tsx`'s default fill opacity
+(0.05) was low enough that nobody had ever noticed.
+
+Diagnosing it black-box (no WebGL frame debugger available, and
+`countryGeometry.ts` is under a standing "no changes without sign-off"
+constraint, so this stayed read-only) ruled out every explanation that
+usually causes a hole in a triangulated fill:
+- **Not a triangulation defect** — `earcut.deviation()` against the actual
+  shipped `countries-un193.json` came back ~1e-15 for all 43 of Brazil's
+  MultiPolygon sub-polygons and all 214 of Russia's. A real triangulation
+  failure shows up as deviation near 1, not 1e-15.
+- **Not inconsistent triangle winding** — a custom per-triangle orientation
+  check (independent of `deviation()`, since a small minority of
+  wrong-winding triangles can hide inside an otherwise-correct area sum)
+  found 0 flipped triangles in either mesh.
+- **Not a missing-geometry gap** — hovering the black region fires the fill
+  mesh's own `onPointerOver` (cursor → `pointer`), proving real triangles
+  exist there and R3F's picking resolves to them correctly.
+- **Not an overlapping GeoEntity** — no registered GeoEntity's centroid
+  falls inside Brazil's bounding box.
+- **Confirmed anchored to the globe's surface**, not a screen-space
+  overlay — the black region rotates with the mesh when the camera moves.
+
+Root cause is still open (logged in `BACKLOG.md`). The one pattern found:
+all six affected features are among the highest-vertex-count meshes in the
+dataset (Russia's mainland alone is 8,964 vertices; Brazil's merged 43-
+polygon fill totals ~4,200) — circumstantial, not proven, but the only lead
+that survived the above.
+
+**A "restyle to match this mockup" request needs the mockup treated as
+data, not vibes.** The whole v5.0.0 pass (palette, typography, panel chrome,
+layout) was done by extracting literal values from the reference — hex
+codes from its CSS/Three.js color literals, exact px/rgba spacing from its
+`.panel`/`.panel-head` rules — rather than eyeballing "looks navy-ish."
+Where the reference didn't cleanly cover an existing concept (5 of
+`highlightColors.ts`'s 7 semantic slots have no equivalent in a screenshot
+that only ever shows one selection state; the reference has no monospace
+font at all, this app has a real functional reason to keep one for numeric
+readouts), that gap got flagged and asked about explicitly rather than
+silently invented — see `CHANGELOG.md`'s v5.0.0 entry for how each of those
+landed.
+
+**A "tactical HUD" decorative layer and a "glass console" one are different
+visual identities, not a reskin of the same idea.** `hud/HUDFrame.tsx`'s
+corner brackets + scanlines + vignette (this app's pre-v5 identity, per
+`CLAUDE.md`'s "closer to a tactical display than a map app") has no
+equivalent anywhere in the v5 reference — recoloring it to fit the new
+palette would have kept an aesthetic the redesign was actively moving away
+from. Removed it entirely rather than adapt it, once asked directly (this
+was flagged as a genuine judgment call, not assumed).
+
+**The navy/charcoal/gold globe-fill experiment (dot-fill, then solid) was
+reverted the same session it was built.** Both attempts got as far as
+passing typecheck/lint/tests/build and a real browser click-through before
+the user judged the result worse than the pre-existing look and asked for a
+full revert — the HUD chrome changes were unaffected since they'd already
+been committed to (this session's) working state independently. Lesson
+carried forward: this project's "verify in a real browser" step catches
+things typecheck/lint/tests structurally cannot — matching valid code to
+"looks right" is still a separate, necessary check.
+
 ## 2026-07-26 — v4.3: a private distance table doesn't scale past its first consumer
 
 **`UsCityLabels.tsx`'s population/zoom-tier gate started as a private

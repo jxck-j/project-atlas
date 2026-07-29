@@ -17,6 +17,89 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.0.0 — Glass-console HUD: TopNav + SideRail replace Header/Toolbar
+
+A full visual overhaul of the HUD chrome and navigation, driven by an
+external design reference (a mockup image + a matching React/CSS artifact),
+built in reviewed stages across a session rather than landed as one diff:
+palette, typography, panel chrome, then layout.
+
+**Colors** — `scene/highlightColors.ts`'s 7-color palette shifted from the
+original red/yellow/green/magenta/purple scheme into a blue/cyan/violet
+family sampled from the reference, keeping all 7 slots distinguishable
+(`hud/LegendPanel.tsx` picks the new values up automatically, since it
+already read from this file rather than hardcoding its own).
+
+**Typography** — the root font moved from Chakra Petch/JetBrains Mono to
+`Rajdhani` (`src/index.css`'s `--font-display` token, now also the
+`html/body/#root` default). `JetBrains Mono` is kept, but scoped down to
+only genuine numeric/data readouts — `CommandBar.tsx`'s counts/FPS/
+coordinates, `SettingsPanel.tsx`'s sensitivity value, and the whole
+`Telemetry.tsx` panel — rather than being the default for every label and
+scene-text element it used to cover.
+
+**Panel chrome** — new `hud/panelStyles.ts` is the single source of truth
+for the glass-panel look (rounded corners, translucent backdrop blur, thin
+border) every panel now shares, mirroring the "one file, everyone imports
+it" precedent `highlightColors.ts` already established. `hud/HUDFrame.tsx`
+(the corner-bracket/vignette/scanline "tactical display" overlay) is
+removed — the reference has no equivalent, and the glass panels now carry
+the "framed" feeling on their own.
+
+**Intelligence panel content** — `IntelligencePanel.tsx` gained an
+INTELLIGENCE SUMMARY block of progress-bar metric rows and a RELATIONSHIPS
+feed-row list, matching the reference's visual language. The metric bars
+are chrome only, deliberately rendered in their empty state (flat track,
+em-dash, an explicit "no assessment data is currently sourced" note) — no
+score field exists anywhere in `data/types.ts`, and fabricating one would
+contradict this project's own documented policy against inventing
+geopolitical assessments (see the Intelligence Engine backlog item). The
+feed rows, by contrast, are driven entirely by real data: `GeoEntity`'s
+`parentEntity`/`administeredBy`/`claimedBy`/`claims` fields, already shown
+in this panel as plain text, recast as feed rows with `since`'s year filling
+the reference's timestamp column and colors sourced from
+`highlightColors.ts`.
+
+**Layout** — `hud/Header.tsx` and `hud/Toolbar.tsx` are replaced by two new
+components. `hud/TopNav.tsx` is a full-width top bar: brand mark (left, also
+resets the view), MAP/INTELLIGENCE/LAYERS/ANALYTICS/DATABASE tabs (middle —
+only MAP has a view behind it; the rest render visibly disabled with a
+tooltip rather than as dead buttons), and search/favorites/notifications/
+account/layers/settings (right — only search/layers/settings are wired).
+`hud/SideRail.tsx` is a left sidebar of ten sections and is genuinely
+functional, not just decorative: each one scopes `LayerPanel.tsx` to that
+section's real registered Layer Engine categories via a plain mapping table
+(`hud/sideNavItems.ts`) matched against the `category` field layers already
+register under — a newly registered layer joins the right section
+automatically, no edit needed here. Sections with nothing registered yet
+(Economy, Weather, Filters) render disabled rather than as no-op buttons.
+`SearchBar.tsx` moved from its own fixed-position dropdown into an
+always-visible pill inside `TopNav`'s utility cluster.
+
+New supporting files: `hud/icons.tsx`/`hud/iconPaths.ts` (the HUD's shared
+icon set, split into a renderer + a plain-data module for the same
+Fast-Refresh reason `scene/geoEntityEntries.ts` is split from
+`GeoEntities.tsx`) and `hud/navStore.ts` (which sidebar section / top-nav tab
+is active — zustand, same pattern as every other store in this directory).
+
+Verified with `tsc -b --noEmit`, `oxlint`, `npm test`, `npm run build`, and a
+manual click-through in a real browser after each stage — selection, hover
+labels, and small-country leader-line callouts were specifically
+re-confirmed working after the panel/layout changes, since none of this
+touched `EntityResolver.ts`, `GeometryMap.ts`, `selectionStore.ts`, or how
+`countryGeometry.ts` builds/resolves geometry.
+
+A separate attempt in the same investigation to reskin the globe itself
+(navy/charcoal/gold solid-fill countries, and a glowing-dot-fill rendering
+mode) was tried and reverted — see `BACKLOG.md`'s Visualization section for
+what came out of that: a real, still-unexplained rendering defect on
+several large countries (Brazil, Russia, Canada, USA, Australia,
+Antarctica), invisible at this app's low default fill opacity but worth
+investigating separately.
+
+Not promoted from `geo-data-engine` — this work is unrelated to that
+branch's geographic-data charter, so it was committed directly to `main`.
+
 ## v4.5.0 — Countries/GeoEntities/StatesProvinces dedup into EntityRenderLayer
 
 `scene/Countries.tsx` and `scene/GeoEntities.tsx` had nearly identical

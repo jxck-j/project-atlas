@@ -64,7 +64,7 @@ function CityLabel({ entry }: { entry: CityEntry }) {
       <Line points={[anchor, calloutPoint]} color="#FFD24C" lineWidth={1} transparent opacity={0.85} />
       <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
         <div
-          className="whitespace-nowrap font-mono text-xs tracking-[0.2em] text-amber-200"
+          className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
           style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
         >
           {entry.name.toUpperCase()}

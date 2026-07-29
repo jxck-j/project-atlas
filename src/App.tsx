@@ -1,10 +1,8 @@
 import { Scene } from './scene/Scene'
-import { HUDFrame } from './hud/HUDFrame'
-import { Header } from './hud/Header'
+import { TopNav } from './hud/TopNav'
+import { SideRail } from './hud/SideRail'
 import { Telemetry } from './hud/Telemetry'
 import { CommandBar } from './hud/CommandBar'
-import { Toolbar } from './hud/Toolbar'
-import { SearchBar } from './hud/SearchBar'
 import { SettingsPanel } from './hud/SettingsPanel'
 import { LayerPanel } from './hud/LayerPanel'
 import { LegendPanel } from './hud/LegendPanel'
@@ -15,18 +13,20 @@ function App() {
   return (
     <div className="relative h-svh w-svw overflow-hidden bg-[#04070a]">
       <Scene />
-      <HUDFrame />
-      <Header />
+      {/* Chrome: brand top-left, tabs top-middle, utilities (search,
+          favorites, notifications, account, layers, settings) top-right.
+          SearchBar renders inside TopNav's utility cluster rather than
+          positioning itself. */}
+      <TopNav />
+      <SideRail />
       {/* Shared bottom-left stack (v3.1) — Telemetry and LegendPanel no
           longer position themselves; letting flexbox stack them means
           neither has to hardcode the other's rendered height. */}
-      <div className="pointer-events-none fixed bottom-6 left-6 md:bottom-8 md:left-8 z-20 flex flex-col gap-3">
+      <div className="pointer-events-none fixed bottom-16 left-6 z-20 flex flex-col gap-3">
         <Telemetry />
         <LegendPanel />
       </div>
       <CommandBar />
-      <Toolbar />
-      <SearchBar />
       <SettingsPanel />
       <LayerPanel />
       <IntelligencePanel />

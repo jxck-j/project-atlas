@@ -208,7 +208,7 @@ export function UsCityLabels() {
           zIndexRange={[1, 0]}
           style={{ pointerEvents: 'none' }}
         >
-          <div className={`whitespace-nowrap font-mono ${labelClassName(scoreOf(city))}`}>
+          <div className={`whitespace-nowrap ${labelClassName(scoreOf(city))}`}>
             {city.name.toUpperCase()}
           </div>
         </Html>

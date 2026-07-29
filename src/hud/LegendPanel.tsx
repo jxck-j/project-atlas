@@ -1,5 +1,6 @@
 import { useLayerEnabledMap } from '../layers'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 
 // v3.1: answers "why is Taiwan magenta/pink" (reported as "purple" — close
 // enough on a dark background that it's worth explaining, not renaming).
@@ -44,8 +45,8 @@ function LegendRow({ color, label, description }: { color: string; label: string
         style={{ backgroundColor: color, boxShadow: `0 0 5px 1px ${color}` }}
       />
       <div className="space-y-0.5">
-        <div className="text-cyan-100 tracking-[0.15em]">{label}</div>
-        <div className="text-cyan-500/50 text-[9px] leading-tight">{description}</div>
+        <div className="tracking-[0.15em] text-[#dce8fb]">{label}</div>
+        <div className="text-[9px] leading-tight text-[#51648a]">{description}</div>
       </div>
     </div>
   )
@@ -66,8 +67,8 @@ export function LegendPanel() {
   const anyCategoryHighlightEnabled = CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id])
 
   return (
-    <div className="border border-cyan-400/25 bg-cyan-950/20 backdrop-blur-sm px-4 py-3 font-mono text-[10px] md:text-xs space-y-2.5 min-w-[190px] max-w-[240px]">
-      <div className="text-amber-400/90 tracking-[0.25em] mb-1">LEGEND</div>
+    <div className={`${PANEL_SURFACE} min-w-[190px] max-w-[240px] space-y-2.5 px-4 py-3 text-[10px] md:text-xs`}>
+      <div className={`${PANEL_SECTION_LABEL} mb-1`}>LEGEND</div>
 
       <LegendRow
         color={HIGHLIGHT_COLORS.default.hex}

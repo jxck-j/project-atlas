@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-display: 'Chakra Petch', 'Segoe UI', sans-serif;
+  --font-display: 'Rajdhani', 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
 }
 
@@ -13,7 +13,7 @@ body,
   height: 100%;
   background: #04070a;
   color: #dff9ff;
-  font-family: var(--font-mono);
+  font-family: var(--font-display);
   overflow: hidden;
 }
 

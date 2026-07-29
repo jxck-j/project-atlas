@@ -72,7 +72,7 @@ export function UsCityOutlineHighlight() {
           to freeze in a stale state. */}
       <Html position={geometries.labelAnchor} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
         <div
-          className="whitespace-nowrap font-mono text-xs tracking-[0.2em] text-cyan-100"
+          className="whitespace-nowrap text-xs tracking-[0.2em] text-cyan-100"
           style={{ textShadow: '0 0 8px rgba(76,224,255,0.85)' }}
         >
           {active.name.toUpperCase()}

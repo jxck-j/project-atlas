@@ -145,7 +145,7 @@ function WaterLabels({ occluder }: { occluder: RefObject<Mesh | null> }) {
           style={{ pointerEvents: 'none' }}
         >
           <div
-            className={`whitespace-nowrap font-mono italic text-cyan-300/35 ${
+            className={`whitespace-nowrap italic text-cyan-300/35 ${
               body.kind === 'ocean' ? 'text-[8px] tracking-[0.2em]' : 'text-[6px] tracking-[0.1em]'
             }`}
           >

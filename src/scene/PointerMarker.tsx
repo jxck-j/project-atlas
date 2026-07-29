@@ -85,7 +85,7 @@ export function PointerMarker({ lat, lng, color, label, calloutOffsetDeg = DEFAU
       <Line points={[anchor, calloutPoint]} color={color} lineWidth={1} transparent opacity={0.7} />
       <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
         <div
-          className="whitespace-nowrap font-mono text-[8px] tracking-[0.15em]"
+          className="whitespace-nowrap text-[8px] tracking-[0.15em]"
           style={{ color, textShadow: `0 0 4px ${color}` }}
         >
           {label}

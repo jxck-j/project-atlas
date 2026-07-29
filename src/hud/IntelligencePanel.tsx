@@ -1,27 +1,168 @@
 import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
-import type { GeoEntity, GeoEntityType } from '../data'
+import type { GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
+import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { Icon } from './icons'
+import { ICONS } from './iconPaths'
+import { PANEL_SECTION_LABEL } from './panelStyles'
 
-function Divider() {
-  return <div className="h-px w-full bg-cyan-400/30" />
-}
-
+// `.cp-row` — label left, value right-aligned on the same baseline, rather
+// than the stacked label-over-value the pre-restyle panel used. The
+// reference's overview block reads as a two-column table.
 function DataRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-0.5">
-      <div className="text-[10px] tracking-[0.25em] text-cyan-500/60">{label}</div>
-      <div className="text-sm text-cyan-50">{value}</div>
+    <div className="flex justify-between gap-3.5 py-1">
+      <span className="pt-px text-[10.5px] font-semibold tracking-[0.1em] text-[#6d82a8]">{label}</span>
+      <b className="max-w-[160px] text-right text-xs font-semibold text-[#e6efff]">{value}</b>
     </div>
   )
 }
 
-function PendingSection({ label }: { label: string }) {
+// `.intel-row` — icon / label / 62px track / right-aligned value.
+//
+// `value` is optional AND CURRENTLY NEVER PASSED: nothing in data/types.ts
+// carries a 0-100 score for any of these metrics (Country has population
+// and gdpUsd, both unpopulated — src/data/countries/countries.json is `[]`
+// — and neither is a rating), and the Conflict type's own doc comment is
+// explicit that this project does not fabricate assessments like these
+// without an editorial process behind them. So the row renders its empty
+// state: flat track, em-dash value. The prop exists so an eventual
+// Intelligence Engine only has to pass a number here — the bar chrome,
+// gradient, and glow are already correct and match the reference exactly.
+function IntelRow({ label, icon, value }: { label: string; icon: readonly string[]; value?: number }) {
   return (
-    <div className="space-y-0.5">
-      <div className="text-[10px] tracking-[0.25em] text-amber-400/80">{label}</div>
-      <div className="text-xs text-cyan-500/40 italic">Awaiting data feed</div>
+    <div className="flex items-center gap-2 py-[5px]">
+      <span className="grid w-[17px] place-items-center text-[#4d95ff]">
+        <Icon paths={icon} />
+      </span>
+      <span className="flex-1 text-[9.5px] font-bold tracking-[0.1em] text-[#aebfdc]">{label}</span>
+      <span className="h-1 w-[62px] overflow-hidden rounded-sm bg-[#14213a]">
+        <span
+          className="block h-full rounded-sm bg-[linear-gradient(90deg,#2d6fd8,#6db0ff)] shadow-[0_0_6px_rgba(63,139,255,0.8)]"
+          style={{ width: `${value ?? 0}%` }}
+        />
+      </span>
+      <span
+        className={`w-8 text-right text-[11.5px] font-bold ${
+          value === undefined ? 'text-[#51648a]' : 'text-[#e6efff]'
+        }`}
+      >
+        {value === undefined ? '—' : `${value}%`}
+      </span>
     </div>
   )
+}
+
+// `.feed-row` — left rail (marker + ringed glyph), then category / primary
+// / secondary lines. The reference fills these with news headlines; this
+// app has no news/event dataset at all, so they carry the relationship
+// data that genuinely exists on a GeoEntity instead (see buildRelationFeed
+// below). Same markup, real data.
+function FeedRow({
+  category,
+  color,
+  icon,
+  primary,
+  secondary,
+  marker,
+}: {
+  category: string
+  color: string
+  icon: readonly string[]
+  primary: string
+  secondary?: string
+  marker?: string
+}) {
+  return (
+    <div className="flex gap-2.5 border-b border-[rgba(22,35,60,0.6)] py-2.5 last:border-b-0">
+      <div className="flex w-[34px] flex-col items-center gap-1.5">
+        <div className="text-[9.5px] font-semibold text-[#51648a]">{marker ?? '—'}</div>
+        <div
+          className="grid h-[30px] w-[30px] place-items-center rounded-full border opacity-90"
+          style={{ borderColor: color, color }}
+        >
+          <Icon paths={icon} size={16} />
+        </div>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-[9px] font-bold tracking-[0.16em]" style={{ color }}>
+          {category}
+        </div>
+        <div className="mt-0.5 text-[12.5px] leading-snug font-semibold text-[#e6efff]">{primary}</div>
+        {secondary && <div className="text-[11px] leading-snug text-[#6d82a8]">{secondary}</div>}
+      </div>
+    </div>
+  )
+}
+
+interface RelationFeedItem {
+  key: string
+  category: string
+  color: string
+  icon: readonly string[]
+  primary: string
+  secondary?: string
+  marker?: string
+}
+
+// Every field read here already exists on GeoEntity and already rendered in
+// this panel before the restyle — `displayName`, `extent` (administeredBy
+// only, per its doc comment), and `since` (ISO 8601). `since`'s year is
+// what fills the reference's timestamp column; nothing is synthesized when
+// it's absent. Colors come from scene/highlightColors.ts so a relationship
+// listed here matches the color that same relationship renders in on the
+// globe and in LegendPanel.
+function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
+  const yearOf = (relation: GeoEntityRelation) => relation.since?.slice(0, 4)
+
+  const items: RelationFeedItem[] = []
+
+  if (entity.parentEntity) {
+    items.push({
+      key: `parent-${entity.parentEntity.displayName}`,
+      category: 'PARENT ENTITY',
+      color: HIGHLIGHT_COLORS.relatedCountry.hex,
+      icon: ICONS.pin,
+      primary: entity.parentEntity.displayName,
+      marker: yearOf(entity.parentEntity),
+    })
+  }
+
+  for (const relation of entity.administeredBy) {
+    items.push({
+      key: `administered-${relation.displayName}`,
+      category: 'ADMINISTERED BY',
+      color: HIGHLIGHT_COLORS.territoryOverlay.hex,
+      icon: ICONS.shield,
+      primary: relation.displayName,
+      secondary: relation.extent,
+      marker: yearOf(relation),
+    })
+  }
+
+  for (const relation of entity.claimedBy) {
+    items.push({
+      key: `claimed-by-${relation.displayName}`,
+      category: 'CLAIMED BY',
+      color: HIGHLIGHT_COLORS.claimsOverlay.hex,
+      icon: ICONS.target,
+      primary: relation.displayName,
+      marker: yearOf(relation),
+    })
+  }
+
+  for (const relation of entity.claims) {
+    items.push({
+      key: `claims-${relation.displayName}`,
+      category: 'CLAIMS',
+      color: HIGHLIGHT_COLORS.claimsOverlay.hex,
+      icon: ICONS.bookmark,
+      primary: relation.displayName,
+      marker: yearOf(relation),
+    })
+  }
+
+  return items
 }
 
 // Unchanged from before v2.2.2 — same COUNTRY_PROFILES lookup, same four
@@ -33,7 +174,7 @@ function CountryDetails({ name }: { name: string }) {
 
   if (!profile) {
     return (
-      <div className="text-xs text-cyan-500/50 italic">
+      <div className="text-xs italic text-[#51648a]">
         No profile data available for this territory.
       </div>
     )
@@ -64,29 +205,16 @@ const GEO_ENTITY_TYPE_LABEL: Record<GeoEntityType, string> = {
 // shape instead of one interface (and one Details component) per
 // classification: parentEntity/administeredBy/claimedBy/claims apply
 // uniformly, and `type` is only ever read for display here (the ENTITY TYPE
-// row) and by search's type tag. Replaces the pre-v3, Territory-only
-// TerritoryDetails. Every relationship field is allowed to be empty/absent
-// (see data/types.ts), so each row is omitted individually rather than
-// falling back to a single "no data" message.
+// row) and by search's type tag.
+//
+// The four relationship fields moved out of this overview block and into
+// the RELATIONSHIPS feed section below — same fields, same values, rendered
+// as feed rows instead of semicolon-joined strings. What stays here is the
+// entity's own attributes.
 function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
-  const parent = entity.parentEntity?.displayName
-
-  const administeredBy =
-    entity.administeredBy.length > 0
-      ? entity.administeredBy.map((a) => (a.extent ? `${a.displayName} (${a.extent})` : a.displayName)).join('; ')
-      : undefined
-
-  const claimedBy = entity.claimedBy.length > 0 ? entity.claimedBy.map((c) => c.displayName).join('; ') : undefined
-
-  const claims = entity.claims.length > 0 ? entity.claims.map((c) => c.displayName).join('; ') : undefined
-
   return (
     <>
       <DataRow label="ENTITY TYPE" value={GEO_ENTITY_TYPE_LABEL[entity.type]} />
-      {parent && <DataRow label="PARENT ENTITY" value={parent} />}
-      {administeredBy && <DataRow label="ADMINISTERED BY" value={administeredBy} />}
-      {claimedBy && <DataRow label="CLAIMED BY" value={claimedBy} />}
-      {claims && <DataRow label="CLAIMS" value={claims} />}
       {entity.metadata?.strategicSignificance && (
         <DataRow label="STRATEGIC SIGNIFICANCE" value={entity.metadata.strategicSignificance} />
       )}
@@ -94,6 +222,14 @@ function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
     </>
   )
 }
+
+const INTEL_METRICS: { label: string; icon: readonly string[] }[] = [
+  { label: 'MILITARY', icon: ICONS.military },
+  { label: 'ECONOMY', icon: ICONS.economy },
+  { label: 'DIPLOMACY', icon: ICONS.diplomacy },
+  { label: 'TECHNOLOGY', icon: ICONS.technology },
+  { label: 'CURRENT STATUS', icon: ICONS.shield },
+]
 
 export function IntelligencePanel() {
   const { selected, inspectorOpen } = useSelection()
@@ -105,58 +241,80 @@ export function IntelligencePanel() {
   // can select without opening it.
   const isOpen = selected != null && inspectorOpen
 
+  const relationFeed =
+    selected?.entity.kind === 'geo-entity' ? buildRelationFeed(selected.entity.data) : []
+
   return (
     <div
-      className={`fixed inset-y-0 right-0 z-30 w-full sm:w-[380px] transition-transform duration-500 ease-out ${
+      className={`fixed top-16 bottom-0 right-0 z-30 w-full sm:w-[380px] transition-transform duration-500 ease-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
-      <div className="pointer-events-auto h-full border-l border-cyan-400/25 bg-[#050b10]/90 backdrop-blur-md px-6 py-8 overflow-y-auto font-mono">
+      <div className="pointer-events-auto h-full overflow-y-auto border-l border-[#172440] bg-[rgba(7,11,20,0.92)] backdrop-blur-[12px]">
         {selected && (
-          <div className="space-y-5">
-            <Divider />
-
-            <div className="flex items-start justify-between">
-              <h2 className="flex-1 text-center text-xl md:text-2xl tracking-[0.15em] text-cyan-50 font-display [text-shadow:0_0_16px_rgba(76,224,255,0.5)]">
-                {selected.name.toUpperCase()}
-              </h2>
+          <div>
+            {/* `.cp-hero` — gradient masthead carrying the eyebrow, the
+                oversized entity name, and the close affordance. */}
+            <div className="relative border-b border-[#16233c] bg-[linear-gradient(160deg,rgba(23,40,75,0.75),rgba(9,14,26,0.4))] px-4 pt-3.5 pb-4">
+              <div className="text-[10px] font-bold tracking-[0.2em] text-[#6d9bde]">SELECTED</div>
               <button
                 type="button"
                 onClick={clearSelection}
                 aria-label="Close panel"
-                className="ml-2 text-cyan-500/60 hover:text-cyan-200 transition-colors text-sm leading-none"
+                className="absolute top-2.5 right-2.5 text-sm leading-none text-[#8aa0c6] transition-colors hover:text-white"
               >
                 ✕
               </button>
+              <h2 className="mt-1.5 font-display text-[34px] leading-none font-bold tracking-[0.09em] text-white [text-shadow:0_0_24px_rgba(63,139,255,0.45)]">
+                {selected.name.toUpperCase()}
+              </h2>
             </div>
 
-            <Divider />
+            <div className="border-b border-[#16233c] px-4 py-3">
+              <div className={`${PANEL_SECTION_LABEL} mb-2`}>OVERVIEW</div>
+              {selected.entity.kind === 'country' ? (
+                <CountryDetails name={selected.entity.name} />
+              ) : (
+                <GeoEntityDetails entity={selected.entity.data} />
+              )}
+            </div>
 
+            <div className="border-b border-[#16233c] px-4 py-3">
+              <div className={`${PANEL_SECTION_LABEL} mb-2`}>INTELLIGENCE SUMMARY</div>
+              {INTEL_METRICS.map((metric) => (
+                <IntelRow key={metric.label} label={metric.label} icon={metric.icon} />
+              ))}
+              <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                Awaiting data feed — no assessment data is currently sourced.
+              </div>
+            </div>
+
+            {relationFeed.length > 0 && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-1`}>RELATIONSHIPS</div>
+                {relationFeed.map((item) => (
+                  <FeedRow
+                    key={item.key}
+                    category={item.category}
+                    color={item.color}
+                    icon={item.icon}
+                    primary={item.primary}
+                    secondary={item.secondary}
+                    marker={item.marker}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* `.more-btn` — a full-bleed footer action, not a boxed button. */}
             <button
               type="button"
               onClick={flyToSelectedCountry}
-              className="w-full border border-cyan-400/40 py-2 text-[10px] tracking-[0.25em] text-cyan-300 transition-colors hover:border-cyan-300 hover:text-cyan-100 hover:bg-cyan-400/10"
+              className="flex w-full items-center gap-2.5 px-4 py-3 text-[10.5px] font-bold tracking-[0.16em] text-[#9fb3d6] transition-colors hover:text-white"
             >
               FOCUS CAMERA
+              <span className="ml-auto text-[#4d95ff]">››</span>
             </button>
-
-            <Divider />
-
-            {selected.entity.kind === 'country' ? (
-              <CountryDetails name={selected.entity.name} />
-            ) : (
-              <GeoEntityDetails entity={selected.entity.data} />
-            )}
-
-            <Divider />
-
-            <PendingSection label="MILITARY" />
-            <PendingSection label="ECONOMY" />
-            <PendingSection label="DIPLOMACY" />
-            <PendingSection label="TECHNOLOGY" />
-            <PendingSection label="CURRENT STATUS" />
-
-            <Divider />
           </div>
         )}
       </div>

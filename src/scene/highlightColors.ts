@@ -7,27 +7,27 @@
 // tweaks a color in only one of them.
 export const HIGHLIGHT_COLORS = {
   default: {
-    hex: '#7FE9FF',
+    hex: '#7FC8FF',
     label: 'UNSELECTED',
     description: 'Default border/fill for a country or entity.',
   },
   hovered: {
-    hex: '#FFD24C',
+    hex: '#EAF4FF',
     label: 'HOVERED',
     description: 'The pointer is currently over this entity.',
   },
   selected: {
-    hex: '#FF4D4D',
+    hex: '#3F8BFF',
     label: 'SELECTED',
     description: 'The entity you clicked — the primary selection.',
   },
   territoryOverlay: {
-    hex: '#39FF6A',
+    hex: '#4FD1C5',
     label: 'TERRITORY',
     description: 'A dependency/possession of the selected sovereign state.',
   },
   claimsOverlay: {
-    hex: '#FF5CD6',
+    hex: '#8C7BFF',
     label: 'CLAIMED',
     description: 'In a sovereignty-claim relationship with the current selection (dashed outline).',
   },
@@ -40,7 +40,7 @@ export const HIGHLIGHT_COLORS = {
   // "CLAIMANT — CHINA") rather than by a second color to memorize. See
   // LOGBOOK.md's v3.1.5 entry.
   relatedCountry: {
-    hex: '#4C8DFF',
+    hex: '#5B6EF5',
     label: 'RELATED COUNTRY',
     description:
       'A sovereign state directly connected to the current selection — its administering parent or a claimant (dashed blue outline + fill + labeled marker).',
@@ -52,7 +52,7 @@ export const HIGHLIGHT_COLORS = {
   // (a category-wide accent) each time, not a fact that needs its own
   // color to stay distinguishable the way claimed-vs-claimant did.
   categoryHighlight: {
-    hex: '#B98CFF',
+    hex: '#C9B8FF',
     label: 'CATEGORY HIGHLIGHT',
     description: 'Every entity in a category enabled from the Layers panel (e.g. all sovereign states, or all strategic regions) at once.',
   },

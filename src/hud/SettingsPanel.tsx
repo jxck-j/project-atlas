@@ -5,6 +5,7 @@ import {
   useCameraSettings,
 } from './settingsStore'
 import { useHudPanel } from './hudPanelStore'
+import { PANEL_HEAD, PANEL_SECTION_LABEL, PANEL_SURFACE, PANEL_TITLE } from './panelStyles'
 
 function Slider({
   label,
@@ -17,9 +18,9 @@ function Slider({
 }) {
   return (
     <label className="block">
-      <div className="flex items-baseline justify-between text-[10px] md:text-xs mb-1">
-        <span className="text-cyan-500/60 tracking-[0.15em]">{label}</span>
-        <span className="text-cyan-100 tabular-nums">{value.toFixed(2)}</span>
+      <div className="mb-1 flex items-baseline justify-between text-[10px] md:text-xs">
+        <span className="tracking-[0.15em] text-[#6d82a8]">{label}</span>
+        <span className="font-mono tabular-nums text-[#e6efff]">{value.toFixed(2)}</span>
       </div>
       <input
         type="range"
@@ -42,10 +43,10 @@ function Slider({
 function ShortcutRow({ keys, label }: { keys: string; label: string }) {
   return (
     <div className="flex items-baseline justify-between gap-2 text-[10px] md:text-xs">
-      <span className="shrink-0 rounded border border-cyan-400/30 bg-cyan-950/40 px-1.5 py-0.5 font-mono text-cyan-200 tracking-[0.05em]">
+      <span className="shrink-0 rounded border border-[#26385c] bg-[#0e1729] px-1.5 py-0.5 tracking-[0.05em] text-[#c6d6f0]">
         {keys}
       </span>
-      <span className="text-right text-cyan-500/70 tracking-[0.05em]">{label}</span>
+      <span className="text-right tracking-[0.05em] text-[#6d82a8]">{label}</span>
     </div>
   )
 }
@@ -53,7 +54,7 @@ function ShortcutRow({ keys, label }: { keys: string; label: string }) {
 function ShortcutGroup({ title, rows }: { title: string; rows: [string, string][] }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-[9px] tracking-[0.25em] text-cyan-500/50">{title}</div>
+      <div className="text-[9px] tracking-[0.25em] text-[#51648a]">{title}</div>
       <div className="space-y-1">
         {rows.map(([keys, label]) => (
           <ShortcutRow key={keys} keys={keys} label={label} />
@@ -92,35 +93,31 @@ export function SettingsPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="pointer-events-auto fixed top-24 left-4 md:top-28 md:left-8 z-30 w-56 md:w-64">
-      <div className="max-h-[75vh] overflow-y-auto border border-cyan-400/25 bg-cyan-950/25 backdrop-blur-sm px-4 py-3 font-mono space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-amber-400/90 tracking-[0.25em] text-[10px] md:text-xs">
-              CAMERA
-            </span>
-            <button
-              type="button"
-              onClick={resetCameraSettings}
-              className="text-cyan-500/60 hover:text-cyan-200 text-[10px] tracking-[0.1em] transition-colors"
-            >
-              RESET
-            </button>
-          </div>
+    <div className="pointer-events-auto fixed top-[72px] right-4 z-40 w-56 md:w-64">
+      <div className={`max-h-[75vh] overflow-y-auto ${PANEL_SURFACE}`}>
+        <div className={PANEL_HEAD}>
+          <span className={PANEL_TITLE}>SETTINGS</span>
+          <button
+            type="button"
+            onClick={resetCameraSettings}
+            className="text-[10px] tracking-[0.1em] text-[#6d82a8] transition-colors hover:text-[#e6efff]"
+          >
+            RESET
+          </button>
+        </div>
+
+        <div className="space-y-3 border-b border-[#16233c] px-4 py-3">
+          <div className={PANEL_SECTION_LABEL}>CAMERA</div>
           <Slider label="ROTATE SENS" value={rotateSensitivity} onChange={setRotateSensitivity} />
           <Slider label="ZOOM SENS" value={zoomSensitivity} onChange={setZoomSensitivity} />
         </div>
 
-        <div className="h-px w-full bg-cyan-400/20" />
-
-        <div className="space-y-3">
-          <span className="text-amber-400/90 tracking-[0.25em] text-[10px] md:text-xs">
-            KEYBOARD SHORTCUTS
-          </span>
+        <div className="space-y-3 px-4 py-3">
+          <div className={PANEL_SECTION_LABEL}>KEYBOARD SHORTCUTS</div>
           <ShortcutGroup title="CAMERA" rows={CAMERA_SHORTCUTS} />
           <ShortcutGroup title="NAVIGATION" rows={NAVIGATION_SHORTCUTS} />
           <ShortcutGroup title="HUD" rows={HUD_SHORTCUTS} />
-          <div className="text-[9px] italic leading-relaxed text-cyan-500/40">
+          <div className="text-[9px] leading-relaxed italic text-[#51648a]">
             Disabled while typing in a text field.
           </div>
         </div>

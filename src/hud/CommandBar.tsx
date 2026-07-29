@@ -13,7 +13,7 @@ function formatCoord(lat: number | null, lng: number | null) {
 
 function Segment({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-1.5 border-r border-cyan-400/15 px-3 last:border-r-0">
+    <div className="flex items-center gap-1.5 border-r border-[#16233c] px-3 last:border-r-0">
       {children}
     </div>
   )
@@ -36,7 +36,7 @@ export function CommandBar() {
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center">
-      <div className="pointer-events-auto flex items-stretch border-x border-t border-cyan-400/25 bg-cyan-950/25 backdrop-blur-sm px-1 py-1.5 font-mono text-[10px] tracking-[0.15em]">
+      <div className="pointer-events-auto flex items-stretch rounded-t-lg border-x border-t border-[#172440] bg-[rgba(7,11,20,0.92)] px-1 py-1.5 text-[10px] tracking-[0.15em] backdrop-blur-[12px] shadow-[0_10px_34px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(120,160,230,0.06)]">
         <Segment>
           <span
             className={`h-1.5 w-1.5 rounded-full ${
@@ -50,28 +50,28 @@ export function CommandBar() {
           </span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">LINK</span>
-          <span className="text-cyan-100">CONNECTED</span>
+          <span className="text-[#6d82a8]">LINK</span>
+          <span className="text-[#e6efff]">CONNECTED</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">COUNTRIES</span>
-          <span className="text-cyan-100 tabular-nums">{features.length}</span>
+          <span className="text-[#6d82a8]">COUNTRIES</span>
+          <span className="font-mono tabular-nums text-[#e6efff]">{features.length}</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">ENTITIES</span>
-          <span className="text-cyan-100 tabular-nums">{entityFeatures.length}</span>
+          <span className="text-[#6d82a8]">ENTITIES</span>
+          <span className="font-mono tabular-nums text-[#e6efff]">{entityFeatures.length}</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">SELECTED</span>
-          <span className="max-w-[140px] truncate text-cyan-100">{selected?.name.toUpperCase() ?? '—'}</span>
+          <span className="text-[#6d82a8]">SELECTED</span>
+          <span className="max-w-[140px] truncate text-[#e6efff]">{selected?.name.toUpperCase() ?? '—'}</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">FPS</span>
-          <span className="text-cyan-100 tabular-nums">{fps}</span>
+          <span className="text-[#6d82a8]">FPS</span>
+          <span className="font-mono tabular-nums text-[#e6efff]">{fps}</span>
         </Segment>
         <Segment>
-          <span className="text-cyan-500/60">COORD</span>
-          <span className="text-cyan-100 tabular-nums">{formatCoord(hoverLat, hoverLng)}</span>
+          <span className="text-[#6d82a8]">COORD</span>
+          <span className="font-mono tabular-nums text-[#e6efff]">{formatCoord(hoverLat, hoverLng)}</span>
         </Segment>
       </div>
     </div>
