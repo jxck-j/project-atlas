@@ -17,16 +17,24 @@ import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 // Bottom-left is the one always-visible corner regardless of selection
 // state.
 //
-// Every color/label/description comes from scene/highlightColors.ts — the
-// exact same values Countries.tsx, GeoEntities.tsx, and every geoOverlays
-// layer render with — so this can't drift out of sync with what's actually
-// on screen. The overlay rows (TERRITORY; CLAIMED + RELATED COUNTRY
-// together, since ClaimsOverlayLayer/"Relationships Overlay" renders both
-// directions of these relationships — see that file's v3.1.5 comments;
+// v5.1: a plain two-column key — swatch + label, nothing else drawn around
+// either — replacing an earlier attempt at pill-shaped chips that turned out
+// to just be more chrome to look at, not less. The full-sentence description
+// still isn't printed inline (that was the original layout, and it cost
+// several permanent lines of screen space for facts most of the time don't
+// need reading twice) — it's on each row's native `title` tooltip instead,
+// still sourced from the exact same HIGHLIGHT_COLORS entry.
+//
+// Every color/label/description still comes from scene/highlightColors.ts —
+// the exact same values Countries.tsx, GeoEntities.tsx, and every
+// geoOverlays layer render with — so this can't drift out of sync with
+// what's actually on screen. The overlay rows (TERRITORY; CLAIMED + RELATED
+// COUNTRY together, since ClaimsOverlayLayer/"Relationships Overlay" renders
+// both directions of these relationships — see that file's v3.1.5 comments;
 // CATEGORY HIGHLIGHT, v3.3.0) are conditional on the relevant layer(s)
 // actually being enabled (read via the Layer Engine barrel, same as
-// LayerPanel.tsx): showing "CLAIMED = magenta" while the overlay is
-// toggled off would describe a color nothing on screen currently uses.
+// LayerPanel.tsx): showing a "CLAIMED" row while the overlay is toggled off
+// would describe a color nothing on screen currently uses.
 //
 // CATEGORY_HIGHLIGHT_LAYER_IDS lists all six of
 // CategoryHighlightLayer.tsx's registered layer ids rather than iterating
@@ -37,17 +45,14 @@ import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 // itself, so this file could iterate the registry instead of naming ids.
 // Six is small enough that hand-listing them here was the pragmatic call
 // for now, same reasoning the two hardcoded ids below already used.
-function LegendRow({ color, label, description }: { color: string; label: string; description: string }) {
+function LegendKey({ color, label, description }: { color: string; label: string; description: string }) {
   return (
-    <div className="flex items-start gap-2">
+    <div title={description} className="flex cursor-default items-center gap-1.5 text-[#b7c6e6]">
       <span
-        className="mt-1 h-2 w-2 shrink-0 rounded-full"
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
         style={{ backgroundColor: color, boxShadow: `0 0 5px 1px ${color}` }}
       />
-      <div className="space-y-0.5">
-        <div className="tracking-[0.15em] text-[#dce8fb]">{label}</div>
-        <div className="text-[9px] leading-tight text-[#51648a]">{description}</div>
-      </div>
+      <span className="truncate tracking-[0.08em]">{label}</span>
     </div>
   )
 }
@@ -66,53 +71,23 @@ export function LegendPanel() {
   const enabledMap = useLayerEnabledMap()
   const anyCategoryHighlightEnabled = CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id])
 
-  return (
-    <div className={`${PANEL_SURFACE} min-w-[190px] max-w-[240px] space-y-2.5 px-4 py-3 text-[10px] md:text-xs`}>
-      <div className={`${PANEL_SECTION_LABEL} mb-1`}>LEGEND</div>
+  const entries = [
+    HIGHLIGHT_COLORS.default,
+    HIGHLIGHT_COLORS.hovered,
+    HIGHLIGHT_COLORS.selected,
+    ...(enabledMap['parent-territory-overlay'] ? [HIGHLIGHT_COLORS.territoryOverlay] : []),
+    ...(enabledMap['claims-overlay'] ? [HIGHLIGHT_COLORS.claimsOverlay, HIGHLIGHT_COLORS.relatedCountry] : []),
+    ...(anyCategoryHighlightEnabled ? [HIGHLIGHT_COLORS.categoryHighlight] : []),
+  ]
 
-      <LegendRow
-        color={HIGHLIGHT_COLORS.default.hex}
-        label={HIGHLIGHT_COLORS.default.label}
-        description={HIGHLIGHT_COLORS.default.description}
-      />
-      <LegendRow
-        color={HIGHLIGHT_COLORS.hovered.hex}
-        label={HIGHLIGHT_COLORS.hovered.label}
-        description={HIGHLIGHT_COLORS.hovered.description}
-      />
-      <LegendRow
-        color={HIGHLIGHT_COLORS.selected.hex}
-        label={HIGHLIGHT_COLORS.selected.label}
-        description={HIGHLIGHT_COLORS.selected.description}
-      />
-      {enabledMap['parent-territory-overlay'] && (
-        <LegendRow
-          color={HIGHLIGHT_COLORS.territoryOverlay.hex}
-          label={HIGHLIGHT_COLORS.territoryOverlay.label}
-          description={HIGHLIGHT_COLORS.territoryOverlay.description}
-        />
-      )}
-      {enabledMap['claims-overlay'] && (
-        <>
-          <LegendRow
-            color={HIGHLIGHT_COLORS.claimsOverlay.hex}
-            label={HIGHLIGHT_COLORS.claimsOverlay.label}
-            description={HIGHLIGHT_COLORS.claimsOverlay.description}
-          />
-          <LegendRow
-            color={HIGHLIGHT_COLORS.relatedCountry.hex}
-            label={HIGHLIGHT_COLORS.relatedCountry.label}
-            description={HIGHLIGHT_COLORS.relatedCountry.description}
-          />
-        </>
-      )}
-      {anyCategoryHighlightEnabled && (
-        <LegendRow
-          color={HIGHLIGHT_COLORS.categoryHighlight.hex}
-          label={HIGHLIGHT_COLORS.categoryHighlight.label}
-          description={HIGHLIGHT_COLORS.categoryHighlight.description}
-        />
-      )}
+  return (
+    <div className={`${PANEL_SURFACE} min-w-[190px] max-w-[280px] px-4 py-3 text-[10px] md:text-[10.5px]`}>
+      <div className={`${PANEL_SECTION_LABEL} mb-2`}>LEGEND</div>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+        {entries.map((entry) => (
+          <LegendKey key={entry.label} color={entry.hex} label={entry.label} description={entry.description} />
+        ))}
+      </div>
     </div>
   )
 }

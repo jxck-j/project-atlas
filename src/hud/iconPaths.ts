@@ -32,4 +32,6 @@ export const ICONS = {
   pin: ['M12 21s-7-6.5-7-11a7 7 0 0114 0c0 4.5-7 11-7 11z', 'M12 8a2 2 0 100 4 2 2 0 000-4z'],
   target: ['M12 4a8 8 0 100 16 8 8 0 000-16z', 'M12 9a3 3 0 100 6 3 3 0 000-6z'],
   bookmark: ['M6 3h12v18l-6-4-6 4z'],
+  chevronsLeft: ['M11 17l-5-5 5-5', 'M18 17l-5-5 5-5'],
+  chevronsRight: ['M13 17l5-5-5-5', 'M6 17l5-5-5-5'],
 } as const

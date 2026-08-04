@@ -59,7 +59,7 @@ export function TopNav() {
   const openPanel = useHudPanel()
 
   return (
-    <header className="pointer-events-auto fixed inset-x-0 top-0 z-40 flex h-16 items-center gap-7 border-b border-[#14213a] bg-[linear-gradient(180deg,rgba(6,10,19,0.96),rgba(6,10,19,0.82))] px-4 backdrop-blur-[12px]">
+    <header className="pointer-events-auto fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-7 border-b border-[#14213a] bg-[linear-gradient(180deg,rgba(6,10,19,0.96),rgba(6,10,19,0.82))] px-4 backdrop-blur-[12px]">
       {/* Brand — top left */}
       <button
         type="button"

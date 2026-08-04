@@ -1,7 +1,6 @@
 import { Scene } from './scene/Scene'
 import { TopNav } from './hud/TopNav'
 import { SideRail } from './hud/SideRail'
-import { Telemetry } from './hud/Telemetry'
 import { CommandBar } from './hud/CommandBar'
 import { SettingsPanel } from './hud/SettingsPanel'
 import { LayerPanel } from './hud/LayerPanel'
@@ -19,11 +18,13 @@ function App() {
           positioning itself. */}
       <TopNav />
       <SideRail />
-      {/* Shared bottom-left stack (v3.1) — Telemetry and LegendPanel no
-          longer position themselves; letting flexbox stack them means
-          neither has to hardcode the other's rendered height. */}
+      {/* Bottom-left stack (v3.1) — Telemetry (AZ/EL/RANGE orbit readout)
+          removed from here for now, not deleted; hud/Telemetry.tsx and
+          telemetryStore.ts are untouched, so it's a one-line re-add. Kept as
+          a flex column (not just LegendPanel directly) so Telemetry can drop
+          back in without either component needing to hardcode the other's
+          rendered height. */}
       <div className="pointer-events-none fixed bottom-16 left-6 z-20 flex flex-col gap-3">
-        <Telemetry />
         <LegendPanel />
       </div>
       <CommandBar />

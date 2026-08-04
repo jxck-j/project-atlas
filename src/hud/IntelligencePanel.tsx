@@ -246,7 +246,7 @@ export function IntelligencePanel() {
 
   return (
     <div
-      className={`fixed top-16 bottom-0 right-0 z-30 w-full sm:w-[380px] transition-transform duration-500 ease-out ${
+      className={`fixed top-14 bottom-0 right-0 z-30 w-full sm:w-[380px] transition-transform duration-500 ease-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >

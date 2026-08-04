@@ -93,7 +93,7 @@ export function SettingsPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="pointer-events-auto fixed top-[72px] right-4 z-40 w-56 md:w-64">
+    <div className="pointer-events-auto fixed top-[64px] right-4 z-40 w-56 md:w-64">
       <div className={`max-h-[75vh] overflow-y-auto ${PANEL_SURFACE}`}>
         <div className={PANEL_HEAD}>
           <span className={PANEL_TITLE}>SETTINGS</span>

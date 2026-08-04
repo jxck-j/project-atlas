@@ -25,9 +25,10 @@ export type SideNavId =
 // corresponding view exists.
 export type TopNavTab = 'map' | 'intelligence' | 'layers' | 'analytics' | 'database'
 
-const useNavStore = create<{ section: SideNavId; tab: TopNavTab }>(() => ({
+const useNavStore = create<{ section: SideNavId; tab: TopNavTab; sideRailCollapsed: boolean }>(() => ({
   section: 'overview',
   tab: 'map',
+  sideRailCollapsed: false,
 }))
 
 export function setSideNavSection(section: SideNavId) {
@@ -44,4 +45,15 @@ export function setTopNavTab(tab: TopNavTab) {
 
 export function useTopNavTab(): TopNavTab {
   return useNavStore((state) => state.tab)
+}
+
+// Collapsed state for hud/SideRail.tsx's own hide/show toggle — independent
+// of `section` (collapsing the rail doesn't clear or change which section is
+// active, it just stops showing the list of them).
+export function toggleSideRail() {
+  useNavStore.setState((state) => ({ sideRailCollapsed: !state.sideRailCollapsed }))
+}
+
+export function useSideRailCollapsed(): boolean {
+  return useNavStore((state) => state.sideRailCollapsed)
 }

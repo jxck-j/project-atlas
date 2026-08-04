@@ -52,7 +52,7 @@ export function LayerPanel() {
   if (!isOpen) return null
 
   return (
-    <div className="pointer-events-auto fixed top-20 left-[168px] z-30 w-56 md:w-64">
+    <div className="pointer-events-auto fixed top-[72px] left-[168px] z-30 w-56 md:w-64">
       <div className={PANEL_SURFACE}>
         <div className={PANEL_HEAD}>
           <span className={PANEL_TITLE}>LAYER CONTROL</span>
