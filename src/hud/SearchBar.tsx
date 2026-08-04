@@ -6,7 +6,7 @@ import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
 import { useCitiesFeatures } from '../scene/useCitiesFeatures'
 import { useUsCitiesIndex } from '../scene/useUsCitiesIndex'
 import { geometryToCentroid } from '../scene/countryGeometry'
-import { latLngToVector3 } from '../utils/geo'
+import { angularDistance, latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
 import { flyToSelectedCountry, flyToUsCity, selectEntity } from './selectionStore'
@@ -20,6 +20,30 @@ import { ICONS } from './iconPaths'
 
 const UP_AXIS = new Vector3(0, 1, 0)
 const MAX_RESULTS = 8
+
+// A handful of cities.json's "major world city" entries for the USA
+// (Washington D.C., New York, Chicago, ...) name the exact same real-world
+// place as one specific record in the much larger us-cities Census index —
+// e.g. cities.json's "Washington,  D.C." and dc.json's single place,
+// "Washington", ~0.5km apart. Both datasets still need to exist for their
+// own render paths (Cities.tsx's always-on capital marker vs
+// UsCityLabels.tsx's population-scored zoom labels/outline highlight — see
+// CLAUDE.md), but search should only ever surface one result for a place a
+// user would type once. ~50km (0.5deg at the equator, as radians) is
+// generous enough to cover the centroid-vs-downtown-point gap between the
+// two datasets' coordinates for the same city, while still being far
+// smaller than the distance between two different US places that happen to
+// share a name (e.g. Boston, MA vs Boston, GA).
+const SAME_PLACE_RADIUS_RAD = (0.5 * Math.PI) / 180
+
+// Strips a trailing ", ST"/", Country" qualifier so "Washington,  D.C."
+// and "Washington" compare equal — cities.json sometimes bakes a
+// disambiguator into `name` itself (see its own "Washington,  D.C." double
+// space) where the us-cities index instead carries it as a separate
+// `stateAbbrev` field.
+function baseCityName(name: string): string {
+  return name.split(',')[0].trim().toLowerCase()
+}
 
 // Every kind of entity search currently knows how to return, normalized to
 // one flat shape so matching/ranking/rendering don't need to branch on
@@ -135,27 +159,46 @@ export function SearchBar() {
   // provinceEntries, but reading lat/lng straight off Point coordinates —
   // geometryToCentroid assumes Polygon/MultiPolygon and would silently
   // return {lat:0,lng:0} for a Point, so it's deliberately not reused here.
+  //
+  // Skips any entry that's really the same US place as one already in
+  // usCitiesIndex (see SAME_PLACE_RADIUS_RAD above) — keeping the
+  // us-city-boundary entry instead of this one. cities.json's world-city
+  // dataset has no state qualifier at all, so e.g. Atlanta/GA and
+  // Washington/D.C. would otherwise show up as bare "Atlanta"/"Washington,
+  // D.C." here, indistinguishable from same-named places in other states;
+  // and selecting this entry flies the camera there with no boundary
+  // outline (see UsCityOutlineHighlight.tsx), which read as a worse,
+  // silently-broken result for the exact same query a US city search
+  // already answers properly.
   const cityEntries = useMemo<SearchEntry[]>(() => {
     return cityFeatures.flatMap((f) => {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (!id || f.geometry.type !== 'Point') return []
       const [lng, lat] = f.geometry.coordinates
       const registryEntity = getEntity(id)
+      const name = registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown'
+      const entryName = baseCityName(name)
+      const duplicatesUsCity = usCitiesIndex.some(
+        (c) => baseCityName(c.name) === entryName && angularDistance({ lat, lng }, c) < SAME_PLACE_RADIUS_RAD
+      )
+      if (duplicatesUsCity) return []
       return [
         {
           id,
-          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          name,
           kind: registryEntity?.type ?? ('city' as const),
           lat,
           lng,
         },
       ]
     })
-  }, [cityFeatures])
+  }, [cityFeatures, usCitiesIndex])
 
   // US city boundaries: not a GeoEntityRegistry lookup at all — the index
   // entry itself already has everything a search result needs (id/name/
-  // lat/lng). See the 'us-city-boundary' kind's doc comment above.
+  // lat/lng). See the 'us-city-boundary' kind's doc comment above. Always
+  // included, unfiltered — cityEntries above is the one that skips a
+  // duplicate, so this list doesn't need to know cityEntries exists.
   const usCityEntries = useMemo<SearchEntry[]>(() => {
     return usCitiesIndex.map((entry) => ({
       id: entry.id,
