@@ -1,6 +1,6 @@
 import earcut, { flatten } from 'earcut'
 import { BufferGeometry, Float32BufferAttribute } from 'three'
-import type { Geometry, MultiPolygon, Polygon, Position } from 'geojson'
+import type { Geometry, LineString, MultiLineString, MultiPolygon, Polygon, Position } from 'geojson'
 import { latLngToVector3 } from '../utils/geo'
 
 // Walks a ring and shifts each point's longitude by a multiple of 360° so it
@@ -85,6 +85,41 @@ export function geometryToBorderSegments(geometry: Geometry, radius: number): Fl
         const b = latLngToVector3(latB, lngB, radius)
         positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
       }
+    }
+  }
+
+  return new Float32Array(positions)
+}
+
+function geometryToPolylines(geometry: Geometry): Position[][] {
+  return geometry.type === 'LineString'
+    ? [(geometry as LineString).coordinates]
+    : geometry.type === 'MultiLineString'
+      ? (geometry as MultiLineString).coordinates
+      : []
+}
+
+// 2026-08-08: rivers (LineString/MultiLineString, unlike every other
+// geometry this file handles) have no ring to close and no interior to
+// fill — geometryToPolygons() returns [] for this geometry type, so
+// geometryToBorderSegments/geometryToFillMesh silently produce empty
+// output for it. This is the line equivalent of geometryToBorderSegments:
+// same "one flat Float32Array of segment pairs per feature, one
+// THREE.LineSegments draw call" reasoning, same antimeridian-unwrap
+// handling, just walking a line's own points directly instead of a
+// polygon ring.
+export function geometryToLineSegments(geometry: Geometry, radius: number): Float32Array {
+  const lines = geometryToPolylines(geometry)
+  const positions: number[] = []
+
+  for (const line of lines) {
+    const unwrapped = unwrapRingLongitudes(line)
+    for (let i = 0; i < unwrapped.length - 1; i++) {
+      const [lngA, latA] = unwrapped[i]
+      const [lngB, latB] = unwrapped[i + 1]
+      const a = latLngToVector3(latA, lngA, radius)
+      const b = latLngToVector3(latB, lngB, radius)
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
     }
   }
 

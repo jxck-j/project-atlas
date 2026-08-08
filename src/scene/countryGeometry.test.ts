@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import earcut, { deviation, flatten } from 'earcut'
-import type { Polygon, MultiPolygon, Position } from 'geojson'
+import type { LineString, MultiLineString, Polygon, MultiPolygon, Position } from 'geojson'
 import { latLngToVector3 } from '../utils/geo'
 import {
   geometryToAngularExtent,
   geometryToBorderSegments,
   geometryToCentroid,
   geometryToFillMesh,
+  geometryToLineSegments,
 } from './countryGeometry'
 
 // A simple 10x10-degree square, centered nowhere near the antimeridian —
@@ -208,6 +209,80 @@ describe('geometryToBorderSegments', () => {
 
     expect(combined.length).toBe(segmentsA.length + segmentsB.length)
     expect(Array.from(combined)).toEqual([...Array.from(segmentsA), ...Array.from(segmentsB)])
+  })
+})
+
+// 2026-08-08: geometryToLineSegments is the LineString/MultiLineString
+// equivalent of geometryToBorderSegments above (added for rivers, which
+// have no ring to close and no interior — see countryGeometry.ts's own
+// comment on this function). Mirrors that describe block's structure and
+// reuses the exact same three-point projection derivation, since a
+// LineString is just an unclosed version of the same ring data
+// geometryToBorderSegments already walks.
+describe('geometryToLineSegments', () => {
+  const RADIUS = 5
+  const OPEN_LINE: LineString = {
+    type: 'LineString',
+    coordinates: [
+      [0, 0],
+      [-90, 0],
+      [0, 90],
+    ],
+  }
+
+  it('emits (points - 1) segments of 6 floats each, and does NOT close the ring', () => {
+    const segments = geometryToLineSegments(OPEN_LINE, RADIUS)
+    // 3 points, unclosed -> 2 segments -> 12 floats (not 18, which a closed
+    // triangle would give — this is the key behavioral difference from
+    // geometryToBorderSegments).
+    expect(segments.length).toBe(12)
+  })
+
+  it('projects each segment endpoint through latLngToVector3 in point order', () => {
+    const segments = Array.from(geometryToLineSegments(OPEN_LINE, RADIUS))
+    const p0 = latLngToVector3(0, 0, RADIUS)
+    const p1 = latLngToVector3(0, -90, RADIUS)
+    const p2 = latLngToVector3(90, 0, RADIUS)
+
+    const expected = [
+      p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, // segment 0: p0 -> p1
+      p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, // segment 1: p1 -> p2
+      // no closing segment back to p0 -- that's the whole point of a line
+    ]
+    for (let i = 0; i < expected.length; i++) {
+      expect(segments[i]).toBeCloseTo(expected[i], 5)
+    }
+  })
+
+  it('merges a MultiLineString into one array, equal to the concatenation of its parts', () => {
+    const lineA: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+      ],
+    }
+    const lineB: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [100, 0],
+        [110, 0],
+      ],
+    }
+    const multi: MultiLineString = { type: 'MultiLineString', coordinates: [lineA.coordinates, lineB.coordinates] }
+
+    const segmentsA = geometryToLineSegments(lineA, RADIUS)
+    const segmentsB = geometryToLineSegments(lineB, RADIUS)
+    const combined = geometryToLineSegments(multi, RADIUS)
+
+    expect(combined.length).toBe(segmentsA.length + segmentsB.length)
+    expect(Array.from(combined)).toEqual([...Array.from(segmentsA), ...Array.from(segmentsB)])
+  })
+
+  it('returns an empty array for Polygon geometry (not its job)', () => {
+    const segments = geometryToLineSegments(SIMPLE_SQUARE, RADIUS)
+    expect(segments.length).toBe(0)
   })
 })
 

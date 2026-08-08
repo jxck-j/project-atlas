@@ -15,6 +15,7 @@ import { UsCityLabels } from './UsCityLabels'
 import { CountryLabels } from './CountryLabels'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
+import { coreSphereRef } from './coreSphereRef'
 import { setGlobeRotationY } from './globeRotation'
 import { resetView, useSelection } from '../hud/selectionStore'
 import { publishTelemetry } from '../hud/telemetryStore'
@@ -110,7 +111,11 @@ function WaterLabels({ occluder }: { occluder: RefObject<Mesh | null> }) {
 
 export function Globe() {
   const groupRef = useRef<Group>(null)
-  const coreSphereRef = useRef<Mesh>(null)
+  // Not a local useRef — see coreSphereRef.ts. A Layer Engine-mounted
+  // component (scene/Lakes.tsx) isn't a direct child of Globe.tsx the way
+  // WaterLabels is, so it can't receive this via props; importing the same
+  // shared ref object is what lets it occlude its own labels against the
+  // core sphere too.
   const { selected } = useSelection()
   const { ambientRotationEnabled } = useCameraSettings()
 

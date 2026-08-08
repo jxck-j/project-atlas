@@ -39,6 +39,20 @@ export const LOD_LEVELS: LodLevel[] = [
     implemented: true,
   },
   {
+    id: 'lakes',
+    label: 'Lakes',
+    description: 'Major lakes (Natural Earth 1:50m, 412 features) — same "always on" reasoning as countries/states.',
+    revealDistance: null,
+    implemented: true,
+  },
+  {
+    id: 'rivers',
+    label: 'Rivers',
+    description: 'Major rivers (Natural Earth 1:50m, scalerank <= 3, 116 features) — same "always on" reasoning as countries/states.',
+    revealDistance: null,
+    implemented: true,
+  },
+  {
     id: 'metro-areas',
     label: 'Major Metropolitan Areas',
     description: 'US cities scored (by population, capitals floored) at 700,000+.',
@@ -79,7 +93,6 @@ export const LOD_LEVELS: LodLevel[] = [
   // regardless of distance until that work happens.
   { id: 'roads', label: 'Roads', description: 'Not yet implemented.', revealDistance: null, implemented: false },
   { id: 'rail', label: 'Rail', description: 'Not yet implemented.', revealDistance: null, implemented: false },
-  { id: 'rivers', label: 'Rivers', description: 'Not yet implemented.', revealDistance: null, implemented: false },
   { id: 'airports', label: 'Airports', description: 'Not yet implemented.', revealDistance: null, implemented: false },
   { id: 'ports', label: 'Ports', description: 'Not yet implemented.', revealDistance: null, implemented: false },
   {
