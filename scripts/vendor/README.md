@@ -39,3 +39,28 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   dangling parent-country reference. Point data needs no topojson
   simplification — this is the one build script in `scripts/` that doesn't
   go through `scripts/lib/topologyPipeline.mjs`.
+
+## `ne_50m_lakes.geojson`
+
+- **Source:** Natural Earth 1:50m Physical Vectors, "Lakes" layer, via the
+  same `nvkelso/natural-earth-vector` GitHub mirror.
+- **Fetched:** 2026-08-08.
+- **License:** Public domain.
+- **Coverage caveat:** none applied — `scripts/buildLakesTopology.mjs` keeps
+  all 412 source features. Decorative-only layer (see that script's header
+  comment): no id-stamping, no `GeoEntityRegistry` entry, no `GeometryMap`
+  registration — lakes are physical geography, not political entities.
+
+## `ne_50m_rivers_lake_centerlines.geojson`
+
+- **Source:** Natural Earth 1:50m Physical Vectors, "Rivers + lake
+  centerlines" layer, via the same `nvkelso/natural-earth-vector` GitHub
+  mirror.
+- **Fetched:** 2026-08-08.
+- **License:** Public domain.
+- **Coverage caveat:** `scripts/buildRiversTopology.mjs` keeps only
+  `scalerank <= 3` (major rivers) — 116 of the source's 462 features, a
+  deliberate pilot-scope choice mirroring the states/provinces and cities
+  precedents above. Raising that constant (up to 6, for full coverage) is
+  the upgrade path later, no pipeline redesign required. Decorative-only,
+  same reasoning as lakes above.

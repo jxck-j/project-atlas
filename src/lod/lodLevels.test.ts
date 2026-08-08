@@ -8,7 +8,7 @@ import { isLodLevelActive, LOD_LEVELS, resolveActiveLevels, resolveDeepestLevel 
 // expectations rather than a silent behavior change. Expected values below
 // are derived directly from LOD_LEVELS' own definitions, not guessed.
 
-const ALWAYS_ON = ['earth', 'countries', 'states']
+const ALWAYS_ON = ['earth', 'countries', 'states', 'lakes', 'rivers']
 
 describe('resolveActiveLevels', () => {
   it('returns only the always-on levels when zoomed all the way out', () => {
@@ -55,8 +55,8 @@ describe('resolveActiveLevels', () => {
 })
 
 describe('resolveDeepestLevel', () => {
-  it('is "states" (the deepest always-on level) when zoomed all the way out', () => {
-    expect(resolveDeepestLevel(10).id).toBe('states')
+  it('is "rivers" (the deepest always-on level) when zoomed all the way out', () => {
+    expect(resolveDeepestLevel(10).id).toBe('rivers')
   })
 
   it('is "medium-cities" at distance 2.6', () => {

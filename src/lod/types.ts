@@ -8,10 +8,17 @@
 // lodLevels.ts and flip `implemented` to true (see that file) — never a
 // second camera/LOD redesign, never a new locally-duplicated distance
 // table the way UsCityLabels.tsx's old REVEAL_TIERS was before this.
+//
+// 'lakes' (2026-08-08) wasn't part of that original reserved list — it's
+// added directly as implemented alongside 'rivers' (the first of the seven
+// reserved ids to actually get built) rather than reserved ahead of time,
+// since both landed in the same pass. See scene/Lakes.tsx/Rivers.tsx and
+// GEO_ENGINE_README.md.
 export type LodLevelId =
   | 'earth'
   | 'countries'
   | 'states'
+  | 'lakes'
   | 'metro-areas'
   | 'large-cities'
   | 'medium-cities'
