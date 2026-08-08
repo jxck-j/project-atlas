@@ -1,11 +1,11 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { invalidate, useFrame, useThree } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import { BackSide, FrontSide, Group, type Mesh, type Object3D } from 'three'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
 import { WATER_BODIES } from '../data/waterBodies'
-import { latLngPathToPoints, latLngToVector3, vector3ToLatLng } from '../utils/geo'
+import { latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
 import { GeoEntities } from './GeoEntities'
@@ -24,55 +24,6 @@ import { useCameraSettings } from '../hud/settingsStore'
 // themselves. Above it (the default overview distance is ~6.5) only the 5
 // ocean labels show, so the globe doesn't open with 25+ labels crowding it.
 const SEA_LABEL_REVEAL_DISTANCE = 4.5
-
-function GraticuleGrid() {
-  // Latitude rings
-  const latLines = useMemo(() => {
-    const lines: [number, number][][] = []
-    for (let lat = -60; lat <= 60; lat += 20) {
-      const ring: [number, number][] = []
-      for (let lng = -180; lng <= 180; lng += 5) ring.push([lat, lng])
-      lines.push(ring)
-    }
-    return lines
-  }, [])
-
-  // Longitude rings
-  const lngLines = useMemo(() => {
-    const lines: [number, number][][] = []
-    for (let lng = -180; lng < 180; lng += 20) {
-      const ring: [number, number][] = []
-      for (let lat = -90; lat <= 90; lat += 5) ring.push([lat, lng])
-      lines.push(ring)
-    }
-    return lines
-  }, [])
-
-  return (
-    <group>
-      {latLines.map((ring, i) => (
-        <Line
-          key={`lat-${i}`}
-          points={latLngPathToPoints(ring, RADIUS)}
-          color="#2E7A93"
-          lineWidth={0.6}
-          transparent
-          opacity={0.25}
-        />
-      ))}
-      {lngLines.map((ring, i) => (
-        <Line
-          key={`lng-${i}`}
-          points={latLngPathToPoints(ring, RADIUS)}
-          color="#2E7A93"
-          lineWidth={0.6}
-          transparent
-          opacity={0.25}
-        />
-      ))}
-    </group>
-  )
-}
 
 const CAPITAL_MARKER_COLOR = '#FF8A3D'
 
@@ -189,11 +140,11 @@ export function Globe() {
 
   return (
     <group ref={groupRef}>
-      {/* Core sphere: slightly translucent "holographic" shell while idle,
-          fully solid as soon as a country is selected. Also the "empty
-          ocean" double-click target — country meshes sit in front of it and
-          stop the event from reaching here, so this only fires where there's
-          no country underneath the cursor. */}
+      {/* Core sphere: always fully opaque, pitch black — represents the
+          ocean/every non-land patch of the globe. Also the "empty ocean"
+          double-click target — country meshes sit in front of it and stop
+          the event from reaching here, so this only fires where there's no
+          country underneath the cursor. */}
       <mesh
         ref={coreSphereRef}
         onDoubleClick={(e) => {
@@ -209,9 +160,7 @@ export function Globe() {
       >
         <sphereGeometry args={[RADIUS * 0.98, 64, 64]} />
         <meshBasicMaterial
-          color="#04141C"
-          transparent={!selected}
-          opacity={selected ? 1 : 0.35}
+          color="#000000"
           side={FrontSide}
           // Country fill sits only ~0.02*RADIUS above this — polygonOffset
           // pushes this sphere's depth back a hair so it doesn't z-fight
@@ -222,7 +171,6 @@ export function Globe() {
         />
       </mesh>
 
-      <GraticuleGrid />
       <Countries />
       <GeoEntities />
       <CapitalMarker />

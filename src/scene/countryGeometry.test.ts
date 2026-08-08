@@ -303,3 +303,89 @@ describe('geometryToFillMesh', () => {
     expect(combined.index!.count).toBe(geoA.index!.count + geoB.index!.count)
   })
 })
+
+// 2026-08-07/08: covers the "black gap" defect documented in BACKLOG.md and
+// in this file's own header comment above geometryToFillMesh — confirmed
+// (via a standalone script against the real shipped countries-un193.json)
+// to be caused by a single wide earcut "ear" triangle whose flat 3D chord
+// sags measurably below the sphere's true curved surface once projected,
+// dipping past the opaque core sphere and rendering black. A 3-point ring
+// this wide is structurally the same shape as the real offending triangle
+// found in Brazil's mainland polygon (earcut of a bare triangle just
+// returns it unchanged, so this exercises the exact same "one huge flat
+// triangle" case without needing the full 3,613-point real ring).
+describe('geometryToFillMesh subdivides wide triangles (black-gap fix)', () => {
+  const WIDE_TRIANGLE: Polygon = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [-40, -30],
+        [40, -20],
+        [-10, 35],
+        [-40, -30],
+      ],
+    ],
+  }
+  const RADIUS = 5
+  // Mirrors countryGeometry.ts's own MAX_CHORD_SAG_FRACTION -- re-derived
+  // here (not imported) so this is a black-box check against
+  // geometryToFillMesh's actual output, not a test of the internal
+  // constant's value.
+  const MAX_CHORD_SAG_FRACTION = 0.0015
+
+  it('emits more than one triangle for a single wide input triangle', () => {
+    const geo = geometryToFillMesh(WIDE_TRIANGLE, RADIUS)!
+    expect(geo).not.toBeNull()
+    // A naive (unfixed) triangulation of a bare 3-point ring is exactly one
+    // triangle -- more than that proves subdivision actually ran.
+    expect(geo.index!.count / 3).toBeGreaterThan(1)
+  })
+
+  it('keeps every output triangle\'s chord within the safe sag bound', () => {
+    const geo = geometryToFillMesh(WIDE_TRIANGLE, RADIUS)!
+    const pos = geo.attributes.position.array
+    const idx = geo.index!.array
+    const maxSafeSag = RADIUS * MAX_CHORD_SAG_FRACTION * 1.01 // 1% slack for float rounding
+
+    const at = (vertexIndex: number): [number, number, number] => [
+      pos[vertexIndex * 3],
+      pos[vertexIndex * 3 + 1],
+      pos[vertexIndex * 3 + 2],
+    ]
+    const midpoint = (a: [number, number, number], b: [number, number, number]): [number, number, number] => [
+      (a[0] + b[0]) / 2,
+      (a[1] + b[1]) / 2,
+      (a[2] + b[2]) / 2,
+    ]
+    const radiusOf = ([x, y, z]: [number, number, number]) => Math.sqrt(x * x + y * y + z * z)
+
+    for (let i = 0; i < idx.length; i += 3) {
+      const a = at(idx[i])
+      const b = at(idx[i + 1])
+      const c = at(idx[i + 2])
+      for (const edgeMid of [midpoint(a, b), midpoint(b, c), midpoint(c, a)]) {
+        const sag = RADIUS - radiusOf(edgeMid)
+        expect(sag).toBeLessThanOrEqual(maxSafeSag)
+      }
+    }
+  })
+
+  it('leaves a small triangle (e.g. Luxembourg-scale) untouched', () => {
+    // A triangle far too small to sag meaningfully shouldn't be subdivided
+    // at all -- confirms the fix is targeted, not a blanket re-tessellation
+    // of every country's geometry.
+    const SMALL_TRIANGLE: Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [5.8, 49.5],
+          [6.2, 49.5],
+          [6.0, 49.9],
+          [5.8, 49.5],
+        ],
+      ],
+    }
+    const geo = geometryToFillMesh(SMALL_TRIANGLE, RADIUS)!
+    expect(geo.index!.count / 3).toBe(1)
+  })
+})

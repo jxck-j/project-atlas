@@ -91,6 +91,112 @@ export function geometryToBorderSegments(geometry: Geometry, radius: number): Fl
   return new Float32Array(positions)
 }
 
+// 2026-08-07: a documented, real defect (see BACKLOG.md and LOGBOOK.md) —
+// a subset of country fill meshes (Brazil, Russia, Canada, USA, Australia,
+// Antarctica) render an opaque black gap over part of their interior.
+// Root-caused this pass: earcut triangulates correctly in flat lng/lat
+// space (its own `deviation()` check, and this codebase's existing
+// per-triangle winding check, both already confirmed that), but a large,
+// concave country can produce a legitimate "ear" triangle spanning 20-30+
+// degrees of arc — one single triangle covering a big notch of coastline.
+// The GPU rasterizes each triangle as a FLAT plane in 3D between its three
+// projected corners; it has no idea the surface it's approximating is
+// curved. For a triangle that wide, the flat plane's middle sags measurably
+// *inward* from the sphere's true curved surface — verified directly for
+// Brazil's worst offending triangle: its interior dips ~3% of GLOBE_RADIUS
+// below the nominal fill radius, well past the opaque core sphere sitting
+// only ~2% inward (`Globe.tsx`'s `RADIUS * 0.98`). The core sphere then
+// occludes that sagging patch from the camera, rendering black.
+//
+// Fix: after earcut, recursively subdivide any triangle whose chord sags
+// more than a safe margin, splitting its longest edge (in lng/lat space —
+// safe here because unwrapPolygonRings() already resolved any antimeridian
+// wraparound before earcut ever ran, so a triangle's own vertices are
+// always in one consistent, unwrapped longitude frame) until every emitted
+// triangle's flat chord stays close enough to the true sphere to be
+// visually indistinguishable from it. This is a one-time cost when a
+// country's geometry is built (memoized upstream via useMemo), not a
+// per-frame cost.
+const MAX_CHORD_SAG_FRACTION = 0.0015
+// Longest-edge bisection only shrinks the ONE edge picked each split — the
+// other two edges of a very obtuse/scalene triangle carry over unchanged
+// into each child, so convergence isn't a flat "halves every edge every
+// level." Checked empirically: Brazil's real worst-offending triangle
+// converges right around depth 8 (uncomfortably close to a cap that size),
+// and a deliberately wider synthetic test triangle needed depth 9 and
+// still failed at 8. 14 gives real margin over both at negligible cost —
+// this only adds triangles in the handful of regions that actually need
+// it, not globally (confirmed: Brazil's ~3,610 triangles become ~3,984).
+const MAX_SUBDIVISION_DEPTH = 14
+
+function triangleMaxSag(p0: Position, p1: Position, p2: Position, radius: number): number {
+  const v0 = latLngToVector3(p0[1], p0[0], radius)
+  const v1 = latLngToVector3(p1[1], p1[0], radius)
+  const v2 = latLngToVector3(p2[1], p2[0], radius)
+
+  // Samples the 3 edge midpoints and the centroid — cheap, and catches the
+  // worst dip for the wide/obtuse "ear" triangles this fix targets (their
+  // interior sag is dominated by their longest edge, not deep interior
+  // points far from every edge).
+  const samples = [
+    [(v0.x + v1.x) / 2, (v0.y + v1.y) / 2, (v0.z + v1.z) / 2],
+    [(v1.x + v2.x) / 2, (v1.y + v2.y) / 2, (v1.z + v2.z) / 2],
+    [(v2.x + v0.x) / 2, (v2.y + v0.y) / 2, (v2.z + v0.z) / 2],
+    [(v0.x + v1.x + v2.x) / 3, (v0.y + v1.y + v2.y) / 3, (v0.z + v1.z + v2.z) / 3],
+  ]
+
+  let maxSag = 0
+  for (const [x, y, z] of samples) {
+    const sampleRadius = Math.sqrt(x * x + y * y + z * z)
+    maxSag = Math.max(maxSag, radius - sampleRadius)
+  }
+  return maxSag
+}
+
+// Emits one earcut triangle (as [lng, lat] corners) into positions/indices,
+// recursively splitting its longest edge first whenever its chord sag is
+// still above the safe threshold. depth caps recursion on pathological
+// input (e.g. a triangle spanning close to half the globe) — 8 levels
+// quarters edge length ~256x, far more than any real country needs.
+function emitTriangle(
+  p0: Position,
+  p1: Position,
+  p2: Position,
+  radius: number,
+  positions: number[],
+  indices: number[],
+  depth: number
+): void {
+  const sag = triangleMaxSag(p0, p1, p2, radius)
+  if (depth >= MAX_SUBDIVISION_DEPTH || sag <= radius * MAX_CHORD_SAG_FRACTION) {
+    const base = positions.length / 3
+    for (const [lng, lat] of [p0, p1, p2]) {
+      const v = latLngToVector3(lat, lng, radius)
+      positions.push(v.x, v.y, v.z)
+    }
+    indices.push(base, base + 1, base + 2)
+    return
+  }
+
+  const d01 = (p0[0] - p1[0]) ** 2 + (p0[1] - p1[1]) ** 2
+  const d12 = (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2
+  const d20 = (p2[0] - p0[0]) ** 2 + (p2[1] - p0[1]) ** 2
+
+  if (d01 >= d12 && d01 >= d20) {
+    const mid: Position = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2]
+    emitTriangle(p0, mid, p2, radius, positions, indices, depth + 1)
+    emitTriangle(mid, p1, p2, radius, positions, indices, depth + 1)
+  } else if (d12 >= d20) {
+    const mid: Position = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
+    emitTriangle(p1, mid, p0, radius, positions, indices, depth + 1)
+    emitTriangle(mid, p2, p0, radius, positions, indices, depth + 1)
+  } else {
+    const mid: Position = [(p2[0] + p0[0]) / 2, (p2[1] + p0[1]) / 2]
+    emitTriangle(p2, mid, p1, radius, positions, indices, depth + 1)
+    emitTriangle(mid, p0, p1, radius, positions, indices, depth + 1)
+  }
+}
+
 // Triangulates every polygon of a country (exterior ring minus holes) via
 // earcut in lng/lat space and merges them all into ONE BufferGeometry —
 // island nations / archipelagos naturally have several polygons, and (as
@@ -100,7 +206,6 @@ export function geometryToFillMesh(geometry: Geometry, radius: number): BufferGe
   const polygons = geometryToPolygons(geometry)
   const positions: number[] = []
   const indices: number[] = []
-  let vertexOffset = 0
 
   for (const rings of polygons) {
     if (rings.length === 0 || rings[0].length < 3) continue
@@ -109,16 +214,15 @@ export function geometryToFillMesh(geometry: Geometry, radius: number): BufferGe
     const polyIndices = earcut(flat.vertices, flat.holes, flat.dimensions)
     if (polyIndices.length === 0) continue
 
-    for (let i = 0; i < flat.vertices.length; i += 2) {
-      const lng = flat.vertices[i]
-      const lat = flat.vertices[i + 1]
-      const p = latLngToVector3(lat, lng, radius)
-      positions.push(p.x, p.y, p.z)
+    for (let i = 0; i < polyIndices.length; i += 3) {
+      const ia = polyIndices[i]
+      const ib = polyIndices[i + 1]
+      const ic = polyIndices[i + 2]
+      const p0: Position = [flat.vertices[ia * 2], flat.vertices[ia * 2 + 1]]
+      const p1: Position = [flat.vertices[ib * 2], flat.vertices[ib * 2 + 1]]
+      const p2: Position = [flat.vertices[ic * 2], flat.vertices[ic * 2 + 1]]
+      emitTriangle(p0, p1, p2, radius, positions, indices, 0)
     }
-    for (const idx of polyIndices) {
-      indices.push(idx + vertexOffset)
-    }
-    vertexOffset += flat.vertices.length / 2
   }
 
   if (positions.length === 0) return null

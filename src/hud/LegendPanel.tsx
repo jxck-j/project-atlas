@@ -2,10 +2,9 @@ import { useLayerEnabledMap } from '../layers'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
 import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 
-// v3.1: answers "why is Taiwan magenta/pink" (reported as "purple" — close
-// enough on a dark background that it's worth explaining, not renaming).
-// Always-on, not a toggle — mirrors Telemetry.tsx's "always-on info
-// readout" treatment rather than joining the Toolbar's mutually-exclusive
+// v3.1: answers "why is Taiwan red." Always-on, not a toggle — mirrors
+// Telemetry.tsx's "always-on info readout" treatment rather than joining
+// the Toolbar's mutually-exclusive
 // search/layers/settings group, since a legend is a passive reference you
 // glance at, not something you'd deliberately open and close.
 //

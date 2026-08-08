@@ -17,6 +17,50 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.1.0 — Black-gap fill fix, opaque pitch-black ocean, grid removed, ROYGBIV legend palette
+
+**Fixed the black-gap fill defect** (present since before v5.0.0, first
+noticed and investigated — but not root-caused — in that release): a subset
+of country fill meshes (Brazil, Russia, Canada, USA, Australia, Antarctica)
+rendered an opaque black gap over part of their interior. Root cause: earcut
+can legitimately produce one large "ear" triangle spanning 20-30+ degrees of
+arc to cover a wide concave coastline notch; the GPU renders that triangle
+as a flat plane between its three corners, which sags measurably *inward*
+from the sphere's true curved surface once wide enough — Brazil's worst
+offender dipped 3.04% of `GLOBE_RADIUS` below the nominal fill surface, past
+the opaque core sphere sitting only ~2% inward, which then occludes the
+sagging patch. `countryGeometry.ts`'s `geometryToFillMesh` now recursively
+subdivides any triangle whose measured chord sag exceeds a safe threshold
+(a one-time cost at geometry-build time, not per-frame) — see
+`LOGBOOK.md`'s v5.1.0 entry for the full diagnosis and why the fix measures
+actual sag rather than using a fixed angular threshold. New Vitest coverage
+in `countryGeometry.test.ts` (`geometryToFillMesh subdivides wide triangles`)
+guards this specifically.
+
+**The ocean is now always fully opaque and pitch black.** `Globe.tsx`'s core
+sphere previously faded to 35% opacity while idle (only going solid once a
+country was selected) and rendered as a dark navy (`#04141C`); it's now
+`#000000` and fully opaque at all times.
+
+**Removed the lat/long graticule grid.** `Globe.tsx`'s `GraticuleGrid`
+component (and its render call) is gone outright, not just hidden — the
+crisscrossing overlay it drew across the whole globe.
+
+**Retuned `highlightColors.ts`'s 7-slot palette from v5.0.0's blue/cyan/
+violet family to one ROYGBIV spectrum hue per slot** — reported directly
+that 5 of the 7 slots (default, selected, claimsOverlay, relatedCountry,
+categoryHighlight) read as shades of the same blue/indigo/violet family,
+too close to distinguish at a glance. There are exactly 7 legend slots and
+ROYGBIV has exactly 7 hues, so each slot now gets its own spectrum color
+instead: blue (default), yellow (hovered), indigo (selected), green
+(territory), red (claimed), orange (related country), violet (category
+highlight) — refined jewel-tone values, not literal crayon-box primaries.
+Validated with the dataviz skill's palette checker (CVD separation +
+normal-vision distinctness) against the app's actual near-black surface
+rather than picked by eye. Updated the handful of code comments
+(`ClaimsOverlayLayer.tsx`, `LegendPanel.tsx`, `CLAUDE.md`) that named the
+old colors by hue ("dashed magenta," "dashed blue") to match.
+
 ## v5.0.0 — Glass-console HUD: TopNav + SideRail replace Header/Toolbar
 
 A full visual overhaul of the HUD chrome and navigation, driven by an

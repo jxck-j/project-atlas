@@ -109,7 +109,7 @@ function useClaimRelatedEntityIds(): Set<string> {
 // misrepresent it) — that distinction stays intact in the data; it just
 // doesn't need a second render color on top of it.
 //
-// Deliberately a different color from the claimed side (blue, not magenta)
+// Deliberately a different color from the claimed side (orange, not red)
 // plus a prominent fill (0.32, well above the claimed side's near-zero
 // 0.1) — meant to visibly cover the related country's whole area, not
 // just outline it — so "claims/is administered by" and "is claimed by"
@@ -117,7 +117,7 @@ function useClaimRelatedEntityIds(): Set<string> {
 // directions. Both sides share the dashed-border language (still the
 // general "flagged, not primary-selected" cue), plus a pulsing labeled
 // marker here specifically so "why is this whole country highlighted"
-// never depends on already knowing what the blue means.
+// never depends on already knowing what the orange means.
 const RELATED_COUNTRY_COLOR = HIGHLIGHT_COLORS.relatedCountry.hex
 const RELATED_COUNTRY_BORDER_RADIUS = GLOBE_RADIUS * 1.006
 const RELATED_COUNTRY_FILL_RADIUS = GLOBE_RADIUS * 1.0
@@ -265,9 +265,9 @@ function ClaimedGeoEntitiesOverlay({ entityIds }: { entityIds: Set<string> }) {
 }
 
 // Renders both directions of these relationships, on two different geometry
-// systems: GeoEntity-vs-GeoEntity claims (dashed magenta, on GeoEntity
+// systems: GeoEntity-vs-GeoEntity claims (dashed red, on GeoEntity
 // geometry) and related countries — parents and claimants alike (dashed
-// blue + prominent fill + labeled marker, on Country geometry) — see
+// orange + prominent fill + labeled marker, on Country geometry) — see
 // RelatedCountriesOverlay's comment above for why a Country needs an
 // entirely separate render path here. Selecting China shows
 // Taiwan/Spratly/Scarborough via the first; selecting Taiwan or Curaçao

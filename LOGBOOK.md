@@ -5,6 +5,71 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-08 — v5.1.0: the black hole was a flat triangle sagging below a curved sphere
+
+**Root cause of the v5.0.0 black-gap defect, finally found.** Every
+explanation the earlier investigation ruled out (triangulation error, flipped
+winding, a missing-geometry gap, an overlapping GeoEntity) was checked
+correctly — the defect was never in `earcut`'s 2D triangulation at all. It's
+a projection problem: earcut can legitimately produce one "ear" triangle
+spanning 20-30+ degrees of arc to cover a wide concave notch in a country's
+coastline. The GPU renders every triangle as a flat plane between its three
+projected corners — it has no idea the surface it's approximating is a
+sphere. For a triangle that wide, the flat plane's middle sags measurably
+*inward* from the sphere's true curved surface. Measured directly against
+Brazil's actual worst-offending triangle (extracted from the real shipped
+`countries-un193.json`, not a synthetic case): it dipped **3.04% of
+`GLOBE_RADIUS`** below the nominal fill radius — comfortably past the opaque
+core sphere sitting only ~2% inward (`Globe.tsx`'s `RADIUS * 0.98`), which
+then occludes the sagging patch from the camera.
+
+**Confirmed the mechanism, not just the correlation, before writing the
+fix.** Rather than patching based on "the worst offenders are the
+highest-vertex-count countries" (the only lead the original investigation
+had), this pass wrote a standalone script projecting the real triangle's
+three corners through the exact `latLngToVector3` formula, linearly
+interpolated across the flat triangle in 3D (matching what the GPU
+rasterizer actually does), and measured the resulting radius at the
+interpolated midpoint directly. That's what turned "probably a
+big-country-shaped coincidence" into "here is the exact geometric
+mechanism, here is the exact percentage, here is why 2%-inward is the
+threshold that matters."
+
+**Fix: recursive triangle subdivision keyed on measured sag, not a fixed
+angular threshold.** `countryGeometry.ts`'s `emitTriangle()` computes actual
+chord sag (project the triangle's 3 corners, sample the 3 edge midpoints +
+centroid, compare each sample's radius against the nominal one) and splits
+the longest edge (in lng/lat space — safe because `unwrapPolygonRings()`
+already resolved any antimeridian wraparound before earcut ever ran)
+whenever the sag exceeds a safe fraction of the radius, recursing on the two
+resulting triangles. A fixed angular threshold (e.g. "split any triangle
+wider than 10°") would have been a proxy for the real constraint; measuring
+the actual projected sag is exact and self-documenting.
+
+**A depth cap chosen without checking convergence first can silently
+under-subdivide.** The first version capped recursion at depth 8 and looked
+fine against Brazil's real triangle — sag came in right at the edge of the
+safe threshold. A deliberately more obtuse synthetic test triangle (added to
+`countryGeometry.test.ts` specifically to stress this) failed at depth 8 and
+needed depth 9 to actually converge — longest-edge bisection only shrinks
+the *one* edge it picks each split, so a scalene/obtuse triangle's other two
+edges carry over unchanged into each child, and convergence isn't the flat
+"halves every edge every level" intuition suggests. Depth cranked to 14 for
+real margin over both cases; the added cost is negligible (Brazil's mainland
+went from 3,610 to 3,984 triangles — only the handful of bad "ears" needed
+splitting, not the whole mesh).
+
+**Same session, three other tuning changes landed alongside the fix** (see
+`CHANGELOG.md`'s v5.1.0 entry for the user-facing description of each):
+the core sphere (ocean) is now always fully opaque and pitch black instead
+of a translucent-while-idle navy shell; the lat/long graticule grid is
+removed outright; and `highlightColors.ts`'s 7-slot palette moved from
+v5.0.0's blue/cyan/violet family (reported as reading too similar to
+distinguish at a glance — 5 of 7 slots were shades of the same few hues) to
+one ROYGBIV spectrum hue per slot, validated with the dataviz skill's
+palette checker against the app's actual near-black surface rather than
+picked by eye.
+
 ## 2026-07-28 — v5.0.0: a country's fill mesh can raycast correctly, triangulate perfectly, and still render as a black hole
 
 **Raising a country's fill opacity from ~5% to solid surfaced a real,

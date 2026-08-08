@@ -415,10 +415,10 @@ call and no manual clock feeding left to get wrong.
 - **`ClaimsOverlayLayer.tsx` renders a claim relationship in both
   directions, on two unconnected geometry systems** (v3.1.0). Selecting a
   Country (China) highlights the GeoEntities it claims (Taiwan, Spratly
-  Islands, ...) with a dashed magenta border, drawn on the same GeoEntity
+  Islands, ...) with a dashed red border, drawn on the same GeoEntity
   geometry `scene/GeoEntities.tsx` uses. Selecting a claimed GeoEntity
   (Taiwan) highlights the Country claiming it (China) with a **different**
-  treatment — dashed blue border, a prominent fill covering the whole
+  treatment — dashed orange border, a prominent fill covering the whole
   country (not a thin outline) — drawn on `Countries.tsx`'s geometry
   instead, fetched independently via `useCountryFeatures()`. The two
   directions can't share rendering code because a `Country` has no

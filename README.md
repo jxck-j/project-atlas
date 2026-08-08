@@ -7,14 +7,16 @@ React Three Fiber, drei, and Tailwind CSS v4.
 ## Design direction
 
 Rather than a photo-real Earth texture, the globe renders as a **holographic
-wireframe projection**: a graticule grid, real-world country borders (from
-Natural Earth GeoJSON/TopoJSON data) rendered as thin glowing lines, a subtle
-Fresnel atmosphere rim, and pulsing capital-city markers — closer to a
-Halo/TRON/JARVIS tactical display than a map app.
+wireframe projection**: real-world country borders (from Natural Earth
+GeoJSON/TopoJSON data) rendered as thin glowing lines over a pitch-black
+ocean, a subtle Fresnel atmosphere rim, and pulsing capital-city markers —
+closer to a Halo/TRON/JARVIS tactical display than a map app. The lat/long
+graticule grid this used to also render (v5.0.0 and earlier) was removed in
+v5.1.0 — see that entry in `CHANGELOG.md`.
 
 The HUD follows a "glass command console" aesthetic (v5.0.0): a dark
-near-black background, a blue/cyan/violet highlight palette (see
-`scene/highlightColors.ts`), condensed tracked-out uppercase text
+near-black background, a full-spectrum ROYGBIV-mapped highlight palette
+(v5.1.0, see `scene/highlightColors.ts`), condensed tracked-out uppercase text
 (`Rajdhani` for nearly everything, `JetBrains Mono` reserved for live
 numeric readouts — telemetry, FPS, coordinates — see `src/index.css`), and
 glass panels throughout: rounded corners, a translucent backdrop blur, and
@@ -132,11 +134,12 @@ src/
     Scene.tsx                Canvas setup (frameloop="demand" — R3F renders only
                                when something calls invalidate(), see CLAUDE.md),
                                lighting, starfield; composes Globe + camera + probes
-    Globe.tsx                 Composes graticule, Countries, GeoEntities,
-                               CapitalMarker, WaterLabels, and the core/
-                               atmosphere shells; owns the ambient
-                               self-rotation and the double-click-on-ocean /
-                               hover-coordinate handlers on the core sphere.
+    Globe.tsx                 Composes Countries, GeoEntities, CapitalMarker,
+                               WaterLabels, and the core/atmosphere shells;
+                               owns the ambient self-rotation and the
+                               double-click-on-ocean / hover-coordinate
+                               handlers on the core sphere (always-opaque,
+                               pitch-black since v5.1.0).
                                CapitalMarker (country-only, since v2.3.0
                                explicitly checks entity.kind) shows the
                                selected country's capital
@@ -269,15 +272,20 @@ src/
                                (v4.2, then v4.3) — see LOGBOOK.md for why
                                each step was more conservative than a first
                                attempt that broke rendering
-    highlightColors.ts         (v3.1.0, repalletted v5.0.0) Single source of
-                               truth for every highlight/selection color the
-                               globe renders — Countries.tsx, GeoEntities.tsx,
-                               and both geoOverlays layers all source their
-                               colors from here; hud/LegendPanel.tsx explains
-                               the same values. v5.0.0 shifted the 7-color
-                               palette from the original red/yellow/green/
-                               magenta/purple scheme into a blue/cyan/violet
-                               family, keeping all 7 slots distinguishable
+    highlightColors.ts         (v3.1.0, repalletted v5.0.0 and v5.1.0) Single
+                               source of truth for every highlight/selection
+                               color the globe renders — Countries.tsx,
+                               GeoEntities.tsx, and both geoOverlays layers
+                               all source their colors from here;
+                               hud/LegendPanel.tsx explains the same values.
+                               v5.0.0 shifted the 7-color palette from the
+                               original red/yellow/green/magenta/purple
+                               scheme into a blue/cyan/violet family; v5.1.0
+                               reverted that (reported as reading too
+                               similar) to a refined ROYGBIV mapping — one
+                               spectrum hue per slot, ordered by the app's
+                               actual legend order, not the literal rainbow
+                               order
   lod/                       The LOD Engine (v4.3) — architecturally parallel
                                to the Layer Engine below, owns the camera-
                                distance ladder zoom-gated content reveals

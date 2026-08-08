@@ -81,30 +81,6 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 ## Visualization
 
-- **A subset of country/entity fill meshes render an opaque black gap over
-  part of their interior instead of the expected translucent fill** —
-  confirmed on Brazil, Russia, Canada, USA, Australia, and Antarctica.
-  Invisible at the default ~5% fill opacity `EntityRenderLayer.tsx` ships
-  with; only became visible while trying a higher-opacity solid-fill style
-  during a visual-overhaul session, and persisted after that experiment was
-  reverted — this is a real, pre-existing defect, not a byproduct of that
-  session's changes. Ruled out so far: triangulation error (`earcut.
-  deviation()` is ~1e-15 across all 43 of Brazil's sub-polygons and all 214
-  of Russia's, checked against the actual shipped `countries-un193.json`),
-  inconsistent triangle winding (a custom per-triangle orientation check
-  found 0 flipped triangles anywhere in either mesh), a missing-geometry
-  gap (hovering the black region fires the fill mesh's own `onPointerOver`,
-  proving real triangles are there and pointer-picking resolves correctly),
-  and an overlapping GeoEntity (no registered GeoEntity's centroid falls
-  inside Brazil's bounding box). The black region is confirmed anchored to
-  the globe's surface (rotates with the mesh, not screen-space). Root cause
-  still unknown — the affected six are among the highest-vertex-count
-  features in the dataset (Russia's mainland polygon alone is 8,964
-  vertices; Brazil's merged 43-polygon fill totals roughly 4,200), which is
-  circumstantial but the only pattern found so far. Any real fix touches
-  `countryGeometry.ts`'s fill-building logic, which needs explicit sign-off
-  before anyone edits it — this was investigated read-only, no changes
-  attempted.
 - **Claims overlay's dashed border is a real dash, but the "hatching"
   described in the original spec is still an approximation.** A true
   diagonal cross-hatch fill needs a custom shader/texture —
