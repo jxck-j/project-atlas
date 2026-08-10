@@ -1,10 +1,9 @@
-import { useRef, useState } from 'react'
-import type { RefObject } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { invalidate, useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
-import { BackSide, FrontSide, Group, type Mesh, type Object3D } from 'three'
+import { BackSide, FrontSide, Group, Vector3 } from 'three'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
-import { WATER_BODIES } from '../data/waterBodies'
+import { WATER_BODIES, type WaterBody } from '../data/waterBodies'
 import { latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
@@ -16,7 +15,8 @@ import { CountryLabels } from './CountryLabels'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { coreSphereRef } from './coreSphereRef'
-import { setGlobeRotationY } from './globeRotation'
+import { getGlobeRotationY, setGlobeRotationY } from './globeRotation'
+import { isCandidateVisible } from './labelDeclutter'
 import { resetView, useSelection } from '../hud/selectionStore'
 import { publishTelemetry } from '../hud/telemetryStore'
 import { useCameraSettings } from '../hud/settingsStore'
@@ -25,6 +25,13 @@ import { useCameraSettings } from '../hud/settingsStore'
 // themselves. Above it (the default overview distance is ~6.5) only the 5
 // ocean labels show, so the globe doesn't open with 25+ labels crowding it.
 const SEA_LABEL_REVEAL_DISTANCE = 4.5
+
+// Matches Globe.tsx's own core sphere (see below) — same constant every
+// other analytic front/back-of-globe check in this codebase (CountryLabels.tsx,
+// Lakes.tsx) anchors to.
+const WATER_LABEL_OCCLUDER_RADIUS = RADIUS * 0.98
+const WATER_LABEL_CHECK_INTERVAL_MS = 100
+const Y_AXIS = new Vector3(0, 1, 0)
 
 const CAPITAL_MARKER_COLOR = '#FF8A3D'
 
@@ -58,64 +65,109 @@ function CapitalMarker() {
   )
 }
 
+interface WaterLabelEntry {
+  body: WaterBody
+  localPosition: Vector3
+}
+
 // Static labels for oceans, seas, gulfs, straits, and bays — hidden once a
-// country is selected so they don't clutter the focused view. `occlude`
-// against just the core sphere (not the whole scene) hides a label when
-// it's on the far side of the globe — occluding against the whole scene
-// would also catch the atmosphere glow shells, which sit in front of every
-// label regardless of which hemisphere it's on and would hide all of them,
-// always.
+// country is selected so they don't clutter the focused view.
+//
+// 2026-08-09: previously hid far-side labels via Html's raycast-based
+// `occlude` prop against the core sphere ref — reported as never actually
+// hiding anything in practice (a far-side ocean name stayed visible "through"
+// the globe at every zoom level and camera angle, not just near the
+// terminator). Replaced with the same analytic dot-product front/back-of-
+// globe test CountryLabels.tsx and Lakes.tsx already use
+// (labelDeclutter.ts's `isCandidateVisible`) instead of chasing why the
+// raycast approach was unreliable — this app had already solved "is this
+// point on the near or far hemisphere" once, correctly, and WaterLabels was
+// the one holdout still using a different (and broken) mechanism for it.
+// Requires the same rotationY compensation CountryLabels.tsx applies: these
+// labels live inside Globe.tsx's ambient-rotation group, so a label's
+// current *world* position (what the camera-relative math needs) is its
+// static local position rotated by the globe's current spin, not the local
+// position itself.
 //
 // Only the 5 oceans show at the default overview distance — the smaller
 // seas/gulfs/straits stay hidden until the camera zooms in past
 // SEA_LABEL_REVEAL_DISTANCE, so the globe doesn't open with 27 labels
 // competing for attention.
-function WaterLabels({ occluder }: { occluder: RefObject<Mesh | null> }) {
+function WaterLabels() {
   const { selected } = useSelection()
-  const { camera } = useThree()
+  const { camera, size } = useThree()
   const [showSeas, setShowSeas] = useState(false)
+  const [visibleNames, setVisibleNames] = useState<Set<string>>(new Set())
+  const lastRun = useRef(0)
 
-  useFrame(() => {
+  const entries = useMemo<WaterLabelEntry[]>(
+    () => WATER_BODIES.map((body) => ({ body, localPosition: latLngToVector3(body.lat, body.lng, RADIUS * 1.002) })),
+    []
+  )
+
+  useFrame((state) => {
     const close = camera.position.length() < SEA_LABEL_REVEAL_DISTANCE
     if (close !== showSeas) setShowSeas(close)
+
+    const now = state.clock.elapsedTime * 1000
+    if (now - lastRun.current < WATER_LABEL_CHECK_INTERVAL_MS) return
+    lastRun.current = now
+
+    if (selected) {
+      if (visibleNames.size > 0) setVisibleNames(new Set())
+      return
+    }
+
+    const rotationY = getGlobeRotationY()
+    const next = new Set<string>()
+    for (const { body, localPosition } of entries) {
+      if (body.kind !== 'ocean' && !close) continue
+      const worldPosition = localPosition.clone().applyAxisAngle(Y_AXIS, rotationY)
+      if (isCandidateVisible(worldPosition, camera, size.width, size.height, WATER_LABEL_OCCLUDER_RADIUS)) {
+        next.add(body.name)
+      }
+    }
+
+    const changed =
+      next.size !== visibleNames.size || [...next].some((name) => !visibleNames.has(name))
+    if (changed) setVisibleNames(next)
   })
 
   if (selected) return null
 
-  const bodies = showSeas ? WATER_BODIES : WATER_BODIES.filter((b) => b.kind === 'ocean')
-
   return (
     <group>
-      {bodies.map((body) => (
-        <Html
-          key={body.name}
-          position={latLngToVector3(body.lat, body.lng, RADIUS * 1.002)}
-          center
-          occlude={[occluder as RefObject<Object3D>]}
-          distanceFactor={8}
-          zIndexRange={[1, 0]}
-          style={{ pointerEvents: 'none' }}
-        >
-          <div
-            className={`whitespace-nowrap italic text-cyan-300/35 ${
-              body.kind === 'ocean' ? 'text-[8px] tracking-[0.2em]' : 'text-[6px] tracking-[0.1em]'
-            }`}
+      {entries
+        .filter(({ body }) => visibleNames.has(body.name))
+        .map(({ body, localPosition }) => (
+          <Html
+            key={body.name}
+            position={localPosition}
+            center
+            distanceFactor={8}
+            zIndexRange={[1, 0]}
+            style={{ pointerEvents: 'none' }}
           >
-            {body.name}
-          </div>
-        </Html>
-      ))}
+            <div
+              className={`whitespace-nowrap italic text-cyan-300/35 ${
+                body.kind === 'ocean' ? 'text-[8px] tracking-[0.2em]' : 'text-[6px] tracking-[0.1em]'
+              }`}
+            >
+              {body.name}
+            </div>
+          </Html>
+        ))}
     </group>
   )
 }
 
 export function Globe() {
   const groupRef = useRef<Group>(null)
-  // Not a local useRef — see coreSphereRef.ts. A Layer Engine-mounted
-  // component (scene/Lakes.tsx) isn't a direct child of Globe.tsx the way
-  // WaterLabels is, so it can't receive this via props; importing the same
-  // shared ref object is what lets it occlude its own labels against the
-  // core sphere too.
+  // Not a local useRef — see coreSphereRef.ts. Layer Engine-mounted
+  // components (scene/Lakes.tsx, scene/Rivers.tsx) aren't direct children of
+  // Globe.tsx, so they can't receive this via props; importing the same
+  // shared ref object is what lets them occlude their own Html labels
+  // against the core sphere.
   const { selected } = useSelection()
   const { ambientRotationEnabled } = useCameraSettings()
 
@@ -182,7 +234,7 @@ export function Globe() {
       <CountryLabels />
       <UsCityOutlineHighlight />
       <UsCityLabels />
-      <WaterLabels occluder={coreSphereRef} />
+      <WaterLabels />
       <LayerEngine />
 
       {/* Inner glow */}

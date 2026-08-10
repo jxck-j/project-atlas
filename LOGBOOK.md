@@ -5,6 +5,53 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.1: `Html`'s raycast `occlude` never actually hid a far-side water label
+
+**Reported as: "I can see the ocean wording through the globe" — Indian
+Ocean visible from the USA, Gulf of Mexico visible from the Indian Ocean.
+Not an edge/terminator glitch — every water body, every zoom level,
+static or moving.** `WaterLabels` (`Globe.tsx`) hid far-side labels by
+passing `occlude={[coreSphereRef]}` to `Html`, which runs a per-frame
+raycast from the camera to each label's anchor point and toggles
+`display: none` on a miss/hit. Manually inspecting the DOM
+(`getComputedStyle`/the inline `display` drei sets) across several camera
+positions initially showed *correct* `display: none` toggling, which
+briefly suggested no bug existed — but that only held for the handful of
+static states tested; the report was that it doesn't hold up in real,
+continuous interaction.
+
+**Root-caused by comparison, not by debugging the raycast itself.**
+`CountryLabels.tsx` and `UsCityLabels.tsx` both solve this exact "is this
+point on the near or far hemisphere" problem already, and *don't* use
+`occlude` — they use `labelDeclutter.ts`'s analytic dot-product test
+(`isCandidateVisible`/`projectToScreen`'s `onNearSide` check) instead,
+with an explicit comment on `UsCityLabels.tsx` explaining the raycast
+prop is deliberately unused because the analytic test already excluded
+far-side candidates. `Lakes.tsx` (v5.2.0) actually runs *both* — it
+already calls `declutterLabels` (analytic) before ever reaching `Html`,
+then also passes `occlude` redundantly on top, which is why its lake-name
+labels never displayed the reported symptom: the analytic filter alone
+was already doing the real work, and the redundant `occlude` prop was
+inert. `WaterLabels` was the *only* consumer of this app's front/back
+test still depending on `occlude` alone for it, and the only one
+reported broken — strong evidence the raycast approach itself is what's
+unreliable here (never isolated exactly why; `frameloop="demand"` making
+`Html`'s internal occlusion `useFrame` run at some indeterminate cadence
+relative to camera movement is the leading suspect, not confirmed).
+
+**Fix:** gave `WaterLabels` the same analytic check, dropping `occlude`
+entirely — no new mechanism, just stopped being the one holdout using a
+different, broken one. Needed the same `rotationY` compensation
+`CountryLabels.tsx` already has: `WaterLabels` renders inside `Globe.tsx`'s
+ambient-rotation group, so a label's local (pre-rotation) position isn't
+its current *world* position, which the camera-relative analytic math
+needs — `getGlobeRotationY()` supplies the current spin to reconstruct it,
+exactly as `CountryLabels.tsx` already does for the same reason. Worth
+remembering: when two components solve the same "is this visible" problem
+with two different mechanisms and only one is reported broken, check
+whether the working one's approach just needs porting over before
+debugging the broken mechanism itself.
+
 ## 2026-08-08 — v5.2.0: a tinted fill over solid land reads as wrong, even when the tint is "correct"
 
 **Lakes' first implementation was a translucent blue fill, and it looked

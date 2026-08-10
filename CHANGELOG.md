@@ -17,6 +17,22 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.1 — Fix water-body labels bleeding through the far side of the globe
+
+**Bug fix.** `WaterLabels` (ocean/sea/gulf/strait/bay names) was hiding
+far-side labels with `Html`'s raycast-based `occlude` prop — reported as
+never actually working: a label like "INDIAN OCEAN" or "GULF OF MEXICO"
+stayed visible straight through the globe regardless of camera position,
+zoom level, or whether the globe was moving or static, not just as an
+occasional glitch near the horizon. Replaced with the same analytic
+dot-product front/back-of-globe test `CountryLabels.tsx` and
+`Lakes.tsx`/`Rivers.tsx` already use (`labelDeclutter.ts`'s
+`isCandidateVisible`), including the same rotationY compensation
+`CountryLabels.tsx` needs for labels living inside the ambient-rotation
+group. No new mechanism introduced — this app had already solved "is this
+point on the near or far hemisphere" correctly once; `WaterLabels` was the
+one remaining consumer of the different, broken one. See `LOGBOOK.md`.
+
 ## v5.2.0 — Lakes and rivers: physical-geography water layers
 
 New data layer within the existing **Rendering Engine** and **LOD Engine**

@@ -378,11 +378,17 @@ call and no manual clock feeding left to get wrong.
   independently drifted into being reported as too large/far-swinging;
   tune sizing there, not in either caller, so the two can't drift apart
   again.
-  `WaterLabels` uses `Html`'s `occlude` prop against a ref to the core sphere
-  specifically, **not** the whole scene (`occlude={true}`/no ref) — occluding
-  against everything also catches the atmosphere glow shells (which sit in front
-  of every label regardless of which hemisphere it's on) and hides all labels
-  unconditionally, always.
+  `WaterLabels` (v5.2.1) determines front/back-of-globe visibility the same
+  way `CountryLabels.tsx` and `Lakes.tsx`/`Rivers.tsx` do — an analytic
+  dot-product check (`labelDeclutter.ts`'s `isCandidateVisible`) against the
+  core sphere's radius, computed per-frame with the globe's current ambient
+  rotation factored in — not `Html`'s raycast-based `occlude` prop. It used
+  `occlude` originally, but that never reliably hid a far-side label in
+  practice (reported as an ocean name staying visible "through" the globe at
+  every zoom level and camera angle, not just near the terminator); rather
+  than debug why the raycast approach was unreliable, it was replaced with
+  the mechanism this codebase had already solved once. See `LOGBOOK.md`'s
+  v5.2.1 entry.
 - **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
   `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
