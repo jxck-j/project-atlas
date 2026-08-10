@@ -22,9 +22,29 @@ const DECLUTTER_INTERVAL_MS = 150
 // Globe.tsx's core sphere" tradeoff OCCLUDER_RADIUS above already makes.
 const CAMERA_FOV_DEG = 45
 
-const MIN_FONT_PX = 7
-const MAX_FONT_PX = 13
-const FONT_TO_APPARENT_RATIO = 0.32
+// 2026-08-09 (v5.2.5): FONT_TO_APPARENT_RATIO was 0.32 and MAX_FONT_PX was
+// 13 — together they made font size hit its ceiling at a mere 41px apparent
+// size (a country barely bigger than a small dot at the default overview
+// distance), so nearly every country of at least moderate size rendered at
+// the SAME maxed-out size regardless of actual zoom — reported directly as
+// "text too big at zoomed out levels" (not zoom-adaptive in practice for
+// most countries) and, worse, silently broke the abbreviation-to-full-name
+// transition for long names: since the rendered font (and therefore the
+// estimated text width) stops growing once it hits MAX_FONT_PX while a
+// country's actual apparent size keeps growing as you zoom in, a long name
+// (Democratic Republic of the Congo, 33 characters) needed apparentPx to
+// nearly reach CAMERA_MIN_DISTANCE before its capped width finally fell
+// under the growing MAX_NAME_WIDTH_FRACTION threshold — reported as "DRC
+// stays abbreviated even when zoomed in." Lowering the ratio (so font size
+// grows more gradually and doesn't saturate until a country is genuinely
+// large on screen) and the cap (so a long name's width ceiling is lower,
+// letting apparentPx's threshold overtake it at a normal "zoomed in on
+// this country" distance instead of only at the absolute closest zoom)
+// fixes both at once — see LOGBOOK.md's v5.2.5 entry for the numbers this
+// was tuned against.
+const MIN_FONT_PX = 6
+const MAX_FONT_PX = 11
+const FONT_TO_APPARENT_RATIO = 0.12
 const PROMINENT_APPARENT_PX = 60
 // How much wider than the entity's own on-screen diameter the full name is
 // allowed to render before falling back to the abbreviation — some overhang

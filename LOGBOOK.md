@@ -5,6 +5,69 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.5: font size hit its ceiling too early, silently breaking long-name abbreviation too
+
+**"DRC stays abbreviated even when zoomed in" — same class of "verify with
+real numbers before touching code" approach as v5.2.4's antimeridian bug,
+applied to a design/tuning problem instead of a math bug.** Computed
+`apparentSizePx`/`estimateTextWidthPx`'s actual output for "Democratic
+Republic of the Congo" (33 characters) at several camera distances using
+the exact constants shipped in v5.2.3/v5.2.4
+(`FONT_TO_APPARENT_RATIO=0.32`, `MAX_FONT_PX=13`,
+`MAX_NAME_WIDTH_FRACTION=1.15`): the full name only stopped being
+abbreviated at `CAMERA_MIN_DISTANCE` (2.5, the absolute closest zoom this
+app allows) — at any more ordinary "zoomed in on this country" distance
+(3.5, 4.8) it stayed abbreviated. Root cause: once `apparentPx * 0.32`
+exceeds 13 (i.e. apparentPx > ~41px — reached almost immediately, even at
+the default overview distance, for any country of moderate size), the
+rendered font size stops growing entirely. Since the estimated text width
+scales directly with font size, the width also freezes at a constant once
+the font caps out — while the ABBREVIATION THRESHOLD
+(`apparentPx * MAX_NAME_WIDTH_FRACTION`) keeps growing as you zoom in
+further. For a short name, the frozen width is small enough that the
+still-growing threshold overtakes it quickly. For a 33-character name, the
+frozen width (based on a 13px font) is large enough that the threshold
+doesn't catch up until apparentPx is enormous — i.e., until the camera is
+about as close as it can physically get.
+
+**Same root cause silently explains the other complaint in the same
+message: "country text is still too big at zoomed out levels."** Because
+font size saturates at ~41px apparent size, and most countries at the
+DEFAULT overview distance already exceed that, most country labels were
+rendering at the SAME maxed-out font (13px, bold) regardless of whether
+they were barely visible or filling a third of the screen — not
+meaningfully zoom-adaptive in practice for anything but the smallest
+countries. This also explains the third complaint ("Zambia's label
+overlaps DRC") as a likely symptom rather than a separate bug: bigger,
+maxed-out fonts render more total pixels of width, increasing the odds
+any given label's estimated bounding box spills past its own country's
+visual footprint into a neighbor — `declutterLabels` only prevents
+label-vs-label collisions, not label-vs-neighboring-country-shape
+collisions, so a label that's simply too wide for what it's sitting on
+will read as overlapping regardless of spacing logic.
+
+**Fix: lower both the ratio and the cap** (`FONT_TO_APPARENT_RATIO`
+0.32→0.12, `MAX_FONT_PX` 13→11, `MIN_FONT_PX` 7→6, `MAX_NAME_WIDTH_FRACTION`
+left unchanged at 1.15). Re-verified numerically before touching the
+browser: Democratic Republic of the Congo now flips to its full name
+around apparentPx≈240 (roughly camera distance 3.5, a normal "focused on
+this country" zoom) instead of requiring apparentPx≈330+ (distance 2.5);
+Russia/USA/Canada (already full-name, large apparent sizes) are
+unaffected; Zambia/Congo/Angola now scale gradually from ~7-10px at the
+default overview instead of already sitting at the old 13px cap. Confirmed
+in a live browser session: default-overview country labels
+(Mexico/Venezuela/Colombia/Brazil/etc.) visibly render smaller/less bold
+than before the retune, and DRC still correctly abbreviates at the
+default search-flight distance (~4.8) — matching the tuned prediction.
+Could not directly re-confirm the full-name flip at distance 3.5 in the
+same session (this session's browser automation couldn't sustain a
+reliable zoom-in beyond the initial fly-to at this window size — scroll-
+wheel and repeated key-press zoom were both inconsistent here, a tooling
+limitation already noted in v5.2.4's entry, not something the app itself
+does) — trusted the direct numerical verification against the real
+shipped functions instead, which is deterministic and needs no interactive
+confirmation to be correct.
+
 ## 2026-08-09 — v5.2.4: four label bugs from one round of feedback, one root-caused by comparing against a hand computation
 
 **"Why is the USA abbreviated, it has one of the largest footprints" —

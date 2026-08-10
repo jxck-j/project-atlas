@@ -17,6 +17,31 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.5 — Retune country label sizing: long names, overall size
+
+**Bug fix + tuning, on top of v5.2.3's label system.** Reported: the
+Democratic Republic of the Congo stayed abbreviated ("DRC") even when
+zoomed in close, and country text generally read as too big at zoomed-out
+levels. Both traced to the same two constants: `FONT_TO_APPARENT_RATIO`
+(0.32) and `MAX_FONT_PX` (13) together made font size saturate at its
+ceiling from a mere 41px apparent size — a country barely bigger than a
+dot at the default overview distance — so most countries of at least
+moderate size rendered at the same maxed-out size regardless of actual
+zoom, and a long name's estimated text width (which stops growing once
+font size hits that ceiling) needed the country's apparent size to nearly
+reach `CAMERA_MIN_DISTANCE` before finally clearing the growing
+abbreviation threshold. Lowered the ratio (0.12) and the cap (11px, floor
+also nudged down to 6px) — verified numerically against the real
+`apparentSizePx`/`estimateTextWidthPx` functions: the Democratic Republic
+of the Congo now shows its full name once zoomed to a normal "focused on
+this country" distance instead of only at maximum zoom, while Russia/USA/
+Canada (already correctly full-name from v5.2.4) are unaffected, and
+medium countries like Zambia render at a visibly smaller, less bold size
+at the default overview instead of already maxed out — incidentally also
+reducing how often a label spills into a neighboring country's territory
+(reported: Zambia's label overlapping the DRC), since a smaller font means
+less rendered width to spill with. See `LOGBOOK.md`.
+
 ## v5.2.4 — Fix corrupted country sizing, add territory labels, fix oversized water labels
 
 Four related fixes from one round of feedback on v5.2.3's new label system:
