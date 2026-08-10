@@ -40,7 +40,7 @@ npm install
 npm run dev        # start dev server (http://localhost:5173)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
-npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities}.json
+npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities,lakes,rivers}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
 npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
 ```
@@ -93,6 +93,11 @@ project's pure geometry/math functions, not component behavior.
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
+- **Lakes and rivers** (v5.2.0, Natural Earth 1:50m — 412 lakes, 116 major
+  rivers) render always-on as opaque pitch-black fill/lines with a thin cyan
+  outline, the same "reads as real open water" treatment as the ocean —
+  decorative physical geography, not selectable or searchable. Lake names
+  appear as labels only once zoomed all the way in.
 - Closing the intelligence panel (✕) clears the selection.
 - **Ambient rotation** (v3.3.1) is off by default and toggled with **T** —
   see the Keyboard bullet below. It's still frozen automatically while a
@@ -221,6 +226,29 @@ src/
                                CategoryHighlightLayer.tsx needed the same
                                thing; mirrors geoEntityEntries.ts for the
                                GeoEntity side
+    Lakes.tsx                     (v5.2.0) Always-on decorative water layer —
+                               412 Natural Earth lakes merged into one fill
+                               mesh + one border lineSegments (no per-feature
+                               interactivity); opaque pitch-black fill since
+                               land polygons have no actual holes where a
+                               lake sits, so a translucent tint read as
+                               geographically wrong
+    Rivers.tsx                    (v5.2.0) Same always-on pattern as
+                               Lakes.tsx, but LineString geometry rendered
+                               via countryGeometry.ts's new
+                               geometryToLineSegments (no ring to close, no
+                               interior to fill) instead of the border/fill
+                               pair; 116 of 462 source features (scalerank
+                               <= 3, major rivers only)
+    useLakesFeatures.ts             Fetches + parses lakes.json once, mirrors
+                               useCountryFeatures.ts's singleton pattern
+    useRiversFeatures.ts             Same, for rivers.json
+    coreSphereRef.ts               (v5.2.0) Plain non-reactive module-level
+                               ref to Globe.tsx's core sphere mesh — lets
+                               Lakes.tsx/Rivers.tsx (Layer Engine-mounted,
+                               not direct children of Globe.tsx) occlude
+                               their own Html labels against it the same way
+                               WaterLabels does via a prop
     CountryLabels.tsx            (v4.3) Always-on country name labels,
                                ranked by on-screen angular extent, sharing
                                labelDeclutter.ts with UsCityLabels.tsx below
@@ -292,11 +320,15 @@ src/
                                against
     types.ts                    LodLevelId union naming the full intended
                                zoom progression (Earth -> Countries ->
-                               States/Provinces -> Metro Areas -> city
-                               tiers -> Every Incorporated City -> Roads/
-                               Rail/Rivers/Airports/Ports/Military Bases/
-                               Infrastructure), the last seven reserved
-                               (implemented: false, no work behind them yet)
+                               States/Provinces -> Lakes -> Rivers -> Metro
+                               Areas -> city tiers -> Every Incorporated
+                               City -> Roads/Rail/Airports/Ports/Military
+                               Bases/Infrastructure); Lakes/Rivers (v5.2.0)
+                               are the first of the originally-reserved ids
+                               to actually ship, both always-on like
+                               Countries/States; the remaining five stay
+                               reserved (implemented: false, no work behind
+                               them yet)
     lodLevels.ts                 The ordered ladder + pure
                                resolveActiveLevels/resolveDeepestLevel/
                                isLodLevelActive functions — a level is
@@ -359,6 +391,11 @@ src/
     CitiesLayer.tsx                (v4.1) Registers the city classification
                                  (category 'population', a new free-form
                                  value), off by default
+    LakesLayer.tsx                 (v5.2.0) Registers scene/Lakes.tsx,
+                                 default on — decorative physical geography,
+                                 not a toggleable classification the way the
+                                 layers above are
+    RiversLayer.tsx                 (v5.2.0) Same, for scene/Rivers.tsx
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     panelStyles.ts              (v5.0.0) Single source of truth for the glass-
                                  panel chrome (rounded corners, translucent

@@ -5,6 +5,49 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-08 — v5.2.0: a tinted fill over solid land reads as wrong, even when the tint is "correct"
+
+**Lakes' first implementation was a translucent blue fill, and it looked
+like a bug even though the geometry was right.** Country/state fill meshes
+have no interior holes anywhere — confirmed on the US polygon specifically
+— so a lake polygon drawn on top of one, translucent, still shows solid
+land tinted blue through it rather than open water. The honest fix is a
+geometric cutout (subtract lake polygons from country/state polygons at
+build time), rejected for this pass as too large: a new polygon-clipping
+dependency, touching the core country/states build pipeline that
+`countryGeometry.ts`'s test coverage (v4.3.1) exists specifically to guard.
+Landed on opaque pitch-black fill instead — same color as the ocean/core
+sphere, so a lake reads as real open water regardless of what's
+underneath, without touching land geometry at all. Deferred to
+`BACKLOG.md` rather than treated as solved.
+
+**Rivers are the first geometry type in `countryGeometry.ts` with no ring
+and no interior.** Every function there — `geometryToBorderSegments`,
+`geometryToFillMesh`, even the antimeridian unwrapper they both call —
+assumes a `Polygon`/`MultiPolygon`. A `LineString` river has neither a
+ring to close nor an interior to triangulate; calling the existing
+polygon functions on one silently returns empty output (well-formed,
+no crash, just nothing rendered — worth remembering as a debugging trap:
+"nothing rendered" doesn't always mean the fetch/registration failed).
+New `geometryToLineSegments` walks the line's own points directly,
+reusing the antimeridian-unwrap and per-segment projection logic but
+skipping the ring-closing step polygons need.
+
+**A Layer Engine-mounted component can't receive a prop the way a direct
+child of `Globe.tsx` can.** `WaterLabels` occludes its `Html` labels
+against the core sphere via a ref passed down as a prop — straightforward,
+since it's rendered directly inside `Globe.tsx`. `Lakes.tsx`/`Rivers.tsx`
+mount through the Layer Engine instead (`LakesLayer.tsx`/`RiversLayer.tsx`
+-> `LayerManager.tsx`), several component boundaries away from
+`Globe.tsx`'s own JSX, so there's no prop path down to them at all. Fix
+mirrors `globeRotation.ts`'s existing scene-to-HUD pattern in the opposite
+direction: `coreSphereRef.ts` exports a plain `{ current }` box at module
+scope; `Globe.tsx` assigns its core sphere mesh's `ref` prop to that
+export directly instead of a local `useRef`, and `Lakes.tsx`/`Rivers.tsx`
+import the same object. Worth remembering as the general answer whenever
+a Layer Engine component needs something only `Globe.tsx` itself holds a
+ref to.
+
 ## 2026-08-08 — v5.1.0: the black hole was a flat triangle sagging below a curved sphere
 
 **Root cause of the v5.0.0 black-gap defect, finally found.** Every

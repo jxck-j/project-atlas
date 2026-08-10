@@ -17,6 +17,59 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.0 — Lakes and rivers: physical-geography water layers
+
+New data layer within the existing **Rendering Engine** and **LOD Engine**
+(v4.3) — the first of that engine's seven originally-reserved zoom-gated
+ids (`rivers`) to actually ship, alongside a new `lakes` id added directly
+as implemented in the same pass. Both render always-on, the same "always
+render, never zoom-gated" treatment as countries/states. A point release,
+not a new major version — this fills in ids the LOD Engine already
+reserved and uses the Layer Engine as-is, rather than expanding either
+engine's own architecture.
+
+**Lakes** (412 features) and **rivers** (116 of 462 source features,
+`scalerank <= 3` — major rivers only, mirroring the states/provinces and
+cities pilot-scope precedent) come from Natural Earth's 1:50m Physical
+Vectors layers, built by two new scripts
+(`scripts/buildLakesTopology.mjs`/`buildRiversTopology.mjs`, wired into
+`npm run build:geo`) following the exact same
+filter-simplify-requantize pipeline `buildCountryTopology.mjs` established.
+Both are decorative-only: no `GeoEntityRegistry` entry, no `GeometryMap`
+registration, not selectable or searchable — physical geography, not a
+political entity.
+
+**Rivers needed a new geometry primitive.** Every existing function in
+`countryGeometry.ts` assumes a polygon (a ring to close, an interior to
+fill); a river is a `LineString`/`MultiLineString` with neither. New
+`geometryToLineSegments` walks a line's points directly (same antimeridian-
+unwrap handling, same "one merged Float32Array, one draw call" reasoning as
+`geometryToBorderSegments`) without attempting to triangulate a fill.
+
+**Lake fill is opaque pitch-black, not a translucent blue tint.** The
+obvious first approach — a translucent tint over the land underneath — read
+as geographically wrong, because country/state fill meshes have no actual
+hole where a lake sits (confirmed: the US polygon has zero interior holes
+anywhere), so a lake showed as solid land through the tint. A true
+geometric cutout (subtracting lake polygons from country/state polygons at
+build time) was rejected as too large a change for this pass — new
+polygon-clipping dependency, touches the core country/states build
+pipeline, and doesn't help rivers either way (no area to subtract from a
+line). Opaque pitch-black fill (matching the ocean/core sphere) reads as
+real open water instead, regardless of what land geometry sits underneath,
+without touching that geometry at all. See `BACKLOG.md` for the deferred
+geometric-cutout item.
+
+**New shared module, `scene/coreSphereRef.ts`.** `WaterLabels` already
+occludes its labels against Globe.tsx's core sphere mesh via a ref passed
+as a prop — Lakes.tsx/Rivers.tsx can't receive that same ref that way,
+since Layer Engine-mounted components aren't direct children of Globe.tsx.
+`coreSphereRef` is a plain module-level `{ current }` box (same
+non-reactive "value crosses the scene boundary without a store" pattern
+`globeRotation.ts` established) that Globe.tsx assigns its core sphere's
+`ref` prop to directly, so both call sites share the exact same mesh
+instance.
+
 ## v5.1.0 — Black-gap fill fix, opaque pitch-black ocean, grid removed, ROYGBIV legend palette
 
 **Fixed the black-gap fill defect** (present since before v5.0.0, first

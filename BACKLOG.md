@@ -78,6 +78,18 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   1:50m populated places layer doesn't flag either country's capital at
   this resolution. Every other of the 193 UN members does. Worth a manual
   addition if this ever needs to be complete rather than resolution-limited.
+- **Rivers (v5.2.0) only render `scalerank <= 3` — 116 of the source's 462
+  features.** Deliberately partial, same pilot-scope reasoning as
+  states/provinces above: raising the constant in
+  `scripts/buildRiversTopology.mjs` (up to 6, for full coverage) is the
+  documented upgrade path, no pipeline redesign required.
+- **Lakes (v5.2.0) render as an opaque fill over land that has no actual
+  hole where the lake sits** — a visual approximation, not a true
+  geometric cutout. A real fix means subtracting lake polygons from
+  country/state polygons at build time (a new polygon-clipping dependency,
+  touching the core country/states pipeline) and was explicitly deferred as
+  too large a change for the pass that added lakes. See `CHANGELOG.md`'s
+  v5.2.0 entry and `scene/Lakes.tsx`'s own header comment.
 
 ## Visualization
 
