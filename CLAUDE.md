@@ -234,7 +234,23 @@ against exactly the regression the duplication above was written to avoid.
 each build their own `GeoEntityEntry[]` and pass an `onSelect` callback into
 one shared `<EntityRenderLayer>`, which owns the border/fill mesh per
 entry, hover/select/dim color computation, the click-vs-drag threshold, and
-`HoverLabel`. What stays in each caller is only what's a *real* difference:
+`HoverLabel`. `HoverLabel` (v5.2.7) renders every entry the same way
+regardless of size — inline, glowing, at the entry's own centroid, the
+exact position `PassiveEntityLabels.tsx`'s passive label for that same
+entry already occupies — replacing that passive label in place rather than
+sprouting a leader-line callout off to the side, which is what every
+entity under `LARGE_ENTITY_THRESHOLD_DEG` (7°) got before. Because hover
+and passive labels now share a position, each caller also needs to
+publish its own hovered id (`Countries.tsx`'s pre-existing
+`hoveredCountry.ts`, `GeoEntities.tsx`'s `hoveredGeoEntity.ts`,
+`StatesProvinces.tsx`'s `hoveredStateProvince.ts`, all v5.2.7 except the
+first) so its own passive-label layer excludes whichever entity is
+currently hover-glowing — otherwise the two labels stack exactly on top of
+each other instead of one replacing the other. Each publisher converts
+`EntityRenderLayer`'s reported geometryId to the corresponding entityId
+before publishing (needed for `GeoEntities.tsx` specifically — 44 of 55
+GeoEntities have a geometry id that differs from their entity id, see
+below). What stays in each caller is only what's a *real* difference:
 how entries get built (see below), and what happens when a click resolves
 to nothing — `Countries.tsx` falls back to `selectCountry()` so a click
 never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just

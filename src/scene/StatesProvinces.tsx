@@ -6,6 +6,8 @@ import { selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
 import { EntityRenderLayer } from './EntityRenderLayer'
+import { StateProvinceLabels } from './StateProvinceLabels'
+import { setHoveredStateProvinceId } from './hoveredStateProvince'
 
 // Renders the 'administrative-division' GeoEntityType (states/provinces) as
 // a Layer Engine layer — off by default (see StatesProvincesLayer.tsx),
@@ -28,6 +30,14 @@ import { EntityRenderLayer } from './EntityRenderLayer'
 // see useStatesProvincesFeatures.ts), and getEntity() resolves it against
 // the same GeoEntityRegistry provinces were registered into. Nothing about
 // that function needed to know a sixth classification exists.
+//
+// StateProvinceLabels.tsx (v5.2.7) adds passive, always-on (once revealed)
+// admin-1 name labels alongside the EntityRenderLayer entity rendering
+// above — the same entries list feeds both, so there's no second geometry
+// walk. Its own file, not inline here, purely because it's a real second
+// concern (label sizing/abbreviation/decluttering vs. border/fill/hover
+// rendering), the same split CountryLabels.tsx/Globe.tsx already keep for
+// countries.
 export function StatesProvinces() {
   const features = useStatesProvincesFeatures()
   const { selected } = useSelection()
@@ -40,5 +50,24 @@ export function StatesProvinces() {
     selectEntity(resolved, direction)
   }
 
-  return <EntityRenderLayer entries={entities} selectedEntityId={selected?.id} onSelect={handleSelect} />
+  // Converts EntityRenderLayer's geometryId to the entityId
+  // StateProvinceLabels.tsx's exclusion check needs — see
+  // GeoEntities.tsx's handleHoverChange for why this lookup matters even
+  // though every province's geometry id already equals its entity id today.
+  function handleHoverChange(geometryId: string | null) {
+    const entityId = geometryId ? (entities.find((e) => e.geometryId === geometryId)?.entityId ?? null) : null
+    setHoveredStateProvinceId(entityId)
+  }
+
+  return (
+    <>
+      <EntityRenderLayer
+        entries={entities}
+        selectedEntityId={selected?.id}
+        onSelect={handleSelect}
+        onHoverChange={handleHoverChange}
+      />
+      <StateProvinceLabels entries={entities} hidden={selected != null} />
+    </>
+  )
 }

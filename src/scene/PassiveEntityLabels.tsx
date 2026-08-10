@@ -11,8 +11,10 @@ import { GLOBE_RADIUS } from './constants'
 // both needed the identical "always-on passive name label, Google-Maps-style
 // zoom-adaptive sizing/abbreviation, one uniform color" treatment — the same
 // "duplication became real, so extract" call EntityRenderLayer.tsx already
-// made for border/fill/hover rendering). See LOGBOOK.md's v5.2.3/v5.2.4
-// entries for why this replaced the old fixed-extent-tier system.
+// made for border/fill/hover rendering) and StateProvinceLabels.tsx (v5.2.7,
+// via `maxCameraDistance` — see that prop's own comment). See LOGBOOK.md's
+// v5.2.3/v5.2.4 entries for why this replaced the old fixed-extent-tier
+// system.
 const OCCLUDER_RADIUS = GLOBE_RADIUS * 0.98 // matches Globe.tsx's core sphere
 const DECLUTTER_INTERVAL_MS = 150
 
@@ -102,6 +104,15 @@ export interface PassiveEntityLabelsProps {
   getExcludeId?: () => string | null
   maxVisibleLabels?: number
   minLabelSpacingPx?: number
+  // Hides the whole layer once the camera is farther than this — e.g.
+  // StateProvinceLabels.tsx (v5.2.7) wants admin-1 names to stay hidden at
+  // the default overview and only reveal once you're focused on a
+  // particular region, unlike CountryLabels.tsx/GeoEntityLabels.tsx, which
+  // show from the default overview distance. Checked alongside `hidden` in
+  // the same throttled tick that already reads camera distance for the
+  // apparent-size math, rather than a second useFrame/state layer in the
+  // caller.
+  maxCameraDistance?: number
 }
 
 export function PassiveEntityLabels({
@@ -110,6 +121,7 @@ export function PassiveEntityLabels({
   getExcludeId,
   maxVisibleLabels = 80,
   minLabelSpacingPx = 80,
+  maxCameraDistance,
 }: PassiveEntityLabelsProps) {
   const { camera, size } = useThree()
   const [visible, setVisible] = useState<PassiveLabelCandidate[]>([])
@@ -130,13 +142,15 @@ export function PassiveEntityLabels({
     hasRun.current = true
     lastRun.current = now
 
-    if (hidden) {
+    const cameraDistance = camera.position.length()
+    const tooFarOut = maxCameraDistance != null && cameraDistance > maxCameraDistance
+
+    if (hidden || tooFarOut) {
       if (visible.length > 0) setVisible([])
       return
     }
 
     const rotationY = getGlobeRotationY()
-    const cameraDistance = camera.position.length()
     const excludeId = getExcludeId?.() ?? null
 
     const candidates: PassiveLabelCandidate[] = ranked

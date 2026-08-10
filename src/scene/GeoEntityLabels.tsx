@@ -4,6 +4,7 @@ import { buildGeoEntityEntries } from './geoEntityEntries'
 import { useSelection } from '../hud/selectionStore'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
+import { getHoveredGeoEntityId } from './hoveredGeoEntity'
 import { PassiveEntityLabels, type PassiveLabelSource } from './PassiveEntityLabels'
 
 // Always-on GeoEntity name labels (v5.2.4) — the same passive, Google-Maps-
@@ -24,12 +25,15 @@ import { PassiveEntityLabels, type PassiveLabelSource } from './PassiveEntityLab
 // small, accepted duplication ClaimsOverlayLayer.tsx's own independent call
 // already established rather than threading entries through as a prop.
 //
-// No hover-exclusion here (unlike CountryLabels.tsx's hoveredCountry.ts) —
-// GeoEntities.tsx has never wired an onHoverChange publisher (EntityRenderLayer.tsx's
-// prop exists specifically for this, but "GeoEntities has no equivalent
-// always-on label layer" was true until this file). A hovered territory can
-// briefly show both its glowing HoverLabel and this dim passive label at
-// once; harmless visual duplication, not worth a new publisher store for.
+// Excludes whichever entity GeoEntities.tsx's own hover state is already
+// glow-labeling, via hoveredGeoEntity.ts (v5.2.7) — the same
+// hoveredCountry.ts pattern CountryLabels.tsx already used. Went from
+// "harmless duplication, not worth a new publisher store" to a real bug
+// once EntityRenderLayer.tsx's HoverLabel stopped using a leader-line
+// callout and started rendering at the exact same centroid this passive
+// label does (see LOGBOOK.md's v5.2.7 entry) — without this, a hovered
+// entity would show both labels stacked exactly on top of each other
+// instead of the hover label replacing the passive one.
 export function GeoEntityLabels() {
   const features = useGeoEntityFeatures()
   const { selected } = useSelection()
@@ -46,5 +50,12 @@ export function GeoEntityLabels() {
   // Lower ceiling than CountryLabels.tsx's default 80 — only 55 GeoEntities
   // exist at all, most of them small/niche; there's no reason to reserve
   // budget for more than could ever be candidates.
-  return <PassiveEntityLabels entries={entries} hidden={selected != null} maxVisibleLabels={55} />
+  return (
+    <PassiveEntityLabels
+      entries={entries}
+      hidden={selected != null}
+      getExcludeId={getHoveredGeoEntityId}
+      maxVisibleLabels={55}
+    />
+  )
 }

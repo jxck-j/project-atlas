@@ -5,6 +5,61 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.7: removing the callout line meant hover and passive labels now share a position — and a scope question worth asking first
+
+**Asked two clarifying questions before writing any code, since the request
+had real ambiguity: "political states" (this app's own Layer Engine
+category label for `StatesProvinces.tsx` — confirmed, not guessed) and a
+concrete reveal-distance target (the user's answer — "further away than
+lakes, but closer than country fill because sometimes multiple countries
+can be in view" — gave two existing reference points to anchor between
+rather than a bare number to invent).** Landed on
+`CAMERA_MIN_DISTANCE + 0.7` (~3.2): further than `Lakes.tsx`'s tightest
+existing gate (~2.8), closer than the distance a single country already
+fills the view (~3.5-4), matching the stated reasoning that several of the
+9 countries this layer covers are large enough to have multiple states
+visible together before a single-country zoom.
+
+**Removing `EntityRenderLayer.tsx`'s small-entity leader-line callout was
+mechanically simple — always use the inline-at-centroid branch large
+entities already had — but it quietly turned a documented, accepted gap
+into an active, visible bug.** `GeoEntityLabels.tsx`'s own comment already
+said "GeoEntities.tsx has never wired an onHoverChange publisher... a
+hovered territory can briefly show both its glowing HoverLabel and this
+dim passive label at once; harmless visual duplication" — harmless
+specifically because the two labels used to render in DIFFERENT places (a
+leader-line callout well away from center for anything under
+`LARGE_ENTITY_THRESHOLD_DEG`, vs. the passive label at the centroid).
+Once hover labels stopped using that callout and started rendering AT the
+centroid — the exact request: "the hovered text should remain on the
+country but replace the regular visible text" — that old duplication
+stopped being harmless: two labels at the identical position read as one
+garbled, stacked mess instead of two labels near each other. Caught this
+by re-reading `GeoEntityLabels.tsx`'s own comment while implementing the
+callout removal, not by testing first — the comment had already written
+down exactly the condition ("both labels at once") that was about to
+become visible for the first time.
+
+**Fix: extended the exact mechanism `CountryLabels.tsx`/
+`hoveredCountry.ts` already used, to the other two consumers** —
+`hoveredGeoEntity.ts` and `hoveredStateProvince.ts`, published from
+`GeoEntities.tsx`'s/`StatesProvinces.tsx`'s own `onHoverChange` callbacks.
+One real subtlety worth the extra step rather than passing the hovered id
+straight through: `EntityRenderLayer.tsx` reports hover by **geometryId**
+(the id its pointer handlers actually see, from iterating
+`entries.map()`), but the exclusion check in `PassiveEntityLabels.tsx`
+needs the **entityId** — geoEntityEntries.ts's own doc comment already
+explains why the two aren't always the same string (44 of 55 GeoEntities
+have a numeric geometry id that differs from their registry entity id).
+Skipping the geometryId→entityId lookup before publishing would have
+"fixed" 11 of the 55 GeoEntities by coincidence and silently left the
+other 44 still double-labeling on hover — the kind of bug that would only
+surface later, on a specific entity, looking like a fresh regression
+rather than an incomplete first fix. Converted through the entries list at
+publish time instead, the same lookup `Countries.tsx` never needs (a
+country's geometryId and entityId are always the same string) but every
+other consumer of this pattern does.
+
 ## 2026-08-09 — v5.2.6: `geometryToAngularExtent`'s antimeridian assumption had one more hole — a ring that encircles a pole
 
 **"Antarctica is abbreviated even zoomed all the way out, despite having

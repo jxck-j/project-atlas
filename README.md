@@ -161,20 +161,35 @@ src/
                                CLAUDE.md), rendered through
                                EntityRenderLayer.tsx. Primary selection only
                                — no parent/claims overlay logic here, that's
-                               layers/geoOverlays/
+                               layers/geoOverlays/. Publishes hover state to
+                               hoveredGeoEntity.ts (v5.2.7, converting
+                               EntityRenderLayer's geometryId to the
+                               corresponding entityId first) so
+                               GeoEntityLabels.tsx can exclude whichever
+                               entity is currently hover-glowing
+    hoveredGeoEntity.ts             (v5.2.7) hoveredCountry.ts's pattern,
+                               generalized for GeoEntities — see
+                               GeoEntities.tsx above
     EntityRenderLayer.tsx       (v4.5.0) The rendering Countries.tsx and
                                GeoEntities.tsx used to each keep their own
                                copy of — border/fill mesh per entry,
                                hover/select/dim color logic, click-vs-drag
-                               threshold, the HoverLabel large-vs-small
-                               callout choice — extracted once
+                               threshold, HoverLabel — extracted once
                                countryGeometry.ts had test coverage (v4.3.1)
-                               to guard against a regression. Each caller
-                               keeps only its real differences (how entries
-                               get built, what happens on a click-resolution
-                               miss) and passes an onSelect callback in;
-                               StatesProvinces.tsx (below) adopted it too
-                               once GeoEntities.tsx's copy was folded in
+                               to guard against a regression. HoverLabel
+                               (v5.2.7) renders every entry the same way
+                               regardless of size — inline, glowing, at the
+                               entry's own centroid — replacing its passive
+                               label in place; previously anything under
+                               LARGE_ENTITY_THRESHOLD_DEG (7°) got a
+                               leader-line + dot + offset callout instead,
+                               reported as unwanted for every entity kind.
+                               Each caller keeps only its real differences
+                               (how entries get built, what happens on a
+                               click-resolution miss) and passes an
+                               onSelect callback in; StatesProvinces.tsx
+                               (below) adopted it too once GeoEntities.tsx's
+                               copy was folded in
     geoEntityEntries.ts        (v3.0.0) The "raw GeoJSON feature -> renderable
                                entry" logic pulled out of GeoEntities.tsx into
                                a plain .ts module so the geoOverlays layers
@@ -186,6 +201,20 @@ src/
                                GeoEntities.tsx, own file since provinces are
                                conditionally rendered (toggled) in a way the
                                other five classifications aren't
+    StateProvinceLabels.tsx        (v5.2.7) Same PassiveEntityLabels.tsx
+                               treatment as CountryLabels.tsx/
+                               GeoEntityLabels.tsx, mounted alongside
+                               StatesProvinces.tsx's EntityRenderLayer so it
+                               shares that layer's on/off toggle — but a much
+                               tighter reveal distance (~3.2, vs. countries'
+                               default-overview ~6.5): state/province names
+                               stay hidden until you're focused on a region
+    hoveredStateProvince.ts        (v5.2.7) hoveredCountry.ts's pattern,
+                               written by StatesProvinces.tsx so
+                               StateProvinceLabels.tsx can exclude whichever
+                               province EntityRenderLayer's HoverLabel is
+                               already glowing (now at the same centroid
+                               position — see EntityRenderLayer.tsx below)
     useStatesProvincesFeatures.ts (v4.0) Fetches states-provinces.json;
                                creates GeoEntity records directly from the
                                fetched geometry (unlike useGeoEntityFeatures.ts,
@@ -266,7 +295,12 @@ src/
                                de facto states, strategic areas, ...) —
                                previously had no passive label at all, only
                                EntityRenderLayer.tsx's hover/selection-
-                               triggered HoverLabel
+                               triggered HoverLabel. Excludes whichever
+                               entity is currently hover-glowing via
+                               hoveredGeoEntity.ts (v5.2.7) — needed once
+                               HoverLabel stopped using a leader-line
+                               callout and started rendering at the same
+                               centroid this passive label uses
     PassiveEntityLabels.tsx          (v5.2.4) Extracted once CountryLabels.tsx
                                and GeoEntityLabels.tsx needed the identical
                                zoom-adaptive treatment — apparent-size-driven
@@ -278,7 +312,12 @@ src/
                                rendered width, not one flat constant for
                                every label — same fix labelDeclutter.ts
                                documents for the Gulfport/Biloxi regression,
-                               now also applied here)
+                               now also applied here). Optional
+                               maxCameraDistance prop (v5.2.7) hides the
+                               whole layer past a given zoom — how
+                               StateProvinceLabels.tsx gets its own, much
+                               tighter reveal distance than
+                               CountryLabels.tsx/GeoEntityLabels.tsx
     countryAbbreviation.ts          (v5.2.3) Pure abbreviation derivation —
                                initials of significant words for multi-word
                                names ("United Kingdom" -> "UK"), first 3

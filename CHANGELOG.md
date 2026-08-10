@@ -17,6 +17,41 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.7 — State/province passive labels; hover replaces the label in place instead of a callout line
+
+Two related requests. A point release, not a new major version — both reuse
+existing mechanisms (`PassiveEntityLabels.tsx`, `EntityRenderLayer.tsx`)
+rather than expanding either engine's own architecture.
+
+**State/province names** (`StateProvinceLabels.tsx`) now get the same
+always-on, Google-Maps-style passive label treatment `CountryLabels.tsx`/
+`GeoEntityLabels.tsx` already give countries and GeoEntities — sizing,
+abbreviation, and uniform color, all via `PassiveEntityLabels.tsx`. Their
+reveal distance is deliberately much tighter than countries' (which show
+from the default overview, ~6.5): state/province names stay hidden until
+you're actually focused on a region (~3.2), anchored between two existing
+reference points — further out than `Lakes.tsx`'s tightest existing label
+gate (~2.8, since state names are a coarser signal than an extreme-close
+detail) but closer in than a single country filling the view (~3.5-4,
+since several of the only 9 countries this layer covers — Russia, Canada,
+the US — are large enough to have multiple in view together before that
+point).
+
+**Hovering any entity (country, GeoEntity, or state/province) no longer
+sprouts a leader-line callout.** Small entities previously got a dot +
+line + label offset from their actual shape; every entity now gets the
+same inline treatment large ones already had, positioned at its own
+centroid — the exact spot its passive label already occupies — so hovering
+replaces the passive text in place instead of pointing away from it.
+Wiring the "replace, don't duplicate" behavior for GeoEntities and states/
+provinces (countries already had it) needed two new hover-id publisher
+stores, `hoveredGeoEntity.ts`/`hoveredStateProvince.ts`, mirroring the
+existing `hoveredCountry.ts` — without them, a hovered entity showed both
+its glowing hover label and its passive label stacked exactly on top of
+each other, since both now render at the same position.
+
+See `LOGBOOK.md`.
+
 ## v5.2.6 — Fix Antarctica always abbreviating, regardless of zoom
 
 **Bug fix.** Reported: Antarctica stayed abbreviated even zoomed all the

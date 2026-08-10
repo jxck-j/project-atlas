@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useThree, type ThreeEvent } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import { FrontSide, type Mesh, type Vector3 } from 'three'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
@@ -33,15 +33,18 @@ const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 // count as a "click" rather than a drag-to-rotate gesture.
 const CLICK_MOVE_THRESHOLD = 6
 
-// Angular bounding-box extent (degrees) above which an entry gets an inline
-// hover label instead of a leader-line callout. The median country is ~6.4°
-// (e.g. Ghana); the smallest are sub-2° (Qatar, Luxembourg) — 7° comfortably
-// separates "big enough to label in place" from "needs a pointer".
-const LARGE_ENTITY_THRESHOLD_DEG = 7
-
-// Hover label: large entries get an inline name at their centroid; small
-// ones get a leader-line callout (a radial line out to the label), matching
-// atlas annotation conventions for tiny nations/features.
+// Hover/selected label — always inline at the entry's own centroid, in the
+// exact spot its passive label (CountryLabels.tsx/GeoEntityLabels.tsx/
+// StateProvinceLabels.tsx, all via PassiveEntityLabels.tsx) already sits.
+//
+// 2026-08-09: previously gave small entries (under LARGE_ENTITY_THRESHOLD_DEG
+// = 7°) a leader-line + dot + offset callout instead — reported directly as
+// unwanted for every entity kind ("get rid of the call out line... the
+// hovered text should remain on the country but replace the regular visible
+// text"). Removed the size branch entirely: every entry now gets the same
+// inline treatment large ones already had, positioned at the same centroid
+// PassiveEntityLabels.tsx uses, so hovering swaps the passive grey text for
+// this glowing one in place rather than sprouting a pointer off to the side.
 //
 // Only actually needs a front/back-of-globe check for the *selected* case —
 // a hovered entry is already known front-facing (the pointer had to reach
@@ -51,26 +54,16 @@ const LARGE_ENTITY_THRESHOLD_DEG = 7
 // HoverLabels ever mounted at once) and always correct either way. See
 // useFrontOfGlobeVisible.ts and LOGBOOK.md's v5.2.1 entry.
 function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
-  const isLarge = entry.angularExtent >= LARGE_ENTITY_THRESHOLD_DEG
-
   const anchor = useMemo(
     () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.006),
     [entry.centroid]
   )
-  const calloutPoint = useMemo(
-    () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.35),
-    [entry.centroid]
-  )
-  const labelVisible = useFrontOfGlobeVisible(isLarge ? anchor : calloutPoint)
+  const labelVisible = useFrontOfGlobeVisible(anchor)
 
-  const label = labelVisible && (
-    <Html
-      position={isLarge ? anchor : calloutPoint}
-      center
-      distanceFactor={8}
-      zIndexRange={[20, 0]}
-      style={{ pointerEvents: 'none' }}
-    >
+  if (!labelVisible) return null
+
+  return (
+    <Html position={anchor} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
       <div
         className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
         style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
@@ -78,22 +71,6 @@ function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
         {entry.name.toUpperCase()}
       </div>
     </Html>
-  )
-
-  if (isLarge) return label || null
-
-  return (
-    <group>
-      {/* Real Three.js objects, already correctly depth-tested against the
-          core sphere — only the Html label above needs the explicit
-          front/back-of-globe gate. */}
-      <Line points={[anchor, calloutPoint]} color="#FFD24C" lineWidth={1} transparent opacity={0.85} />
-      <mesh position={anchor}>
-        <sphereGeometry args={[0.01, 8, 8]} />
-        <meshBasicMaterial color="#FFD24C" />
-      </mesh>
-      {label}
-    </group>
   )
 }
 
