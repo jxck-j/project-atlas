@@ -195,6 +195,18 @@ Two non-obvious things here matter a lot:
   and the accepted tradeoff (a true archipelago that doesn't cross the
   antimeridian, like Indonesia, now reports only its single largest
   island's extent).
+  **A ring that encircles a pole (v5.2.6) needs its longitude span
+  ignored entirely, not just kept per-ring.** Antarctica's coastline runs
+  all the way around the pole rather than dipping near the antimeridian
+  once — `unwrapRingLongitudes` doesn't error on it, but the cumulative
+  drift over a full lap doesn't cancel out to ~0 like it does for every
+  other ring's closure back to its own start; it lands ~360° away instead,
+  which `geometryToAngularExtent` used to report as the extent (`sin(180°)
+  ≈ 0` in `apparentSizePx`, permanently collapsing Antarctica's apparent
+  size to zero — always abbreviated, regardless of zoom). A ring whose
+  unwrapped last point is more than 180° from its unwrapped first point
+  encircles a pole; use only its latitude span in that case. See
+  `LOGBOOK.md`'s v5.2.6 entry.
 
 Every function in this file is generic over any GeoJSON `Geometry` — nothing
 in it is country-specific despite the file name. `scene/GeoEntities.tsx`

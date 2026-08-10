@@ -17,6 +17,35 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.6 — Fix Antarctica always abbreviating, regardless of zoom
+
+**Bug fix.** Reported: Antarctica stayed abbreviated even zoomed all the
+way out, despite having plenty of room to show its full name — different
+symptom from v5.2.4's antimeridian bug, same file. Antarctica's coastline
+ring runs all the way around the pole, touching every longitude, rather
+than dipping near the antimeridian just once like every other country's
+geometry. `geometryToAngularExtent` computed its longitude span as ~360°
+(a ring encircling a pole never closes back to its own starting longitude
+after unwrapping — it drifts a full circle instead), and
+`labelDeclutter.ts`'s `apparentSizePx` takes the sine of half that angle
+(`sin(180°) ≈ 0`), collapsing Antarctica's apparent size to zero at every
+camera distance. Fixed by detecting a ring that encircles a pole (its
+unwrapped last point lands more than 180° from its unwrapped first point —
+a normal ring, even a huge one, always closes back to within a few degrees
+of its start) and using only its latitude span in that case, since
+longitude span is meaningless for a shape that spans every longitude by
+definition.
+
+Audited every UN member country and rendered GeoEntity for the same class
+of extent corruption (impossible >170° or suspicious 0° results) — no
+other pole-encircling rings exist in this dataset (Antarctica is the only
+continent that surrounds a pole), and the handful of GeoEntities that
+legitimately compute to 0° (Gibraltar, Spratly Islands, Bajo Nuevo Bank,
+Serranilla Bank, Scarborough Reef, U.S. Minor Outlying Islands) turned out
+to be real degenerate single-point polygons in the source topology
+(features simplified down below their own size) — correctly tiny, not a
+bug. See `LOGBOOK.md`.
+
 ## v5.2.5 — Retune country label sizing: long names, overall size
 
 **Bug fix + tuning, on top of v5.2.3's label system.** Reported: the

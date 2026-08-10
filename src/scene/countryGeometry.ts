@@ -334,6 +334,32 @@ export function geometryToCentroid(geometry: Geometry): { lat: number; lng: numb
 // reports only its single largest island's extent, undercounting the
 // visual spread of the whole nation — real, but nowhere near as wrong as
 // the bug this replaced, and not something reported as an issue.
+//
+// 2026-08-09 (v5.2.6): "a single connected ring's own unwrap never needs to
+// cross more than one dateline" (above) turned out to have one exception:
+// Antarctica's coastline ring runs all the way around the pole, touching
+// every longitude, rather than just dipping near the antimeridian once.
+// `unwrapRingLongitudes` still "works" on it in the sense that it doesn't
+// throw or produce a per-point error, but the CUMULATIVE drift as you
+// walk all the way around a pole-encircling ring means its last point
+// unwraps to roughly 360° away from its first, even though they're the
+// same physical point (rings are closed) — the min/max longitude then
+// spans a nonsense-for-this-purpose ~360°, and `sin(360°/2) = sin(180°) ≈
+// 0` in `apparentSizePx` collapses Antarctica's apparent size to zero at
+// every zoom level, always falling back to its abbreviation ("Antarctica
+// is abbreviated even zoomed all the way out, despite having plenty of
+// room"). A normal ring — even a huge one, even one that legitimately
+// crosses the antimeridian once (Russia's mainland) — always closes back
+// to within a few degrees of its own starting unwrapped longitude, because
+// the unwrap direction it drifted during the ring cancels out by the time
+// it returns to its own start; only a ring that encircles a pole doesn't
+// cancel out, since it keeps drifting the same direction all the way
+// around. That gives a cheap, reliable detector with a huge margin (~0 vs
+// ~360, no real ring lands in between): if a ring's unwrapped last point
+// is more than 180° from its unwrapped first point, it encircles a pole,
+// and its longitude span is meaningless (it "spans" every longitude by
+// definition) — only its latitude span (how far it reaches from the pole)
+// says anything real about its size.
 export function geometryToAngularExtent(geometry: Geometry): number {
   const polygons = geometryToPolygons(geometry)
 
@@ -355,7 +381,9 @@ export function geometryToAngularExtent(geometry: Geometry): number {
       if (lng > maxLng) maxLng = lng
     }
 
-    const ringExtent = Math.max(maxLat - minLat, maxLng - minLng)
+    const closureGapDeg = Math.abs(unwrapped[unwrapped.length - 1][0] - unwrapped[0][0])
+    const encirclesPole = closureGapDeg > 180
+    const ringExtent = encirclesPole ? maxLat - minLat : Math.max(maxLat - minLat, maxLng - minLng)
     if (ringExtent > maxExtent) maxExtent = ringExtent
   }
 

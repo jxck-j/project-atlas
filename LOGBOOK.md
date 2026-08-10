@@ -5,6 +5,69 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.6: `geometryToAngularExtent`'s antimeridian assumption had one more hole — a ring that encircles a pole
+
+**"Antarctica is abbreviated even zoomed all the way out, despite having
+plenty of room" — asked directly to look for more instances of the v5.2.4
+class of bug, since the symptom (a huge, obviously-not-tiny entity stuck
+abbreviated) matched exactly.** Reproduced the same way as v5.2.4: a plain
+Node script against the real topology, this time `public/geo/entities.json`
+(Antarctica is a GeoEntity — a treaty-governed region, not a UN member
+country — so it's not even in `countries-un193.json`). Its computed extent
+was exactly `360`. Printed every ring's raw (non-unwrapped) longitude range
+to see why: ring 0 (its main coastline, 6224 points) spans `-180.0` to
+`179.8` raw — it runs all the way around the pole, touching essentially
+every longitude, rather than dipping near the antimeridian just once the
+way v5.2.4's fix already handled correctly for Russia/the USA.
+
+**Why the v5.2.4 fix didn't already cover this.** That fix's own comment
+claimed "a single connected ring's own unwrap never needs to cross more
+than one dateline" — true for every country's coastline, false for a ring
+that circumnavigates a pole. `unwrapRingLongitudes` doesn't error on such
+a ring — each individual step still just keeps the next point within 180°
+of the previous one — but the CUMULATIVE drift over a full trip around the
+pole doesn't cancel out the way it does for a normal ring: by the time you
+walk back around to your own starting point, you've drifted a full 360°
+away from where you started (rather than back to ~0° away, like any ring
+that doesn't encircle a pole). The resulting longitude span (~360°) then
+broke `apparentSizePx`'s trig the exact same way the v5.2.4 bug did —
+`sin(360°/2) = sin(180°) ≈ 0` — but landing on *zero* apparent size instead
+of a negative one, so Antarctica's symptom was "always abbreviated,
+regardless of zoom" rather than "abbreviated until you're almost at
+`CAMERA_MIN_DISTANCE`."
+
+**Fix: detect the pole-encircling case directly, using the same unwrap
+output the function already computes.** A ring's own first and last point
+are the same physical location (rings are closed) — for any normal ring,
+after unwrapping, they land within a few degrees of each other, because
+the drift direction reverses and cancels out over the course of a ring
+that doesn't enclose a pole. A ring that DOES encircle a pole never
+reverses — it keeps drifting the same direction the whole way around — so
+its unwrapped last point ends up nearly 360° from its unwrapped first
+point instead. Checking `|unwrapped.last - unwrapped.first| > 180` cleanly
+separates the two cases (there's a huge margin — real rings land near 0,
+pole-encircling ones land near 360, nothing in between) without needing
+any special-casing by name ("if this is Antarctica...") or by hardcoded
+geometry. When true, only the ring's latitude span is used — its longitude
+span is genuinely meaningless for something that spans every longitude by
+construction.
+
+**Audited the rest of the dataset for the same class of problem before
+calling it done** — the same discipline v5.2.4's entry ended on. Swept
+every country and every GeoEntity for extent values that were impossible
+(>170°, since no real single ring should legitimately exceed that) or
+suspicious (exactly 0). No other pole-encircling rings exist — Antarctica
+is the only landmass in this dataset that surrounds a pole, so this was a
+one-off, not a pattern. A handful of GeoEntities DID come back with a
+genuine `0°` extent (Gibraltar, Spratly Islands, Bajo Nuevo Bank,
+Serranilla Bank, Scarborough Reef, the U.S. Minor Outlying Islands) —
+checked their raw geometry directly rather than assuming a second bug:
+each is a real degenerate 4-point ring where every point is the exact same
+coordinate, i.e. a genuinely point-sized feature that topojson-simplify
+collapsed down from an already-tiny polygon. Correct behavior for
+something that small to always read as an abbreviation — not a bug,
+verified rather than assumed.
+
 ## 2026-08-09 — v5.2.5: font size hit its ceiling too early, silently breaking long-name abbreviation too
 
 **"DRC stays abbreviated even when zoomed in" — same class of "verify with

@@ -166,6 +166,34 @@ describe('geometryToAngularExtent', () => {
     // near the ~500+ degrees the old combined-bounding-box bug produced.
     expect(geometryToAngularExtent(multi)).toBeLessThan(5)
   })
+
+  // Antarctica's real coastline ring runs all the way around the pole,
+  // touching every longitude, rather than dipping near the antimeridian
+  // just once — unlike every other case above. `unwrapRingLongitudes`
+  // doesn't error on it, but the cumulative drift from walking all the way
+  // around means the ring's last point (the same physical point as its
+  // first, since rings are closed) unwraps to ~360° away from the first
+  // instead of matching it, so its longitude span comes out as ~360°
+  // instead of "meaningless, this ring touches every longitude." Naively
+  // taking that as the extent collapses `apparentSizePx` to ~0 forever
+  // (`sin(360°/2) = sin(180°) ≈ 0`) — reported as "Antarctica is
+  // abbreviated even zoomed all the way out." This ring: constant-ish
+  // latitude (-80 to -82, a 2-degree band) sweeping longitude from -180
+  // through 180 and back to its own start, the same shape as a polar
+  // coastline.
+  it('uses only the latitude span for a ring that encircles a pole, not its meaningless ~360-degree longitude span', () => {
+    const poleEncirclingRing: Position[] = [
+      [-180, -80],
+      [-90, -82],
+      [0, -80],
+      [90, -82],
+      [180, -80],
+      [-180, -80],
+    ]
+    // Latitude span is 2 (-82..-80); the old (buggy for this case) logic
+    // would have returned ~360 (the longitude span) instead.
+    expect(geometryToAngularExtent({ type: 'Polygon', coordinates: [poleEncirclingRing] })).toBeCloseTo(2, 10)
+  })
 })
 
 describe('geometryToBorderSegments', () => {
