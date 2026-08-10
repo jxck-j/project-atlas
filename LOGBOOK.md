@@ -5,6 +5,104 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.4: four label bugs from one round of feedback, one root-caused by comparing against a hand computation
+
+**"Why is the USA abbreviated, it has one of the largest footprints" —
+root-caused by not trusting `geometryToAngularExtent`'s output at face
+value.** Reproduced with a plain Node script against the real topology
+(`node -e` against `world-atlas`'s `countries-un193.json`, no app code) —
+Russia's computed extent was **502.9°**, an impossible value for any real
+lat/lng bounding box (max possible is 360°). Traced to `unwrapRingLongitudes`
+starting fresh from each ring's OWN first point with no shared reference —
+fine for triangulation (each ring is handled independently anyway), wrong
+for a function that then combines every ring's independently-unwrapped
+points into ONE running min/max. Russia's Kaliningrad exclave (~20°E) and
+its Far East (unwrapped relative to ITS OWN start, landing on a different
+360°-multiple branch than Kaliningrad's) got merged into a single bounding
+box spanning neither's real extent. `apparentSizePx`'s `sin(extentRad/2)`
+on a half-angle past 180° flips sign, silently making the USA/Russia
+register as having ~0 or negative apparent size and always fall back to
+abbreviation — huge countries were the ONLY ones that could hit this,
+because they're the only ones large enough to actually reach the
+antimeridian with a detached exclave on the far side. Fixed by taking the
+MAX of each polygon's own independent extent instead of a combined
+bounding box — this also matches what the function's own (pre-existing,
+but not actually implemented) doc comment already claimed the behavior
+was. The existing test for this function had actually locked in the OLD
+buggy contract as intentional ("spans a single bounding box across every
+polygon's points, including the gap between them") — updated it to match
+the corrected contract, and added a dedicated regression test using two
+small polygons on opposite antimeridian branches, mirroring the real bug
+instead of just re-testing the fix in the abstract.
+
+**"I can see Lebanon before Israel even though Israel is bigger" —
+investigated with a second Node script simulating the real
+`declutterLabels` greedy pass against real centroids/extents for the whole
+neighborhood (Israel, Lebanon, Syria, Jordan, Cyprus, Turkey, Iraq, Egypt,
+Saudi Arabia).** Found the actual mechanism by sweeping a range of
+plausible zoom levels: Israel isn't losing a conflict to Lebanon directly —
+it's losing to **Jordan** (bigger, so processed earlier in
+priority order and accepted first), and Lebanon happens to sit just far
+enough from Jordan to clear the same flat 80px spacing requirement Israel
+can't. This is inherent to a flat, one-size-fits-all spacing radius: a
+small, heavily-abbreviated label needs far less clearance than a big
+country's full name, but the old code gave every candidate the same
+40px-per-side fallback regardless. Fix: while extracting
+`PassiveEntityLabels.tsx` (see below), each candidate's spacing radius is
+now half its OWN estimated rendered width — the same fix
+`labelDeclutter.ts`'s doc comment already documents for the Gulfport/
+Biloxi regression, just not previously applied to `CountryLabels.tsx`.
+Genuinely reduces how often this class of collision happens; doesn't
+eliminate it outright — a greedy priority-ordered pass can still reject a
+smaller neighbor sitting close enough to ANY bigger, higher-priority one,
+at some zoom level. Verifying the exact before/after zoom threshold in a
+live browser session turned out to be unreliable (this session's browser
+automation couldn't reproduce sustained scroll-zoom consistently across
+window-size changes); trusted the Node-level simulation, which exercises
+the actual shipped `declutterLabels`/`apparentSizePx` functions, not a
+reimplementation.
+
+**"Territories like Greenland should have the same logic."** GeoEntities
+never had an always-on passive label at all — only
+`EntityRenderLayer.tsx`'s hover/selection-triggered `HoverLabel`. Rather
+than duplicate `CountryLabels.tsx`'s now-fairly-substantial zoom-adaptive
+logic (apparent-size sizing, abbreviation, per-candidate spacing, uniform
+color) a second time for a new `GeoEntityLabels.tsx`, extracted it into
+`PassiveEntityLabels.tsx` first — the same "duplication became real, so
+extract" call `EntityRenderLayer.tsx` already made once for border/fill/
+hover rendering shared by `Countries.tsx`/`GeoEntities.tsx`/
+`StatesProvinces.tsx`.
+
+**Debugging note, not a real bug:** while verifying `GeoEntityLabels.tsx`
+in the browser, every rendered GeoEntity label appeared to be silently
+missing — entries built correctly (confirmed via a temporary debug log:
+55 entries, real names/extents), but nothing rendered anywhere on the
+globe, for either `CountryLabels.tsx` or `GeoEntityLabels.tsx`, and even a
+second debug log placed inside `PassiveEntityLabels.tsx`'s `useFrame`
+never fired at all. Restarting the Vite dev server (not just reloading the
+page) resolved it immediately. Suspected cause: React Fast Refresh
+struggling to reconcile a structural refactor that moved hook logic across
+files while the dev server stayed running (`CountryLabels.tsx` changed
+from a full implementation to a thin wrapper around a brand-new sibling
+component in the same edit) — never fully confirmed, but worth remembering
+as the first thing to try when a component's `useFrame`/effects appear to
+stop firing entirely after a large structural edit, before assuming the
+new code itself is wrong.
+
+**"Strait of Hormuz overlapping the Persian Gulf, the Red Sea overlapping
+sovereign states, bodies of water shouldn't extend past their area."**
+`WaterLabels` used `Html`'s `distanceFactor={8}` — scales a label to a
+constant WORLD-SPACE size, meaning it reads BIGGER on screen the closer
+the camera gets, unbounded. `UsCityLabels.tsx` already documents dropping
+this exact prop for this exact reason ("even a 3px CSS size rendered as
+text spanning most of the screen — confirmed directly in a live browser").
+`WaterLabels` was the one remaining consumer still using it. No apparent-
+size-based scaling was added here the way countries/GeoEntities now have —
+water bodies are a single lat/lng point with no polygon data to size
+against (see `data/waterBodies.ts`'s own doc comment) — this fix only
+removes the unbounded growth, leaving a small fixed on-screen size at
+every zoom level.
+
 ## 2026-08-09 — v5.2.3: label size/abbreviation needs to track current zoom, not fixed physical size
 
 **The bug wasn't that small countries never abbreviated — it's that the

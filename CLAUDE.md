@@ -179,6 +179,22 @@ Two non-obvious things here matter a lot:
   `DoubleSide`, a pointer ray that misses every near-hemisphere country (e.g. a gap
   over open ocean) can continue through the globe and hit a country's back-facing
   triangles on the *far* side, causing wrong-country click-throughs.
+- **`geometryToAngularExtent` takes the MAX of each polygon's own
+  independently-unwrapped extent, not a combined bounding box across every
+  polygon** (v5.2.4) — a MultiPolygon country's separate pieces (Russia's
+  Kaliningrad exclave vs. its Far East, the USA's Alaska/Hawaii vs. the
+  mainland) can each unwrap correctly in isolation but land on different
+  360°-multiple "branches" relative to each other; combining them into one
+  running min/max produced results past 360° for Russia specifically
+  (~503°), which then broke `labelDeclutter.ts`'s `apparentSizePx` (`sin` of
+  a bogus half-angle past 180° flips sign). If you're computing anything
+  that needs "how big does the single landmass under this entity's label
+  actually look," use this function; don't reach for a from-scratch
+  combined bounding box across a MultiPolygon's rings — see this file's own
+  header comment and `LOGBOOK.md`'s v5.2.4 entry for the full reasoning
+  and the accepted tradeoff (a true archipelago that doesn't cross the
+  antimeridian, like Indonesia, now reports only its single largest
+  island's extent).
 
 Every function in this file is generic over any GeoJSON `Geometry` — nothing
 in it is country-specific despite the file name. `scene/GeoEntities.tsx`
@@ -401,8 +417,18 @@ call and no manual clock feeding left to get wrong.
   leader line every one of these markers also draws) applies to any
   selection-triggered label, not just water bodies. `scene/UsCityLabels.tsx`
   needed no version of this: it never persists a label past what
-  `declutterLabels` already re-evaluates continuously. See `LOGBOOK.md`'s
-  v5.2.1 and v5.2.2 entries.
+  `declutterLabels` already re-evaluates continuously.
+  `WaterLabels` (v5.2.4) also dropped `Html`'s `distanceFactor` prop — that
+  scales a label to a constant world-space size, which reads BIGGER on
+  screen the closer the camera gets, unbounded; reported directly as sea/
+  strait/gulf names growing "extremely too big" and overlapping once
+  zoomed in close (Strait of Hormuz over the Persian Gulf, Red Sea over
+  sovereign states). `UsCityLabels.tsx` already documents dropping this
+  exact prop for the identical reason. Water bodies have no polygon data
+  to size against the way countries/GeoEntities do (see
+  `data/waterBodies.ts`), so this only stops the unbounded growth — it
+  doesn't give them apparent-size-based scaling.
+  See `LOGBOOK.md`'s v5.2.1, v5.2.2, and v5.2.4 entries.
 - **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
   `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,

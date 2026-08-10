@@ -17,6 +17,59 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.4 — Fix corrupted country sizing, add territory labels, fix oversized water labels
+
+Four related fixes from one round of feedback on v5.2.3's new label system:
+
+**Fixed a real bug in `geometryToAngularExtent`** (`countryGeometry.ts`) that
+corrupted the size computation for any country with a distant exclave
+crossing the antimeridian on a different wrap "branch" than its mainland
+(Russia's Kaliningrad vs. its Far East, the USA's Alaska/Hawaii vs. the
+mainland) — reported as "why is the USA/Russia abbreviated, they have huge
+footprints." The bug combined every polygon's independently-unwrapped
+points into one running bounding box; for these countries that produced
+results past 360 degrees (Russia computed as ~503°), which then broke
+`apparentSizePx`'s trig (`sin` of a bogus half-angle past 180° flips sign).
+Now takes the max of each polygon's own independent extent instead — see
+`countryGeometry.test.ts`'s new regression tests.
+
+**Gave each label its own spacing radius instead of one flat constant for
+everyone** — extracted the passive-label logic shared by
+`CountryLabels.tsx` and a new `GeoEntityLabels.tsx` into
+`PassiveEntityLabels.tsx`, and while doing so, sized each candidate's
+declutter spacing requirement off its own rendered width (the same
+per-candidate `spacingRadiusPx` fix `labelDeclutter.ts` already documents
+for the Gulfport/Biloxi regression) instead of a flat constant tuned for
+the biggest labels. Investigated the reported "Lebanon shows before Israel
+even though Israel is bigger" directly: Israel wasn't losing to Lebanon,
+it was losing a spacing conflict against Jordan (bigger, higher declutter
+priority) while Lebanon happened to sit far enough away to clear — a
+flat, one-size-fits-all spacing radius made that kind of collision more
+likely than it needs to be. Real improvement, not a guarantee: a greedy
+priority-ordered declutter pass can still reject a smaller neighbor next
+to a big one at some zoom levels — that's inherent to the algorithm, not
+something this fix eliminates entirely.
+
+**Extended the same always-on passive label treatment to GeoEntities**
+(`GeoEntityLabels.tsx`) — territories like Greenland previously had no
+passive label at all, only `EntityRenderLayer.tsx`'s hover/selection-
+triggered `HoverLabel`, unlike every UN member country. Shares
+`PassiveEntityLabels.tsx` with `CountryLabels.tsx`, so it gets the same
+zoom-adaptive sizing/abbreviation/color for free.
+
+**Fixed water-body labels reading "extremely too big" once zoomed in close**
+(the Strait of Hormuz overlapping the Persian Gulf, the Red Sea overlapping
+sovereign states) — `WaterLabels` (`Globe.tsx`) used `Html`'s
+`distanceFactor` prop, which scales a label to a CONSTANT WORLD-SPACE size
+— the closer the camera gets, the bigger it reads on screen, unbounded.
+Dropped it, the same fix `UsCityLabels.tsx` already documents for the
+identical reason. Water bodies have no polygon data to size against the
+way countries/GeoEntities now do, so this doesn't give them apparent-size-
+based scaling — it just stops them from growing without limit, leaving a
+small, fixed on-screen size at every zoom level.
+
+See `LOGBOOK.md`.
+
 ## v5.2.3 — Google-Maps-style country labels: abbreviation, sizing, one uniform color
 
 Tunes `CountryLabels.tsx`'s always-on passive country-name layer — same

@@ -250,19 +250,35 @@ src/
                                their own Html labels against it the same way
                                WaterLabels does via a prop
     CountryLabels.tsx            (v4.3; Google-Maps-style abbreviation/sizing
-                               v5.2.3) Always-on country name labels, ranked
-                               by on-screen angular extent, sharing
-                               labelDeclutter.ts with UsCityLabels.tsx below.
-                               Font size and full-name-vs-abbreviation are
-                               both driven by the country's CURRENT apparent
-                               screen size (labelDeclutter.ts's
-                               apparentSizePx), not fixed physical extent —
-                               a label falls back to countryAbbreviation.ts's
-                               short form once the full name would visibly
-                               overrun the country's own on-screen footprint,
-                               and expands back to the full name on zooming
-                               in. One uniform text color for every country
-                               (previously varied per size tier)
+                               v5.2.3) Thin wrapper (v5.2.4) — builds
+                               {id, name, extent, localPosition} entries from
+                               useCountryFeatures() and hands them to
+                               PassiveEntityLabels.tsx, which owns the actual
+                               sizing/abbreviation/declutter/rendering logic
+                               shared with GeoEntityLabels.tsx below. Still
+                               owns what's genuinely country-specific: hiding
+                               entirely while selected, and excluding
+                               whichever country hoveredCountry.ts says
+                               already has a glowing HoverLabel elsewhere
+    GeoEntityLabels.tsx             (v5.2.4) Same always-on passive label
+                               treatment, extended to the 55 rendered
+                               GeoEntities (territories like Greenland,
+                               de facto states, strategic areas, ...) —
+                               previously had no passive label at all, only
+                               EntityRenderLayer.tsx's hover/selection-
+                               triggered HoverLabel
+    PassiveEntityLabels.tsx          (v5.2.4) Extracted once CountryLabels.tsx
+                               and GeoEntityLabels.tsx needed the identical
+                               zoom-adaptive treatment — apparent-size-driven
+                               font size (labelDeclutter.ts's apparentSizePx),
+                               full-name-vs-abbreviation via
+                               countryAbbreviation.ts, one uniform text
+                               color, and a per-candidate declutter spacing
+                               radius (half the label's own estimated
+                               rendered width, not one flat constant for
+                               every label — same fix labelDeclutter.ts
+                               documents for the Gulfport/Biloxi regression,
+                               now also applied here)
     countryAbbreviation.ts          (v5.2.3) Pure abbreviation derivation —
                                initials of significant words for multi-word
                                names ("United Kingdom" -> "UK"), first 3
@@ -274,7 +290,13 @@ src/
     labelDeclutter.ts             (v4.3) Shared screen-space decluttering:
                                rejects a lower-priority label if it would
                                land within spacing distance of an
-                               already-accepted one
+                               already-accepted one. apparentSizePx (v5.2.3)
+                               estimates a feature's CURRENT on-screen pixel
+                               size from its angular extent + live camera
+                               distance/FOV — the Google-Maps "big enough for
+                               its full name right now" question, which
+                               depends on zoom, not just the feature's fixed
+                               real-world size
     hoveredCountry.ts              (v4.3, zustand vanilla store since v4.4.0)
                                Non-reactive publisher so CountryLabels.tsx
                                can exclude whichever country Countries.tsx's

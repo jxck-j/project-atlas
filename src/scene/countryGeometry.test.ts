@@ -101,15 +101,18 @@ describe('geometryToAngularExtent', () => {
     expect(geometryToAngularExtent(ANTIMERIDIAN_SLIVER)).toBeCloseTo(20, 10)
   })
 
-  // Reads as one combined bounding box across every polygon's points, not
-  // each polygon's own extent kept separate and maxed — min/max lat/lng
-  // accumulate across the whole `for (const rings of polygons)` loop before
-  // the final `maxLat - minLat` / `maxLng - minLng` is taken. Two small,
-  // far-apart polygons (each individually only 5 degrees across) combine
-  // into a bounding box that's 90 degrees across, spanning the gap between
-  // them — worth knowing if this function is ever used to size something
-  // per-polygon rather than per-whole-MultiPolygon-country.
-  it('spans a single bounding box across every polygon\'s points, including the gap between them', () => {
+  // 2026-08-09: previously combined every polygon's independently-unwrapped
+  // points into one running bounding box, spanning the gap between two
+  // far-apart polygons as if they were one shape — for a real MultiPolygon
+  // country with a distant exclave (Russia's Kaliningrad vs. its Far East,
+  // the USA's Alaska/Hawaii vs. the mainland), that meant the "how big does
+  // this look" answer partly reflected the empty ocean between disconnected
+  // pieces, not either piece's own size. Now takes the MAX of each
+  // polygon's own independently-computed extent instead — matching what
+  // this function is actually used for (sizing the single landmass a label
+  // sits on, not the union of every disconnected piece a country owns). See
+  // LOGBOOK.md's v5.2.4 entry.
+  it('takes the larger polygon\'s own extent, not a combined bounding box across the gap', () => {
     const small: Position[] = [
       [0, 0],
       [5, 0],
@@ -125,9 +128,43 @@ describe('geometryToAngularExtent', () => {
       [50, 50],
     ]
     const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [[small], [large]] }
-    // Combined bbox: lat 0..90, lng 0..90 -> both spans are 90, larger than
-    // either polygon's own extent (5 and 40 respectively).
-    expect(geometryToAngularExtent(multi)).toBeCloseTo(90, 10)
+    // Each polygon's own extent: small=5, large=40. Max is 40 — NOT the
+    // combined-bbox 90 that would span the gap between them (lat 0..90,
+    // lng 0..90).
+    expect(geometryToAngularExtent(multi)).toBeCloseTo(40, 10)
+  })
+
+  // The actual real-world bug this replaced: two exclaves of the same
+  // country on OPPOSITE branches of the antimeridian wrap, each unwrapped
+  // independently (correctly, in isolation) but then combined into one
+  // running min/max with no shared reference between them — e.g. Russia's
+  // Kaliningrad (~20°E) and Far East (~170°E, which some geometry unwraps
+  // toward -190°E instead depending on which points precede it) reportedly
+  // combined into a ~503-degree "extent", an impossible value for any real
+  // bounding box (max possible is 360) that then broke downstream trig in
+  // labelDeclutter.ts's apparentSizePx (sin of a bogus half-angle past 180°
+  // flips sign) — surfaced as "why does the USA/Russia abbreviate, they
+  // have huge footprints."
+  it('does not produce an impossible (>360 degree) result for exclaves on opposite antimeridian branches', () => {
+    const westExclave: Position[] = [
+      [19, 54],
+      [20, 54],
+      [20, 55],
+      [19, 55],
+      [19, 54],
+    ]
+    const eastExclave: Position[] = [
+      [-170, 66],
+      [-169, 66],
+      [-169, 67],
+      [-170, 67],
+      [-170, 66],
+    ]
+    const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [[westExclave], [eastExclave]] }
+    // Each exclave is individually tiny (~1 degree across); the max of the
+    // two independent, correctly-bounded extents should be small — nowhere
+    // near the ~500+ degrees the old combined-bounding-box bug produced.
+    expect(geometryToAngularExtent(multi)).toBeLessThan(5)
   })
 })
 

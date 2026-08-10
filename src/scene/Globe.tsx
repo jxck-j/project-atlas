@@ -12,6 +12,7 @@ import { PointerMarker } from './PointerMarker'
 import { UsCityOutlineHighlight } from './UsCityOutlineHighlight'
 import { UsCityLabels } from './UsCityLabels'
 import { CountryLabels } from './CountryLabels'
+import { GeoEntityLabels } from './GeoEntityLabels'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
 import { coreSphereRef } from './coreSphereRef'
@@ -93,6 +94,24 @@ interface WaterLabelEntry {
 // seas/gulfs/straits stay hidden until the camera zooms in past
 // SEA_LABEL_REVEAL_DISTANCE, so the globe doesn't open with 27 labels
 // competing for attention.
+//
+// 2026-08-09: dropped `distanceFactor` — that prop scales an Html label to
+// a CONSTANT WORLD-SPACE size, which means the closer the camera gets, the
+// BIGGER the label reads on screen (more screen pixels per world unit at
+// closer range). Fine for a label anchored on something that fills more of
+// the screen as you approach it; wrong for a fixed-size sea/strait/gulf
+// name that has no polygon to size against (there's no geometry here to
+// compute an apparent size from the way CountryLabels.tsx/
+// PassiveEntityLabels.tsx can) — reported directly as "extremely too big,"
+// with the Strait of Hormuz's label overlapping the Persian Gulf's once
+// zoomed in close enough to read either. UsCityLabels.tsx already
+// documents the identical fix for the identical reason ("deliberately NO
+// distanceFactor... this label set is shown down to this app's closest
+// zoom, where [distanceFactor's] growth becomes unbounded"). Without it,
+// Html falls back to a plain constant-screen-size overlay — the Tailwind
+// text-[8px]/text-[6px] classes below are now the label's actual, fixed
+// on-screen size at every zoom level, not a floor that distanceFactor scaled
+// up from.
 function WaterLabels() {
   const { selected } = useSelection()
   const { camera, size } = useThree()
@@ -152,7 +171,6 @@ function WaterLabels() {
             key={body.name}
             position={localPosition}
             center
-            distanceFactor={8}
             zIndexRange={[1, 0]}
             style={{ pointerEvents: 'none' }}
           >
@@ -240,6 +258,7 @@ export function Globe() {
       <GeoEntities />
       <CapitalMarker />
       <CountryLabels />
+      <GeoEntityLabels />
       <UsCityOutlineHighlight />
       <UsCityLabels />
       <WaterLabels />

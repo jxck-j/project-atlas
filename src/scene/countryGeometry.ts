@@ -300,31 +300,64 @@ export function geometryToCentroid(geometry: Geometry): { lat: number; lng: numb
 
 // Max angular extent (degrees) across latitude and longitude, used to decide
 // whether a country is "large" enough on screen for an inline hover label or
-// needs a leader-line callout instead. Computed per-polygon (each exterior
-// ring unwrapped against itself) since separate polygons of a MultiPolygon
-// (e.g. Alaska vs. the continental US) are often far apart and unwrapping
-// them against a shared reference wouldn't be meaningful.
+// needs a leader-line callout instead (and, since v5.2.4, to estimate a
+// label's actual apparent on-screen size — see labelDeclutter.ts's
+// apparentSizePx). Computed per-polygon — each exterior ring unwrapped
+// against ONLY ITSELF, with the single largest resulting span taken as the
+// answer — since separate polygons of a MultiPolygon (e.g. Alaska/Hawaii vs.
+// the continental US, Kaliningrad vs. the rest of Russia) are often
+// genuinely far apart, and a combined bounding box across all of them
+// doesn't represent "how big does the landmass under this country's label
+// actually look" (the label sits on the single largest piece — see
+// geometryToCentroid's "largest ring by point count" rule — not on some
+// point in the empty space between disconnected exclaves).
+//
+// 2026-08-09: previously combined every ring's independently-unwrapped
+// points into ONE running min/max — for a country whose separate polygons
+// straddle the antimeridian on different "branches" of the ±180° wrap (any
+// country with an Arctic/Pacific exclave far from its mainland: Russia's
+// Kaliningrad and Far East, the USA's Hawaii and Alaska), that combined the
+// two branches' longitudes as if they were part of one bounding box,
+// producing nonsense (Russia computed as ~503°, well past the 360° a real
+// bounding box can even span) that then broke downstream trig math
+// (apparentSizePx's `sin` of a bogus half-angle past 180° flips sign,
+// making both of these countries' labels register as having ~0 or negative
+// apparent size and always fall back to their abbreviation, even at close
+// zoom — reported directly: "why is the USA abbreviated, it has one of the
+// largest footprints"). Taking the max PER-RING span instead can't produce
+// that kind of runaway value (a single connected ring's own unwrap never
+// needs to cross more than one dateline), and happens to also match this
+// function's original documented intent, which the old combined-bounding-
+// box code didn't actually implement despite what its own comment said.
+// Known accepted tradeoff, not a new regression: a true multi-island
+// archipelago that doesn't cross the antimeridian (Indonesia, Philippines)
+// reports only its single largest island's extent, undercounting the
+// visual spread of the whole nation — real, but nowhere near as wrong as
+// the bug this replaced, and not something reported as an issue.
 export function geometryToAngularExtent(geometry: Geometry): number {
   const polygons = geometryToPolygons(geometry)
 
-  let minLat = Infinity
-  let maxLat = -Infinity
-  let minLng = Infinity
-  let maxLng = -Infinity
+  let maxExtent = 0
 
   for (const rings of polygons) {
     const exterior = rings[0]
     if (!exterior || exterior.length === 0) continue
 
     const unwrapped = unwrapRingLongitudes(exterior)
+    let minLat = Infinity
+    let maxLat = -Infinity
+    let minLng = Infinity
+    let maxLng = -Infinity
     for (const [lng, lat] of unwrapped) {
       if (lat < minLat) minLat = lat
       if (lat > maxLat) maxLat = lat
       if (lng < minLng) minLng = lng
       if (lng > maxLng) maxLng = lng
     }
+
+    const ringExtent = Math.max(maxLat - minLat, maxLng - minLng)
+    if (ringExtent > maxExtent) maxExtent = ringExtent
   }
 
-  if (!isFinite(minLat)) return 0
-  return Math.max(maxLat - minLat, maxLng - minLng)
+  return maxExtent
 }
