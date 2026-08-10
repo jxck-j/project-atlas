@@ -17,6 +17,35 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.3 — Google-Maps-style country labels: abbreviation, sizing, one uniform color
+
+Tunes `CountryLabels.tsx`'s always-on passive country-name layer — same
+feature, three complaints: small countries' names weren't abbreviating the
+way Google Maps abbreviates a small country to something like "UK" at low
+zoom; a full name could visibly sprawl outside the country's own on-screen
+shape; and label color varied noticeably between countries (a fixed 4-tier
+opacity ramp keyed to physical size), reading as an inconsistent, patchy
+palette rather than one coherent label layer.
+
+Replaced the old fixed extent-based 4-tier size/color/weight ramp with
+continuous values driven by a new `apparentSizePx` helper
+(`labelDeclutter.ts`) — the country's *current* on-screen footprint (extent
++ live camera distance + FOV), not just its fixed real-world size. Font size
+now tracks that footprint directly (clamped), and the full name is only
+shown when a rough width estimate fits within it (`MAX_NAME_WIDTH_FRACTION`
+= 1.15x, some overhang reads as normal on any atlas); otherwise a new
+`countryAbbreviation.ts` derives a short form on the fly (initials of
+significant words for multi-word names — "United Kingdom" -> "UK",
+"Democratic Republic of the Congo" -> "DRC" — first 3 letters for
+single-word ones). No new ISO-code data file needed. Color is now one
+constant (`text-gray-300`, light grey) for every country, full stop — only
+size and font-weight still vary by apparent size. The same country now
+abbreviates from the default overview distance and grows into its full name
+as you zoom in, rather than a country's label treatment being locked in by
+physical size alone (confirmed directly: even the USA, physically enormous,
+abbreviates to "USA" at overview distance because "UNITED STATES OF
+AMERICA" doesn't fit its own on-screen width there). See `LOGBOOK.md`.
+
 ## v5.2.2 — Fix the same far-side label bleed for selection markers/callouts
 
 **Bug fix, same root cause as v5.2.1.** After fixing `WaterLabels`, asked

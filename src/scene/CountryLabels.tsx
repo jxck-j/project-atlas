@@ -9,7 +9,8 @@ import { geometryToCentroid, geometryToAngularExtent } from './countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { getGlobeRotationY } from './globeRotation'
 import { getHoveredCountryId } from './hoveredCountry'
-import { declutterLabels, type DeclutterCandidate } from './labelDeclutter'
+import { abbreviateCountryName } from './countryAbbreviation'
+import { apparentSizePx, declutterLabels, type DeclutterCandidate } from './labelDeclutter'
 import { GLOBE_RADIUS } from './constants'
 
 // Always-on country name labels, decluttered the same way UsCityLabels.tsx
@@ -49,23 +50,52 @@ const DECLUTTER_INTERVAL_MS = 150
 
 const Y_AXIS = new Vector3(0, 1, 0)
 
-// Same idea as UsCityLabels' LABEL_STYLE_TIERS — visual weight scales with
-// the same angular-extent score used for declutter priority, so the
-// biggest countries (Russia, Canada, ...) read as more prominent than a
-// small one that only won a quiet corner of the map.
-const LABEL_STYLE_TIERS: [minExtent: number, className: string][] = [
-  [40, 'text-[12px] font-semibold tracking-[0.08em] text-cyan-100/85'],
-  [20, 'text-[10px] font-medium tracking-[0.06em] text-cyan-200/70'],
-  [10, 'text-[9px] tracking-[0.05em] text-cyan-300/60'],
-  [0, 'text-[8px] tracking-[0.04em] text-cyan-400/50'],
-]
+// Matches Scene.tsx's <Canvas camera={{ fov: 45 }}> — nothing in this app
+// changes FOV dynamically (see grep note in LOGBOOK.md's v5.2.3 entry), so a
+// duplicated constant here is simpler than threading the live camera's own
+// `fov` field through, the same "matches Globe.tsx's core sphere" tradeoff
+// OCCLUDER_RADIUS above already makes.
+const CAMERA_FOV_DEG = 45
 
-function labelClassName(extent: number): string {
-  for (const [minExtent, className] of LABEL_STYLE_TIERS) {
-    if (extent >= minExtent) return className
-  }
-  return LABEL_STYLE_TIERS[LABEL_STYLE_TIERS.length - 1][1]
+// 2026-08-09: replaces a fixed 4-tier extent-based size/color/weight ramp
+// with continuous values driven by apparentSizePx (labelDeclutter.ts) —
+// the country's CURRENT on-screen footprint, not just its fixed real-world
+// size. Google Maps-style: the same country reads as a short abbreviation
+// from the default overview distance and grows into its full name as you
+// zoom in, rather than a country's label treatment being locked in by its
+// physical size alone. Reported directly: labels were reading as visibly
+// different colors/brightness across countries (varying opacity per tier)
+// and small countries' full names were spilling well outside their own
+// borders on screen. Font SIZE still varies (matching the country's own
+// apparent size keeps the label roughly proportioned to what it's labeling)
+// but color is now one constant, and the full-name-vs-abbreviation choice
+// is driven by an actual width estimate against the country's own apparent
+// diameter instead of never abbreviating at all.
+const MIN_FONT_PX = 7
+const MAX_FONT_PX = 13
+const FONT_TO_APPARENT_RATIO = 0.32
+const PROMINENT_APPARENT_PX = 60
+// How much wider than the country's own on-screen diameter the full name is
+// allowed to render before falling back to the abbreviation — some overhang
+// reads as normal on any atlas (the label doesn't have to fit literally
+// inside a small country's borders), it just shouldn't sprawl.
+const MAX_NAME_WIDTH_FRACTION = 1.15
+const LABEL_COLOR_CLASS = 'text-gray-300'
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value))
 }
+
+// Rough average glyph width for uppercase, letter-spaced sans-serif text —
+// not measured DOM text, just enough to decide "would the full name
+// visually overrun this country" without a layout pass every frame.
+function estimateTextWidthPx(text: string, fontSizePx: number, letterSpacingEm: number): number {
+  const charWidth = fontSizePx * 0.62
+  const spacing = fontSizePx * letterSpacingEm
+  return text.length * charWidth + Math.max(0, text.length - 1) * spacing
+}
+
+const LETTER_SPACING_EM = 0.06
 
 interface CountryCandidate extends DeclutterCandidate {
   name: string
@@ -125,13 +155,36 @@ export function CountryLabels() {
     setVisible(next)
   })
 
+  // Read fresh at render time (not the throttled useFrame above) — cheap
+  // (a Vector3 length), and keeps font size/abbreviation in sync with the
+  // exact camera distance this render is for rather than lagging an extra
+  // tick behind the visibility list's own throttle.
+  const cameraDistance = camera.position.length()
+
   return (
     <group>
-      {visible.map(({ id, name, extent, localPosition }) => (
-        <Html key={id} position={localPosition} center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
-          <div className={`whitespace-nowrap ${labelClassName(extent)}`}>{name.toUpperCase()}</div>
-        </Html>
-      ))}
+      {visible.map(({ id, name, extent, localPosition }) => {
+        const apparentPx = apparentSizePx(extent, cameraDistance, size.height, CAMERA_FOV_DEG, GLOBE_RADIUS)
+        const fontSizePx = clamp(apparentPx * FONT_TO_APPARENT_RATIO, MIN_FONT_PX, MAX_FONT_PX)
+        const fullNameWidthPx = estimateTextWidthPx(name.toUpperCase(), fontSizePx, LETTER_SPACING_EM)
+        const displayText =
+          fullNameWidthPx > apparentPx * MAX_NAME_WIDTH_FRACTION ? abbreviateCountryName(name) : name
+
+        return (
+          <Html key={id} position={localPosition} center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
+            <div
+              className={`whitespace-nowrap ${LABEL_COLOR_CLASS}`}
+              style={{
+                fontSize: `${fontSizePx}px`,
+                letterSpacing: `${LETTER_SPACING_EM}em`,
+                fontWeight: apparentPx >= PROMINENT_APPARENT_PX ? 600 : 400,
+              }}
+            >
+              {displayText.toUpperCase()}
+            </div>
+          </Html>
+        )
+      })}
     </group>
   )
 }

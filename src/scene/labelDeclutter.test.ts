@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { OrthographicCamera, Vector3 } from 'three'
-import { declutterLabels, isCandidateVisible, type DeclutterCandidate } from './labelDeclutter'
+import { apparentSizePx, declutterLabels, isCandidateVisible, type DeclutterCandidate } from './labelDeclutter'
 
 // An orthographic camera makes the projection math exactly hand-computable
 // (no perspective-divide/FOV trig to reason about): with left/right/top/
@@ -85,6 +85,40 @@ describe('isCandidateVisible — screen-frustum test', () => {
 function candidate(id: string, x: number, spacingRadiusPx?: number): DeclutterCandidate {
   return { id, worldPosition: new Vector3(x, 0, 1), spacingRadiusPx }
 }
+
+describe('apparentSizePx', () => {
+  it('is zero for a zero-extent feature, regardless of other params', () => {
+    expect(apparentSizePx(0, 5, 1000, 45, 2.4)).toBe(0)
+  })
+
+  it('is zero for a non-positive camera distance (guards div-by-zero, not a real case)', () => {
+    expect(apparentSizePx(10, 0, 1000, 45, 2.4)).toBe(0)
+  })
+
+  // Chosen so every trig term lands on a clean 30-60-90 value:
+  // - extentDeg=120 -> extentRad/2 = 60deg -> sin(60deg) = sqrt(3)/2, so
+  //   worldDiameter = 2*sphereRadius*sqrt(3)/2 = sphereRadius*sqrt(3).
+  // - fovDeg=90 -> fovRad/2 = 45deg -> tan(45deg) = 1, so
+  //   worldHeightAtDistance = 2*cameraDistance.
+  // With sphereRadius=1, cameraDistance=1, viewportHeight=1000:
+  // apparentPx = (sqrt(3) / 2) * 1000 = 500*sqrt(3).
+  it('matches a hand-derived value at clean 30-60-90 trig angles', () => {
+    const result = apparentSizePx(120, 1, 1000, 90, 1)
+    expect(result).toBeCloseTo(500 * Math.sqrt(3), 6)
+  })
+
+  it('is inversely proportional to camera distance (zooming out shrinks it)', () => {
+    const near = apparentSizePx(10, 2, 800, 45, 2.4)
+    const far = apparentSizePx(10, 4, 800, 45, 2.4)
+    expect(far).toBeCloseTo(near / 2, 6)
+  })
+
+  it('grows with viewport height (more pixels = more apparent size for the same real-world view)', () => {
+    const small = apparentSizePx(10, 5, 800, 45, 2.4)
+    const large = apparentSizePx(10, 5, 1600, 45, 2.4)
+    expect(large).toBeCloseTo(small * 2, 6)
+  })
+})
 
 describe('declutterLabels', () => {
   it('accepts a candidate that is far enough from an already-accepted one', () => {

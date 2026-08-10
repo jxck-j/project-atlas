@@ -42,7 +42,7 @@ npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
 npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities,lakes,rivers}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
-npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
+npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
 ```
 
 Verify changes with `tsc -b --noEmit`, `npm run lint` (oxlint), `npm test`,
@@ -249,9 +249,25 @@ src/
                                not direct children of Globe.tsx) occlude
                                their own Html labels against it the same way
                                WaterLabels does via a prop
-    CountryLabels.tsx            (v4.3) Always-on country name labels,
-                               ranked by on-screen angular extent, sharing
-                               labelDeclutter.ts with UsCityLabels.tsx below
+    CountryLabels.tsx            (v4.3; Google-Maps-style abbreviation/sizing
+                               v5.2.3) Always-on country name labels, ranked
+                               by on-screen angular extent, sharing
+                               labelDeclutter.ts with UsCityLabels.tsx below.
+                               Font size and full-name-vs-abbreviation are
+                               both driven by the country's CURRENT apparent
+                               screen size (labelDeclutter.ts's
+                               apparentSizePx), not fixed physical extent —
+                               a label falls back to countryAbbreviation.ts's
+                               short form once the full name would visibly
+                               overrun the country's own on-screen footprint,
+                               and expands back to the full name on zooming
+                               in. One uniform text color for every country
+                               (previously varied per size tier)
+    countryAbbreviation.ts          (v5.2.3) Pure abbreviation derivation —
+                               initials of significant words for multi-word
+                               names ("United Kingdom" -> "UK"), first 3
+                               letters for single-word ones ("Ukraine" ->
+                               "UKR") — no ISO code lookup table needed
     UsCityLabels.tsx              (v4.3) Progressive US city label reveal —
                                Google-Maps-style, ranked by real Census
                                population, gated by the LOD Engine below

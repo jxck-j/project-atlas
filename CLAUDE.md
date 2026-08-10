@@ -56,7 +56,7 @@ npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + publ
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
                               # Census shapefile changes)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
-npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
+npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
 ```
 
 `tsc -b --noEmit` (project references mode, not plain `tsc --noEmit`) is the

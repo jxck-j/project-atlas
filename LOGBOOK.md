@@ -5,6 +5,69 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.3: label size/abbreviation needs to track current zoom, not fixed physical size
+
+**The bug wasn't that small countries never abbreviated — it's that the
+abbreviation decision (and the label's color) was keyed to the wrong
+variable.** `CountryLabels.tsx`'s old 4-tier system picked a label's size,
+color, and (implicitly, by never abbreviating) its text purely from
+`geometryToAngularExtent` — a country's fixed real-world size. That answers
+"is Russia bigger than Luxembourg," which is real and useful for declutter
+*priority*, but not "does this label currently fit on screen," which
+depends just as much on how far the camera is right now. A physically huge
+country (the USA) can have a full name that doesn't fit its OWN apparent
+footprint from the default overview distance, and a physically small one
+(any small European country) can earn its full name once you're zoomed in
+close — extent alone can't distinguish either case.
+
+**Fix: derive apparent (zoom-dependent) size instead of using fixed extent
+directly.** New `apparentSizePx` (`labelDeclutter.ts`) turns
+`(extentDeg, cameraDistance, viewportHeight, fovDeg, sphereRadius)` into a
+current on-screen pixel estimate, using the standard "world units visible
+per pixel at distance d, given vertical FOV" relationship — deliberately a
+flat-plane approximation, not a true two-point screen projection (project
+the feature's near/far edge and measure the pixel gap), because this only
+needs to answer a threshold question ("short or long form"), not render a
+literal bounding box. Font size now scales with that value directly
+(clamped); the full-vs-abbreviated choice compares an estimated rendered
+text width (`estimateTextWidthPx` — a rough average-glyph-width heuristic,
+not a real layout pass) against it.
+
+**Abbreviation needed a source, and the topology data doesn't have one.**
+`countries-un193.json`'s `id` field is the ISO 3166-1 **numeric** code
+(`360` for Indonesia), not an alpha-2/alpha-3 code — confirmed by reading a
+sample feature directly rather than assuming. Adding a hand-maintained
+193-entry alpha-code lookup table was the obvious option; instead,
+`countryAbbreviation.ts` derives a short form from the display name string
+already in hand: multi-word names take initials of their significant words
+(stop words "of"/"the"/"and" dropped) — "Democratic Republic of the Congo"
+-> "DRC", "United Kingdom" -> "UK" — which turns out to reproduce a lot of
+real common/ISO abbreviations for free, since that's literally how most of
+them were coined. Single-word names (Ukraine, Luxembourg) fall back to
+their first 3 letters. Not guaranteed collision-free (South Africa and
+Saudi Arabia both reduce to "SA") — accepted, the same tradeoff real-world
+atlas abbreviations make, and the full name is always one hover/click/zoom
+away.
+
+**Verifying the zoom-dependent transition in the browser hit a tooling
+limit, not an app bug.** Both synthetic mouse-wheel `scroll` events and
+repeated `w` keypresses (this app's zoom-in binding) were unreliable for
+sustained zooming through the browser automation tool — a single scroll
+event did produce one real zoom-in transition (confirmed: several countries
+flipped from abbreviated to full name in that one before/after pair), but
+repeated key events didn't accumulate further, likely because the app's
+held-key tracking (`KeyboardController.ts`'s `Set` of currently-held keys,
+mutated on real keydown/keyup) doesn't see a synthetic "repeat" as truly
+held — each repeat is its own instantaneous down+up pair. Fell back to
+DOM-level verification instead: queried `getComputedStyle` on rendered
+labels at a single fixed camera position and confirmed BRAZIL/COLOMBIA
+(large, full name, bold, 13px) vs USA/CV (abbreviated, 7px) vs CR/GUY
+(mid-size) all share the exact same `color` while size/weight differ — the
+uniform-color and apparent-size-driven-sizing requirements verified
+directly, and the zoom-transition mechanism trusted to the already-unit-
+tested inverse-distance relationship in `apparentSizePx` plus the one
+observed real transition.
+
 ## 2026-08-09 — v5.2.2: the water-label bug was one symptom of a wider pattern, not the whole bug
 
 **After shipping v5.2.1, asked directly: are there other instances of this?**
