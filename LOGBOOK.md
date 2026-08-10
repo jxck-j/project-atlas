@@ -5,6 +5,58 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-09 — v5.2.2: the water-label bug was one symptom of a wider pattern, not the whole bug
+
+**After shipping v5.2.1, asked directly: are there other instances of this?**
+Worth checking rather than assuming the fix was scoped correctly the first
+time — `WaterLabels` was reported broken because ocean names are highly
+visible and easy to notice, not because it was the only place with the
+underlying defect. The real defect, stated generally: **an `Html` label is a
+DOM overlay with no WebGL depth buffer, so nothing hides it automatically
+when it should be behind the globe — every other rendered thing in this
+scene (a `<mesh>` dot, a `<Line>` leader line) gets that for free from
+ordinary depth-testing against the opaque core sphere, but `Html` doesn't.**
+Anything that (a) renders an `Html` label and (b) can end up positioned on
+the far side while still meant to render — not excluded some other way
+first — has this bug.
+
+Audited every `Html` call site in `src/scene/` against that description.
+Split cleanly into three buckets:
+- **Already safe**: `CountryLabels.tsx`, `UsCityLabels.tsx`, `Lakes.tsx`
+  (lake names) all already run the analytic front/back check
+  (`labelDeclutter.ts`) before ever reaching `Html`, for an unrelated
+  reason (they have thousands of candidates and need `declutterLabels`'
+  screen-space spacing logic anyway) — the occlusion correctness was a free
+  side effect of solving a different problem first.
+- **Already safe for a different reason**: `UsCityOutlineHighlight.tsx`
+  only ever appears immediately after `flyToUsCity()`, which is its *only*
+  setter and always moves the camera there in the same action — it can
+  never be selected without also being front-and-center.
+- **Had the bug**: `EntityRenderLayer.tsx`'s `HoverLabel`,
+  `Cities.tsx`'s `CityLabel`, and `PointerMarker.tsx` (shared by
+  `CapitalMarker` and `ClaimsOverlayLayer.tsx`'s related-country marker) —
+  none of these had *any* front/back check, analytic or raycast. All three
+  persist a label based on *selection*, which (unlike hover) has no
+  built-in guarantee of being front-facing: clicking a country's polygon to
+  select it proves that country was front-facing **at the moment of the
+  click**, but selection outlives the click, and nothing re-checks after
+  the globe rotates. Confirmed directly: click Mexico (no camera flight),
+  drag-rotate it to the opposite side of the globe, and "MEXICO" /
+  "MEXICO CITY" stayed fully legible the entire time — the exact same
+  symptom as the ocean-label report, just for a different trigger.
+
+**Fix:** rather than copy `WaterLabels`' inline analytic-check-plus-throttle
+code three more times, extracted it into `scene/useFrontOfGlobeVisible.ts`
+— a small hook taking a local (pre-rotation) position and returning whether
+it's currently camera-facing, encapsulating the same rotationY compensation
+and throttled `useFrame` check. Each of the three components now gates only
+its `Html` element on this; the dot/leader-line meshes next to each label
+were left unconditional, since those already render correctly without any
+help. Worth remembering generally: when a bug report names one specific
+instance of a pattern, check whether the pattern has other instances before
+closing it out — the fix for "one" and the fix for "the class" are often
+the same amount of work if you generalize instead of patching in place.
+
 ## 2026-08-09 — v5.2.1: `Html`'s raycast `occlude` never actually hid a far-side water label
 
 **Reported as: "I can see the ocean wording through the globe" — Indian

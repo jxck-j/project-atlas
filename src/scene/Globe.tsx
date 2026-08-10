@@ -98,6 +98,7 @@ function WaterLabels() {
   const { camera, size } = useThree()
   const [showSeas, setShowSeas] = useState(false)
   const [visibleNames, setVisibleNames] = useState<Set<string>>(new Set())
+  const hasRun = useRef(false)
   const lastRun = useRef(0)
 
   const entries = useMemo<WaterLabelEntry[]>(
@@ -110,7 +111,14 @@ function WaterLabels() {
     if (close !== showSeas) setShowSeas(close)
 
     const now = state.clock.elapsedTime * 1000
-    if (now - lastRun.current < WATER_LABEL_CHECK_INTERVAL_MS) return
+    // `hasRun` (not just comparing `now` to the interval) guarantees the very
+    // first frame after mount always runs this check regardless of what
+    // elapsedTime happens to already be — otherwise a mount that lands after
+    // elapsedTime has already passed WATER_LABEL_CHECK_INTERVAL_MS would
+    // never get a first check at all under frameloop="demand" unless
+    // something else keeps invalidating.
+    if (hasRun.current && now - lastRun.current < WATER_LABEL_CHECK_INTERVAL_MS) return
+    hasRun.current = true
     lastRun.current = now
 
     if (selected) {

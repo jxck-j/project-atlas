@@ -17,6 +17,28 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.2 — Fix the same far-side label bleed for selection markers/callouts
+
+**Bug fix, same root cause as v5.2.1.** After fixing `WaterLabels`, asked
+whether any other `Html` label had the same problem — yes: any label that
+persists while something stays *selected* (not just *hovered*) had the
+identical latent bug, since selection can survive the globe rotating the
+selected thing out of view while a hover-triggered label can't (hovering
+requires the pointer to already be over a front-facing mesh). Verified
+directly: selecting a country by clicking its polygon (no camera flight),
+then rotating it to the far side, left its name label and capital marker
+fully readable "through" the globe indefinitely.
+
+Fixed `EntityRenderLayer.tsx`'s `HoverLabel` (country/GeoEntity/state name
+on selection), `Cities.tsx`'s `CityLabel` (capital/major-city name on
+selection), and `PointerMarker.tsx` (so both `Globe.tsx`'s `CapitalMarker`
+and `ClaimsOverlayLayer.tsx`'s related-country marker inherit the fix) —
+new shared `scene/useFrontOfGlobeVisible.ts` hook, generalizing the analytic
+check `WaterLabels` got in v5.2.1 rather than duplicating it three more
+times. `UsCityOutlineHighlight.tsx` was checked and doesn't need this: its
+only setter (`flyToUsCity()`) always moves the camera there in the same
+action, so it can never end up selected-but-off-screen.
+
 ## v5.2.1 — Fix water-body labels bleeding through the far side of the globe
 
 **Bug fix.** `WaterLabels` (ocean/sea/gulf/strait/bay names) was hiding

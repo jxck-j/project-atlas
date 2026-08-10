@@ -7,6 +7,7 @@ import { useCitiesFeatures } from './useCitiesFeatures'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
+import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
 import { selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
@@ -52,24 +53,34 @@ function buildCityEntries(features: Feature[]): CityEntry[] {
   })
 }
 
+// Only the *selected* case (persists across camera rotation) actually needs
+// the front/back-of-globe gate — a hovered city's dot is only reachable by
+// the pointer while front-facing — but checking unconditionally is cheap
+// (at most two CityLabels mounted at once) and always correct either way.
+// See useFrontOfGlobeVisible.ts and LOGBOOK.md's v5.2.1 entry.
 function CityLabel({ entry }: { entry: CityEntry }) {
   const anchor = useMemo(() => latLngToVector3(entry.lat, entry.lng, MARKER_RADIUS), [entry.lat, entry.lng])
   const calloutPoint = useMemo(
     () => latLngToVector3(entry.lat - CALLOUT_OFFSET_DEG, entry.lng + CALLOUT_OFFSET_DEG, CALLOUT_RADIUS),
     [entry.lat, entry.lng]
   )
+  const labelVisible = useFrontOfGlobeVisible(calloutPoint)
 
   return (
     <group>
+      {/* Real Three.js object, already correctly depth-tested against the
+          core sphere — only the Html label below needs the explicit gate. */}
       <Line points={[anchor, calloutPoint]} color="#FFD24C" lineWidth={1} transparent opacity={0.85} />
-      <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
-        <div
-          className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
-          style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
-        >
-          {entry.name.toUpperCase()}
-        </div>
-      </Html>
+      {labelVisible && (
+        <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+          <div
+            className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
+            style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
+          >
+            {entry.name.toUpperCase()}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }

@@ -20,6 +20,7 @@ import { Html, Line } from '@react-three/drei'
 import type { Mesh } from 'three'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
+import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
 
 const DOT_RADIUS = 0.007
 const CALLOUT_RADIUS_FACTOR = 1.1
@@ -76,6 +77,13 @@ export function PointerMarker({ lat, lng, color, label, calloutOffsetDeg = DEFAU
     GLOBE_RADIUS * CALLOUT_RADIUS_FACTOR
   )
 
+  // The dot and leader line are real Three.js objects, so ordinary WebGL
+  // depth-testing against the (opaque) core sphere already hides them
+  // correctly when this marker is on the far side — only the Html callout
+  // needs an explicit check, since Html renders as a DOM overlay outside
+  // that depth buffer. See useFrontOfGlobeVisible.ts.
+  const labelVisible = useFrontOfGlobeVisible(calloutPoint)
+
   return (
     <group>
       <mesh ref={dotRef} position={anchor}>
@@ -83,14 +91,16 @@ export function PointerMarker({ lat, lng, color, label, calloutOffsetDeg = DEFAU
         <meshBasicMaterial color={color} />
       </mesh>
       <Line points={[anchor, calloutPoint]} color={color} lineWidth={1} transparent opacity={0.7} />
-      <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
-        <div
-          className="whitespace-nowrap text-[8px] tracking-[0.15em]"
-          style={{ color, textShadow: `0 0 4px ${color}` }}
-        >
-          {label}
-        </div>
-      </Html>
+      {labelVisible && (
+        <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
+          <div
+            className="whitespace-nowrap text-[8px] tracking-[0.15em]"
+            style={{ color, textShadow: `0 0 4px ${color}` }}
+          >
+            {label}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }

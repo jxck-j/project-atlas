@@ -367,8 +367,9 @@ call and no manual clock feeding left to get wrong.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
   per-country from `isSelected` / `isHovered` / `isDimmed` (dimmed = some other
   country is selected) — there's no separate "theme" object, it's inline per-render.
-- The hover/selected country's name label (`HoverLabel` in `Countries.tsx`) shows
-  for *either* hover or selection (selection persists the label even without
+- The hover/selected country's name label (`HoverLabel`, in the shared
+  `scene/EntityRenderLayer.tsx` — see "Rendering Engine" below) shows for
+  *either* hover or selection (selection persists the label even without
   hovering). Water-body labels (`WaterLabels`) only show when nothing is
   selected; the capital marker (`CapitalMarker`, both in `Globe.tsx`) only shows
   when the selected country has profile data in `countryProfiles.ts`.
@@ -387,8 +388,21 @@ call and no manual clock feeding left to get wrong.
   practice (reported as an ocean name staying visible "through" the globe at
   every zoom level and camera angle, not just near the terminator); rather
   than debug why the raycast approach was unreliable, it was replaced with
-  the mechanism this codebase had already solved once. See `LOGBOOK.md`'s
-  v5.2.1 entry.
+  the mechanism this codebase had already solved once.
+  **`scene/useFrontOfGlobeVisible.ts`** (v5.2.2) generalizes that same
+  analytic check into a small hook for every *other* `Html` label that
+  persists while something stays selected rather than only while it's
+  hovered: `EntityRenderLayer.tsx`'s `HoverLabel`, `Cities.tsx`'s
+  `CityLabel`, and `PointerMarker.tsx` (so both `CapitalMarker` and
+  `ClaimsOverlayLayer.tsx`'s related-country marker get it for free). All
+  three had the identical latent bug `WaterLabels` did — reported first for
+  ocean names, but the actual root cause (an `Html` label has no WebGL
+  depth buffer to be hidden by, unlike the real `<mesh>`/`<Line>` dot and
+  leader line every one of these markers also draws) applies to any
+  selection-triggered label, not just water bodies. `scene/UsCityLabels.tsx`
+  needed no version of this: it never persists a label past what
+  `declutterLabels` already re-evaluates continuously. See `LOGBOOK.md`'s
+  v5.2.1 and v5.2.2 entries.
 - **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
   `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
