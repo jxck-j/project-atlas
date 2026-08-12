@@ -17,6 +17,30 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v5.2.8 — Fix hover label rendering bigger than the passive label it replaces
+
+**Bug fix.** Since v5.2.7, hovering an entity replaces its passive label
+with a glowing one at the same position — but the glowing one still
+rendered noticeably bigger. Two separate causes, both fixed:
+
+1. The hover label (`EntityRenderLayer.tsx`'s `HoverLabel`) used a flat
+   `text-xs` (12px) regardless of the entity's actual on-screen size,
+   while the passive label it replaces (`PassiveEntityLabels.tsx`) sizes
+   itself off apparent screen size, clamped between 6-11px. A new shared
+   module, `useApparentFontSize.ts`, now backs both, so they always agree.
+2. Even after that, the hover label still read bigger — a leftover
+   `distanceFactor={8}` on its `<Html>` was applying its own
+   distance-dependent scale on top of the now-matched font size, something
+   the passive label's `<Html>` has never used. Dropped it, for the same
+   reason `WaterLabels`/`Lakes.tsx`/`UsCityLabels.tsx` already dropped it
+   elsewhere in this codebase.
+
+Also drops the hover label's now-redundant appearance while an entity is
+*selected* (not hovered) — `IntelligencePanel.tsx`'s own name heading
+already covers that case for as long as anything's selected.
+
+See `LOGBOOK.md`.
+
 ## v5.2.7 — State/province passive labels; hover replaces the label in place instead of a callout line
 
 Two related requests. A point release, not a new major version — both reuse

@@ -4,7 +4,8 @@ import { Html } from '@react-three/drei'
 import { Vector3 } from 'three'
 import { getGlobeRotationY } from './globeRotation'
 import { abbreviateCountryName } from './countryAbbreviation'
-import { apparentSizePx, declutterLabels, type DeclutterCandidate } from './labelDeclutter'
+import { declutterLabels, type DeclutterCandidate } from './labelDeclutter'
+import { apparentSizePxFor, computeApparentFontSizePx } from './useApparentFontSize'
 import { GLOBE_RADIUS } from './constants'
 
 // Shared by CountryLabels.tsx and GeoEntityLabels.tsx (v5.2.4, extracted once
@@ -18,35 +19,6 @@ import { GLOBE_RADIUS } from './constants'
 const OCCLUDER_RADIUS = GLOBE_RADIUS * 0.98 // matches Globe.tsx's core sphere
 const DECLUTTER_INTERVAL_MS = 150
 
-// Matches Scene.tsx's <Canvas camera={{ fov: 45 }}> — nothing in this app
-// changes FOV dynamically, so a duplicated constant here is simpler than
-// threading the live camera's own `fov` field through, the same "matches
-// Globe.tsx's core sphere" tradeoff OCCLUDER_RADIUS above already makes.
-const CAMERA_FOV_DEG = 45
-
-// 2026-08-09 (v5.2.5): FONT_TO_APPARENT_RATIO was 0.32 and MAX_FONT_PX was
-// 13 — together they made font size hit its ceiling at a mere 41px apparent
-// size (a country barely bigger than a small dot at the default overview
-// distance), so nearly every country of at least moderate size rendered at
-// the SAME maxed-out size regardless of actual zoom — reported directly as
-// "text too big at zoomed out levels" (not zoom-adaptive in practice for
-// most countries) and, worse, silently broke the abbreviation-to-full-name
-// transition for long names: since the rendered font (and therefore the
-// estimated text width) stops growing once it hits MAX_FONT_PX while a
-// country's actual apparent size keeps growing as you zoom in, a long name
-// (Democratic Republic of the Congo, 33 characters) needed apparentPx to
-// nearly reach CAMERA_MIN_DISTANCE before its capped width finally fell
-// under the growing MAX_NAME_WIDTH_FRACTION threshold — reported as "DRC
-// stays abbreviated even when zoomed in." Lowering the ratio (so font size
-// grows more gradually and doesn't saturate until a country is genuinely
-// large on screen) and the cap (so a long name's width ceiling is lower,
-// letting apparentPx's threshold overtake it at a normal "zoomed in on
-// this country" distance instead of only at the absolute closest zoom)
-// fixes both at once — see LOGBOOK.md's v5.2.5 entry for the numbers this
-// was tuned against.
-const MIN_FONT_PX = 6
-const MAX_FONT_PX = 11
-const FONT_TO_APPARENT_RATIO = 0.12
 const PROMINENT_APPARENT_PX = 60
 // How much wider than the entity's own on-screen diameter the full name is
 // allowed to render before falling back to the abbreviation — some overhang
@@ -61,10 +33,6 @@ const LETTER_SPACING_EM = 0.06
 const MIN_SPACING_RADIUS_PX = 12
 
 const Y_AXIS = new Vector3(0, 1, 0)
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
-}
 
 // Rough average glyph width for uppercase, letter-spaced sans-serif text —
 // not measured DOM text, just enough to decide "would this text visually
@@ -94,13 +62,11 @@ export interface PassiveEntityLabelsProps {
   // WaterLabels' own gating so a passive background label never competes
   // with the focused selection UI.
   hidden: boolean
-  // Read fresh each throttled tick (not a prop that changes every render) —
-  // e.g. hoveredCountry.ts's getHoveredCountryId, so whichever entity
-  // already has a glowing HoverLabel elsewhere doesn't also get a redundant
-  // passive label. Optional: GeoEntityLabels.tsx has no equivalent hover
-  // publisher yet (GeoEntities.tsx never wired one — see LOGBOOK.md), so a
-  // hovered territory can briefly show both labels; harmless duplication,
-  // not incorrect.
+  // Checked every frame (not a prop that changes every render) — e.g.
+  // hoveredCountry.ts's getHoveredCountryId, hoveredGeoEntity.ts's,
+  // hoveredStateProvince.ts's — so whichever entity already has a glowing
+  // HoverLabel elsewhere doesn't also get a redundant passive label.
+  // Optional only because a caller might genuinely have nothing to exclude.
   getExcludeId?: () => string | null
   maxVisibleLabels?: number
   minLabelSpacingPx?: number
@@ -125,6 +91,18 @@ export function PassiveEntityLabels({
 }: PassiveEntityLabelsProps) {
   const { camera, size } = useThree()
   const [visible, setVisible] = useState<PassiveLabelCandidate[]>([])
+  // Checked every frame, NOT gated behind the DECLUTTER_INTERVAL_MS throttle
+  // below — reported directly: hovering a country briefly showed both its
+  // passive grey label and its glowing hover label at once ("only the
+  // yellow one should show"). The full declutter recompute only needs to
+  // run every ~150ms (expensive: spacing math over every candidate), but
+  // reacting to a hover starting/ending doesn't need to wait for that —
+  // EntityRenderLayer.tsx's hover color change already forces a frame that
+  // same tick (a React-driven prop change auto-invalidates under
+  // frameloop="demand"), so checking getExcludeId() on every rendered frame
+  // and filtering it out at render time (below) removes the flash instead
+  // of just shortening it.
+  const [excludedId, setExcludedId] = useState<string | null>(null)
   const hasRun = useRef(false)
   const lastRun = useRef(0)
 
@@ -133,6 +111,9 @@ export function PassiveEntityLabels({
   const ranked = useMemo(() => [...entries].sort((a, b) => b.extent - a.extent), [entries])
 
   useFrame((state) => {
+    const currentExcludeId = getExcludeId?.() ?? null
+    if (currentExcludeId !== excludedId) setExcludedId(currentExcludeId)
+
     const now = state.clock.elapsedTime * 1000
     // `hasRun` (not just comparing `now` to the interval) guarantees the
     // very first frame after mount always runs this check regardless of
@@ -151,13 +132,12 @@ export function PassiveEntityLabels({
     }
 
     const rotationY = getGlobeRotationY()
-    const excludeId = getExcludeId?.() ?? null
 
     const candidates: PassiveLabelCandidate[] = ranked
-      .filter((entry) => entry.id !== excludeId)
+      .filter((entry) => entry.id !== currentExcludeId)
       .map((entry) => {
-        const apparentPx = apparentSizePx(entry.extent, cameraDistance, size.height, CAMERA_FOV_DEG, GLOBE_RADIUS)
-        const fontSizePx = clamp(apparentPx * FONT_TO_APPARENT_RATIO, MIN_FONT_PX, MAX_FONT_PX)
+        const apparentPx = apparentSizePxFor(entry.extent, cameraDistance, size.height)
+        const fontSizePx = computeApparentFontSizePx(entry.extent, cameraDistance, size.height)
         const fullNameWidthPx = estimateTextWidthPx(entry.name.toUpperCase(), fontSizePx)
         const useAbbreviation = fullNameWidthPx > apparentPx * MAX_NAME_WIDTH_FRACTION
         const displayText = useAbbreviation ? abbreviateCountryName(entry.name) : entry.name
@@ -199,20 +179,22 @@ export function PassiveEntityLabels({
 
   return (
     <group>
-      {visible.map(({ id, displayText, fontSizePx, prominent, localPosition }) => (
-        <Html key={id} position={localPosition} center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
-          <div
-            className={`whitespace-nowrap ${LABEL_COLOR_CLASS}`}
-            style={{
-              fontSize: `${fontSizePx}px`,
-              letterSpacing: `${LETTER_SPACING_EM}em`,
-              fontWeight: prominent ? 600 : 400,
-            }}
-          >
-            {displayText.toUpperCase()}
-          </div>
-        </Html>
-      ))}
+      {visible
+        .filter(({ id }) => id !== excludedId)
+        .map(({ id, displayText, fontSizePx, prominent, localPosition }) => (
+          <Html key={id} position={localPosition} center zIndexRange={[1, 0]} style={{ pointerEvents: 'none' }}>
+            <div
+              className={`whitespace-nowrap ${LABEL_COLOR_CLASS}`}
+              style={{
+                fontSize: `${fontSizePx}px`,
+                letterSpacing: `${LETTER_SPACING_EM}em`,
+                fontWeight: prominent ? 600 : 400,
+              }}
+            >
+              {displayText.toUpperCase()}
+            </div>
+          </Html>
+        ))}
     </group>
   )
 }

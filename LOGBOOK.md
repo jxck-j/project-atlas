@@ -5,6 +5,49 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-12 — v5.2.8: matching a formula wasn't enough — `distanceFactor` was scaling one label and not the other
+
+Follow-up to v5.2.7's "hover replaces the passive label in place." First
+report was "two different font sizes when hovering — the glowing yellow
+font should only be the smaller size not the big one." Traced to
+`EntityRenderLayer.tsx`'s `HoverLabel` hardcoding a flat `text-xs` (12px)
+while `PassiveEntityLabels.tsx` computes its font size from apparent
+on-screen extent, clamped to 6-11px — so the hover label was bigger than
+even the largest entity's passive label. Fix: pulled the formula into a
+new shared module, `useApparentFontSize.ts` (a plain `.ts` file, not
+`.tsx`, so `HoverLabel` can import the hook without
+`PassiveEntityLabels.tsx` exporting a non-component value from itself —
+same reasoning `geoEntityEntries.ts` already established for its own
+extraction), with a pure `computeApparentFontSizePx` for
+`PassiveEntityLabels.tsx`'s per-candidate loop (can't call a hook there —
+variable iteration count per render) and a reactive `useApparentFontSize`
+wrapper for `HoverLabel`'s single entity.
+
+**Verified against the formula, shipped, and the user immediately reported
+it again: "the font still gets bigger when hovering."** The formula fix
+was real but incomplete — `HoverLabel`'s `<Html>` still carried
+`distanceFactor={8}`, left over from before this component ever computed
+its own font size. `distanceFactor` applies an *additional*
+distance-dependent CSS scale on top of whatever `fontSize` is set to;
+`PassiveEntityLabels.tsx`'s `<Html>` has never used it (its `fontSizePx`
+is already meant to BE the final on-screen size). So the two labels could
+only ever coincidentally match at one specific camera distance, not
+generally — matching the *formula* that produces the CSS `fontSize` value
+was necessary but not sufficient while one of the two `<Html>` elements
+was still scaling that value by something the other wasn't. Dropped
+`distanceFactor` from `HoverLabel`, same call already made for the same
+reason in `Globe.tsx`'s `WaterLabels`, `Lakes.tsx`, and
+`UsCityLabels.tsx` — worth remembering as a category, not just a
+one-off: any two `<Html>` elements meant to render at visually equivalent
+sizes need to agree on distanceFactor use, not just on the font-size
+number fed into them.
+
+Also dropped: the hover label no longer renders at all for a *selected*
+(not hovered) entity — `IntelligencePanel.tsx`'s name heading already
+covers that case, and it was the last remaining caller of the "up to two
+HoverLabels mounted at once" path this refactor's own comments still
+referenced.
+
 ## 2026-08-09 — v5.2.7: removing the callout line meant hover and passive labels now share a position — and a scope question worth asking first
 
 **Asked two clarifying questions before writing any code, since the request
