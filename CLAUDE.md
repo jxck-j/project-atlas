@@ -250,7 +250,18 @@ each other instead of one replacing the other. Each publisher converts
 `EntityRenderLayer`'s reported geometryId to the corresponding entityId
 before publishing (needed for `GeoEntities.tsx` specifically — 44 of 55
 GeoEntities have a geometry id that differs from their entity id, see
-below). What stays in each caller is only what's a *real* difference:
+below). **v5.2.8** fixed `HoverLabel` rendering visibly bigger than the
+passive label it replaces — two stacked causes: it had hardcoded a flat
+font size instead of sharing `PassiveEntityLabels.tsx`'s apparent-size
+formula (now factored into `scene/useApparentFontSize.ts`, imported by
+both), and its `<Html>` still carried a leftover `distanceFactor` prop
+applying its own distance-based scale on top, which the passive label's
+`<Html>` has never used (see "Frame loop"'s `WaterLabels`/`Lakes.tsx`/
+`UsCityLabels.tsx` precedent for dropping it). The same version also
+stopped rendering `HoverLabel` at all for a *selected-but-not-hovered*
+entity — `IntelligencePanel.tsx`'s name heading already covers that case
+— so it's hover-only now; see the correction below and `LOGBOOK.md`'s
+v5.2.8 entry. What stays in each caller is only what's a *real* difference:
 how entries get built (see below), and what happens when a click resolves
 to nothing — `Countries.tsx` falls back to `selectCountry()` so a click
 never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
@@ -411,10 +422,13 @@ call and no manual clock feeding left to get wrong.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
   per-country from `isSelected` / `isHovered` / `isDimmed` (dimmed = some other
   country is selected) — there's no separate "theme" object, it's inline per-render.
-- The hover/selected country's name label (`HoverLabel`, in the shared
-  `scene/EntityRenderLayer.tsx` — see "Rendering Engine" below) shows for
-  *either* hover or selection (selection persists the label even without
-  hovering). Water-body labels (`WaterLabels`) only show when nothing is
+- The hover country's name label (`HoverLabel`, in the shared
+  `scene/EntityRenderLayer.tsx` — see "Rendering Engine" below) shows only
+  while actually hovered. **Through v5.2.7 it also persisted for whatever
+  was selected, even without hovering; v5.2.8 dropped that** —
+  `IntelligencePanel.tsx`'s own name heading already covers a selected
+  entity for as long as anything's selected, so the two were redundant.
+  Water-body labels (`WaterLabels`) only show when nothing is
   selected; the capital marker (`CapitalMarker`, both in `Globe.tsx`) only shows
   when the selected country has profile data in `countryProfiles.ts`.
   `CapitalMarker` renders through `scene/PointerMarker.tsx` (v3.3.0) — a
@@ -436,9 +450,13 @@ call and no manual clock feeding left to get wrong.
   **`scene/useFrontOfGlobeVisible.ts`** (v5.2.2) generalizes that same
   analytic check into a small hook for every *other* `Html` label that
   persists while something stays selected rather than only while it's
-  hovered: `EntityRenderLayer.tsx`'s `HoverLabel`, `Cities.tsx`'s
-  `CityLabel`, and `PointerMarker.tsx` (so both `CapitalMarker` and
-  `ClaimsOverlayLayer.tsx`'s related-country marker get it for free). All
+  hovered: `Cities.tsx`'s `CityLabel` and `PointerMarker.tsx` (so both
+  `CapitalMarker` and `ClaimsOverlayLayer.tsx`'s related-country marker get
+  it for free), plus `EntityRenderLayer.tsx`'s `HoverLabel` — which used to
+  fit that same description (selection persisted it without hovering) but,
+  since v5.2.8, is hover-only; it keeps the same unconditional check anyway
+  because a hovered entry is already known front-facing, so the check is
+  merely cheap and harmless there now rather than load-bearing. All
   three had the identical latent bug `WaterLabels` did — reported first for
   ocean names, but the actual root cause (an `Html` label has no WebGL
   depth buffer to be hidden by, unlike the real `<mesh>`/`<Line>` dot and
