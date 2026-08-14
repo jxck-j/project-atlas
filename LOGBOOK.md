@@ -5,6 +5,106 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-13 — population/GDP become the first auto-merged `Country` fields; raw-value/render-time-formatting split
+
+`CLAUDE.md`'s "Geopolitical data architecture" section has said since v2.1
+that `countryProfiles.ts` and the `Country` registry schema "are not
+merged" — true when written, since nothing populated `Country.population`/
+`gdpUsd` at all. `scripts/buildGovCapitalPopGdp.mjs` (government type +
+capital from a frozen CIA World Factbook snapshot, population + GDP from
+the World Bank API v2) changed that: `useCountryFeatures.ts` now merges
+`population`/`gdpUsd`/`populationYear`/`gdpYear` from the script's
+`data/countryEconomics.ts` output into the `Country` registry at load time,
+keyed by the same numeric topology id the registry already uses. Updated
+`CLAUDE.md`'s stale "not merged" line to describe the actual state rather
+than leave a false invariant standing for the next reader to trust at face
+value.
+
+The exception is narrow, not a reversal: `government`/`governmentNote` and
+`capital`/`capitalLat`/`capitalLng` stay hand-curated in
+`countryProfiles.ts` and are **not** auto-merged, because both require
+judgment calls a script shouldn't make silently — which contested/
+transitional governments (Chad, Gabon, Sudan, Libya, Yemen, Afghanistan,
+...) get a descriptive string instead of being forced into a stable
+"Presidential Republic" shape, and which of several plausible capitals a
+multi-capital country (South Africa, Bolivia, ...) actually gets, both
+already logged as explicit gaps in `BACKLOG.md` when ambiguous rather than
+guessed. `population`/`gdpUsd` cleared a bar those two don't: an
+unambiguous per-country source (World Bank API, date-range queried
+2000-2024 rather than a single year, so "no current figure" and "no figure
+at all" are distinguishable and every gap is logged instead of silently
+left blank or backfilled with a stale year presented as current), and no
+possibility of clobbering a hand-curated field, since `Country` never had
+`government`/`capital` fields to collide with in the first place.
+
+**Also fixed in the same pass: population/GDP had originally been written
+into `countryProfiles.ts` as pre-formatted display strings
+(`"2.14 Billion"`) computed at build time** — flagged as wrong because a
+future correction crossing a unit threshold (millions -> billions) would
+require re-running the whole build instead of just fixing the formatter,
+and it meant two places a rounding/scale bug could live instead of one.
+Fixed by storing raw numeric `population`/`gdpUsd` on `Country` and adding
+a single shared formatter, `utils/formatScale.ts`
+(`formatPopulation`/`formatGdp`, unit-tested directly rather than via
+snapshot assertions on the data file), called at render time by
+`IntelligencePanel.tsx`. This is also what made the World Bank lookback
+worth doing carefully: `resolveWorldBankIndicator` now queries a date
+range and returns both the value and the actual year it came from, so a
+stale-but-real figure (South Sudan's GDP, last reported 2015) is cited
+explicitly with its year rather than presented as current — and widening
+the lookback surfaced that Cuba (2020) and Eritrea (2011) aren't the
+genuine data voids they'd been assumed to be; only North Korea has no
+World Bank GDP figure in the entire 2000-2024 window.
+
+`BACKLOG.md`'s generated gap-report section needed one fix to stay
+idempotent under this change: gaps were logged via `push()` inside
+per-country concurrent async work, so their array order depended on
+network timing and varied run to run even with identical upstream data.
+Sorted by country then field before serialization — re-running the script
+against unchanged data now produces a byte-identical `BACKLOG.md`, and a
+closed gap (verified by faking a World Bank response) disappears from the
+list cleanly instead of leaving a stale entry behind.
+
+## 2026-08-12 — v5.2.9: the same `distanceFactor` bug, a third time, plus a large data-completeness pass
+
+**`scene/PointerMarker.tsx`'s capital-marker label had the identical
+`distanceFactor={8}` bug just fixed in `EntityRenderLayer.tsx`'s
+`HoverLabel` for v5.2.8** — reported next as "the font for the capitals is
+way too big" (referencing the callout that appears at a selected
+country's capital). Same root cause, same fix: dropped the prop. Worth
+noting as a pattern now, not just a one-off: this is the fourth `<Html>`
+in this codebase found carrying `distanceFactor` and reported as
+oversized/growing wrong (`WaterLabels`, `Lakes.tsx`, `HoverLabel`, now
+`PointerMarker`) — worth grepping for `distanceFactor` across `scene/`
+before adding any *new* `<Html>` label, rather than waiting for it to be
+reported again on a fifth.
+
+**Callout line length halved** on the same request, in the same
+component — `CALLOUT_RADIUS_FACTOR` (1.1 → 1.05, halving the radial
+excess above the anchor point) and `DEFAULT_CALLOUT_OFFSET_DEG` (4° → 2°,
+halving the diagonal swing). Both needed to move together since the
+line's rendered length is the combination of the two, not either alone.
+
+**Separately, in the same session: "a lot of countries are missing their
+capitals."** `data/countryProfiles.ts` had shipped as intentionally
+partial "illustrative demo data" since it was introduced (~60 of 193
+UN members) — `CLAUDE.md`'s own "Data quirks" section documented this as
+expected, not a bug. Asked the user to scope the fix before writing 132
+countries' worth of data (capital-only vs. full profile matching the
+existing shape) rather than assuming — chose full profile, so the
+intelligence panel doesn't look visibly thinner for some countries than
+others. Filled in all 132 in one pass, verified programmatically (a
+throwaway script diffing the UN-193 topology's name list against what the
+file actually exports) to guarantee no duplicate keys, no typo'd names
+that don't match the topology's `name` property, and no UN member left
+uncovered — the kind of exhaustive 1:1 check that's easy to get subtly
+wrong by hand at this volume and hard to notice missed by eye. A handful
+of countries were mid-transition (military/transitional governments in
+Chad, Gabon, Guinea, Mali, Niger, Burkina Faso; contested/unrecognized
+governments in Sudan, Libya, Yemen, Afghanistan) and got a descriptive
+`government` string instead of being forced into the "Presidential
+Republic"-shaped box every stable entry uses.
+
 ## 2026-08-12 — v5.2.8: matching a formula wasn't enough — `distanceFactor` was scaling one label and not the other
 
 Follow-up to v5.2.7's "hover replaces the passive label in place." First

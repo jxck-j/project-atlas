@@ -14,6 +14,19 @@
 // These constants are deliberately smaller across the board: a callout
 // that sits close to the surface and doesn't swing far sideways reads as
 // "a subtle pointer" rather than "a label that ate the neighborhood."
+//
+// 2026-08-12: the label's `<Html>` also carried a leftover `distanceFactor`
+// prop, which scales an Html element by (distanceFactor / distance-to-
+// camera) — a WORLD-space size that grows the closer the camera gets,
+// unbounded, rather than a constant on-screen size. Reported directly as
+// "the capital font is way too big" — CAMERA_MIN_DISTANCE (2.5) and
+// CAMERA_FOCUS_DISTANCE (4.8, where the camera flies to on selection) are
+// both well under the distanceFactor of 8 that was set here, so the label
+// was scaled UP by up to ~3.2x at min zoom instead of staying at its base
+// text-[8px]. Dropped, for the same reason `WaterLabels`/`Lakes.tsx`/
+// `UsCityLabels.tsx`/`EntityRenderLayer.tsx`'s `HoverLabel` already
+// dropped it elsewhere in this codebase — see CLAUDE.md's "Frame loop"
+// section and LOGBOOK.md's v5.2.8 entry for the identical bug found there.
 import { useRef } from 'react'
 import { invalidate, useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
@@ -23,8 +36,13 @@ import { GLOBE_RADIUS } from './constants'
 import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
 
 const DOT_RADIUS = 0.007
-const CALLOUT_RADIUS_FACTOR = 1.1
-const DEFAULT_CALLOUT_OFFSET_DEG = 4
+// 2026-08-12: both halved (radial excess above the anchor's 1.006 was 0.094,
+// now 0.047; diagonal swing was 4°, now 2°) — reported directly as "make the
+// callout lines half the length they currently are." Line length is driven
+// by both factors together (how far it extends off the surface, how far it
+// swings sideways), so both needed to shrink, not just one.
+const CALLOUT_RADIUS_FACTOR = 1.05
+const DEFAULT_CALLOUT_OFFSET_DEG = 2
 const PULSE_SPEED = 2.4
 const PULSE_AMPLITUDE = 0.12
 
@@ -92,7 +110,7 @@ export function PointerMarker({ lat, lng, color, label, calloutOffsetDeg = DEFAU
       </mesh>
       <Line points={[anchor, calloutPoint]} color={color} lineWidth={1} transparent opacity={0.7} />
       {labelVisible && (
-        <Html position={calloutPoint} center distanceFactor={8} zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
+        <Html position={calloutPoint} center zIndexRange={[15, 0]} style={{ pointerEvents: 'none' }}>
           <div
             className="whitespace-nowrap text-[8px] tracking-[0.15em]"
             style={{ color, textShadow: `0 0 4px ${color}` }}

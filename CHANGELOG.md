@@ -17,6 +17,60 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.0.0 — Data Engine: real, sourced population/GDP data merged into the Country registry
+
+A new capability, not a tune-up: `data/types.ts`'s `Country` schema (and
+`CountryRegistry.ts`) has existed since v2.1 as scaffolding with no real
+data behind it. `scripts/buildGovCapitalPopGdp.mjs` now sources government
+type + capital (name/coordinates) from a frozen CIA World Factbook
+snapshot and population + GDP from the World Bank API, and
+`useCountryFeatures.ts` merges the population/GDP half of that
+(`data/countryEconomics.ts`, keyed by numeric topology id) into the live
+`Country` registry at load time — the registry's first real, non-empty
+data. `government`/`capital` stay in the existing hand-curated
+`countryProfiles.ts` instead, unmerged, since both require judgment calls
+(contested/transitional governments, multi-capital ambiguity) the build
+script logs to `BACKLOG.md` as an explicit gap rather than resolving
+itself; see `CLAUDE.md`'s "Geopolitical data architecture" section for
+exactly which fields are safe to auto-merge and why.
+
+**Raw values, not formatted strings.** `Country.population`/`gdpUsd` are
+plain numbers (plus `populationYear`/`gdpYear`, since a sourced figure can
+be several years stale — South Sudan's GDP is the oldest, from 2015).
+`IntelligencePanel.tsx` formats them at render time via a new shared
+`utils/formatScale.ts` (`formatPopulation`/`formatGdp`) — the only place
+unit-scale logic (millions vs. billions vs. trillions) lives, so a future
+threshold-crossing correction is a formatter change, not a data rebuild.
+
+See `LOGBOOK.md` for the World Bank date-range lookback (surfacing that
+Cuba and Eritrea aren't the genuine data voids they looked like — only
+North Korea has no GDP figure at all in 2000-2024) and the `BACKLOG.md`
+idempotency fix that came out of verifying this.
+
+## v5.2.9 — Fix capital-marker label size/callout length; fill in the remaining 132 country profiles
+
+**Bug fixes**, both in the "select a country" callout (the pulsing dot +
+leader line + label pointing at its capital, `scene/PointerMarker.tsx`):
+
+- The label's `<Html>` carried the same leftover `distanceFactor` prop
+  v5.2.8 dropped from the hover label — reported as "the font for the
+  capitals is way too big," which tracked: `distanceFactor={8}` scaled the
+  label up by as much as ~3.2x at `CAMERA_MIN_DISTANCE`. Dropped, so the
+  label now stays a fixed on-screen size instead of growing unbounded as
+  you zoom in.
+- The callout line's length (both its radial reach off the surface and its
+  diagonal swing) is halved, per direct request.
+
+**Data:** `data/countryProfiles.ts` covered only 63 of the 193 UN member
+states (illustrative demo data since it was introduced). Reported as "a
+lot of countries are missing their capitals" — filled in the remaining
+132 with the same shape every existing entry already has (government,
+capital + coordinates, population, GDP), so `IntelligencePanel.tsx` no
+longer shows "No profile data available" for any UN member. See that
+file's own new header comment for the caveats on this batch specifically.
+
+See `LOGBOOK.md`.
+
 ## v5.2.8 — Fix hover label rendering bigger than the passive label it replaces
 
 **Bug fix.** Since v5.2.7, hovering an entity replaces its passive label

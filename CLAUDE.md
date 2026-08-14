@@ -767,20 +767,50 @@ LOD Engine's distance thresholds should ever need to force by themselves.
 ### Geopolitical data architecture (`src/data/`)
 
 Schema + query-layer foundation for future layers (v2.1 added the schema,
-v2.1.1 added the registry below). Nothing renders this, nothing is
-registered as a layer, and no country data is populated yet. Deliberately
-separate from two things that already exist and might look similar at a
-glance:
+v2.1.1 added the registry below). Deliberately separate from two things
+that already exist and might look similar at a glance:
 
 - `scene/countryGeometry.ts` — that's border/fill *geometry*, this is
   attribute *facts* (population, claimants, participants, ...).
 - `data/countryProfiles.ts` — that's already-shipped, presentation-formatted
-  data for the IntelligencePanel (population as `"335 Million"`). The new
-  `Country` type stores the same kind of facts as plain numbers instead,
-  because it's meant to be computed on (sorted, filtered, thresholded) by
-  future layers — formatting is a presentation concern downstream of this.
-  The two datasets are not merged; see `LOGBOOK.md` for why that's a
-  separate decision, not a side effect of adding this schema.
+  data for the IntelligencePanel (government type, capital name/coordinates,
+  factbook snapshot metadata). The `Country` type stores facts as plain,
+  unformatted values instead, because it's meant to be computed on (sorted,
+  filtered, thresholded) by future layers — formatting is a presentation
+  concern downstream of this.
+
+**As of `scripts/buildGovCapitalPopGdp.mjs` (2026-08-13), `population` and
+`gdpUsd` (+ their `populationYear`/`gdpYear` companions) *are* auto-merged
+into the `Country` registry** — `useCountryFeatures.ts` reads them off
+`data/countryEconomics.ts` (build-script output, World Bank-sourced) and
+registers them alongside each country's id/name. This is a narrow,
+deliberate exception to "the two datasets are not merged," not a reversal
+of it — see the reasoning below for why these two fields specifically were
+judged safe and the rest weren't. `IntelligencePanel.tsx` reads the raw
+numbers off `Country` and formats them at render time via
+`utils/formatScale.ts` (`formatPopulation`/`formatGdp` — the one place
+unit-scale logic lives), rather than reading a pre-formatted string; see
+`LOGBOOK.md`'s 2026-08-13 entry for why storing formatted strings at build
+time was rejected (a threshold-crossing correction, e.g. millions ->
+billions, would silently require a full rebuild instead of a one-line
+formatter change).
+
+**What stays manual-only, and why:** `government`/`governmentNote`
+(distinguishing a stable "Presidential Republic" from a transitional/
+contested government string — Chad, Gabon, Sudan, Libya, Yemen, Afghanistan,
+etc. — is a judgment call, not something a source API states cleanly) and
+`capital`/`capitalLat`/`capitalLng` (a handful of countries have genuine
+multi-capital ambiguity — South Africa, Bolivia, ... — resolved by hand,
+logged in `BACKLOG.md` rather than guessed) all stay in
+`countryProfiles.ts`, hand-curated, never auto-merged. `population`/`gdpUsd`
+were judged safe to auto-merge specifically because the source
+(World Bank API, date-range queried) is unambiguous per country, every gap
+is logged explicitly to `BACKLOG.md` rather than silently left blank or
+backfilled, and merging can't overwrite a hand-curated field — it only
+populates `Country`-only fields `countryProfiles.ts` never had in the first
+place. A future field being considered for the same treatment should meet
+that same bar: unambiguous source, gaps logged not guessed, no collision
+with a field that already requires human judgment.
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every
@@ -1045,10 +1075,20 @@ needs to change — they're already generic over `SearchEntry`/
   selection equality checks. The fallback is `` `feature-${index}` `` — keep this
   pattern if you add another feature-keyed list.
 - `data/countryProfiles.ts` is illustrative demo data (government/capital are
-  stable facts; population/GDP are rounded approximate snapshots), covering
-  ~60 of the 193 countries. The intelligence panel degrades gracefully ("No
-  profile data available") for the rest — don't assume every country has a
-  profile.
+  stable facts; population/GDP are rounded approximate snapshots). **As of
+  2026-08-12, all 193 UN member states have a profile** (originally ~60;
+  the remaining 132 were filled in after being reported as "a lot of
+  countries are missing their capitals" — see that file's own header
+  comment for the caveats specific to that batch, including a few
+  governments labeled descriptively rather than forced into a standard
+  republic/monarchy category because they were mid-transition when
+  written). `IntelligencePanel.tsx`'s CountryDetails "No profile data
+  available" fallback is now effectively unreachable through normal
+  selection (every UN member has an entry) but stays in place —
+  `COUNTRY_PROFILES` still has one deliberate non-UN entry, Taiwan, kept
+  as the worked example in this file's "GeoEntity geometry" section of why
+  `CapitalMarker` gates on `selected.entity.kind === 'country'` rather
+  than a name-only lookup.
 
 ## Code style
 

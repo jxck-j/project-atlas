@@ -121,8 +121,23 @@ export interface Country {
   region?: string
   /** Total population as a plain number, not a formatted string — see the class doc comment above for why. */
   population?: number
+  /**
+   * Year the `population` figure is actually for. Populated alongside
+   * `population` by scripts/buildGovCapitalPopGdp.mjs (see
+   * data/countryEconomics.ts) — kept as an explicit field rather than
+   * assumed to always be "current" so a consumer can tell a fresh figure
+   * from a stale one without re-deriving it from `provenance.lastUpdated`.
+   */
+  populationYear?: number
   /** Gross domestic product in current US dollars, as a plain number. */
   gdpUsd?: number
+  /**
+   * Year the `gdpUsd` figure is actually for — may differ from
+   * `populationYear`. A missing/stale source (see
+   * scripts/buildGovCapitalPopGdp.mjs's World Bank lookback) can leave GDP
+   * several years behind population for the same country, or vice versa.
+   */
+  gdpYear?: number
   provenance?: DataProvenance
 }
 

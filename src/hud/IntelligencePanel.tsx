@@ -1,7 +1,9 @@
 import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
-import type { GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
+import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
+import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { formatGdp, formatPopulation } from '../utils/formatScale'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
@@ -21,9 +23,11 @@ function DataRow({ label, value }: { label: string; value: string }) {
 // `.intel-row` — icon / label / 62px track / right-aligned value.
 //
 // `value` is optional AND CURRENTLY NEVER PASSED: nothing in data/types.ts
-// carries a 0-100 score for any of these metrics (Country has population
-// and gdpUsd, both unpopulated — src/data/countries/countries.json is `[]`
-// — and neither is a rating), and the Conflict type's own doc comment is
+// carries a 0-100 score for any of these metrics (Country.population and
+// .gdpUsd are populated now — see data/countryEconomics.ts — but neither is
+// a rating; src/data/countries/countries.json remains the unrelated, still-
+// empty scaffold data/types.ts's own comment describes), and the Conflict
+// type's own doc comment is
 // explicit that this project does not fabricate assessments like these
 // without an editorial process behind them. So the row renders its empty
 // state: flat track, em-dash value. The prop exists so an eventual
@@ -165,12 +169,27 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   return items
 }
 
-// Unchanged from before v2.2.2 — same COUNTRY_PROFILES lookup, same four
-// fields, same fallback message. Kept as its own component (rather than
-// inlined) so the kind dispatch below reads as "one component per entity
-// kind," the pattern a future kind follows too.
-function CountryDetails({ name }: { name: string }) {
-  const profile = COUNTRY_PROFILES[name]
+// GOVERNMENT/CAPITAL still come from the name-keyed, presentation-formatted
+// COUNTRY_PROFILES (unchanged since v2.2.2). POPULATION/GDP come from the
+// raw Country record itself (`country.population`/`.gdpUsd`, populated by
+// scene/useCountryFeatures.ts from data/countryEconomics.ts) and are
+// formatted here, at render time, via utils/formatScale.ts — see that
+// file's and countryEconomics.ts's header comments for why the split: a
+// figure correcting across a unit threshold (millions -> billions) used to
+// need a full data rebuild when the formatted string was baked in at build
+// time. Either row is omitted, not fabricated, when its source has a gap
+// (see scripts/buildGovCapitalPopGdp.mjs's known-gaps handling) — and shows
+// its sourced year in parens whenever that year isn't
+// PRIMARY_ECONOMIC_YEAR, so a stale World Bank figure never reads as
+// current (e.g. South Sudan's GDP, last reported by the World Bank in
+// 2015). governmentNote/factbookSnapshot are the same caveat lines as
+// before, so a real, dated data source doesn't read as a live feed. Kept as
+// its own component (rather than inlined) so the kind dispatch below reads
+// as "one component per entity kind," the pattern a future kind follows too.
+function CountryDetails({ country }: { country: Country }) {
+  const profile = COUNTRY_PROFILES[country.name]
+  const population = formatPopulation(country.population)
+  const gdp = formatGdp(country.gdpUsd)
 
   if (!profile) {
     return (
@@ -184,8 +203,30 @@ function CountryDetails({ name }: { name: string }) {
     <>
       <DataRow label="GOVERNMENT" value={profile.government} />
       <DataRow label="CAPITAL" value={profile.capital} />
-      <DataRow label="POPULATION" value={profile.population} />
-      <DataRow label="GDP" value={profile.gdp} />
+      {population && (
+        <DataRow
+          label="POPULATION"
+          value={
+            country.populationYear && country.populationYear !== PRIMARY_ECONOMIC_YEAR
+              ? `${population} (${country.populationYear})`
+              : population
+          }
+        />
+      )}
+      {gdp && (
+        <DataRow
+          label="GDP"
+          value={country.gdpYear && country.gdpYear !== PRIMARY_ECONOMIC_YEAR ? `${gdp} (${country.gdpYear})` : gdp}
+        />
+      )}
+      {profile.governmentNote && (
+        <div className="pt-1 text-[10.5px] italic leading-snug text-[#51648a]">{profile.governmentNote}</div>
+      )}
+      {profile.factbookSnapshot && (
+        <div className="pt-1 text-[10.5px] italic leading-snug text-[#51648a]">
+          Government/capital: factbook.json snapshot ({profile.factbookSnapshot.snapshotDate}), not a live feed.
+        </div>
+      )}
     </>
   )
 }
@@ -273,7 +314,7 @@ export function IntelligencePanel() {
             <div className="border-b border-[#16233c] px-4 py-3">
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>OVERVIEW</div>
               {selected.entity.kind === 'country' ? (
-                <CountryDetails name={selected.entity.name} />
+                <CountryDetails country={selected.entity.data} />
               ) : (
                 <GeoEntityDetails entity={selected.entity.data} />
               )}
