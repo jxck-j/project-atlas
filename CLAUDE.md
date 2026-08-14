@@ -895,8 +895,12 @@ WDI API (the same `NY.GDP.MKTP.CD`/`SP.POP.TOTL` indicators, same
 date-range-lookback methodology as the country script) for every
 `'territory'`/`'geopolitical-entity'` GeoEntity with a resident population,
 but only ever writes a **report**
-(`scripts/geoEntityEconomicsReport.json`) — never into `geoEntities.ts`
-directly. That file's relationship data (`administeredBy`/`claimedBy`/...)
+(`scripts/geoEntityEconomicsReport.json`, plus an idempotent marker-delimited
+`BACKLOG.md` section listing every no-WDI-data/partial/deferred entity —
+same pattern as `buildGovCapitalPopGdp.mjs`'s own gap report, see
+`BACKLOG.md`'s "Data sourcing (`buildGeoEntityEconomics.mjs`)" section) —
+never into `geoEntities.ts` directly. That file's relationship data
+(`administeredBy`/`claimedBy`/...)
 is hand-curated and has no API equivalent to auto-merge against, so
 auto-writing just the population/gdpUsd half every run would risk silently
 clobbering hand-curated content the next time the file's shape changes;
