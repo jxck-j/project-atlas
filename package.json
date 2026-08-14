@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "6.0.0",
+  "version": "6.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "build:geo:rivers": "node scripts/buildRiversTopology.mjs",
     "build:geo:us-cities": "node scripts/buildUsCitiesData.mjs",
     "build:profiles": "tsx scripts/buildGovCapitalPopGdp.mjs",
+    "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview",

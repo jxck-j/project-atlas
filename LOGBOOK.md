@@ -5,6 +5,77 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-13 — v6.0.1: population formatter needed a Thousand tier
+
+Reported directly: small countries (under 1 Million population — Tuvalu,
+Nauru, San Marino, several dozen UN members) showed as an awkward
+"0.0337 Million" in the panel instead of something legible. `utils/
+formatScale.ts`'s `POPULATION_TIERS` only had Million/Billion — added a
+Thousand tier below Million (San Marino-scale now reads "33.7 Thousand",
+Tuvalu-scale "11.2 Thousand"). `GDP_TIERS` intentionally untouched: no UN
+member's GDP falls under $1M (Tuvalu's, the smallest, is still tens of
+millions), so GDP never had this problem. Updated
+`formatScale.test.ts`'s existing "keeps sub-1 values in Million" case,
+which was asserting the exact behavior just changed, plus three new cases
+for the tier boundary and a real Thousand-scale figure.
+
+## 2026-08-13 — v6.1.0: GeoEntity population/GDP, hand-curated from a WDI report — and the bug from wiring only half of it
+
+Follow-up to this same day's `Country` population/GDP work (below):
+territories like Puerto Rico still showed no GDP/population in the panel,
+because `GeoEntity` (unlike `Country`) never had `population`/`gdpUsd`
+fields at all. Added them to `data/types.ts`'s `GeoEntity` — same shape as
+`Country`'s (`population`/`populationYear`/`gdpUsd`/`gdpYear`).
+
+**Sourcing had to be hand-curated, not auto-merged, and that's a real
+architectural difference from `Country`, not a shortcut.** A `GeoEntity`
+record also carries `administeredBy`/`claimedBy`/`claims` — hand-curated
+relationship data with no API equivalent — so a script that auto-writes
+into `geoEntities.ts` every run risks clobbering that the moment the file's
+shape changes, in a way `useCountryFeatures.ts`'s runtime merge into the
+(relationship-free) `Country` registry never risks. Wrote
+`scripts/buildGeoEntityEconomics.mjs` to query World Bank WDI
+(`NY.GDP.MKTP.CD`/`SP.POP.TOTL`, same date-range-lookback methodology as
+`buildGovCapitalPopGdp.mjs`) for every `'territory'`/`'geopolitical-entity'`
+GeoEntity with a resident population, but to only ever produce a **report**
+(`scripts/geoEntityEconomicsReport.json`) — never write `geoEntities.ts`
+directly. Used that report to hand-populate 23 of 56 entities (Puerto Rico,
+Hong Kong, Macao, Kosovo, Palestine, ...), each with a per-field comment
+citing the exact WDI entity name/code/year and a new `wdiProvenance()`
+helper building a `provenance` that's explicit about the split: population/
+GDP are now a real, confirmed, cited figure; the entity's relationship data
+stays exactly as simplified/hand-curated as it was before. 16 entities were
+queried and came back with genuinely no WDI data (Jersey, Guernsey, Åland,
+Anguilla, Montserrat, Saint Helena, Cook Islands, Niue, Pitcairn, Wallis and
+Futuna, Norfolk Island, British Indian Ocean Territory, French Southern and
+Antarctic Lands, Saint Barthélemy, Saint Pierre and Miquelon, Falkland
+Islands) — left unscored with an explicit "No WDI data" comment so a
+missing figure reads as "checked, not tracked" rather than "not checked
+yet." Taiwan, Western Sahara, and Crimea were deliberately excluded from
+the query entirely, per the task's own instruction — Taiwan because WDI
+structurally excludes it (needs IMF World Economic Outlook sourcing
+instead), Western Sahara/Crimea because both have contested administration,
+so no single WDI query is an uncontroversial answer to "population of X."
+The three uninhabited entries (Heard Island/McDonald Islands, U.S. Minor
+Outlying Islands, South Georgia and the South Sandwich Islands) were never
+queried at all — no resident population, no WDI entry to look for.
+
+**Real bug, caught by the user, not by verification:** `tsc -b --noEmit`
+and `npx vitest run` both passed clean after adding the type fields and the
+data — and still would have, because neither actually exercises
+`IntelligencePanel.tsx`'s render output. `GeoEntityDetails` (the component
+that renders a selected territory's card) was never updated to actually
+read `entity.population`/`entity.gdpUsd` — the data layer was fully wired,
+the render layer wasn't touched at all, so clicking Puerto Rico showed
+exactly what it always had. Fixed by adding the same POPULATION/GDP
+`DataRow`s `CountryDetails` already had (same source-year-in-parens
+treatment, same `utils/formatScale.ts` formatter) to `GeoEntityDetails`.
+Worth remembering: this codebase's Vitest coverage is pure-function only
+(see this file's own header and `CLAUDE.md`'s Commands section) — a change
+that's correct at the type/data layer but incomplete at the render layer
+will pass every automated check here and still be visibly broken; the dev
+server is still the only thing that actually catches it.
+
 ## 2026-08-13 — population/GDP become the first auto-merged `Country` fields; raw-value/render-time-formatting split
 
 `CLAUDE.md`'s "Geopolitical data architecture" section has said since v2.1

@@ -252,10 +252,38 @@ const GEO_ENTITY_TYPE_LABEL: Record<GeoEntityType, string> = {
 // the RELATIONSHIPS feed section below — same fields, same values, rendered
 // as feed rows instead of semicolon-joined strings. What stays here is the
 // entity's own attributes.
+// POPULATION/GDP follow the exact same source-year-in-parens treatment as
+// CountryDetails above — see that component's doc comment. Unlike Country's
+// population/gdpUsd (auto-merged for every UN member by
+// scene/useCountryFeatures.ts), a GeoEntity only has these fields when a
+// human has hand-verified a source for it in
+// src/data/registry/geoEntities.ts (see that file's wdiProvenance() calls
+// and scripts/buildGeoEntityEconomics.mjs) — most entities still have
+// neither, and both rows are simply omitted for those, the same as a
+// Country with a genuine World Bank gap.
 function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
+  const population = formatPopulation(entity.population)
+  const gdp = formatGdp(entity.gdpUsd)
+
   return (
     <>
       <DataRow label="ENTITY TYPE" value={GEO_ENTITY_TYPE_LABEL[entity.type]} />
+      {population && (
+        <DataRow
+          label="POPULATION"
+          value={
+            entity.populationYear && entity.populationYear !== PRIMARY_ECONOMIC_YEAR
+              ? `${population} (${entity.populationYear})`
+              : population
+          }
+        />
+      )}
+      {gdp && (
+        <DataRow
+          label="GDP"
+          value={entity.gdpYear && entity.gdpYear !== PRIMARY_ECONOMIC_YEAR ? `${gdp} (${entity.gdpYear})` : gdp}
+        />
+      )}
       {entity.metadata?.strategicSignificance && (
         <DataRow label="STRATEGIC SIGNIFICANCE" value={entity.metadata.strategicSignificance} />
       )}

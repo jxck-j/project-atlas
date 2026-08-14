@@ -17,6 +17,44 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.0.1 — Fix population readout for small countries showing as "0.XXX Million"
+
+**Bug fix.** `utils/formatScale.ts`'s `POPULATION_TIERS` only had
+Million/Billion tiers, so any UN member under 1 Million people (Tuvalu,
+Nauru, San Marino, Palau, ...) rendered as an awkward decimal — "0.0337
+Million" for San Marino instead of a legible "33.7 Thousand". Added a
+Thousand tier below Million. GDP is untouched: no UN member's GDP falls
+under $1M, so `GDP_TIERS` never had the same problem.
+
+## v6.1.0 — GeoEntity population/GDP, hand-curated from a World Bank report
+
+Extends v6.0.0's population/GDP work to territories/dependencies
+(`GeoEntity`), which never had these fields at all — reported as "Puerto
+Rico still shows no GDP/population." `data/types.ts`'s `GeoEntity` gets the
+same `population`/`populationYear`/`gdpUsd`/`gdpYear` shape `Country` has.
+
+**Not auto-merged the way `Country`'s is, and deliberately so:** a
+`GeoEntity` also carries hand-curated relationship data
+(`administeredBy`/`claimedBy`/`claims`) with no API equivalent, so a script
+writing into `geoEntities.ts` every run risks clobbering that content. A
+new `scripts/buildGeoEntityEconomics.mjs` queries World Bank WDI for every
+territory/geopolitical-entity with a resident population but only ever
+produces a report (`scripts/geoEntityEconomicsReport.json`) — a human reads
+it and edits `geoEntities.ts` by hand, same as every other field there. 23
+of 56 entities now have real, cited figures (Puerto Rico, Hong Kong, Macao,
+Kosovo, Palestine, ...); 16 were checked and confirmed to have no WDI data
+(left explicitly noted as such, not silently blank); Taiwan/Western
+Sahara/Crimea are deliberately deferred (IMF sourcing needed for Taiwan;
+contested administration for the other two); the three uninhabited entries
+were never queried.
+
+`hud/IntelligencePanel.tsx`'s `GeoEntityDetails` now renders POPULATION/GDP
+rows the same way `CountryDetails` already did. See `LOGBOOK.md` for a real
+bug this surfaced: the type/data layer shipped fully wired while the render
+side was accidentally left untouched, and passed every automated check
+(this repo's Vitest coverage doesn't reach component render output) before
+being caught by hand in the browser.
+
 ## v6.0.0 — Data Engine: real, sourced population/GDP data merged into the Country registry
 
 A new capability, not a tune-up: `data/types.ts`'s `Country` schema (and

@@ -39,7 +39,13 @@ function formatScaled(raw: number, tiers: ScaleTier[]): string {
 }
 
 // Population never realistically reaches a trillion for a single country.
+// A Thousand tier below Million matters here specifically (GDP never needs
+// one among UN members — the smallest, Tuvalu, is still tens of millions of
+// USD): several dozen small island/microstates have populations under 1
+// Million, which rendered as an awkward "0.0337 Million" instead of the
+// more legible "33.7 Thousand".
 const POPULATION_TIERS: ScaleTier[] = [
+  { thresholdMillions: 0.001, suffix: 'Thousand' },
   { thresholdMillions: 1, suffix: 'Million' },
   { thresholdMillions: 1000, suffix: 'Billion' },
 ]

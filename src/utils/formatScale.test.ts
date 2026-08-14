@@ -15,9 +15,22 @@ describe('formatPopulation', () => {
     expect(formatPopulation(335_489_204)).toBe('335 Million')
   })
 
-  it('keeps sub-1 values in Million rather than dropping to a smaller unit', () => {
-    // San Marino-scale: 33,660 / 1e6 = 0.03366 -> 3 sig figs -> 0.0337
-    expect(formatPopulation(33_660)).toBe('0.0337 Million')
+  it('drops to Thousand for a sub-1-Million population instead of an awkward decimal', () => {
+    // San Marino-scale: 33,660 / 1000 = 33.66 -> 3 sig figs -> 33.7
+    expect(formatPopulation(33_660)).toBe('33.7 Thousand')
+  })
+
+  it('stays in Thousand just below the Million threshold', () => {
+    expect(formatPopulation(999_000)).toBe('999 Thousand')
+  })
+
+  it('promotes to Million at exactly 1000 Thousand (the stated threshold)', () => {
+    expect(formatPopulation(1_000_000)).toBe('1 Million')
+  })
+
+  it('formats a real Thousand-scale population to 3 sig figs', () => {
+    // Tuvalu-scale: 11,204 / 1000 = 11.204 -> 3 sig figs -> 11.2
+    expect(formatPopulation(11_204)).toBe('11.2 Thousand')
   })
 
   it('promotes to Billion at exactly 1000 Million (the stated threshold)', () => {

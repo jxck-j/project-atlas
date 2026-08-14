@@ -1,0 +1,448 @@
+{
+  "generatedAt": "2026-08-13",
+  "source": "World Bank World Development Indicators (WDI) API — NY.GDP.MKTP.CD, SP.POP.TOTL",
+  "lookbackRange": "2000-2024",
+  "skipped": {
+    "uninhabited": [
+      "heard-island-and-mcdonald-islands",
+      "us-minor-outlying-islands",
+      "south-georgia-and-south-sandwich-islands"
+    ],
+    "deferredSourcing": [
+      "taiwan",
+      "western-sahara",
+      "crimea"
+    ]
+  },
+  "entities": [
+    {
+      "id": "aland",
+      "name": "Åland",
+      "wdiCode": "ALA",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "american-samoa",
+      "name": "American Samoa",
+      "wdiCode": "ASM",
+      "populationStatus": "ok",
+      "population": 46765,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 871000000,
+      "gdpYear": 2022
+    },
+    {
+      "id": "anguilla",
+      "name": "Anguilla",
+      "wdiCode": "AIA",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "aruba",
+      "name": "Aruba",
+      "wdiCode": "ABW",
+      "populationStatus": "ok",
+      "population": 107995,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 4167588070,
+      "gdpYear": 2024
+    },
+    {
+      "id": "bermuda",
+      "name": "Bermuda",
+      "wdiCode": "BMU",
+      "populationStatus": "ok",
+      "population": 64636,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 9194499000,
+      "gdpYear": 2024
+    },
+    {
+      "id": "british-indian-ocean-territory",
+      "name": "British Indian Ocean Territory",
+      "wdiCode": "IOT",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "british-virgin-islands",
+      "name": "British Virgin Islands",
+      "wdiCode": "VGB",
+      "populationStatus": "ok",
+      "population": 39471,
+      "populationYear": 2024,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "cayman-islands",
+      "name": "Cayman Islands",
+      "wdiCode": "CYM",
+      "populationStatus": "ok",
+      "population": 74457,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 7765336505,
+      "gdpYear": 2024
+    },
+    {
+      "id": "cook-islands",
+      "name": "Cook Islands",
+      "wdiCode": "COK",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "curacao",
+      "name": "Curaçao",
+      "wdiCode": "CUW",
+      "populationStatus": "ok",
+      "population": 155967,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 3561178212,
+      "gdpYear": 2024
+    },
+    {
+      "id": "falkland-islands",
+      "name": "Falkland Islands",
+      "wdiCode": "FLK",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "faroe-islands",
+      "name": "Faroe Islands",
+      "wdiCode": "FRO",
+      "populationStatus": "ok",
+      "population": 54640,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 4052937170,
+      "gdpYear": 2024
+    },
+    {
+      "id": "french-polynesia",
+      "name": "French Polynesia",
+      "wdiCode": "PYF",
+      "populationStatus": "ok",
+      "population": 281807,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 6323716355,
+      "gdpYear": 2024
+    },
+    {
+      "id": "french-southern-and-antarctic-lands",
+      "name": "French Southern and Antarctic Lands",
+      "wdiCode": "ATF",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "gibraltar",
+      "name": "Gibraltar",
+      "wdiCode": "GIB",
+      "populationStatus": "ok",
+      "population": 39329,
+      "populationYear": 2024,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "greenland",
+      "name": "Greenland",
+      "wdiCode": "GRL",
+      "populationStatus": "ok",
+      "population": 56836,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 3326543974,
+      "gdpYear": 2023
+    },
+    {
+      "id": "guam",
+      "name": "Guam",
+      "wdiCode": "GUM",
+      "populationStatus": "ok",
+      "population": 167777,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 6910000000,
+      "gdpYear": 2022
+    },
+    {
+      "id": "guernsey",
+      "name": "Guernsey",
+      "wdiCode": "GGY",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "hong-kong",
+      "name": "Hong Kong",
+      "wdiCode": "HKG",
+      "populationStatus": "ok",
+      "population": 7524100,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 408368682415,
+      "gdpYear": 2024
+    },
+    {
+      "id": "isle-of-man",
+      "name": "Isle of Man",
+      "wdiCode": "IMN",
+      "populationStatus": "ok",
+      "population": 84160,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 7576129933,
+      "gdpYear": 2023
+    },
+    {
+      "id": "jersey",
+      "name": "Jersey",
+      "wdiCode": "JEY",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "kosovo",
+      "name": "Kosovo",
+      "wdiCode": "XKX",
+      "populationStatus": "ok",
+      "population": 1594353,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 11203038332,
+      "gdpYear": 2024
+    },
+    {
+      "id": "macao",
+      "name": "Macao",
+      "wdiCode": "MAC",
+      "populationStatus": "ok",
+      "population": 687000,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 49467258923,
+      "gdpYear": 2024
+    },
+    {
+      "id": "montserrat",
+      "name": "Montserrat",
+      "wdiCode": "MSR",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "new-caledonia",
+      "name": "New Caledonia",
+      "wdiCode": "NCL",
+      "populationStatus": "ok",
+      "population": 292639,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 8548919387,
+      "gdpYear": 2024
+    },
+    {
+      "id": "niue",
+      "name": "Niue",
+      "wdiCode": "NIU",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "norfolk-island",
+      "name": "Norfolk Island",
+      "wdiCode": "NFK",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "northern-mariana-islands",
+      "name": "Northern Mariana Islands",
+      "wdiCode": "MNP",
+      "populationStatus": "ok",
+      "population": 44278,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 1096000000,
+      "gdpYear": 2022
+    },
+    {
+      "id": "palestine",
+      "name": "Palestine",
+      "wdiCode": "PSE",
+      "populationStatus": "ok",
+      "population": 5289152,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 16016900000,
+      "gdpYear": 2024
+    },
+    {
+      "id": "pitcairn-islands",
+      "name": "Pitcairn Islands",
+      "wdiCode": "PCN",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "puerto-rico",
+      "name": "Puerto Rico",
+      "wdiCode": "PRI",
+      "populationStatus": "ok",
+      "population": 3202521,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 126029527034,
+      "gdpYear": 2024
+    },
+    {
+      "id": "saint-barthelemy",
+      "name": "Saint Barthélemy",
+      "wdiCode": "BLM",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "saint-helena",
+      "name": "Saint Helena",
+      "wdiCode": "SHN",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "saint-martin",
+      "name": "Saint Martin",
+      "wdiCode": "MAF",
+      "populationStatus": "ok",
+      "population": 26129,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 649206263,
+      "gdpYear": 2021
+    },
+    {
+      "id": "saint-pierre-and-miquelon",
+      "name": "Saint Pierre and Miquelon",
+      "wdiCode": "SPM",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    },
+    {
+      "id": "sint-maarten",
+      "name": "Sint Maarten",
+      "wdiCode": "SXM",
+      "populationStatus": "ok",
+      "population": 43350,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 1797836648,
+      "gdpYear": 2024
+    },
+    {
+      "id": "turks-and-caicos-islands",
+      "name": "Turks and Caicos Islands",
+      "wdiCode": "TCA",
+      "populationStatus": "ok",
+      "population": 46535,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 1745378000,
+      "gdpYear": 2024
+    },
+    {
+      "id": "us-virgin-islands",
+      "name": "U.S. Virgin Islands",
+      "wdiCode": "VIR",
+      "populationStatus": "ok",
+      "population": 104377,
+      "populationYear": 2024,
+      "gdpStatus": "ok",
+      "gdpUsd": 4672000000,
+      "gdpYear": 2022
+    },
+    {
+      "id": "wallis-and-futuna",
+      "name": "Wallis and Futuna Islands",
+      "wdiCode": "WLF",
+      "populationStatus": "no-data",
+      "population": null,
+      "populationYear": null,
+      "gdpStatus": "no-data",
+      "gdpUsd": null,
+      "gdpYear": null
+    }
+  ]
+}

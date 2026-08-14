@@ -483,7 +483,11 @@ call and no manual clock feeding left to get wrong.
   `'geo-entity'` — ENTITY TYPE / PARENT ENTITY / ADMINISTERED BY / CLAIMED
   BY / CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
   `GeoEntity.metadata` carries them, reusing the same `DataRow` component.
-  Every relationship field is allowed to be empty/absent (see
+  **v6.1.0 added POPULATION/GDP rows** (same source-year-in-parens
+  treatment and `utils/formatScale.ts` formatting as `CountryDetails`'s),
+  shown only for the minority of GeoEntities that have them — see the
+  Geopolitical data architecture section below for which entities do and
+  why. Every relationship field is allowed to be empty/absent (see
   `data/types.ts`), so each row is omitted individually rather than falling
   back to one blanket "no data" message. Still deliberately a two-way
   check, not a registry/plugin system like the Layer Engine's — one
@@ -880,6 +884,41 @@ frequently *not* a registered UN-member `Country` (Taiwan's own government,
 the Polisario Front/SADR) — same reasoning the pre-v3
 `ControllingAuthority`/`TerritoryClaimant` types established, carried
 forward unchanged.
+
+**`population`/`gdpUsd` (+ `populationYear`/`gdpYear`), added in v6.1.0,
+mirror `Country`'s fields of the same name — but unlike `Country`'s, which
+`scripts/buildGovCapitalPopGdp.mjs` auto-merges into every UN member at
+runtime (see above), a `GeoEntity`'s are populated by hand, per entity, in
+`registry/geoEntities.ts` itself.** The difference is deliberate, not an
+oversight: `scripts/buildGeoEntityEconomics.mjs` queries the World Bank's
+WDI API (the same `NY.GDP.MKTP.CD`/`SP.POP.TOTL` indicators, same
+date-range-lookback methodology as the country script) for every
+`'territory'`/`'geopolitical-entity'` GeoEntity with a resident population,
+but only ever writes a **report**
+(`scripts/geoEntityEconomicsReport.json`) — never into `geoEntities.ts`
+directly. That file's relationship data (`administeredBy`/`claimedBy`/...)
+is hand-curated and has no API equivalent to auto-merge against, so
+auto-writing just the population/gdpUsd half every run would risk silently
+clobbering hand-curated content the next time the file's shape changes;
+a human reads the report and edits `geoEntities.ts` by hand instead, the
+same way every other field in that file already is. Result: 23 of the 56
+entities have real, WDI-sourced figures (Puerto Rico, Hong Kong, Macao,
+Kosovo, Palestine, ...), each with a per-field comment citing the exact WDI
+entity name/code/year and a `wdiProvenance()`-built `provenance` explaining
+the split (population/gdpUsd are sourced and confirmed; the entity's
+relationship data stays a simplified, hand-curated entry regardless). 16
+more were queried and came back with genuinely no WDI data (Jersey,
+Guernsey, Åland, ...) — left unscored with an explicit "No WDI data"
+comment, not silently blank. Three are deliberately deferred, not
+oversights: Taiwan (WDI structurally excludes it — needs IMF World Economic
+Outlook sourcing instead, not done here), and Western Sahara/Crimea (both
+have contested administration, so "population of X" isn't a single
+unambiguous WDI query the way an uncontested dependency's is — each needs
+its own human sourcing call). The three uninhabited entries (Heard
+Island/McDonald Islands, U.S. Minor Outlying Islands, South Georgia and the
+South Sandwich Islands) were never queried at all. See `LOGBOOK.md`'s
+v6.1.0 entry, and `hud/IntelligencePanel.tsx`'s `GeoEntityDetails` (above)
+for the render side.
 
 **`data/registry/geoEntities.ts`** (v3.0.0, replacing v2.2.4's
 `registry/territories.ts`) is the real, always-imported dataset — imported
