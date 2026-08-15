@@ -1,9 +1,12 @@
 import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
 import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
+import { ALLIANCES } from '../data/allianceMemberships'
+import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
+import { AllianceBadge } from './AllianceBadge'
 import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
-import { formatGdp, formatPopulation } from '../utils/formatScale'
+import { formatArea, formatGdp, formatPopulation } from '../utils/formatScale'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
@@ -170,14 +173,14 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
 }
 
 // GOVERNMENT/CAPITAL still come from the name-keyed, presentation-formatted
-// COUNTRY_PROFILES (unchanged since v2.2.2). POPULATION/GDP come from the
-// raw Country record itself (`country.population`/`.gdpUsd`, populated by
-// scene/useCountryFeatures.ts from data/countryEconomics.ts) and are
-// formatted here, at render time, via utils/formatScale.ts — see that
-// file's and countryEconomics.ts's header comments for why the split: a
+// COUNTRY_PROFILES (unchanged since v2.2.2). POPULATION/GDP/AREA come from
+// the raw Country record itself (`country.population`/`.gdpUsd`/`.areaKm2`,
+// populated by scene/useCountryFeatures.ts from data/countryEconomics.ts)
+// and are formatted here, at render time, via utils/formatScale.ts — see
+// that file's and countryEconomics.ts's header comments for why the split: a
 // figure correcting across a unit threshold (millions -> billions) used to
 // need a full data rebuild when the formatted string was baked in at build
-// time. Either row is omitted, not fabricated, when its source has a gap
+// time. Each row is omitted, not fabricated, when its source has a gap
 // (see scripts/buildGovCapitalPopGdp.mjs's known-gaps handling) — and shows
 // its sourced year in parens whenever that year isn't
 // PRIMARY_ECONOMIC_YEAR, so a stale World Bank figure never reads as
@@ -190,6 +193,7 @@ function CountryDetails({ country }: { country: Country }) {
   const profile = COUNTRY_PROFILES[country.name]
   const population = formatPopulation(country.population)
   const gdp = formatGdp(country.gdpUsd)
+  const area = formatArea(country.areaKm2)
 
   if (!profile) {
     return (
@@ -217,6 +221,12 @@ function CountryDetails({ country }: { country: Country }) {
         <DataRow
           label="GDP"
           value={country.gdpYear && country.gdpYear !== PRIMARY_ECONOMIC_YEAR ? `${gdp} (${country.gdpYear})` : gdp}
+        />
+      )}
+      {area && (
+        <DataRow
+          label="AREA"
+          value={country.areaYear && country.areaYear !== PRIMARY_ECONOMIC_YEAR ? `${area} (${country.areaYear})` : area}
         />
       )}
       {profile.governmentNote && (
@@ -312,6 +322,14 @@ export function IntelligencePanel() {
 
   const relationFeed =
     selected?.entity.kind === 'geo-entity' ? buildRelationFeed(selected.entity.data) : []
+  // Alliance membership is a Country-only concept (no GeoEntity is itself a
+  // NATO/OECD/BRICS/... member) — see allianceMemberships.ts. Derived by
+  // filtering ALLIANCES' memberCountryCodes at render time against the
+  // selected country's ISO3 code, not a duplicated per-country list.
+  const countryIso3 = selected?.entity.kind === 'country' ? COUNTRY_NAME_TO_ISO3[selected.entity.data.name] : undefined
+  const memberAlliances = countryIso3
+    ? ALLIANCES.filter((alliance) => alliance.memberCountryCodes.includes(countryIso3))
+    : []
 
   return (
     <div
@@ -347,6 +365,17 @@ export function IntelligencePanel() {
                 <GeoEntityDetails entity={selected.entity.data} />
               )}
             </div>
+
+            {memberAlliances.length > 0 && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-2`}>ALLIANCES</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {memberAlliances.map((alliance) => (
+                    <AllianceBadge key={alliance.id} alliance={alliance} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="border-b border-[#16233c] px-4 py-3">
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>INTELLIGENCE SUMMARY</div>

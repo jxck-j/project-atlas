@@ -417,8 +417,9 @@ call and no manual clock feeding left to get wrong.
   through entities; a closed one stays closed until Enter (`openInspector()`)
   explicitly opens it. See the Input Layer section below and
   `LOGBOOK.md`'s v3.2.0 entry.
-- `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' | 'settings'
-  | null`) is open; mutually exclusive, toggled from `Toolbar.tsx`.
+- `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' |
+  'settings' | 'layers' | 'alliances' | null`, v6.2.0 added the last one) is
+  open; mutually exclusive, toggled from `hud/TopNav.tsx`/`hud/SideRail.tsx`.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
   per-country from `isSelected` / `isHovered` / `isDimmed` (dimmed = some other
   country is selected) — there's no separate "theme" object, it's inline per-render.
@@ -691,6 +692,24 @@ etc. is expected to own its own data/state internally and hand the Layer
 Engine a component via `registerLayer()`, the same way the placeholders do.
 That decoupling — engines produce layers, the Layer Engine only knows how to
 register/toggle/mount/unmount them — is the reason this version exists.
+
+**A layer's control surface doesn't have to be `LayerPanel.tsx` (v6.2.0).**
+`layers/geoOverlays/AllianceHighlightLayer.tsx` (highlights the member
+countries of whichever alliance is currently picked from an
+`hud/AllianceBadge.tsx` pill — see `data/allianceMemberships.ts`) registers
+exactly like any other layer, but its own on/off state is driven by
+`hud/allianceHighlightStore.ts`, not a `LayerPanel` toggle row a user finds
+by browsing categories. The pill-browsing UI for it, `hud/AlliancesPanel.tsx`,
+opens from its own `SideRail.tsx` tab (`sideNavItems.ts`'s `SIDE_NAV_ITEMS`,
+undocumented elsewhere in this file — a left-docked, collapsible tab strip,
+parallel to `LayerPanel.tsx`/`SettingsPanel.tsx`, that filters `LayerPanel`
+by Layer Engine category) via a new optional `SideNavItem.panel` field
+naming which `HudPanel` that tab opens — every item before this one omits it
+and defaults to `'layers'`; ALLIANCES is the first to set it to `'alliances'`
+instead, since "browse and click a pill" doesn't fit `LayerPanel`'s
+one-row-per-toggle layout. `SideRail.tsx`'s click handler reads this field
+generically rather than hardcoding `'layers'`, so a future tab can open its
+own dedicated panel the same way without another rewrite of that handler.
 
 ### LOD Engine (`src/lod/`, v4.3)
 

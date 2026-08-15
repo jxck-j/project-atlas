@@ -19,6 +19,7 @@ export type SideNavId =
   | 'environment'
   | 'weather'
   | 'filters'
+  | 'alliances'
 
 // Which top-bar tab is active. Only 'map' has anything behind it today —
 // the other three are rendered inactive (see TopNav.tsx) because no

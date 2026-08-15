@@ -1,5 +1,6 @@
 import { useLayerEnabledMap } from '../layers'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { useHighlightedAllianceId } from './allianceHighlightStore'
 import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 
 // v3.1: answers "why is Taiwan red." Always-on, not a toggle — mirrors
@@ -68,7 +69,10 @@ const CATEGORY_HIGHLIGHT_LAYER_IDS = [
 
 export function LegendPanel() {
   const enabledMap = useLayerEnabledMap()
-  const anyCategoryHighlightEnabled = CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id])
+  const highlightedAllianceId = useHighlightedAllianceId()
+  const anyCategoryHighlightEnabled =
+    CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id]) ||
+    (enabledMap['alliance-highlight'] && highlightedAllianceId != null)
 
   const entries = [
     HIGHLIGHT_COLORS.default,

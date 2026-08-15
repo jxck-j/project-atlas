@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 // Which single toolbar dropdown (if any) is open. Mutually exclusive —
 // opening one closes the other, matching a normal toolbar's behavior.
-export type HudPanel = 'search' | 'settings' | 'layers' | null
+export type HudPanel = 'search' | 'settings' | 'layers' | 'alliances' | null
 
 const useHudPanelStore = create<{ panel: HudPanel }>(() => ({ panel: null }))
 

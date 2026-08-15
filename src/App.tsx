@@ -4,6 +4,7 @@ import { SideRail } from './hud/SideRail'
 import { CommandBar } from './hud/CommandBar'
 import { SettingsPanel } from './hud/SettingsPanel'
 import { LayerPanel } from './hud/LayerPanel'
+import { AlliancesPanel } from './hud/AlliancesPanel'
 import { LegendPanel } from './hud/LegendPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
 import { InputManager } from './input/InputManager'
@@ -30,6 +31,7 @@ function App() {
       <CommandBar />
       <SettingsPanel />
       <LayerPanel />
+      <AlliancesPanel />
       <IntelligencePanel />
       {/* v3.2.0 — no visual output, wires up the global keyboard listener. */}
       <InputManager />

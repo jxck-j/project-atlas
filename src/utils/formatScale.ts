@@ -69,3 +69,14 @@ export function formatGdp(raw: number | undefined): string | undefined {
   if (raw == null) return undefined
   return `$${formatScaled(raw, GDP_TIERS)}`
 }
+
+// Area doesn't get the Million/Billion tier treatment population/GDP do —
+// its whole range (Nauru's ~21 km² to Russia's ~17.1 million km²) reads
+// naturally as a single comma-grouped count, the way the CIA Factbook
+// itself presents it ("17,098,242 sq km"), rather than needing a unit
+// promoted out from under it.
+/** Raw km² -> "17,098,242 km²" / "21 km²". `undefined` in, `undefined` out — see formatPopulation. */
+export function formatArea(raw: number | undefined): string | undefined {
+  if (raw == null) return undefined
+  return `${Math.round(raw).toLocaleString('en-US')} km²`
+}

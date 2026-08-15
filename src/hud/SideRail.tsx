@@ -9,7 +9,7 @@ import { PANEL_SURFACE } from './panelStyles'
 // sideNavItems.ts; this file only renders it.
 export function SideRail() {
   const active = useSideNavSection()
-  const layersOpen = useHudPanel() === 'layers'
+  const currentPanel = useHudPanel()
   const collapsed = useSideRailCollapsed()
 
   return (
@@ -30,30 +30,42 @@ export function SideRail() {
           <div className="w-[148px]">
             {SIDE_NAV_ITEMS.map((item) => {
               const isActive = active === item.id
-              // OVERVIEW always works (it's the "no filter" state); every other
-              // item needs at least one registered category behind it.
-              const wired = item.id === 'overview' || item.categories.length > 0
+              // OVERVIEW always works (it's the "no filter" state); every
+              // other LayerPanel-backed item needs at least one registered
+              // category behind it; an item with its own dedicated `panel`
+              // (currently just ALLIANCES) doesn't need a category at all —
+              // it opens its own panel instead of filtering LayerPanel.
+              const wired = item.id === 'overview' || item.categories.length > 0 || item.panel != null
+              const targetPanel = item.panel ?? 'layers'
+              const panelOpenForItem = currentPanel === targetPanel
 
               return (
                 <button
                   key={item.id}
                   type="button"
                   disabled={!wired}
-                  title={wired ? `Show ${item.label.toLowerCase()} layers` : `${item.label} — no layers registered yet`}
+                  title={
+                    wired
+                      ? item.panel && item.panel !== 'layers'
+                        ? `Show ${item.label.toLowerCase()}`
+                        : `Show ${item.label.toLowerCase()} layers`
+                      : `${item.label} — no layers registered yet`
+                  }
                   onClick={() => {
-                    // Re-clicking the already-active section closes the panel
+                    // Re-clicking the already-active section closes its panel
                     // instead of doing nothing — the same "click to open,
                     // click again to close" toggle every other rail item
-                    // gets via isActive below. Clicking a *different* section
-                    // while the panel's open just switches to it and leaves
-                    // the panel open; only the closed -> open case still
-                    // needs the explicit toggleHudPanel call.
-                    if (layersOpen && isActive) {
-                      toggleHudPanel('layers')
+                    // gets via isActive below. Clicking a *different*
+                    // section whose target panel is already open just
+                    // switches to it and leaves the panel open; only the
+                    // closed -> open (or switching-to-a-different-panel)
+                    // case still needs the explicit toggleHudPanel call.
+                    if (panelOpenForItem && isActive) {
+                      toggleHudPanel(targetPanel)
                       return
                     }
                     setSideNavSection(item.id)
-                    if (!layersOpen) toggleHudPanel('layers')
+                    if (!panelOpenForItem) toggleHudPanel(targetPanel)
                   }}
                   className={`flex w-full items-center gap-2.5 border-l-2 px-3.5 py-3 text-[10.5px] font-semibold tracking-[0.12em] transition-colors ${
                     isActive

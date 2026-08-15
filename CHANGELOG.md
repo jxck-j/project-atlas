@@ -26,6 +26,50 @@ Million" for San Marino instead of a legible "33.7 Thousand". Added a
 Thousand tier below Million. GDP is untouched: no UN member's GDP falls
 under $1M, so `GDP_TIERS` never had the same problem.
 
+## v6.2.0 — Alliances tab: browse all 18 alliances, highlight members on the globe
+
+**New capability, Layer Engine.** `data/allianceMemberships.ts`'s 18 hand-
+sourced economic/security blocs (added earlier this version cycle as static
+per-country badges in `IntelligencePanel.tsx`) are now browsable as their own
+thing, not just readable one country at a time.
+
+- **`hud/AlliancesPanel.tsx`** — a new dedicated panel, opened from a new
+  ALLIANCES tab on `SideRail.tsx`, listing all 18 alliances grouped by
+  `AllianceType` (security/economic/political-forum/trade) as clickable
+  pills.
+- **`hud/AllianceBadge.tsx`** — the pill itself, extracted out of
+  `IntelligencePanel.tsx` so both it and the new panel render/behave
+  identically. Every badge is now a real `<button>`, in both places — the
+  per-country badges in `IntelligencePanel.tsx` were previously inert
+  `<span>`s.
+- **`hud/allianceHighlightStore.ts`** — which single alliance (if any) is
+  currently highlighted; clicking any badge anywhere toggles it. One at a
+  time, not a multi-select — highlighting all 18 alliances' member sets at
+  once would just read as "most of the globe," so this is deliberately
+  exclusive, the same way `selectionStore.ts`'s `selected` is a single
+  entity, not a set.
+- **`layers/geoOverlays/AllianceHighlightLayer.tsx`** — a new, ordinary
+  Layer Engine layer (`registerLayer`, `defaultEnabled: true`, same pattern
+  `ParentOverlayLayer.tsx`/`ClaimsOverlayLayer.tsx`/`CategoryHighlightLayer.tsx`
+  already established) that reads `allianceHighlightStore.ts` and draws the
+  highlighted alliance's member countries using `CategoryHighlightLayer.tsx`'s
+  shared `CategoryHighlightGeometry` renderer — no new border/fill JSX, no
+  new highlight color (reuses `HIGHLIGHT_COLORS.categoryHighlight`; see that
+  file's own "exactly 7 hues" note for why an 8th slot wasn't added). Joins a
+  country feature to an alliance's ISO3 `memberCountryCodes` via the same
+  `data/countryIso3.ts` lookup `IntelligencePanel.tsx`'s per-country badges
+  already use.
+- **`SideRail.tsx`'s rail-item click handler is now generalized**, not
+  hardcoded to open `LayerPanel`: `SideNavItem` gained an optional `panel`
+  field (`sideNavItems.ts`) naming which `HudPanel` a given tab opens,
+  defaulting to `'layers'` for every existing item. ALLIANCES is the first
+  (and so far only) tab that sets it to `'alliances'` instead, opening
+  `AlliancesPanel.tsx` in `LayerPanel.tsx`'s exact same screen slot rather
+  than filtering it by category — a browse-and-click-a-pill UI doesn't fit
+  `LayerPanel`'s one-row-per-toggle layout. Every pre-existing rail item's
+  behavior is unchanged (still defaults to `'layers'`, same open/close/
+  switch logic as before, just parameterized instead of hardcoded).
+
 ## v6.1.0 — GeoEntity population/GDP, hand-curated from a World Bank report
 
 Extends v6.0.0's population/GDP work to territories/dependencies

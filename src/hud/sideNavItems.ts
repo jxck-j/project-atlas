@@ -1,4 +1,5 @@
 import { ICONS } from './iconPaths'
+import type { HudPanel } from './hudPanelStore'
 import type { SideNavId } from './navStore'
 
 // The left rail's sections. Each maps to the *real* Layer Engine categories
@@ -22,6 +23,14 @@ export interface SideNavItem {
   label: string
   icon: readonly string[]
   categories: string[]
+  /**
+   * Which HudPanel this item opens — omitted means 'layers' (every item
+   * before ALLIANCES). ALLIANCES is the first item that opens a different,
+   * dedicated panel (AlliancesPanel.tsx) instead of filtering LayerPanel by
+   * category — see SideRail.tsx's click handler, generalized to read this
+   * field rather than hardcoding 'layers'.
+   */
+  panel?: Exclude<HudPanel, null>
 }
 
 export const SIDE_NAV_ITEMS: SideNavItem[] = [
@@ -35,4 +44,5 @@ export const SIDE_NAV_ITEMS: SideNavItem[] = [
   { id: 'environment', label: 'ENVIRONMENT', icon: ICONS.environment, categories: ['geography'] },
   { id: 'weather', label: 'WEATHER', icon: ICONS.weather, categories: [] },
   { id: 'filters', label: 'FILTERS', icon: ICONS.filter, categories: [] },
+  { id: 'alliances', label: 'ALLIANCES', icon: ICONS.diplomacy, categories: [], panel: 'alliances' },
 ]

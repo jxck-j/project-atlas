@@ -138,6 +138,16 @@ export interface Country {
    * several years behind population for the same country, or vice versa.
    */
   gdpYear?: number
+  /** Total land area in square kilometers, as a plain number (World Bank AG.LND.TOTL.K2). */
+  areaKm2?: number
+  /**
+   * Year the `areaKm2` figure is actually for — mirrors `gdpYear`'s reasoning,
+   * even though land area rarely changes year to year (a stale year here
+   * almost never means stale data, but the World Bank still reports it
+   * per-year and a genuine gap is still possible, so it's tracked the same
+   * explicit way rather than assumed current).
+   */
+  areaYear?: number
   provenance?: DataProvenance
 }
 
