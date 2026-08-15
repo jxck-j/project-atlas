@@ -61,7 +61,7 @@ export const HIGHLIGHT_COLORS = {
   // a claimant (Taiwan -> China). Deliberately one color/one role for both:
   // from the viewer's perspective "which country is connected to what I
   // selected" is one question, answered by ClaimsOverlayLayer.tsx's
-  // RelatedCountryMarker label ("PARENT — NETHERLANDS" vs.
+  // RelatedCountryMarker label ("SOVEREIGN — NETHERLANDS" vs.
   // "CLAIMANT — CHINA") rather than by a second color to memorize. See
   // LOGBOOK.md's v3.1.5 entry.
   // O — orange: a warm accent, clearly distinct from claimsOverlay's red

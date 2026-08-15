@@ -5,6 +5,38 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-15 — v6.2.2: relationship label rename, and a pre-existing doc-drift spot found (not fixed) along the way
+
+Requested as display-text-only — `parentEntity`/`administeredBy`/
+`claimedBy`/`claims` stay as the field names in `data/types.ts`/
+`geoEntities.ts`; only what renders changed. Touched three real render
+sites (`IntelligencePanel.tsx`'s `buildRelationFeed`, `ClaimsOverlayLayer.tsx`'s
+`ROLE_LABEL`, `scripts/generateClaimsDoc.mjs`) plus their doc comments
+(`highlightColors.ts`, `CLAUDE.md`) — CHANGELOG.md/LOGBOOK.md's own
+*historical* entries describing pre-rename releases were deliberately left
+alone; they're a dated record of what shipped at the time, not living docs,
+so rewriting old entries to use the new labels would misrepresent history
+(making v3.0.0 look like it shipped "Sovereign State" when it shipped
+"Parent Entity"). A new CHANGELOG entry documents the rename instead.
+
+Singular/plural for the renamed "Claimed By" -> "Claimant"/"Claimants": both
+call sites (`buildRelationFeed`, `generateClaimsDoc.mjs`) compute it off
+`claimedBy.length > 1` once per entity, applied uniformly to every row for
+that entity's claimant list — not per-row, since a set of rows under the
+same relationship should read as one grouped fact, not independently pick
+their own singular/plural.
+
+**Found, not fixed:** `CLAUDE.md`'s `IntelligencePanel.tsx` bullet still
+described `PARENT ENTITY`/`ADMINISTERED BY`/`CLAIMED BY`/`CLAIMS` as
+`GeoEntityDetails`'s own `DataRow` fields — stale independent of this
+rename; those four fields moved out of the overview block and into the
+RELATIONSHIPS feed section (`buildRelationFeed`/`FeedRow`) at some earlier,
+undated point, and CLAUDE.md was never updated to describe the feed at all.
+Fixed the label names in that bullet (in scope for this change) but did not
+attempt the larger rewrite describing the feed refactor itself — that's a
+separate, pre-existing drift issue outside a label-rename task's scope.
+Worth a dedicated pass later.
+
 ## 2026-08-15 — v6.2.1: equator line added deliberately narrower than the removed graticule grid
 
 Requested as "add the equator line," not "bring back the grid" — implemented

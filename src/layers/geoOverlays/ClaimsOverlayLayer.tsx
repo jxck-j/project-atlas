@@ -101,8 +101,8 @@ function useClaimRelatedEntityIds(): Set<string> {
 // share one color/one mechanism — from the viewer's perspective "which
 // country is connected to what I selected" is one question, whether the
 // answer is "administers it" or "claims it" — and the marker's label text
-// (PARENT vs. CLAIMANT, or both if a future entry somehow has both) is what
-// actually distinguishes them, not a second color to memorize. See
+// (SOVEREIGN vs. CLAIMANT, or both if a future entry somehow has both) is
+// what actually distinguishes them, not a second color to memorize. See
 // data/types.ts's GeoEntity doc comment for why `parentEntity` and
 // `claimedBy` are separate fields in the first place (an uncontroversial
 // dependency isn't "disputed," so modeling it via the claim fields would
@@ -156,7 +156,7 @@ interface RelatedCountryEntry extends CountryEntry {
 }
 
 const ROLE_LABEL: Record<RelatedCountryRole, string> = {
-  parent: 'PARENT',
+  parent: 'SOVEREIGN',
   claimant: 'CLAIMANT',
 }
 

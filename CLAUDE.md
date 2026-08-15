@@ -484,8 +484,8 @@ call and no manual clock feeding left to get wrong.
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
   same "no profile data" fallback) for `'country'`, `GeoEntityDetails`
   (v3.0.0, replacing v2.2.2's Territory-only `TerritoryDetails`) for
-  `'geo-entity'` — ENTITY TYPE / PARENT ENTITY / ADMINISTERED BY / CLAIMED
-  BY / CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
+  `'geo-entity'` — ENTITY TYPE / SOVEREIGN STATE / ADMINISTERING POWER /
+  CLAIMANT(S) / TERRITORIAL CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
   `GeoEntity.metadata` carries them, reusing the same `DataRow` component.
   **v6.1.0 added POPULATION/GDP rows** (same source-year-in-parens
   treatment and `utils/formatScale.ts` formatting as `CountryDetails`'s),

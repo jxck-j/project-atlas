@@ -23,7 +23,7 @@ GeoEntity side, so a country's "Claims" entry below is always derived by
 scanning GeoEntity `claimedBy` fields for a reference back to it, never a
 country stating a claim directly.
 
-Regenerated: 2026-07-21
+Regenerated: 2026-08-15
 
 ---
 
@@ -34,80 +34,80 @@ the full rosters below for everything else, including the 37 GeoEntities and eff
 
 ### Akrotiri (Strategic Region)
 
-- **Claimed by:** Republic of Cyprus
+- **Claimant:** Republic of Cyprus
 
 ### Antarctica (Geographic Region)
 
-- **Claimed by:** Argentine Republic (claim suspended under the Antarctic Treaty); Commonwealth of Australia (claim suspended under the Antarctic Treaty); Republic of Chile (claim suspended under the Antarctic Treaty); French Republic (claim suspended under the Antarctic Treaty); New Zealand (claim suspended under the Antarctic Treaty); Kingdom of Norway (claim suspended under the Antarctic Treaty); United Kingdom (claim suspended under the Antarctic Treaty)
+- **Claimants:** Argentine Republic (claim suspended under the Antarctic Treaty); Commonwealth of Australia (claim suspended under the Antarctic Treaty); Republic of Chile (claim suspended under the Antarctic Treaty); French Republic (claim suspended under the Antarctic Treaty); New Zealand (claim suspended under the Antarctic Treaty); Kingdom of Norway (claim suspended under the Antarctic Treaty); United Kingdom (claim suspended under the Antarctic Treaty)
 
 ### Bajo Nuevo Bank (Maritime Feature)
 
-- **Claimed by:** Republic of Colombia; Jamaica; United States of America (since 1856)
+- **Claimants:** Republic of Colombia; Jamaica; United States of America (since 1856)
 
 ### British Indian Ocean Territory (Territory)
 
-- **Claimed by:** Republic of Mauritius
+- **Claimant:** Republic of Mauritius
 
 ### Crimea (Territory)
 
-- **Claimed by:** Ukraine; Russian Federation (since 2014)
+- **Claimants:** Ukraine; Russian Federation (since 2014)
 
 ### Dhekelia (Strategic Region)
 
-- **Claimed by:** Republic of Cyprus
+- **Claimant:** Republic of Cyprus
 
 ### Falkland Islands (Territory)
 
-- **Claimed by:** Argentine Republic
+- **Claimant:** Argentine Republic
 
 ### French Southern and Antarctic Lands (Territory)
 
-- **Claimed by:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
+- **Claimants:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
 
 ### Gibraltar (Territory)
 
-- **Claimed by:** Kingdom of Spain
+- **Claimant:** Kingdom of Spain
 
 ### Kosovo (Geopolitical Entity)
 
-- **Claimed by:** Republic of Serbia
+- **Claimant:** Republic of Serbia
 
 ### Palestine (Geopolitical Entity)
 
-- **Claimed by:** State of Israel
+- **Claimant:** State of Israel
 
 ### Scarborough Reef (Maritime Feature)
 
-- **Claimed by:** People's Republic of China; Republic of the Philippines; Taiwan
+- **Claimants:** People's Republic of China; Republic of the Philippines; Taiwan
 
 ### Serranilla Bank (Maritime Feature)
 
-- **Claimed by:** Republic of Colombia; United States of America (since 1856); Jamaica
+- **Claimants:** Republic of Colombia; United States of America (since 1856); Jamaica
 
 ### Siachen Glacier (Strategic Region)
 
-- **Claimed by:** Republic of India; Islamic Republic of Pakistan
+- **Claimants:** Republic of India; Islamic Republic of Pakistan
 
 ### South Georgia and South Sandwich Islands (Territory)
 
-- **Claimed by:** Argentine Republic
+- **Claimant:** Argentine Republic
 
 ### Spratly Islands (Maritime Feature)
 
-- **Claimed by:** People's Republic of China; Socialist Republic of Vietnam; Republic of the Philippines; Malaysia; Brunei Darussalam; Taiwan
+- **Claimants:** People's Republic of China; Socialist Republic of Vietnam; Republic of the Philippines; Malaysia; Brunei Darussalam; Taiwan
 
 ### Taiwan (Geopolitical Entity)
 
-- **Claimed by:** People's Republic of China
-- **Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
+- **Claimant:** People's Republic of China
+- **Territorial Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
 
 ### US Naval Base Guantanamo Bay (Strategic Region)
 
-- **Claimed by:** Republic of Cuba (disputes the lease’s continued legitimacy)
+- **Claimant:** Republic of Cuba (disputes the lease’s continued legitimacy)
 
 ### Western Sahara (Geopolitical Entity)
 
-- **Claimed by:** Kingdom of Morocco; Sahrawi Arab Democratic Republic (Polisario Front)
+- **Claimants:** Kingdom of Morocco; Sahrawi Arab Democratic Republic (Polisario Front)
 
 ---
 
@@ -115,775 +115,775 @@ the full rosters below for everything else, including the 37 GeoEntities and eff
 
 ### Afghanistan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Albania
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Algeria
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Andorra
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Angola
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Antigua and Barbuda
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Argentina
 
-- **Claims:** Antarctica (Geographic Region); Falkland Islands (Territory); South Georgia and South Sandwich Islands (Territory)
+- **Territorial Claims:** Antarctica (Geographic Region); Falkland Islands (Territory); South Georgia and South Sandwich Islands (Territory)
 
 ### Armenia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Australia
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### Austria
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Azerbaijan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bahamas
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bahrain
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bangladesh
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Barbados
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Belarus
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Belgium
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Belize
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Benin
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bhutan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bolivia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Bosnia and Herzegovina
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Botswana
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Brazil
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Brunei
 
-- **Claims:** Spratly Islands (Maritime Feature)
+- **Territorial Claims:** Spratly Islands (Maritime Feature)
 
 ### Bulgaria
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Burkina Faso
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Burundi
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Cabo Verde
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Cambodia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Cameroon
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Canada
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Central African Republic
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Chad
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Chile
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### China
 
-- **Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature); Taiwan (Geopolitical Entity)
+- **Territorial Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature); Taiwan (Geopolitical Entity)
 
 ### Colombia
 
-- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
+- **Territorial Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
 
 ### Comoros
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Congo
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Costa Rica
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Côte d'Ivoire
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Croatia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Cuba
 
-- **Claims:** US Naval Base Guantanamo Bay (Strategic Region)
+- **Territorial Claims:** US Naval Base Guantanamo Bay (Strategic Region)
 
 ### Cyprus
 
-- **Claims:** Akrotiri (Strategic Region); Dhekelia (Strategic Region)
+- **Territorial Claims:** Akrotiri (Strategic Region); Dhekelia (Strategic Region)
 
 ### Czechia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Democratic Republic of the Congo
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Denmark
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Djibouti
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Dominica
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Dominican Republic
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Ecuador
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Egypt
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### El Salvador
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Equatorial Guinea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Eritrea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Estonia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Eswatini
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Ethiopia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Fiji
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Finland
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### France
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### Gabon
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Gambia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Georgia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Germany
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Ghana
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Greece
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Grenada
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Guatemala
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Guinea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Guinea-Bissau
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Guyana
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Haiti
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Honduras
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Hungary
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Iceland
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### India
 
-- **Claims:** Siachen Glacier (Strategic Region)
+- **Territorial Claims:** Siachen Glacier (Strategic Region)
 
 ### Indonesia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Iran
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Iraq
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Ireland
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Israel
 
-- **Claims:** Palestine (Geopolitical Entity)
+- **Territorial Claims:** Palestine (Geopolitical Entity)
 
 ### Italy
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Jamaica
 
-- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
+- **Territorial Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
 
 ### Japan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Jordan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Kazakhstan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Kenya
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Kiribati
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Kuwait
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Kyrgyzstan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Laos
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Latvia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Lebanon
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Lesotho
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Liberia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Libya
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Liechtenstein
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Lithuania
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Luxembourg
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Madagascar
 
-- **Claims:** French Southern and Antarctic Lands (Territory)
+- **Territorial Claims:** French Southern and Antarctic Lands (Territory)
 
 ### Malawi
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Malaysia
 
-- **Claims:** Spratly Islands (Maritime Feature)
+- **Territorial Claims:** Spratly Islands (Maritime Feature)
 
 ### Maldives
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Mali
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Malta
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Marshall Islands
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Mauritania
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Mauritius
 
-- **Claims:** British Indian Ocean Territory (Territory); French Southern and Antarctic Lands (Territory)
+- **Territorial Claims:** British Indian Ocean Territory (Territory); French Southern and Antarctic Lands (Territory)
 
 ### Mexico
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Micronesia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Moldova
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Monaco
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Mongolia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Montenegro
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Morocco
 
-- **Claims:** Western Sahara (Geopolitical Entity)
+- **Territorial Claims:** Western Sahara (Geopolitical Entity)
 
 ### Mozambique
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Myanmar
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Namibia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Nauru
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Nepal
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Netherlands
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### New Zealand
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### Nicaragua
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Niger
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Nigeria
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### North Korea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### North Macedonia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Norway
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### Oman
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Pakistan
 
-- **Claims:** Siachen Glacier (Strategic Region)
+- **Territorial Claims:** Siachen Glacier (Strategic Region)
 
 ### Palau
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Panama
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Papua New Guinea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Paraguay
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Peru
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Philippines
 
-- **Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
+- **Territorial Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
 
 ### Poland
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Portugal
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Qatar
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Romania
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Russia
 
-- **Claims:** Crimea (Territory)
+- **Territorial Claims:** Crimea (Territory)
 
 ### Rwanda
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Saint Kitts and Nevis
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Saint Lucia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Saint Vincent and the Grenadines
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Samoa
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### San Marino
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Sao Tome and Principe
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Saudi Arabia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Senegal
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Serbia
 
-- **Claims:** Kosovo (Geopolitical Entity)
+- **Territorial Claims:** Kosovo (Geopolitical Entity)
 
 ### Seychelles
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Sierra Leone
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Singapore
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Slovakia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Slovenia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Solomon Islands
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Somalia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### South Africa
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### South Korea
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### South Sudan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Spain
 
-- **Claims:** Gibraltar (Territory)
+- **Territorial Claims:** Gibraltar (Territory)
 
 ### Sri Lanka
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Sudan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Suriname
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Sweden
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Switzerland
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Syria
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Tajikistan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Tanzania
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Thailand
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Timor-Leste
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Togo
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Tonga
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Trinidad and Tobago
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Tunisia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Turkey
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Turkmenistan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Tuvalu
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Uganda
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Ukraine
 
-- **Claims:** Crimea (Territory)
+- **Territorial Claims:** Crimea (Territory)
 
 ### United Arab Emirates
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### United Kingdom
 
-- **Claims:** Antarctica (Geographic Region)
+- **Territorial Claims:** Antarctica (Geographic Region)
 
 ### United States of America
 
-- **Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
+- **Territorial Claims:** Bajo Nuevo Bank (Maritime Feature); Serranilla Bank (Maritime Feature)
 
 ### Uruguay
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Uzbekistan
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Vanuatu
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Venezuela
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Vietnam
 
-- **Claims:** Spratly Islands (Maritime Feature)
+- **Territorial Claims:** Spratly Islands (Maritime Feature)
 
 ### Yemen
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Zambia
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ### Zimbabwe
 
-- **Claims:** None
+- **Territorial Claims:** None
 
 ---
 
@@ -891,393 +891,393 @@ the full rosters below for everything else, including the 37 GeoEntities and eff
 
 ### Akrotiri (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** United Kingdom (Sovereign Base Area) (since 1960)
-- **Claimed By:** Republic of Cyprus
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** United Kingdom (Sovereign Base Area) (since 1960)
+- **Claimant:** Republic of Cyprus
+- **Territorial Claims:** None
 
 ### Åland (Territory)
 
-- **Parent Entity:** Republic of Finland
-- **Administered By:** Republic of Finland
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Republic of Finland
+- **Administering Power:** Republic of Finland
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### American Samoa (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Anguilla (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Antarctica (Geographic Region)
 
-- **Parent Entity:** None
-- **Administered By:** None
-- **Claimed By:** Argentine Republic (claim suspended under the Antarctic Treaty); Commonwealth of Australia (claim suspended under the Antarctic Treaty); Republic of Chile (claim suspended under the Antarctic Treaty); French Republic (claim suspended under the Antarctic Treaty); New Zealand (claim suspended under the Antarctic Treaty); Kingdom of Norway (claim suspended under the Antarctic Treaty); United Kingdom (claim suspended under the Antarctic Treaty)
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** None
+- **Claimants:** Argentine Republic (claim suspended under the Antarctic Treaty); Commonwealth of Australia (claim suspended under the Antarctic Treaty); Republic of Chile (claim suspended under the Antarctic Treaty); French Republic (claim suspended under the Antarctic Treaty); New Zealand (claim suspended under the Antarctic Treaty); Kingdom of Norway (claim suspended under the Antarctic Treaty); United Kingdom (claim suspended under the Antarctic Treaty)
+- **Territorial Claims:** None
 
 ### Aruba (Territory)
 
-- **Parent Entity:** Kingdom of the Netherlands
-- **Administered By:** Kingdom of the Netherlands
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Kingdom of the Netherlands
+- **Administering Power:** Kingdom of the Netherlands
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Baikonur (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** Russian Federation (leased spaceport complex) (since 1994)
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Russian Federation (leased spaceport complex) (since 1994)
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Bajo Nuevo Bank (Maritime Feature)
 
-- **Parent Entity:** None
-- **Administered By:** Republic of Colombia
-- **Claimed By:** Republic of Colombia; Jamaica; United States of America (since 1856)
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Republic of Colombia
+- **Claimants:** Republic of Colombia; Jamaica; United States of America (since 1856)
+- **Territorial Claims:** None
 
 ### Bermuda (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### British Indian Ocean Territory (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** Republic of Mauritius
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** Republic of Mauritius
+- **Territorial Claims:** None
 
 ### British Virgin Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Cayman Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Cook Islands (Territory)
 
-- **Parent Entity:** New Zealand
-- **Administered By:** New Zealand
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** New Zealand
+- **Administering Power:** New Zealand
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Crimea (Territory)
 
-- **Parent Entity:** None
-- **Administered By:** Russian Federation (de facto administration since 2014) (since 2014)
-- **Claimed By:** Ukraine; Russian Federation (since 2014)
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Russian Federation (de facto administration since 2014) (since 2014)
+- **Claimants:** Ukraine; Russian Federation (since 2014)
+- **Territorial Claims:** None
 
 ### Curaçao (Territory)
 
-- **Parent Entity:** Kingdom of the Netherlands
-- **Administered By:** Kingdom of the Netherlands
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Kingdom of the Netherlands
+- **Administering Power:** Kingdom of the Netherlands
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Cyprus UN Buffer Zone (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** United Nations Peacekeeping Force in Cyprus (UNFICYP) (since 1974)
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** United Nations Peacekeeping Force in Cyprus (UNFICYP) (since 1974)
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Dhekelia (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** United Kingdom (Sovereign Base Area) (since 1960)
-- **Claimed By:** Republic of Cyprus
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** United Kingdom (Sovereign Base Area) (since 1960)
+- **Claimant:** Republic of Cyprus
+- **Territorial Claims:** None
 
 ### Falkland Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** Argentine Republic
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** Argentine Republic
+- **Territorial Claims:** None
 
 ### Faroe Islands (Territory)
 
-- **Parent Entity:** Kingdom of Denmark
-- **Administered By:** Kingdom of Denmark
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Kingdom of Denmark
+- **Administering Power:** Kingdom of Denmark
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### French Polynesia (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### French Southern and Antarctic Lands (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimants:** Republic of Madagascar (claims the Îles Éparses/Scattered Islands); Republic of Mauritius (claims Tromelin Island)
+- **Territorial Claims:** None
 
 ### Gibraltar (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** Kingdom of Spain
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** Kingdom of Spain
+- **Territorial Claims:** None
 
 ### Greenland (Territory)
 
-- **Parent Entity:** Kingdom of Denmark
-- **Administered By:** Kingdom of Denmark
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Kingdom of Denmark
+- **Administering Power:** Kingdom of Denmark
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Guam (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Guernsey (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Heard Island and McDonald Islands (Territory)
 
-- **Parent Entity:** Commonwealth of Australia
-- **Administered By:** Commonwealth of Australia
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Commonwealth of Australia
+- **Administering Power:** Commonwealth of Australia
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Hong Kong (Territory)
 
-- **Parent Entity:** People's Republic of China
-- **Administered By:** People's Republic of China
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** People's Republic of China
+- **Administering Power:** People's Republic of China
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Isle of Man (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Jersey (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Kosovo (Geopolitical Entity)
 
-- **Parent Entity:** None
-- **Administered By:** Government of the Republic of Kosovo (since 2008)
-- **Claimed By:** Republic of Serbia
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Government of the Republic of Kosovo (since 2008)
+- **Claimant:** Republic of Serbia
+- **Territorial Claims:** None
 
 ### Macao (Territory)
 
-- **Parent Entity:** People's Republic of China
-- **Administered By:** People's Republic of China
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** People's Republic of China
+- **Administering Power:** People's Republic of China
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Montserrat (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### New Caledonia (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Niue (Territory)
 
-- **Parent Entity:** New Zealand
-- **Administered By:** New Zealand
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** New Zealand
+- **Administering Power:** New Zealand
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Norfolk Island (Territory)
 
-- **Parent Entity:** Commonwealth of Australia
-- **Administered By:** Commonwealth of Australia
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Commonwealth of Australia
+- **Administering Power:** Commonwealth of Australia
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Northern Mariana Islands (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Palestine (Geopolitical Entity)
 
-- **Parent Entity:** None
-- **Administered By:** Palestinian Authority
-- **Claimed By:** State of Israel
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Palestinian Authority
+- **Claimant:** State of Israel
+- **Territorial Claims:** None
 
 ### Pitcairn Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Puerto Rico (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Saint Barthélemy (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Saint Helena (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Saint Martin (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Saint Pierre and Miquelon (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Scarborough Reef (Maritime Feature)
 
-- **Parent Entity:** None
-- **Administered By:** None
-- **Claimed By:** People's Republic of China; Republic of the Philippines; Taiwan
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** None
+- **Claimants:** People's Republic of China; Republic of the Philippines; Taiwan
+- **Territorial Claims:** None
 
 ### Serranilla Bank (Maritime Feature)
 
-- **Parent Entity:** None
-- **Administered By:** Republic of Colombia
-- **Claimed By:** Republic of Colombia; United States of America (since 1856); Jamaica
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Republic of Colombia
+- **Claimants:** Republic of Colombia; United States of America (since 1856); Jamaica
+- **Territorial Claims:** None
 
 ### Siachen Glacier (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** Republic of India (controls most of the glacier)
-- **Claimed By:** Republic of India; Islamic Republic of Pakistan
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Republic of India (controls most of the glacier)
+- **Claimants:** Republic of India; Islamic Republic of Pakistan
+- **Territorial Claims:** None
 
 ### Sint Maarten (Territory)
 
-- **Parent Entity:** Kingdom of the Netherlands
-- **Administered By:** Kingdom of the Netherlands
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** Kingdom of the Netherlands
+- **Administering Power:** Kingdom of the Netherlands
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### South Georgia and South Sandwich Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** Argentine Republic
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** Argentine Republic
+- **Territorial Claims:** None
 
 ### Spratly Islands (Maritime Feature)
 
-- **Parent Entity:** None
-- **Administered By:** None
-- **Claimed By:** People's Republic of China; Socialist Republic of Vietnam; Republic of the Philippines; Malaysia; Brunei Darussalam; Taiwan
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** None
+- **Claimants:** People's Republic of China; Socialist Republic of Vietnam; Republic of the Philippines; Malaysia; Brunei Darussalam; Taiwan
+- **Territorial Claims:** None
 
 ### Taiwan (Geopolitical Entity)
 
-- **Parent Entity:** None
-- **Administered By:** Government of the Republic of China (Taiwan) (since 1949)
-- **Claimed By:** People's Republic of China
-- **Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
+- **Sovereign State:** None
+- **Administering Power:** Government of the Republic of China (Taiwan) (since 1949)
+- **Claimant:** People's Republic of China
+- **Territorial Claims:** Scarborough Reef (Maritime Feature); Spratly Islands (Maritime Feature)
 
 ### Turks and Caicos Islands (Territory)
 
-- **Parent Entity:** United Kingdom
-- **Administered By:** United Kingdom
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United Kingdom
+- **Administering Power:** United Kingdom
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### U.S. Minor Outlying Islands (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### U.S. Virgin Islands (Territory)
 
-- **Parent Entity:** United States of America
-- **Administered By:** United States of America
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** United States of America
+- **Administering Power:** United States of America
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### US Naval Base Guantanamo Bay (Strategic Region)
 
-- **Parent Entity:** None
-- **Administered By:** United States (naval base, under an indefinite lease) (since 1903)
-- **Claimed By:** Republic of Cuba (disputes the lease’s continued legitimacy)
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** United States (naval base, under an indefinite lease) (since 1903)
+- **Claimant:** Republic of Cuba (disputes the lease’s continued legitimacy)
+- **Territorial Claims:** None
 
 ### Wallis and Futuna Islands (Territory)
 
-- **Parent Entity:** French Republic
-- **Administered By:** French Republic
-- **Claimed By:** None
-- **Claims:** None
+- **Sovereign State:** French Republic
+- **Administering Power:** French Republic
+- **Claimant:** None
+- **Territorial Claims:** None
 
 ### Western Sahara (Geopolitical Entity)
 
-- **Parent Entity:** None
-- **Administered By:** Kingdom of Morocco (since 1975); Sahrawi Arab Democratic Republic (Polisario Front) (since 1976)
-- **Claimed By:** Kingdom of Morocco; Sahrawi Arab Democratic Republic (Polisario Front)
-- **Claims:** None
+- **Sovereign State:** None
+- **Administering Power:** Kingdom of Morocco (since 1975); Sahrawi Arab Democratic Republic (Polisario Front) (since 1976)
+- **Claimants:** Kingdom of Morocco; Sahrawi Arab Democratic Republic (Polisario Front)
+- **Territorial Claims:** None
 

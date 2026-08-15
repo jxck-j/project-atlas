@@ -17,6 +17,28 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.2.2 — Relationship label rename: display text only, data model unchanged
+
+Renamed four labels rendered across `IntelligencePanel.tsx`'s RELATIONSHIPS
+feed, `ClaimsOverlayLayer.tsx`'s related-country marker, and generated
+`CLAIMS.md`:
+
+- "Parent Entity" -> "Sovereign State"
+- "Administered By" -> "Administering Power"
+- "Claimed By" -> "Claimant" (singular), or "Claimants" when an entity has
+  more than one claiming entity — both `IntelligencePanel.tsx` and
+  `scripts/generateClaimsDoc.mjs` compute this off `claimedBy.length` rather
+  than always using one form
+- "Claims" -> "Territorial Claims"
+
+The underlying data model fields (`parentEntity`/`administeredBy`/
+`claimedBy`/`claims` in `data/types.ts`/`geoEntities.ts`) are unchanged —
+this is display text only. The `RelatedCountryMarker`'s "PARENT — <NAME>"
+callout prefix is now "SOVEREIGN — <NAME>"; "CLAIMANT — <NAME>" is
+unchanged (that word wasn't part of the rename, and the callout itself
+was already removed in v4.1.1 — only the highlight/fill remains for a
+claimant). `CLAIMS.md` regenerated via `npm run docs:claims`.
+
 ## v6.2.1 — Equator line
 
 **Rendering Engine, point release.** Added a static reference ring at

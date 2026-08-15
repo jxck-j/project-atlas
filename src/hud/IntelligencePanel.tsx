@@ -127,7 +127,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   if (entity.parentEntity) {
     items.push({
       key: `parent-${entity.parentEntity.displayName}`,
-      category: 'PARENT ENTITY',
+      category: 'SOVEREIGN STATE',
       color: HIGHLIGHT_COLORS.relatedCountry.hex,
       icon: ICONS.pin,
       primary: entity.parentEntity.displayName,
@@ -138,7 +138,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   for (const relation of entity.administeredBy) {
     items.push({
       key: `administered-${relation.displayName}`,
-      category: 'ADMINISTERED BY',
+      category: 'ADMINISTERING POWER',
       color: HIGHLIGHT_COLORS.territoryOverlay.hex,
       icon: ICONS.shield,
       primary: relation.displayName,
@@ -147,10 +147,14 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
     })
   }
 
+  // Singular "CLAIMANT" for one claiming entity, plural "CLAIMANTS" when
+  // listing more than one — every row for this entity's claimedBy list
+  // shares the same category label since they're one set being listed.
+  const claimantLabel = entity.claimedBy.length > 1 ? 'CLAIMANTS' : 'CLAIMANT'
   for (const relation of entity.claimedBy) {
     items.push({
       key: `claimed-by-${relation.displayName}`,
-      category: 'CLAIMED BY',
+      category: claimantLabel,
       color: HIGHLIGHT_COLORS.claimsOverlay.hex,
       icon: ICONS.target,
       primary: relation.displayName,
@@ -161,7 +165,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   for (const relation of entity.claims) {
     items.push({
       key: `claims-${relation.displayName}`,
-      category: 'CLAIMS',
+      category: 'TERRITORIAL CLAIMS',
       color: HIGHLIGHT_COLORS.claimsOverlay.hex,
       icon: ICONS.bookmark,
       primary: relation.displayName,
