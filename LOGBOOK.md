@@ -5,6 +5,106 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-14 — v6.2.0: SideRail's click handler generalized instead of special-cased
+
+`SideRail.tsx`'s 10 existing tabs all hardcoded `toggleHudPanel('layers')`
+— every tab was assumed to only ever filter `LayerPanel`. The new ALLIANCES
+tab needed to open a different, dedicated panel instead (a browse-and-click
+pill grid doesn't fit `LayerPanel`'s one-row-per-toggle layout). Rejected:
+hardcoding `if (item.id === 'alliances') ...` inside the click handler —
+correct for one case, but the file already had a working precedent for
+"per-item behavior data" (`SideNavItem.categories`), so a matching optional
+`panel` field (defaulting to `'layers'` for every existing item) kept the
+handler itself generic and made a *second* future dedicated-panel tab a
+data-only change instead of another special case.
+
+## 2026-08-14 — v6.2.0: alliance data scope and format decisions
+
+Several decisions were made explicitly with the user rather than guessed,
+worth recording since a future session extending this dataset needs the
+same judgment calls, not a re-derivation of them:
+
+- **18 alliances, not more.** A Trade category (USMCA/CPTPP/RCEP/AfCFTA)
+  was drafted, then explicitly dropped — not deferred — after a count check
+  caught that 22 blocs had actually been listed against an "18 ONLY"
+  instruction. Broader/looser groupings (Arab League, Commonwealth of
+  Nations, ANZUS, SAARC, CSTO) were reviewed and rejected specifically as
+  dormant/functionally inert, not merely "not gotten to yet" — see
+  `data/allianceMemberships.ts`'s own header for the per-org reasoning
+  (ANZUS's suspended US-NZ leg, SAARC paralyzed since 2016, CSTO's
+  non-intervention record, Arab League's resolution track record).
+- **Real ISO3 codes, not country names, as the join key** — deliberately
+  more plumbing (a new `countryIso3.ts` lookup table) in exchange for codes
+  independently verifiable against each org's own site, rather than
+  silently coupled to this app's own display-name spelling quirks (see the
+  entry below for exactly what goes wrong with the alternative).
+- **Membership rosters were hand-adjusted, not each org's raw published
+  list.** OAS excludes Cuba/Venezuela/Nicaragua; Mercosur excludes
+  suspended Venezuela and includes newly-full-member Bolivia. Getting this
+  right required treating "the org's own page" as a starting point, not an
+  ending point — SCO, OAS, and BRICS all needed a second, more specific
+  query (full members vs. observers/dialogue-partners/disputed status)
+  beyond the first fetch; the Nicaragua exclusion specifically was found
+  mid-research (not in the original spec) and flagged for confirmation
+  before being applied, rather than silently added or silently dropped.
+- **One alliance highlighted at a time, not a multi-select Set.**
+  Considered and rejected: highlighting all 18 alliances' rosters
+  simultaneously would read as "most of the globe is colored," defeating
+  the point of a highlight. Matches `selectionStore.ts`'s single-`selected`
+  precedent rather than `layerStore.ts`'s independently-toggleable-many
+  precedent — deliberately the former, since this is "which one am I
+  looking at," not "which layers are on."
+- **Reused `HIGHLIGHT_COLORS.categoryHighlight` rather than adding an 8th
+  color slot** for the alliance-highlight layer, specifically because
+  `highlightColors.ts`'s own header documents its 7-slot ROYGBIV palette as
+  a deliberate, CVD-validated design constraint — adding an 8th hue
+  casually would have quietly broken that constraint for a feature that's
+  semantically identical to what `categoryHighlight` already means ("every
+  entity in a highlighted group, at once").
+
+## 2026-08-14 — v6.2.0: alliance data keyed by ISO3, not country name — the "United States of America" catch
+
+When rewriting `data/allianceMemberships.ts` to use real ISO 3166-1 alpha-3
+codes (see the scope-decisions entry above for why), building the
+name-to-code join table surfaced a latent bug in the *first* draft of this
+same file, written earlier the same day: `countryProfiles.ts` keys the US
+as `"United States of America"` (Natural Earth's raw name — unchanged by
+`unMembers.ts`'s `DISPLAY_NAME_OVERRIDES`), not the colloquial
+`"United States"` the first draft had hardcoded as a `Record` key. That
+draft's US entry would have silently never matched `country.name` at render
+time — no error, no warning, just an empty ALLIANCES section for the one
+country that should have had the most badges. Caught only because building
+`countryIso3.ts` required reading `countryProfiles.ts`'s actual generated
+keys directly rather than assuming a colloquial name, and then verifying
+the full 193-entry table programmatically (a throwaway script
+cross-checking every name from `unMembers.ts` against a hand-typed alpha-3
+map: zero missing, zero extra, zero duplicate codes) instead of trusting
+hand-transcription by eye. **Lesson: when a "country" string is used as an
+equality key (a `Record` lookup), not just displayed, verify the actual
+source-of-truth key format in code — never assume the colloquial name.**
+This codebase already had one other instance of exactly this trap before
+this session: `Country.id`'s doc comment claims ISO alpha-3 convention, but
+the runtime-registered value is actually the numeric topology id (see
+`data/countryEconomics.ts`'s header comment).
+
+## 2026-08-14 — AREA formatting: plain comma-grouped km², not a Million/Billion tier
+
+`formatPopulation`/`formatGdp` both promote large raw numbers into "X
+Million"/"X Billion" for readability (`utils/formatScale.ts`). AREA
+deliberately does *not* get the same tier treatment, even though copying
+the existing pattern was the path of least resistance. Population/GDP need
+tiering because they range over enough orders of magnitude that a raw digit
+count is genuinely hard to read (a GDP figure can run 14+ digits). Area's
+range — Nauru's ~21 km² to Russia's ~17.1 million km² — is comfortably
+readable as a single comma-grouped count the way reference sources (the CIA
+Factbook itself) already present it: "17,098,242 km²" reads more naturally
+for a physical area than "17.1 Million km²" would, in a way that isn't true
+for a population or GDP count. Copying the tier pattern reflexively here
+would have been consistency for its own sake, not actual legibility —
+worth naming explicitly since the next person touching this file will see
+the tiered pattern right next to it and may reasonably wonder why AREA
+didn't get the same treatment.
+
 ## 2026-08-13 — v6.0.1: population formatter needed a Thousand tier
 
 Reported directly: small countries (under 1 Million population — Tuvalu,
