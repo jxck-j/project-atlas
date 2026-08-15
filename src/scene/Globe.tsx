@@ -7,6 +7,7 @@ import { WATER_BODIES, type WaterBody } from '../data/waterBodies'
 import { latLngToVector3, vector3ToLatLng } from '../utils/geo'
 import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
+import { Equator } from './Equator'
 import { GeoEntities } from './GeoEntities'
 import { PointerMarker } from './PointerMarker'
 import { UsCityOutlineHighlight } from './UsCityOutlineHighlight'
@@ -255,6 +256,7 @@ export function Globe() {
       </mesh>
 
       <Countries />
+      <Equator />
       <GeoEntities />
       <CapitalMarker />
       <CountryLabels />

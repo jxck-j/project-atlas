@@ -6,9 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A command-center-style 3D globe built with React 19 + TypeScript + Vite + Three.js
 (via React Three Fiber / drei) + Tailwind v4. The globe renders as a holographic
-wireframe projection (graticule grid, glowing country borders, Fresnel atmosphere
-rim) rather than a photo-real Earth texture — closer to a tactical display than a
-map app. Country data covers exactly the 193 UN member states.
+wireframe projection (glowing country borders, a static equator line, Fresnel
+atmosphere rim) rather than a photo-real Earth texture — closer to a tactical
+display than a map app. A full lat/long graticule grid also rendered through
+v5.0.0 but was removed in v5.1.0 (see `README.md`'s "Design direction"); v6.2.1
+added back only the single equator line, not the full grid. Country data covers
+exactly the 193 UN member states.
 
 ## Branch context
 

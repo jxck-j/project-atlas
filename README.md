@@ -12,7 +12,9 @@ GeoJSON/TopoJSON data) rendered as thin glowing lines over a pitch-black
 ocean, a subtle Fresnel atmosphere rim, and pulsing capital-city markers —
 closer to a Halo/TRON/JARVIS tactical display than a map app. The lat/long
 graticule grid this used to also render (v5.0.0 and earlier) was removed in
-v5.1.0 — see that entry in `CHANGELOG.md`.
+v5.1.0 — see that entry in `CHANGELOG.md`. v6.2.1 added back a single fixed
+reference line, the equator (`scene/Equator.tsx`) — narrower in scope than
+the removed grid, which crisscrossed the whole globe.
 
 The HUD follows a "glass command console" aesthetic (v5.0.0): a dark
 near-black background, a full-spectrum ROYGBIV-mapped highlight palette

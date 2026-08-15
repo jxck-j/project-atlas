@@ -5,6 +5,19 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-15 — v6.2.1: equator line added deliberately narrower than the removed graticule grid
+
+Requested as "add the equator line," not "bring back the grid" — implemented
+as exactly that: one static ring at lat 0 (`scene/Equator.tsx`), always-on
+alongside the atmosphere shells in `Globe.tsx`, not a Layer Engine toggle.
+Deliberately did not revisit v5.1.0's removal of the full lat/long graticule
+(`CHANGELOG.md`'s v5.1.0 entry) — that was a crisscrossing overlay across the
+whole globe, a different-scale visual decision from a single fixed reference
+line. `CLAUDE.md`'s opening description and `README.md`'s "Design direction"
+both still described the grid as removed with no equator mentioned; both
+updated alongside this change so neither goes stale relative to what's
+actually rendered.
+
 ## 2026-08-14 — v6.2.0: SideRail's click handler generalized instead of special-cased
 
 `SideRail.tsx`'s 10 existing tabs all hardcoded `toggleHudPanel('layers')`

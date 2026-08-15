@@ -17,6 +17,15 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.2.1 — Equator line
+
+**Rendering Engine, point release.** Added a static reference ring at
+latitude 0 (`scene/Equator.tsx`), rendered at the same elevation as country
+borders (`GLOBE_RADIUS * 1.004`). Always-on, not a Layer Engine toggle —
+it's part of the base holographic-projection look, not a dataset. Narrower
+in scope than the full lat/long graticule grid removed in v5.1.0: this is
+one fixed line, not a crisscrossing overlay across the whole globe.
+
 ## v6.0.1 — Fix population readout for small countries showing as "0.XXX Million"
 
 **Bug fix.** `utils/formatScale.ts`'s `POPULATION_TIERS` only had
