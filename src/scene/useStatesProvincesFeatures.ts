@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
-import { feature } from 'topojson-client'
+import { feature, mesh } from 'topojson-client'
 import type { Topology, GeometryCollection } from 'topojson-specification'
-import type { Feature } from 'geojson'
+import type { Feature, MultiLineString } from 'geojson'
 import { registerGeometryMapping } from '../entities/GeometryMap'
 import { registerEntity } from '../data'
 
@@ -22,6 +22,21 @@ import { registerEntity } from '../data'
 const TOPOLOGY_URL = '/geo/states-provinces.json'
 
 let features: Feature[] = []
+// v6.2.5: the deduplicated boundary line — every arc the province object
+// touches (interior admin-1 boundaries AND coastline), each walked exactly
+// once, via topojson-client's mesh(). Exists specifically because rendering
+// borders from `features`' own per-province rings draws every interior
+// boundary TWICE — once as part of each of the two provinces sharing it —
+// and each copy computes its own independent dash phase (see
+// EntityRenderLayer.tsx's dashedBorders doc comment and LOGBOOK.md's
+// v6.2.5 entry), which reliably looks solid wherever the two phases happen
+// to mostly cover each other's gaps (reported directly for the Pará/Mato
+// Grosso border, but not specific to that pair — any shared edge is
+// affected, just with a different, essentially random-looking phase
+// relationship each time). mesh() is the standard, correct way to draw
+// polygon boundaries without this duplication: each arc in the topology is
+// walked exactly once regardless of how many polygons reference it.
+let boundary: MultiLineString | null = null
 let loaded = false
 let fetchStarted = false
 const listeners = new Set<() => void>()
@@ -42,6 +57,7 @@ function ensureFetch() {
     .then((topology: Topology) => {
       const object = topology.objects.provinces as GeometryCollection
       features = feature(topology, object).features as Feature[]
+      boundary = mesh(topology, object)
 
       for (const f of features) {
         // Every feature was stamped with its own registry id as `feature.id`
@@ -108,6 +124,10 @@ function getFeaturesSnapshot() {
   return features
 }
 
+function getBoundarySnapshot() {
+  return boundary
+}
+
 function getLoadedSnapshot() {
   return loaded
 }
@@ -115,6 +135,11 @@ function getLoadedSnapshot() {
 export function useStatesProvincesFeatures(): Feature[] {
   ensureFetch()
   return useSyncExternalStore(subscribe, getFeaturesSnapshot)
+}
+
+export function useStatesProvincesBoundary(): MultiLineString | null {
+  ensureFetch()
+  return useSyncExternalStore(subscribe, getBoundarySnapshot)
 }
 
 export function useStatesProvincesFeaturesLoaded(): boolean {

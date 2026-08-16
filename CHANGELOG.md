@@ -17,6 +17,84 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.2.5 — Fix dashed province borders rendering solid at shared state/province boundaries
+
+**Bug fix, Rendering Engine.** v6.2.4's dashed borders looked solid at some
+internal state/province boundaries (reported for Pará/Mato Grosso, Brazil,
+but not specific to that pair). Root cause was different from v6.2.4's own
+fix: `scene/Countries.tsx`/`GeoEntities.tsx`/`StatesProvinces.tsx` each
+render one full border ring PER polygon — so a boundary shared by two
+adjacent provinces gets drawn twice, once from each side, each computing its
+own dash phase independently (starting from wherever that polygon's own
+ring happens to begin). Two dashed lines on the exact same curve with an
+uncorrelated relative phase statistically cover most of each other's gaps,
+reading as solid — worse or better depending on the luck of that specific
+pair's phase relationship, matching why only *some* borders were affected.
+
+`useStatesProvincesFeatures.ts` now also exposes a deduplicated boundary
+line via `topojson-client`'s `mesh()` — every arc (interior AND coastal)
+walked exactly once, structurally impossible to double-draw. That mesh is
+now the actual source of the default (unselected) dashed look;
+`EntityRenderLayer.tsx` gained a `hideDefaultBorders` prop so a province's
+own per-entry border ring only still renders while that one province is
+hovered or selected (a single highlighted line has nothing to double up
+against). `countryGeometry.ts` gained
+`geometryToLineSegmentsWithDistances` (the `MultiLineString` sibling of
+v6.2.4's `geometryToBorderSegmentsWithDistances`) for the mesh's own dash
+distances. 3 new Vitest cases guard the reset-per-line behavior.
+
+## v6.2.4 — Hatched (dashed) province borders; drop the sovereign-state highlight when selecting one
+
+**Rendering Engine + geoOverlays.** Two related states/provinces requests:
+
+- **Dashed province borders**, so a state/province reads as a visually
+  distinct, secondary kind of boundary once that layer is on, not just 294
+  extra polygons in the same solid-line style countries use.
+  `scene/EntityRenderLayer.tsx` gained a `dashedBorders` prop (only
+  `StatesProvinces.tsx` sets it); reuses the exact dash mechanism
+  `ClaimsOverlayLayer.tsx`'s "hatching style" claim outlines already
+  established (`DASH_SIZE`/`GAP_SIZE`, now hoisted to
+  `scene/geoEntityEntries.ts` so both consumers share one scale instead of
+  drifting). Also fixed one real dash-phase bug along the way — a
+  province/GeoEntity with more than one ring (islands, holes) could get its
+  dash phase corrupted by a huge, never-rendered "phantom" distance carried
+  across the ring transition; `countryGeometry.ts`'s new
+  `geometryToBorderSegmentsWithDistances` resets the cumulative distance at
+  every ring instead. This was necessary but not sufficient — v6.2.5 above
+  fixes the bigger, more common cause of the same symptom.
+- **No more "sovereign state" highlight when selecting a province.**
+  Every registered province's `parentEntity`/`administeredBy` points at its
+  own sovereign country by construction (`useStatesProvincesFeatures.ts`) —
+  selecting any of the 294 provinces was triggering
+  `ClaimsOverlayLayer.tsx`'s "related country" treatment (dashed border +
+  fill + "SOVEREIGN — <NAME>" marker) on that province's own country every
+  time, which reported as unwanted: a province being part of its own
+  country isn't a relationship worth flagging the way an uncontested
+  dependency (Puerto Rico → USA) or a disputed claim is. Scoped narrowly to
+  `'administrative-division'`-type selections; every other `GeoEntityType`
+  keeps the existing behavior unchanged.
+
+## v6.2.3 — Fix arrow-key navigation reaching hidden states/provinces; exclude cities from it entirely
+
+**Bug fix, Input Layer.** `input/SelectionController.ts`'s `useEntityNavigation()`
+built its candidate list from `useStatesProvincesFeatures()` and
+`useCitiesFeatures()` unconditionally — both hooks just fetch geometry, with
+no regard for whether their respective Layer Engine layer (`'states-provinces'`,
+`'cities'`, both off by default) is actually toggled on. Reported directly:
+arrow keys could select — and fly the camera to — a state/province that
+wasn't rendered on the globe because its layer was off.
+
+- **States/provinces** now only enter the candidate list while `'states-provinces'`
+  is enabled (checked via `useLayerEnabledMap()`, the same source
+  `LayerManager.tsx` uses to decide what to mount).
+- **Cities are excluded from keyboard navigation entirely**, regardless of
+  layer state — a follow-up report clarified arrow/Tab navigation shouldn't
+  reach cities at all, not just "only while the cities layer happens to be
+  on." `'city'` was dropped from `CATEGORY_ORDER` (now six `GeoEntityType`
+  categories instead of seven) and city entries are no longer built at all.
+  Cities stay selectable by click or search — this only affects keyboard
+  navigation.
+
 ## v6.2.2 — Relationship label rename: display text only, data model unchanged
 
 Renamed four labels rendered across `IntelligencePanel.tsx`'s RELATIONSHIPS

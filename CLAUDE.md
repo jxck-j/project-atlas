@@ -271,6 +271,28 @@ never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
 no-op, since every rendered shape in those two already has a `GeometryMap`
 registration by the time it's clickable.
 
+**v6.2.4 added two more `EntityRenderLayer` props, both `StatesProvinces.tsx`-only:**
+`dashedBorders` (renders every entry's border `LineDashedMaterial` instead
+of solid, so a province boundary reads as visually distinct from a country
+one) and, as of **v6.2.5**, `hideDefaultBorders` (skips the per-entry border
+entirely unless that one entry is hovered/selected). The two together exist
+because of a real bug: rendering every province's own full border ring
+(the pre-v6.2.5 default) draws every INTERNAL admin-1 boundary twice — once
+from each adjacent province's own ring — each computing its own dash phase
+independently, which reliably looked solid instead of dashed wherever the
+two uncorrelated phases happened to mostly cover each other's gaps
+(reported for Pará/Mato Grosso, Brazil; see `LOGBOOK.md`'s v6.2.5 entry for
+the full mechanism). Fixed by adding a deduplicated boundary line
+(`useStatesProvincesFeatures.ts`'s `useStatesProvincesBoundary()`, built
+via `topojson-client`'s `mesh()` — every arc walked exactly once regardless
+of how many provinces reference it) as `StatesProvinces.tsx`'s own
+`BoundaryMesh` component, which is now the actual source of the default
+(unselected) dashed look; `hideDefaultBorders` stops `EntityRenderLayer`
+from drawing a second, competing copy on top of it for every unselected
+entry — a live per-entry border still renders for whichever ONE province is
+actually hovered/selected, since a single line has nothing left to
+double-draw against.
+
 `GeoEntities.tsx` deliberately does **only** primary selection (hover,
 click, highlight the one clicked entity) — no parent-overlay or
 claims-overlay logic lives here. Those are `src/layers/geoOverlays/`'s job
@@ -530,7 +552,14 @@ call and no manual clock feeding left to get wrong.
   border + fill highlight alone reads clearly enough for a disputed claim.
   The marker is still shown for the uncontested `'parent'` role (e.g.
   Puerto Rico → USA), where there's no dispute to read from a highlight
-  alone.
+  alone. **v6.2.4: `useRelatedCountryRoles()` skips this entirely for a
+  selected `'administrative-division'`** (a state/province) — every
+  province's `parentEntity`/`administeredBy` points at its own sovereign
+  country by construction (`useStatesProvincesFeatures.ts`), so without
+  this carve-out every one of the 294 provinces would highlight its own
+  country on every select, which isn't a relationship worth flagging the
+  way an uncontested dependency or a disputed claim is. Every other
+  `GeoEntityType` is unaffected.
 - **`CategoryHighlightLayer.tsx`** (v3.3.0) registers six ordinary Layer
   Engine layers — one per selectable classification (`'country'` plus the
   five `GeoEntityType` values) — each drawing every entity in that one
@@ -599,17 +628,24 @@ selection concept.
   types anywhere in its logic: great-circle bearing (`utils/geo.ts`'s
   `bearingBetween`, kept only within a ±90° cone of the requested
   direction) then great-circle distance (`angularDistance`) among what's
-  left. `useEntityNavigation()` builds the live candidate list from the same
-  two sources `hud/SearchBar.tsx` already draws its own index from
-  (`useCountryFeatures()` + `useGeoEntityFeatures()`, centroids via
-  `scene/countryGeometry.ts`'s `geometryToCentroid`), and calls the
-  *existing* `selectEntity()` with `{ openInspector: false }`. Also owns
-  Tab/Shift+Tab category cycling — six fixed categories (`'country'` plus
-  the five `GeoEntityType` values), landing on the alphabetically-first
-  entity in whichever category comes next. See `LOGBOOK.md`'s v3.2.0 entry
-  for why `geometryToCentroid`'s known (pre-existing, documented)
-  imprecision means this occasionally picks a geographically-surprising
-  neighbor — inherited, not new.
+  left. `useEntityNavigation()` builds the live candidate list from
+  `useCountryFeatures()` + `useGeoEntityFeatures()` (centroids via
+  `scene/countryGeometry.ts`'s `geometryToCentroid`) unconditionally, plus
+  `useStatesProvincesFeatures()` only while the `'states-provinces'` Layer
+  Engine layer is actually enabled (that layer is off by default — see
+  `layers/geoOverlays/StatesProvincesLayer.tsx` — and without this gate,
+  arrow-key navigation could select and fly to a state/province that isn't
+  rendered on the globe at all). Cities are excluded entirely, regardless of
+  whether the `'cities'` layer is on — reported directly that arrow-key
+  navigation shouldn't reach cities; they stay selectable by click or search,
+  just never a keyboard-navigation candidate. Calls the *existing*
+  `selectEntity()` with `{ openInspector: false }`. Also owns Tab/Shift+Tab
+  category cycling — seven fixed categories (`'country'` plus six of the
+  seven `GeoEntityType` values, `'city'` omitted for the same reason), landing
+  on the alphabetically-first entity in whichever category comes next. See
+  `LOGBOOK.md`'s v3.2.0 entry for why `geometryToCentroid`'s known
+  (pre-existing, documented) imprecision means this occasionally picks a
+  geographically-surprising neighbor — inherited, not new.
 - `InputManager.tsx` — mounted once from `App.tsx` (outside the Canvas,
   like every other HUD component), renders nothing. The one file that knows
   the full mapping from one-shot command to system: arrows →

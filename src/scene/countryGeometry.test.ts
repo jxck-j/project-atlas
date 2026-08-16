@@ -5,9 +5,11 @@ import { latLngToVector3 } from '../utils/geo'
 import {
   geometryToAngularExtent,
   geometryToBorderSegments,
+  geometryToBorderSegmentsWithDistances,
   geometryToCentroid,
   geometryToFillMesh,
   geometryToLineSegments,
+  geometryToLineSegmentsWithDistances,
 } from './countryGeometry'
 
 // A simple 10x10-degree square, centered nowhere near the antimeridian —
@@ -277,6 +279,84 @@ describe('geometryToBorderSegments', () => {
   })
 })
 
+// v6.2.4: reported directly as some states'/provinces' dashed borders
+// rendering solid instead of dashed — root-caused to a ring-unaware
+// cumulative-distance computation (see countryGeometry.ts's
+// geometryToBorderSegmentsWithDistances doc comment for the full
+// mechanism). This describe block guards the fix: distances must reset to 0
+// at the start of every ring, not carry the previous ring's ending value
+// (or the huge, never-rendered "gap" between two unrelated rings) forward.
+describe('geometryToBorderSegmentsWithDistances', () => {
+  const RADIUS = 5
+  const TRIANGLE: Polygon = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [-90, 0],
+        [0, 90],
+        [0, 0],
+      ],
+    ],
+  }
+
+  it('produces the same positions as geometryToBorderSegments', () => {
+    const { positions } = geometryToBorderSegmentsWithDistances(TRIANGLE, RADIUS)
+    const plain = geometryToBorderSegments(TRIANGLE, RADIUS)
+    expect(Array.from(positions)).toEqual(Array.from(plain))
+  })
+
+  it('starts a single ring at distance 0 and accumulates monotonically', () => {
+    const { distances } = geometryToBorderSegmentsWithDistances(TRIANGLE, RADIUS)
+    // 3 segments -> 6 distance entries (start, end) x 3, one pair per segment.
+    expect(distances.length).toBe(6)
+    expect(distances[0]).toBe(0)
+    for (let i = 1; i < distances.length; i++) {
+      expect(distances[i]).toBeGreaterThanOrEqual(distances[i - 1])
+    }
+  })
+
+  it('resets distance to 0 at the start of a MultiPolygon\'s second ring, not carrying the first ring\'s total (or the gap between them) forward', () => {
+    const squareA: Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [10, 0],
+          [10, 10],
+          [0, 10],
+          [0, 0],
+        ],
+      ],
+    }
+    const squareB: Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [100, 0],
+          [110, 0],
+          [110, 10],
+          [100, 10],
+          [100, 0],
+        ],
+      ],
+    }
+    const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [squareA.coordinates, squareB.coordinates] }
+
+    const a = geometryToBorderSegmentsWithDistances(squareA, RADIUS)
+    const combined = geometryToBorderSegmentsWithDistances(multi, RADIUS)
+
+    // squareA's ring contributes 4 segments -> 8 distance entries; squareB's
+    // ring must start its own entries back at 0, exactly matching what
+    // squareA's ring alone produced (not squareA's final cumulative value,
+    // and not squareA's final value plus the real-world gap to squareB).
+    const squareARingLength = 8
+    expect(Array.from(combined.distances.slice(0, squareARingLength))).toEqual(Array.from(a.distances))
+    expect(combined.distances[squareARingLength]).toBe(0)
+    expect(Array.from(combined.distances.slice(squareARingLength))).toEqual(Array.from(a.distances))
+  })
+})
+
 // 2026-08-08: geometryToLineSegments is the LineString/MultiLineString
 // equivalent of geometryToBorderSegments above (added for rivers, which
 // have no ring to close and no interior — see countryGeometry.ts's own
@@ -348,6 +428,67 @@ describe('geometryToLineSegments', () => {
   it('returns an empty array for Polygon geometry (not its job)', () => {
     const segments = geometryToLineSegments(SIMPLE_SQUARE, RADIUS)
     expect(segments.length).toBe(0)
+  })
+})
+
+// v6.2.5: same ring-reset fix as geometryToBorderSegmentsWithDistances, but
+// for the MultiLineString mesh() produces for states/provinces' deduplicated
+// boundary layer (scene/useStatesProvincesFeatures.ts) — every disconnected
+// arc in that mesh needs its own dash phase starting at 0, not one carried
+// over (with a phantom "distance" for the real-world gap between two
+// unrelated arcs) from whatever arc happened to be walked previously.
+describe('geometryToLineSegmentsWithDistances', () => {
+  const RADIUS = 5
+  const OPEN_LINE: LineString = {
+    type: 'LineString',
+    coordinates: [
+      [0, 0],
+      [-90, 0],
+      [0, 90],
+    ],
+  }
+
+  it('produces the same positions as geometryToLineSegments', () => {
+    const { positions } = geometryToLineSegmentsWithDistances(OPEN_LINE, RADIUS)
+    const plain = geometryToLineSegments(OPEN_LINE, RADIUS)
+    expect(Array.from(positions)).toEqual(Array.from(plain))
+  })
+
+  it('starts a single line at distance 0 and accumulates monotonically', () => {
+    const { distances } = geometryToLineSegmentsWithDistances(OPEN_LINE, RADIUS)
+    // 2 segments -> 4 distance entries.
+    expect(distances.length).toBe(4)
+    expect(distances[0]).toBe(0)
+    for (let i = 1; i < distances.length; i++) {
+      expect(distances[i]).toBeGreaterThanOrEqual(distances[i - 1])
+    }
+  })
+
+  it('resets distance to 0 at the start of a MultiLineString\'s second line, not carrying the first line\'s total forward', () => {
+    const lineA: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+      ],
+    }
+    const lineB: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [100, 0],
+        [110, 0],
+      ],
+    }
+    const multi: MultiLineString = { type: 'MultiLineString', coordinates: [lineA.coordinates, lineB.coordinates] }
+
+    const a = geometryToLineSegmentsWithDistances(lineA, RADIUS)
+    const combined = geometryToLineSegmentsWithDistances(multi, RADIUS)
+
+    // lineA has 2 segments -> 4 distance entries; lineB's must start back at 0.
+    const lineASegmentCount = 4
+    expect(Array.from(combined.distances.slice(0, lineASegmentCount))).toEqual(Array.from(a.distances))
+    expect(combined.distances[lineASegmentCount]).toBe(0)
   })
 })
 

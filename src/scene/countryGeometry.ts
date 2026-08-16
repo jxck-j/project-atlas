@@ -91,6 +91,61 @@ export function geometryToBorderSegments(geometry: Geometry, radius: number): Fl
   return new Float32Array(positions)
 }
 
+// Same walk as geometryToBorderSegments above, but also returns a parallel
+// 'lineDistance' array for LineDashedMaterial — with the cumulative distance
+// reset to 0 at the start of EACH RING, not carried over from the previous
+// one. This matters specifically for dashed borders (states/provinces,
+// v6.2.4; the pre-existing claim/related-country overlay dashes in
+// layers/geoOverlays/ClaimsOverlayLayer.tsx) on any MultiPolygon or
+// holed-Polygon entity — reported directly as some states' dashed borders
+// rendering solid instead. Root cause: the previous approach ran a generic,
+// ring-unaware `computeLineDistances(geometry)` as a *separate* pass over
+// the already-flattened position buffer, summing consecutive-vertex
+// distances across the ENTIRE buffer with no idea where one ring ends and
+// the next begins. For a single-ring shape that's harmless (there's only
+// one continuous path), which is why simple states/provinces looked fine.
+// But geometryToBorderSegments never draws a segment BETWEEN rings — GL_LINES
+// pairs always land exactly on ring boundaries (every ring contributes an
+// even vertex count) — so the generic pass was still adding one huge, never-
+// rendered "phantom" distance for every ring transition (the real-world gap
+// between, say, an island and the mainland) into the running cumulative
+// total. Every vertex in every ring AFTER the first then inherited that
+// inflated phase offset, which can put an entire ring's real (short) length
+// inside a single mod(dashSize+gapSize) cycle — the mod value never crosses
+// into the gap portion for that whole ring, so it renders as one unbroken
+// dash: a solid line. Multi-ring states (coastal ones with islands) hit
+// this; simple single-ring states didn't, matching what was reported.
+// Fixed at the source, in the one place that actually knows ring
+// boundaries, instead of trying to reverse-engineer them from a flat buffer
+// afterward — see LOGBOOK.md.
+export function geometryToBorderSegmentsWithDistances(
+  geometry: Geometry,
+  radius: number
+): { positions: Float32Array; distances: Float32Array } {
+  const polygons = geometryToPolygons(geometry)
+  const positions: number[] = []
+  const distances: number[] = []
+
+  for (const rings of polygons) {
+    for (const ring of rings) {
+      const unwrapped = unwrapRingLongitudes(ring)
+      let ringDistance = 0
+      for (let i = 0; i < unwrapped.length - 1; i++) {
+        const [lngA, latA] = unwrapped[i]
+        const [lngB, latB] = unwrapped[i + 1]
+        const a = latLngToVector3(latA, lngA, radius)
+        const b = latLngToVector3(latB, lngB, radius)
+        positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+        distances.push(ringDistance)
+        ringDistance += a.distanceTo(b)
+        distances.push(ringDistance)
+      }
+    }
+  }
+
+  return { positions: new Float32Array(positions), distances: new Float32Array(distances) }
+}
+
 function geometryToPolylines(geometry: Geometry): Position[][] {
   return geometry.type === 'LineString'
     ? [(geometry as LineString).coordinates]
@@ -124,6 +179,42 @@ export function geometryToLineSegments(geometry: Geometry, radius: number): Floa
   }
 
   return new Float32Array(positions)
+}
+
+// Same "reset per independent path, not across the whole buffer" fix as
+// geometryToBorderSegmentsWithDistances above, for a MultiLineString instead
+// of a MultiPolygon's rings — added for v6.2.5's deduplicated state/province
+// boundary mesh (scene/useStatesProvincesFeatures.ts's boundary geometry,
+// built via topojson-client's mesh()), whose whole reason for existing is
+// that it packs many electrically-unrelated arcs (some touching, most not)
+// into one MultiLineString; without a per-line reset here, the exact same
+// "one shape's dash phase corrupted by a huge phantom distance carried over
+// from an unrelated line" bug geometryToBorderSegmentsWithDistances fixed
+// for country/GeoEntity rings would just resurface one level up.
+export function geometryToLineSegmentsWithDistances(
+  geometry: Geometry,
+  radius: number
+): { positions: Float32Array; distances: Float32Array } {
+  const lines = geometryToPolylines(geometry)
+  const positions: number[] = []
+  const distances: number[] = []
+
+  for (const line of lines) {
+    const unwrapped = unwrapRingLongitudes(line)
+    let lineDistance = 0
+    for (let i = 0; i < unwrapped.length - 1; i++) {
+      const [lngA, latA] = unwrapped[i]
+      const [lngB, latB] = unwrapped[i + 1]
+      const a = latLngToVector3(latA, lngA, radius)
+      const b = latLngToVector3(latB, lngB, radius)
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+      distances.push(lineDistance)
+      lineDistance += a.distanceTo(b)
+      distances.push(lineDistance)
+    }
+  }
+
+  return { positions: new Float32Array(positions), distances: new Float32Array(distances) }
 }
 
 // 2026-08-07: a documented, real defect (see BACKLOG.md and LOGBOOK.md) —

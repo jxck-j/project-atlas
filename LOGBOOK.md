@@ -5,6 +5,124 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-15 — v6.2.5: the dashed-border fix that fixed a real bug but wasn't the actual bug
+
+First diagnosis (v6.2.4, below) was real but incomplete: for a shape with
+more than one ring (an island, a hole), `computeLineDistances` summed
+distance across the ENTIRE flat vertex buffer as one continuous path, with
+no idea where one ring ended and the next began. `geometryToBorderSegments`
+never draws a segment BETWEEN rings (each ring's vertex count is always
+even, so GL_LINES pairs land exactly on ring boundaries), but the distance
+computation still added the real-world gap between two unrelated rings —
+say, an island and the mainland — into its running cumulative total. Every
+vertex in the next ring inherited that inflated, essentially arbitrary
+phase offset, which could put an entire ring's own (short) length inside a
+single dash-period, rendering it solid. Fixed with
+`geometryToBorderSegmentsWithDistances`, reset per ring. Real bug, real
+fix — but reported back as still broken, specifically for Pará/Mato Grosso,
+Brazil, neither of which has islands or holes. The ring-transition fix
+literally could not have touched that case.
+
+Actual cause, found on the second pass: `scene/StatesProvinces.tsx` (like
+`Countries.tsx`/`GeoEntities.tsx`) renders one border ring PER STATE, each
+built independently from that state's own polygon. A boundary INTERNAL to
+the dataset — shared by exactly two adjacent states — is therefore drawn
+TWICE: once as part of each neighbor's own ring. Each copy starts its
+cumulative dash distance at wherever ITS OWN ring happens to begin walking,
+which is essentially arbitrary relative to the other copy — the two dash
+patterns overlay the same physical curve with an uncorrelated relative
+phase. For two ~58%-duty-cycle dash patterns (`DASH_SIZE=0.028`,
+`GAP_SIZE=0.02`) with random relative phase, the statistical *union*
+coverage is closer to 80%+ — visually solid, or close enough that it reads
+as solid, especially once the individual dash length is only a few screen
+pixels. This explains "for SOME states" precisely: coastline (unshared)
+edges were never affected at all — the double-draw only exists on internal
+admin-1 lines — and exactly how solid any given shared edge looks is pure
+luck of that specific pair's relative ring-start phase, which is why it
+wasn't uniform across every shared boundary either.
+
+The only structurally sound fix is to stop drawing the shared edge twice at
+all, not to try to make two independent draws agree on phase (which would
+require reconstructing which arc is "the same arc" from two already-
+flattened, independently-simplified polygon rings — recoverable in
+principle from the TopoJSON topology's own arc-sharing structure, but not
+from the GeoJSON `feature()` output this app had been working from,
+which duplicates every shared arc into both adjacent polygons by design).
+`topojson-client`'s `mesh(topology, object)` does exactly this — walks
+every arc used by an object exactly once, deduplicated, regardless of how
+many polygons reference it — so `useStatesProvincesFeatures.ts` now also
+computes and exposes that mesh alongside the existing per-feature list.
+That mesh became the actual default (unselected) boundary rendering;
+`EntityRenderLayer.tsx`'s per-entry border ring only still renders for
+whichever ONE province is hovered/selected at a time — at most one extra
+copy overlapping the mesh, and a bolder/more-solid-looking highlight where
+it does is the intended effect for "this one is focused," not the bug the
+always-on per-entry rendering had.
+
+Lesson, worth stating plainly since it cost a full round-trip: "some
+states, not others" was the tell that the bug was topology-relational
+(depends on which OTHER shapes a border is adjacent to), not a property of
+any single shape's own geometry — the first fix looked in the right
+neighborhood (dash-distance computation) but at the wrong scope (one
+shape's own rings, not shapes' interaction with each other). Should have
+asked "what do all the affected borders have in common with each other,
+not just with themselves" before shipping the first fix as complete.
+
+## 2026-08-15 — v6.2.4: hatched province borders, and scoping the sovereign-state highlight fix to administrative-division only
+
+Two separate reports, fixed together since both are states/provinces-specific:
+
+**Dashed borders**, reusing `ClaimsOverlayLayer.tsx`'s existing "hatching
+style" dashed-outline mechanism (that file's own v3.1 entry already used
+the word "hatching" for a dashed `LineDashedMaterial` outline — confirmed
+this was the right interpretation before building anything, see the
+AskUserQuestion in this session). `EntityRenderLayer.tsx` gained a
+`dashedBorders` prop; `DASH_SIZE`/`GAP_SIZE` hoisted out of
+`ClaimsOverlayLayer.tsx` into `geoEntityEntries.ts` so the two dashed-line
+consumers can't drift apart on scale.
+
+**Sovereign-state highlight removed for province selection.** Root cause:
+`useStatesProvincesFeatures.ts` registers every province with
+`parentEntity`/`administeredBy` pointing at its own sovereign country (by
+construction — provinces have no other kind of relationship to record).
+`ClaimsOverlayLayer.tsx`'s `useRelatedCountryRoles()` reads
+`parentEntity.ref.type === 'country'` to decide whether to highlight the
+connected country — true for every single province, so selecting ANY of
+the 294 lit up its country with the "related country" treatment
+(previously "PARENT —", renamed "SOVEREIGN —" in v6.2.2) every time. Scoped
+the fix to skip entirely when `selected.entity.data.type ===
+'administrative-division'`, rather than a blanket change — every other
+`GeoEntityType` (dependencies like Puerto Rico, disputed claims) keeps the
+exact behavior this mechanism exists for; a province being part of its own
+country isn't the same kind of fact as an uncontested dependency or a
+disputed claim, so it doesn't get the same visual flag.
+
+## 2026-08-15 — v6.2.3: arrow-key navigation reaching entities that aren't on the globe
+
+Root cause: `useEntityNavigation()`'s candidate list was built from
+`useCountryFeatures()`/`useGeoEntityFeatures()`/`useStatesProvincesFeatures()`/
+`useCitiesFeatures()` — four data-fetch hooks with no notion of Layer Engine
+state — treated as equivalent, when only the first two are actually
+unconditional (`Globe.tsx` mounts `<Countries />`/`<GeoEntities />` directly).
+States/provinces and cities are ordinary layers, off by default, mounted only
+through `LayerManager.tsx`'s `enabledMap` check — `findNearestInDirection`'s
+own doc comment already documented the intended invariant ("nothing reaches
+this function that isn't currently on the globe"), the candidate-building
+code just didn't actually enforce it for either of the two Layer-Engine-gated
+sources.
+
+First fix pass gated both states/provinces and cities on their own layer's
+enabled state (`useLayerEnabledMap()`), which would have made cities
+selectable via arrow keys whenever the cities layer happened to be on. A
+follow-up report narrowed this further: cities shouldn't be reachable via
+arrow-key/Tab navigation at all, layer state aside — no reason given, taken
+as-is rather than guessed at. Cities were dropped from the candidate list
+unconditionally instead of gated — `'city'` removed from `CATEGORY_ORDER`
+too, so Tab-cycling doesn't land on an empty category. States/provinces
+keeps the layer-gate, since that complaint was specifically about the
+*hidden* case, not states/provinces navigation itself. Cities remain
+selectable by click or search — only keyboard navigation excludes them.
+
 ## 2026-08-15 — v6.2.2: relationship label rename, and a pre-existing doc-drift spot found (not fixed) along the way
 
 Requested as display-text-only — `parentEntity`/`administeredBy`/

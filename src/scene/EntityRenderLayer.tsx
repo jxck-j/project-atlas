@@ -7,7 +7,7 @@ import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
 import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
 import { useApparentFontSize } from './useApparentFontSize'
-import type { GeoEntityEntry } from './geoEntityEntries'
+import { DASH_SIZE, GAP_SIZE, type GeoEntityEntry } from './geoEntityEntries'
 
 // Shared by scene/Countries.tsx and scene/GeoEntities.tsx (v4.4, "Phase 4"
 // dedup) — both rendered one merged border lineSegments + one merged fill
@@ -110,9 +110,47 @@ export interface EntityRenderLayerProps {
   // excludes whichever entity this one is already glow-labeling via
   // HoverLabel.
   onHoverChange?: (geometryId: string | null) => void
+  // v6.2.4: renders every entry's border dashed (LineDashedMaterial, same
+  // DASH_SIZE/GAP_SIZE ClaimsOverlayLayer.tsx's dashed borders already use)
+  // instead of the solid LineBasicMaterial every other caller gets —
+  // StatesProvinces.tsx's only difference from Countries.tsx/GeoEntities.tsx,
+  // so a state/province border reads as a visually distinct, secondary kind
+  // of boundary even while the same color/opacity hover-select logic below
+  // still applies to it. Every entry already carries the precomputed
+  // 'lineDistance' attribute LineDashedMaterial needs (buildGeoEntityEntries()
+  // sets it unconditionally, ring-aware — see geoEntityEntries.ts and
+  // countryGeometry.ts's geometryToBorderSegmentsWithDistances), so turning
+  // this on costs nothing extra per entry, only a different
+  // material at render time. Defaults to false (Countries.tsx/GeoEntities.tsx
+  // unchanged).
+  dashedBorders?: boolean
+  // v6.2.5: skips rendering a per-entry border line for any entry that
+  // isn't currently hovered or selected. StatesProvinces.tsx is the only
+  // caller — its own scene/StatesProvinces.tsx's <BoundaryMesh> already
+  // draws every province boundary once, deduplicated, via topojson-client's
+  // mesh() (see useStatesProvincesFeatures.ts). Rendering each of the 294
+  // provinces' OWN full border ring on top of that (the pre-v6.2.5
+  // behavior) drew every interior admin-1 boundary TWICE — once per
+  // adjacent province — each with its own independently-phased dash
+  // pattern; wherever the two phases happened to mostly fill in each
+  // other's gaps, the boundary looked solid instead of dashed (reported
+  // for Pará/Mato Grosso specifically, but not unique to that pair — see
+  // LOGBOOK.md's v6.2.5 entry). Still rendering the border for whichever
+  // one entry IS hovered/selected is safe: at most one extra copy overlaps
+  // the mesh at a time, and a brighter, bolder-looking highlight where it
+  // does is the intended effect for "this one is focused," not the bug the
+  // default/dimmed case had.
+  hideDefaultBorders?: boolean
 }
 
-export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHoverChange }: EntityRenderLayerProps) {
+export function EntityRenderLayer({
+  entries,
+  selectedEntityId,
+  onSelect,
+  onHoverChange,
+  dashedBorders = false,
+  hideDefaultBorders = false,
+}: EntityRenderLayerProps) {
   const { gl } = useThree()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const dragStart = useRef<{ x: number; y: number } | null>(null)
@@ -177,10 +215,18 @@ export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHover
             {/* Native LineBasicMaterial ignores `linewidth` on effectively
                 every platform (WebGL caps it to 1px) — the hover/select
                 emphasis that used to come from a thicker line relies on
-                color + opacity alone. */}
-            <lineSegments geometry={entry.borderGeometry}>
-              <lineBasicMaterial color={color} transparent opacity={lineOpacity} />
-            </lineSegments>
+                color + opacity alone. Same is true of LineDashedMaterial
+                below, so dashedBorders' visual distinction is the dash
+                pattern itself, not a thickness difference. */}
+            {(!hideDefaultBorders || isSelected || isHovered) && (
+              <lineSegments geometry={entry.borderGeometry}>
+                {dashedBorders ? (
+                  <lineDashedMaterial color={color} dashSize={DASH_SIZE} gapSize={GAP_SIZE} transparent opacity={lineOpacity} />
+                ) : (
+                  <lineBasicMaterial color={color} transparent opacity={lineOpacity} />
+                )}
+              </lineSegments>
+            )}
             {entry.fillGeometry && (
               <mesh
                 geometry={entry.fillGeometry}

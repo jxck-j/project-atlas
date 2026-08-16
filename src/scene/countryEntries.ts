@@ -9,8 +9,12 @@
 // this couldn't just be a parameter on the existing function).
 import { BufferGeometry, Float32BufferAttribute } from 'three'
 import type { Feature } from 'geojson'
-import { geometryToBorderSegments, geometryToCentroid, geometryToFillMesh } from './countryGeometry'
-import { computeLineDistances } from './geoEntityEntries'
+import {
+  geometryToBorderSegments,
+  geometryToBorderSegmentsWithDistances,
+  geometryToCentroid,
+  geometryToFillMesh,
+} from './countryGeometry'
 
 export interface CountryEntry {
   id: string
@@ -23,10 +27,12 @@ export interface CountryEntry {
 /**
  * Builds one {id, name, borderGeometry, fillGeometry} entry per raw country
  * feature. `dashed` precomputes the border geometry's `lineDistance`
- * attribute (see `geoEntityEntries.ts`'s `computeLineDistances` doc
- * comment) for a consumer that's going to render it with
- * `LineDashedMaterial`; omit it (the default) for a plain
- * `LineBasicMaterial` border, which never reads that attribute.
+ * attribute, ring-aware (see `countryGeometry.ts`'s
+ * `geometryToBorderSegmentsWithDistances` doc comment for why that matters
+ * for any MultiPolygon/holed country — Russia, Indonesia, the Philippines,
+ * ...), for a consumer that's going to render it with `LineDashedMaterial`;
+ * omit it (the default) for a plain `LineBasicMaterial` border, which never
+ * reads that attribute.
  */
 export function buildCountryEntries(
   features: Feature[],
@@ -37,8 +43,13 @@ export function buildCountryEntries(
   return features.map((f, index) => {
     const id = f.id !== undefined && f.id !== null ? String(f.id) : `feature-${index}`
     const borderGeometry = new BufferGeometry()
-    borderGeometry.setAttribute('position', new Float32BufferAttribute(geometryToBorderSegments(f.geometry, borderRadius), 3))
-    if (options?.dashed) computeLineDistances(borderGeometry)
+    if (options?.dashed) {
+      const { positions, distances } = geometryToBorderSegmentsWithDistances(f.geometry, borderRadius)
+      borderGeometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+      borderGeometry.setAttribute('lineDistance', new Float32BufferAttribute(distances, 1))
+    } else {
+      borderGeometry.setAttribute('position', new Float32BufferAttribute(geometryToBorderSegments(f.geometry, borderRadius), 3))
+    }
 
     return {
       id,
