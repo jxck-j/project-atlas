@@ -2,8 +2,9 @@
 // classification at once" — e.g. every sovereign state, or every strategic
 // region — independent of (and simultaneous with) whatever's currently
 // selected. Registered as one ordinary Layer Engine layer per
-// classification (seven as of the states/provinces addition — country plus
-// all six GeoEntityType values), rather than one layer with an internal
+// classification (six — country plus five of the six GeoEntityType values;
+// administrative-division/states-provinces deliberately has no "highlight
+// all at once" layer, see below), rather than one layer with an internal
 // category picker —
 // LayerPanel.tsx already renders whatever's registered generically (see
 // CLAUDE.md's Layer Engine section), so this needed zero HUD changes, and
@@ -20,13 +21,10 @@
 // they do (see CLAUDE.md's "don't hardcode entity behavior inside Globe
 // rendering components" rule).
 import { useMemo } from 'react'
-import { FrontSide } from 'three'
-import type { BufferGeometry } from 'three'
-import type { Feature } from 'geojson'
+import { BufferAttribute, BufferGeometry, Float32BufferAttribute, FrontSide } from 'three'
 import { registerLayer } from '../layerRegistry'
 import { useCountryFeatures } from '../../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
-import { useStatesProvincesFeatures } from '../../scene/useStatesProvincesFeatures'
 import { buildCountryEntries } from '../../scene/countryEntries'
 import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
 import { GLOBE_RADIUS } from '../../scene/constants'
@@ -47,23 +45,86 @@ interface HighlightEntry {
   fillGeometry: BufferGeometry | null
 }
 
+// Merges every entry's border positions into one Float32Array/BufferGeometry
+// rather than rendering one <lineSegments> per entry. Toggling
+// 'highlight-country' on used to mount 193 separate lineSegments + 193
+// separate meshes (386 draw calls) in one go — the same per-entity draw-call
+// scaling problem CLAUDE.md's "One merged geometry per country" note already
+// solved once for Countries.tsx itself, recurring here because this overlay
+// pre-dates that lesson being applied above the per-country level. This
+// layer never raycasts per entry (it's a decorative pass, not clickable), so
+// there's no faceIndex/entry lookup to preserve the way
+// scene/mergedProvinceFill.ts needs one for ProvinceFillLayer.tsx.
+function mergeBorderGeometries(entries: HighlightEntry[]): BufferGeometry | null {
+  let totalVertices = 0
+  for (const entry of entries) totalVertices += entry.borderGeometry.attributes.position.count
+  if (totalVertices === 0) return null
+
+  const positions = new Float32Array(totalVertices * 3)
+  let vertexOffset = 0
+  for (const entry of entries) {
+    const attr = entry.borderGeometry.attributes.position
+    positions.set(attr.array as Float32Array, vertexOffset * 3)
+    vertexOffset += attr.count
+  }
+
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  return geometry
+}
+
+function mergeFillGeometries(entries: HighlightEntry[]): BufferGeometry | null {
+  let totalVertices = 0
+  let totalIndices = 0
+  for (const entry of entries) {
+    if (!entry.fillGeometry?.index) continue
+    totalVertices += entry.fillGeometry.attributes.position.count
+    totalIndices += entry.fillGeometry.index.count
+  }
+  if (totalIndices === 0) return null
+
+  const positions = new Float32Array(totalVertices * 3)
+  const indices = new Uint32Array(totalIndices)
+  let vertexOffset = 0
+  let indexOffset = 0
+  for (const entry of entries) {
+    const fill = entry.fillGeometry
+    if (!fill?.index) continue
+
+    const positionAttr = fill.attributes.position
+    positions.set(positionAttr.array as Float32Array, vertexOffset * 3)
+
+    const sourceIndices = fill.index.array
+    for (let i = 0; i < sourceIndices.length; i++) {
+      indices[indexOffset + i] = sourceIndices[i] + vertexOffset
+    }
+
+    vertexOffset += positionAttr.count
+    indexOffset += sourceIndices.length
+  }
+
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
+  geometry.setIndex(new BufferAttribute(indices, 1))
+  return geometry
+}
+
 export function CategoryHighlightGeometry({ entries }: { entries: HighlightEntry[] }) {
-  if (entries.length === 0) return null
+  const borderGeometry = useMemo(() => mergeBorderGeometries(entries), [entries])
+  const fillGeometry = useMemo(() => mergeFillGeometries(entries), [entries])
+
+  if (!borderGeometry) return null
 
   return (
     <group>
-      {entries.map((entry) => (
-        <group key={`category-highlight-${entry.id}`}>
-          <lineSegments geometry={entry.borderGeometry}>
-            <lineBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={BORDER_OPACITY} />
-          </lineSegments>
-          {entry.fillGeometry && (
-            <mesh geometry={entry.fillGeometry} scale={FILL_SCALE}>
-              <meshBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={FILL_OPACITY} side={FrontSide} depthWrite={false} />
-            </mesh>
-          )}
-        </group>
-      ))}
+      <lineSegments geometry={borderGeometry}>
+        <lineBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={BORDER_OPACITY} />
+      </lineSegments>
+      {fillGeometry && (
+        <mesh geometry={fillGeometry} scale={FILL_SCALE}>
+          <meshBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={FILL_OPACITY} side={FrontSide} depthWrite={false} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -77,18 +138,17 @@ export function CountryCategoryHighlight() {
   return <CategoryHighlightGeometry entries={entries} />
 }
 
-// The six GeoEntityType categories all share this one component,
-// parameterized by which classification to keep and which geometry source
-// to read it from — a factory rather than six near-duplicate components,
-// since the only things that differ are the filter predicate and (since
-// administrative-division lives in its own geometry file, not entities.json
-// — see StatesProvincesLayer.tsx) the features hook. buildGeoEntityEntries()
-// returns `entityId`, not `id` — mapped here rather than widening
-// HighlightEntry, since every other consumer of that shape (the country
-// side above) already has a plain `id`.
-function makeGeoEntityCategoryHighlight(category: GeoEntityType, useFeatures: () => Feature[]) {
+// Five of the six GeoEntityType categories share this one component,
+// parameterized by which classification to keep — a factory rather than
+// five near-duplicate components, since the only thing that differs between
+// them is the filter predicate. (The sixth, administrative-division/states-
+// provinces, deliberately has no "highlight all at once" layer — see below.)
+// buildGeoEntityEntries() returns `entityId`, not `id` — mapped here rather
+// than widening HighlightEntry, since every other consumer of that shape
+// (the country side above) already has a plain `id`.
+function makeGeoEntityCategoryHighlight(category: GeoEntityType) {
   return function GeoEntityCategoryHighlight() {
-    const features = useFeatures()
+    const features = useGeoEntityFeatures()
     const entries = useMemo<HighlightEntry[]>(
       () =>
         buildGeoEntityEntries(features)
@@ -119,7 +179,7 @@ registerLayer({
   description: 'Highlights every geopolitical entity at once (Taiwan, Palestine, Kosovo, Western Sahara).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('geopolitical-entity', useGeoEntityFeatures),
+  component: makeGeoEntityCategoryHighlight('geopolitical-entity'),
 })
 
 registerLayer({
@@ -128,7 +188,7 @@ registerLayer({
   description: 'Highlights every dependency/territory at once (Puerto Rico, Greenland, Hong Kong, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('territory', useGeoEntityFeatures),
+  component: makeGeoEntityCategoryHighlight('territory'),
 })
 
 registerLayer({
@@ -137,7 +197,7 @@ registerLayer({
   description: 'Highlights every strategic region at once (Guantanamo Bay, Akrotiri, Dhekelia, Baikonur, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('strategic-region', useGeoEntityFeatures),
+  component: makeGeoEntityCategoryHighlight('strategic-region'),
 })
 
 registerLayer({
@@ -146,7 +206,7 @@ registerLayer({
   description: 'Highlights every disputed maritime feature at once (Spratly Islands, Scarborough Reef, ...).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('maritime-feature', useGeoEntityFeatures),
+  component: makeGeoEntityCategoryHighlight('maritime-feature'),
 })
 
 registerLayer({
@@ -155,14 +215,6 @@ registerLayer({
   description: 'Highlights every treaty-governed geographic region at once (currently just Antarctica).',
   category: 'highlight',
   defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('geographic-region', useGeoEntityFeatures),
+  component: makeGeoEntityCategoryHighlight('geographic-region'),
 })
 
-registerLayer({
-  id: 'highlight-administrative-division',
-  label: 'ADMINISTRATIVE DIVISIONS',
-  description: 'Highlights every state/province at once (currently 9 countries — see StatesProvincesLayer.tsx).',
-  category: 'highlight',
-  defaultEnabled: false,
-  component: makeGeoEntityCategoryHighlight('administrative-division', useStatesProvincesFeatures),
-})

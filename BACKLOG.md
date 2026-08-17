@@ -460,8 +460,7 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   just "technically fixes the FPS regression" (which it didn't fully do —
   see the states/provinces FPS item below).
 - **States/provinces FPS: per-country merge + React re-render fixes
-  implemented (2026-08-17), NOT yet confirmed by the user as smooth — this
-  is the current, open state.** LOD-gating and a front-facing filter
+  implemented (2026-08-17).** LOD-gating and a front-facing filter
   helped but didn't reduce per-mesh overhead; a first merged-mesh attempt
   (one single global mesh) fixed that but made Europe WORSE — measured,
   not guessed: no internal spatial structure means R3F's unthrottled
@@ -487,10 +486,16 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   vs. 119 active countries/290,612 triangles at the "most of Europe" zoom,
   ~30x more. None of the fixes so far reduce active MESH COUNT for a wide
   view — they reduced per-mesh cost and eliminated wasted re-renders, a
-  different axis. Two real options, neither attempted yet: cap/cluster
-  active mesh count when many countries are simultaneously in view, or
-  replace per-country merging with a properly spatially-accelerated (BVH)
-  single mesh so mesh count stops being the lever at all.**
+  different axis.** Resolved a different way (2026-08-17, part 10): rather
+  than a rendering-side fix for the wide-view case, `lod/lodLevels.ts`'s
+  `'states'` tier `revealDistance` was tightened from 5.0 to 2.8 — at that
+  distance the camera is too close for "most of Europe" (or any comparably
+  wide multi-country view) to be in frame at all, so the ~30x-mesh-count
+  case doesn't occur anymore rather than being made cheap. Confirmed
+  working by the user in the browser. The cap/cluster and BVH-single-mesh
+  options are no longer needed for this specific case, though either would
+  still be the right call if a future wide-view use case needs states
+  visible at a looser zoom than 2.8 allows.
 - **States/provinces layer-mount freeze: FIXED and verified (2026-08-17).**
   Was a ~1.3-1.7 SECOND synchronous main-thread block, reported by the
   user as "delay/lag on the switch when turning on the states/provinces
@@ -509,15 +514,6 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   progressively over roughly the same total wall-clock time instead of
   appearing all at once after the freeze — an intentional, accepted
   tradeoff, not a bug.
-- **States/provinces FPS: mesh count still scales ~30x between a
-  single-country view and "most of Europe" — open, deliberately not
-  attempted yet.** Asked directly whether to fix this in the same pass as
-  the freeze above; held off. 4 active countries/4,694 triangles at
-  single-country zoom vs. 119 active countries/290,612 triangles at the
-  "most of Europe" zoom. Two real options on the table, neither started:
-  cap/cluster active mesh count for wide views, or replace per-country
-  merging with a properly spatially-accelerated (BVH) single mesh so mesh
-  count stops being the lever at all.
 - **`useFrontFacingEntries.ts`'s initial state defaults to the FULL
   unfiltered entries list** (deliberate, 2026-08-16, to avoid a flash of
   emptiness before the first filter pass) — means the very first render
@@ -525,9 +521,10 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   filter narrows it down. Somewhat mitigated now that entries arrive
   chunked (all 235 aren't actually available to request until every chunk
   lands anyway), but the underlying "default to everything vs. nothing on
-  first render" tension is still there. Worth revisiting alongside
-  whichever wide-view fix above gets picked, not in isolation.
-- See `LOGBOOK.md`'s "States/provinces FPS" parts 1-9 for the full
+  first render" tension is still there. Low priority now that the
+  wide-view mesh-count case above is resolved via LOD gating rather than a
+  filtering fix, but still worth a look on its own.
+- See `LOGBOOK.md`'s "States/provinces FPS" parts 1-10 for the full
   reasoning trail behind all three items above, including every round of
   measurement methodology, if this needs re-profiling again.
 - **`hud/LegendPanel.tsx`'s overlay rows are hardcoded to specific layer
@@ -624,14 +621,6 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   literal read. Worth confirming, same as other wording-mapping judgment
   calls in this project's history (Tab's "categories/layers" in v3.2.0,
   Gibraltar's inclusion in v3.0.0).
-- **The `'highlight-country'` layer draws an extra pass over all 193
-  countries when enabled** — roughly doubling the draw-call count for the
-  country layer specifically while it's on (opt-in, `defaultEnabled: false`,
-  same as every other overlay). `CLAUDE.md`'s own LOGBOOK documents draw-call
-  count as the dominant performance cost this app has ever hit (the
-  7,234→386 fix); this is the first opt-in feature that scales with country
-  count in the same way. Untested against an actual frame-rate counter —
-  worth a real check before assuming it's fine at every zoom level/device.
 
 ## Not yet verified
 

@@ -40,14 +40,27 @@ export const LOD_LEVELS: LodLevel[] = [
     // rendering all of them regardless of zoom made every one individually
     // hoverable/clickable at once, tanking FPS (thousands of raycast
     // targets on every pointer move, thousands of draw calls on every
-    // camera-drag frame). 5.0 reveals shortly before CAMERA_FOCUS_DISTANCE
-    // (4.8, scene/constants.ts — where a selected-country camera flight
-    // ends), so admin-1 boundaries are already visible by the time a
-    // country-focus flight completes, without cluttering the full default
-    // global view (6.5). A first-pass number, not eye-tuned in the browser
-    // the way the city tiers below were — revisit if it doesn't feel right.
-    description: 'Admin-1 boundaries — nearly every country, revealed once zoomed to roughly country-focus distance or closer.',
-    revealDistance: 5.0,
+    // camera-drag frame). First pass used 5.0 (shortly before
+    // CAMERA_FOCUS_DISTANCE, 4.8 — scene/constants.ts), which is what let
+    // this tier still be active over a wide multi-country view (e.g. all of
+    // Europe in frame) and reintroduce the same FPS problem despite the
+    // per-country/per-entry merge work — see LOGBOOK.md's "States/provinces
+    // FPS" entries. 2026-08-17: tightened to 2.5 (== CAMERA_MIN_DISTANCE,
+    // scene/constants.ts) after comparing against how much closer Google
+    // Maps zooms before revealing admin-1 boundaries — read as too
+    // aggressive (past every city tier's own threshold, tightest at 2.52).
+    // Eased out to 3.5, then dialed back in to 2.8 the same day — 2.8 sits
+    // BETWEEN metro-areas (2.85) and large-cities (2.7), so states now
+    // unlocks just after the metro-areas city tier rather than before the
+    // entire city ladder (3.5/5.0's behavior) or after all of it (2.5's).
+    // (Numeric threshold only controls WHEN a tier activates, not where it
+    // sits in resolveActiveLevels()'s returned array — that's fixed by this
+    // list's own declaration order, so 'states' always reports right after
+    // 'countries' regardless of which number is here.) Still not fully
+    // eye-tuned against this app's own camera feel — revisit if this reads
+    // as too aggressive or too loose once checked in the browser.
+    description: 'Admin-1 boundaries — nearly every country, revealed once zoomed in past metro-area city-label distance.',
+    revealDistance: 2.8,
     implemented: true,
   },
   {

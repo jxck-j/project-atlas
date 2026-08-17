@@ -5,6 +5,104 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-17 — States/provinces FPS, part 10: tightening the 'states' LOD reveal distance, then easing it back out
+
+A different angle on the still-open "choppy over Europe" bug (see part 9 and
+earlier): rather than another rendering-side fix, tightened *when* the
+`'states'` LOD tier reveals at all. The user compared this app's behavior
+against Google Maps and observed Maps waits until roughly half this app's
+zoom distance before showing admin-1 boundaries. First pass set
+`lod/lodLevels.ts`'s `'states'` `revealDistance` to 2.5 (== `CAMERA_MIN_DISTANCE`)
+— tight enough that the tier became active *after* every city tier
+(tightest at 2.52) instead of before, meaning states would now only ever
+render at the absolute closest zoom the camera allows. `lodLevels.test.ts`
+was rewritten to match that reordering (states as the LAST tier to unlock,
+not the first).
+
+**Immediately eased back out to 3.5** (same session) — 2.5 pushed the
+reveal point past the point of usefulness (flush against the camera's hard
+minimum, city-tier-scale tightness) rather than just "closer than before."
+3.5 keeps the same relative ordering the original 5.0 had (states unlocks
+before the city ladder, not after), just tighter — still a meaningful cut
+from 5.0, still well clear of `CAMERA_MIN_DISTANCE`. `lodLevels.test.ts`
+went back to essentially its pre-2.5 shape, with 3.5 swapped in for 5.0.
+
+**Dialed in again to 2.8, same session** — now sitting BETWEEN metro-areas'
+2.85 and large-cities' 2.7, so states unlocks just after the metro-areas
+city tier rather than before the entire city ladder (3.5/5.0's behavior) or
+after all of it (2.5's). Caught a real test-writing mistake while updating
+`lodLevels.test.ts` for this value: `resolveActiveLevels()` filters
+`LOD_LEVELS` in that array's own DECLARATION order, not sorted by
+`revealDistance` — so 'states' always reports right after 'countries' and
+before 'lakes'/'rivers' in the returned list whenever it's active,
+regardless of how its numeric threshold compares to tiers declared later.
+The first draft of the 2.8 test update wrongly assumed the returned array
+would reorder itself to put 'states' after 'metro-areas' since 2.8 < 2.85 —
+caught by actually running the suite (2 failures), not just written and
+assumed correct. Fixed by keeping 'states' in its fixed declaration
+position in every expected array and only changing which distances make it
+present at all.
+
+**Not yet eye-tuned in the browser at any step** — 2.5, 3.5, and 2.8 are
+all reasoned numbers (a Google Maps comparison, then two successive "that
+wasn't quite right" corrections), not numbers confirmed against this app's
+own camera feel or measured against the actual Europe-wide-view FPS
+problem. Worth checking in the browser whether 2.8 both feels right AND
+actually keeps states out of frame for a wide multi-country view —
+tightening the reveal distance narrows *when* provinces can appear at all,
+which is a different lever from every rendering-side fix in parts 1-9, and
+hasn't been confirmed to resolve the specific Europe case those parts left
+open.
+
+## 2026-08-17 — Sovereign-states category highlight toggle lag; dropped the administrative-divisions highlight
+
+Reported directly: toggling the "SOVEREIGN STATES" (`highlight-country`)
+category highlight was laggy. This was the exact risk `BACKLOG.md`'s
+"Category Highlighting (v3.3.0)" section already flagged and left
+unverified at the time — `layers/geoOverlays/CategoryHighlightLayer.tsx`'s
+`CategoryHighlightGeometry` was rendering one `<lineSegments>` + one
+`<mesh>` (its own `<group>` wrapper too) per entry, so enabling the country
+category mounted 193×2 = 386 draw calls in one React commit. Same shape of
+bug as the pre-v2 "7,234→386" per-ring-mesh fix `CLAUDE.md`'s
+`countryGeometry.ts` section documents — that fix consolidated many
+rings/polygons into one mesh per *country*; this overlay never got the
+equivalent consolidation one level up, across countries.
+
+**Fix:** merge every entry's border positions into one concatenated
+`Float32Array`/`BufferGeometry`, and every entry's fill geometry into one
+indexed `BufferGeometry` (`mergeBorderGeometries`/`mergeFillGeometries`),
+so the whole category renders as exactly one `<lineSegments>` + one
+`<mesh>` regardless of entry count. No `faceIndex → entry` lookup needed
+the way `scene/mergedProvinceFill.ts` needed one for
+`ProvinceFillLayer.tsx` — that layer merges meshes it still has to
+per-entry raycast (hover/click), while `CategoryHighlightGeometry` has
+never been interactive; it's a pure decorative pass on top of whatever
+`Countries.tsx`/`GeoEntities.tsx` already render and handle clicks for.
+`AllianceHighlightLayer.tsx` reuses the same `CategoryHighlightGeometry`
+component for alliance membership highlighting, so it gets the same fix
+for free without its own change.
+
+**Separately, in the same request: removed the
+`'highlight-administrative-division'` layer outright** (reported as not
+needed) rather than fixing it alongside the draw-call issue — it was the
+one category-highlight layer that could scale to *thousands* of entries
+post-1:10m-upgrade (4,539 provinces), making it the most likely of the six
+to reintroduce this exact lag even after the merge fix, and nothing had
+asked for a "highlight every province on Earth at once" view. Removing it
+also let `makeGeoEntityCategoryHighlight`'s factory drop its now-pointless
+second parameter (`useFeatures`) — every remaining category uses
+`useGeoEntityFeatures()`, so the parameterization existed only for the one
+case that's now gone. The underlying states/provinces rendering
+(`StatesProvinces.tsx`, the always-available `'states-provinces'` layer)
+is untouched — only the separate "highlight all at once" overlay is gone.
+`LegendPanel.tsx`'s hardcoded `CATEGORY_HIGHLIGHT_LAYER_IDS` list dropped
+the same id, same reasoning as any other layer removal in this codebase
+(nothing should describe a layer that no longer exists).
+
+Not yet re-verified in a running browser (typecheck/lint/Vitest all pass,
+but this project's convention is a real dev-server check before calling a
+perf fix done — see `BACKLOG.md`).
+
 ## 2026-08-17 — States/provinces FPS, part 9: chunking the 1.3-1.7s freeze, measured before and after with a real longtask observer
 
 **Fixed part 8's synchronous-freeze finding by chunking

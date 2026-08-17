@@ -17,6 +17,43 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.2.7 — Category highlight draw-call lag fixed; administrative-divisions highlight removed; states/provinces "choppy over Europe" resolved
+
+**Rendering Engine — `layers/geoOverlays/CategoryHighlightLayer.tsx`.**
+Reported directly: toggling the SOVEREIGN STATES (`highlight-country`)
+category highlight was laggy. `CategoryHighlightGeometry` was mounting one
+`<lineSegments>` + one `<mesh>` per entry — 386 draw calls in one commit
+for all 193 countries — instead of one merged pair, the same per-entity
+draw-call scaling problem `countryGeometry.ts`'s "one merged geometry per
+country" note already solved once, recurring here one level up. Fixed by
+merging every entry's border/fill geometry into a single `BufferGeometry`
+each (`mergeBorderGeometries`/`mergeFillGeometries`) before render — no
+per-entry raycasting lost, since this overlay was never clickable to begin
+with. `AllianceHighlightLayer.tsx` reuses the same
+`CategoryHighlightGeometry` component, so it gets the same fix for free.
+
+**Removed the `'highlight-administrative-division'` layer** (reported as
+not needed) — "highlight every state/province at once" no longer exists as
+a togglable layer. `StatesProvinces.tsx`'s actual states/provinces
+rendering (the always-available `'states-provinces'` Layer Engine layer)
+is unaffected; only the separate "highlight all at once" overlay is gone.
+`LegendPanel.tsx`'s hardcoded category-highlight layer-id list updated to
+match.
+
+**LOD Engine — resolves v6.2.6's still-open "choppy over Europe" case.**
+`lod/lodLevels.ts`'s `'states'` tier `revealDistance` tightened from 5.0 to
+2.8, after comparing against how much closer Google Maps waits before
+showing admin-1 boundaries (went through 2.5 and 3.5 first, settling on 2.8
+— between metro-areas' 2.85 and large-cities' 2.7 — after checking each in
+the browser). This narrows *when* the tier can render at all rather than
+making its rendering cheaper: at 2.8 the camera is too close for "most of
+Europe" (or any comparably wide multi-country view) to be in frame, so the
+~30x active-mesh-count blowup v6.2.6 measured for that case doesn't occur
+anymore. Confirmed smooth by the user. See `LOGBOOK.md`'s "States/provinces
+FPS" part 10, and `BACKLOG.md` for what this leaves genuinely unfixed (the
+underlying mesh-count-scaling mechanism itself, should a future use case
+need states visible at a looser zoom than 2.8 allows).
+
 ## v6.2.6 — States/provinces upgraded to 1:10m coverage; rendering performance mostly fixed, one issue still open
 
 **Data pipeline.** Swapped the vendored states/provinces source from

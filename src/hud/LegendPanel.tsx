@@ -37,14 +37,15 @@ import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 // would describe a color nothing on screen currently uses.
 //
 // CATEGORY_HIGHLIGHT_LAYER_IDS lists all six of
-// CategoryHighlightLayer.tsx's registered layer ids rather than iterating
-// the Layer Engine registry generically (unlike LayerPanel.tsx, which
-// lists *every* registered layer and so never needs updating) — this is
-// still the one place named in BACKLOG.md as worth generalizing if a
-// fourth overlay concept shows up: a `legend` field on `LayerDefinition`
-// itself, so this file could iterate the registry instead of naming ids.
-// Six is small enough that hand-listing them here was the pragmatic call
-// for now, same reasoning the two hardcoded ids below already used.
+// CategoryHighlightLayer.tsx's registered layer ids (administrative-division
+// deliberately excluded — see that file) rather than iterating the Layer
+// Engine registry generically (unlike LayerPanel.tsx, which lists *every*
+// registered layer and so never needs updating) — this is still the one
+// place named in BACKLOG.md as worth generalizing if a fourth overlay
+// concept shows up: a `legend` field on `LayerDefinition` itself, so this
+// file could iterate the registry instead of naming ids. Six is small
+// enough that hand-listing them here was the pragmatic call for now, same
+// reasoning the two hardcoded ids below already used.
 function LegendKey({ color, label, description }: { color: string; label: string; description: string }) {
   return (
     <div title={description} className="flex cursor-default items-center gap-1.5 text-[#b7c6e6]">
@@ -64,7 +65,6 @@ const CATEGORY_HIGHLIGHT_LAYER_IDS = [
   'highlight-strategic-region',
   'highlight-maritime-feature',
   'highlight-geographic-region',
-  'highlight-administrative-division',
 ]
 
 export function LegendPanel() {
