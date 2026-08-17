@@ -17,6 +17,56 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.2.6 — States/provinces upgraded to 1:10m coverage; rendering performance mostly fixed, one issue still open
+
+**Data pipeline.** Swapped the vendored states/provinces source from
+Natural Earth's 1:50m admin-1 layer (294 features, 9 large countries) to
+its 1:10m layer — all 193 UN member states now have admin-1 coverage, plus
+42 more ISO-coded non-UN territories (Taiwan, Hong Kong, Puerto Rico,
+Antarctica, ...); 4,539 features shipped, 57 skipped (non-sovereign rows
+with no ISO country code — Kosovo, Western Sahara, Guantanamo Bay, ... —
+logged in `BACKLOG.md`). Fixed two real schema defects the 1:50m pilot's
+9-country scope never exposed: South Sudan's provinces are tagged with a
+non-standard `SDS` code instead of the canonical `SSD` (aliased in
+`scripts/lib/iso3166.mjs`), and 60 groups of genuinely distinct provinces
+(all 9 Bosnian cantons, Sudan's two Darfur states, ...) share colliding
+`iso_3166_2` codes at this resolution (the province id now comes from the
+unique `adm1_code` field instead). See `LOGBOOK.md`'s "two schema defects"
+entry.
+
+**Rendering Engine — several real fixes landed, confirmed by the user,
+one issue still open.** ~15x more features (294 → 4,539) reintroduced the
+exact draw-call/raycast scaling problem this codebase already solved once
+for countries, past the point where that earlier fix (merge per entity)
+still holds — reported directly as "destroying fps." Fixed across several
+passes, each measured rather than assumed: `scene/StatesProvinces.tsx`
+gated behind the LOD Engine's `'states'` tier so it doesn't render at all
+until zoomed in; province borders switched from dashed to solid, since the
+dash pattern read as noise across thousands of small boundaries;
+`scene/useFrontFacingEntries.ts` filters rendered provinces down to only
+the ones actually front-facing and on-screen; `scene/
+useMergedFillsByCountry.ts` merges each country's provinces into one mesh
+(not a single global mesh, which measurably made dense regions worse —
+no per-object bounding-sphere rejection left for R3F's raycaster to use);
+`React.memo`/`useCallback`/O(1) lookups throughout `ProvinceFillLayer.tsx`
+and `StatesProvinces.tsx` eliminated unnecessary re-renders on hover; and
+`scene/useChunkedGeoEntityEntries.ts` fixed a separate, much larger bug —
+a 1.3-1.7 SECOND synchronous freeze on every layer mount (earcut
+triangulation for all 4,539 provinces run all at once), now chunked
+across event-loop turns and verified via a real `PerformanceObserver`
+longtask capture (one 1.3-1.7s task → five ~100ms tasks).
+
+**Net result, user-confirmed:** smooth when zoomed on a single country.
+**Still open:** choppy when most of Europe is in frame at once — measured
+at ~30x more active meshes in that view (119 vs. 4) than a single-country
+zoom, and none of the fixes above reduce active mesh COUNT for a wide
+view specifically. Two real next steps are on the table, neither started:
+capping/clustering active mesh count for wide views, or replacing
+per-country merging with a properly spatially-accelerated (BVH) single
+mesh. See `LOGBOOK.md`'s "States/provinces FPS" parts 1-9 for the full
+reasoning and measurement trail, and `BACKLOG.md` for the current open
+items.
+
 ## v6.2.5 — Fix dashed province borders rendering solid at shared state/province boundaries
 
 **Bug fix, Rendering Engine.** v6.2.4's dashed borders looked solid at some

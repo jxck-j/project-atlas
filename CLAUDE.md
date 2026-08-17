@@ -53,7 +53,7 @@ npm run preview    # preview the production build
 npm run build:geo  # regenerate the four geo assets below (runs the npm scripts in sequence)
 npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
-npm run build:geo:states     # regenerate public/geo/states-provinces.json (294 admin-1 features, 9 countries)
+npm run build:geo:states     # regenerate public/geo/states-provinces.json (4,539 admin-1 features, 235 countries/territories)
 npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/major-city point markers)
 npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
@@ -233,11 +233,17 @@ click/highlight behavior.
 **v4.5.0 extracted that shared rendering into `scene/EntityRenderLayer.tsx`**
 once `countryGeometry.ts` had Phase 1 test coverage (v4.3.1) to guard
 against exactly the regression the duplication above was written to avoid.
-`Countries.tsx` and `GeoEntities.tsx` (and `StatesProvinces.tsx`, below) now
-each build their own `GeoEntityEntry[]` and pass an `onSelect` callback into
-one shared `<EntityRenderLayer>`, which owns the border/fill mesh per
-entry, hover/select/dim color computation, the click-vs-drag threshold, and
-`HoverLabel`. `HoverLabel` (v5.2.7) renders every entry the same way
+`Countries.tsx` and `GeoEntities.tsx` each build their own `GeoEntityEntry[]`
+and pass an `onSelect` callback into one shared `<EntityRenderLayer>`, which
+owns the border/fill mesh per entry, hover/select/dim color computation, the
+click-vs-drag threshold (`scene/useClickDragGuard.ts`, its own module as of
+2026-08-16 — oxlint's react-refresh rule flags a hook exported alongside
+components from the same `.tsx` file), and `HoverLabel` (exported from
+`EntityRenderLayer.tsx` as of that same date — see below for why).
+`StatesProvinces.tsx` used `EntityRenderLayer` too from
+v4.4 through 2026-08-15, but stopped once province count made its
+one-mesh-per-entry model the bottleneck itself — see below. `HoverLabel`
+(v5.2.7) renders every entry the same way
 regardless of size — inline, glowing, at the entry's own centroid, the
 exact position `PassiveEntityLabels.tsx`'s passive label for that same
 entry already occupies — replacing that passive label in place rather than
@@ -271,27 +277,51 @@ never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
 no-op, since every rendered shape in those two already has a `GeometryMap`
 registration by the time it's clickable.
 
-**v6.2.4 added two more `EntityRenderLayer` props, both `StatesProvinces.tsx`-only:**
-`dashedBorders` (renders every entry's border `LineDashedMaterial` instead
-of solid, so a province boundary reads as visually distinct from a country
-one) and, as of **v6.2.5**, `hideDefaultBorders` (skips the per-entry border
-entirely unless that one entry is hovered/selected). The two together exist
-because of a real bug: rendering every province's own full border ring
-(the pre-v6.2.5 default) draws every INTERNAL admin-1 boundary twice — once
-from each adjacent province's own ring — each computing its own dash phase
-independently, which reliably looked solid instead of dashed wherever the
-two uncorrelated phases happened to mostly cover each other's gaps
-(reported for Pará/Mato Grosso, Brazil; see `LOGBOOK.md`'s v6.2.5 entry for
-the full mechanism). Fixed by adding a deduplicated boundary line
-(`useStatesProvincesFeatures.ts`'s `useStatesProvincesBoundary()`, built
-via `topojson-client`'s `mesh()` — every arc walked exactly once regardless
-of how many provinces reference it) as `StatesProvinces.tsx`'s own
-`BoundaryMesh` component, which is now the actual source of the default
-(unselected) dashed look; `hideDefaultBorders` stops `EntityRenderLayer`
-from drawing a second, competing copy on top of it for every unselected
-entry — a live per-entry border still renders for whichever ONE province is
-actually hovered/selected, since a single line has nothing left to
-double-draw against.
+**`StatesProvinces.tsx` grew its own rendering path separate from
+`EntityRenderLayer` once province count made the shared component's
+one-mesh-per-entry model the actual performance bottleneck, not just a
+different visual treatment.** The path there: v6.2.4 added dashed borders
+(`LineDashedMaterial` instead of solid) so a province boundary read as
+visually distinct from a country one; v6.2.5 added a deduplicated boundary
+line (`useStatesProvincesFeatures.ts`'s `useStatesProvincesBoundary()`,
+built via `topojson-client`'s `mesh()` — every arc walked exactly once
+regardless of how many provinces reference it) as `StatesProvinces.tsx`'s
+own `BoundaryMesh` component, since rendering every province's own full
+border ring drew every INTERNAL admin-1 boundary twice (once from each
+adjacent province's ring), which while both were dashed reliably looked
+solid wherever the two independently-phased dash patterns happened to
+mostly cover each other's gaps (reported for a Brazilian state pair — see
+`LOGBOOK.md`'s v6.2.5 entry). Both of those lived as `EntityRenderLayer`
+props (`dashedBorders`, `hideDefaultBorders`) at the time.
+
+**The 1:10m upgrade (below) changed the actual scale this layer needed to
+handle — 294 provinces to 4,539 — and everything downstream of that had to
+be revisited, not just tuned.** Dashing was dropped entirely (2026-08-16):
+even after normalizing dash count per ring (`countryGeometry.ts`'s
+distance functions), a technically-correct dash pattern across thousands
+of small boundaries just read as visual noise, reported directly as a
+preference; `BoundaryMesh` now renders solid at a muted opacity instead.
+More fundamentally, `EntityRenderLayer` mounting one individually-
+raycast/redrawn mesh per province (fine at Countries.tsx/GeoEntities.tsx's
+~193/~55 scale) became the FPS bottleneck itself once there were thousands
+of them — confirmed directly as "destroying fps," and confirmed AGAIN
+after an LOD-gate-only fix (only render once zoomed in) and a front-facing
+filter (`scene/useFrontFacingEntries.ts`, exclude back-facing/off-screen
+provinces) each helped but didn't fully resolve it, especially over a
+province-dense region like Europe where a front-facing filter excludes
+little. `scene/ProvinceFillLayer.tsx` (2026-08-16) is the actual fix:
+one merged mesh (`scene/mergedProvinceFill.ts`) handles hit-testing via
+triangle `faceIndex` → entry lookup instead of one mesh per entry, plus
+small unraycastable overlay meshes/borders for whichever entry is
+hovered/selected — same visual result, same click precision (same
+triangles, just concatenated into one buffer), far fewer objects. Since
+`StatesProvinces.tsx` no longer calls `EntityRenderLayer` at all, that
+component's now-dead `dashedBorders`/`hideDefaultBorders` props were
+removed along with it rather than left in place with no caller — see
+`LOGBOOK.md`'s "States/provinces FPS" parts 1-4 for the full trail of what
+was tried, including the two attempts that turned out insufficient once
+actually checked in the browser, and `BACKLOG.md` for whether this is
+confirmed fully resolved.
 
 `GeoEntities.tsx` deliberately does **only** primary selection (hover,
 click, highlight the one clicked entity) — no parent-overlay or
@@ -556,7 +586,7 @@ call and no manual clock feeding left to get wrong.
   selected `'administrative-division'`** (a state/province) — every
   province's `parentEntity`/`administeredBy` points at its own sovereign
   country by construction (`useStatesProvincesFeatures.ts`), so without
-  this carve-out every one of the 294 provinces would highlight its own
+  this carve-out every one of the provinces would highlight its own
   country on every select, which isn't a relationship worth flagging the
   way an uncontested dependency or a disputed claim is. Every other
   `GeoEntityType` is unaffected.

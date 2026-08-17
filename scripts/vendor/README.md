@@ -5,23 +5,34 @@ package to vendor them for us — they're fetched by hand from public sources
 and committed directly, the same "read from disk, no network access at build
 time" discipline the rest of `scripts/build*.mjs` already relies on.
 
-## `ne_50m_admin_1_states_provinces.geojson`
+## `ne_10m_admin_1_states_provinces.geojson`
 
-- **Source:** Natural Earth 1:50m Cultural Vectors, "Admin 1 – States,
+- **Source:** Natural Earth 1:10m Cultural Vectors, "Admin 1 – States,
   Provinces" layer, via the `nvkelso/natural-earth-vector` GitHub mirror's
   pre-converted GeoJSON export.
-- **Fetched:** 2026-07-22.
+- **Fetched:** 2026-08-15 (upgraded from the 1:50m resolution of the same
+  layer, fetched 2026-07-22 — see `CHANGELOG.md`/`LOGBOOK.md` for the
+  upgrade).
 - **License:** Public domain (Natural Earth places no restrictions on use).
-- **Coverage caveat:** at 1:50m scale, Natural Earth only ships first-level
-  administrative boundaries for 9 large countries with complex internal
-  geography (Australia, Brazil, Canada, China, India, Indonesia, Russia,
-  South Africa, United States) — 294 features total. This is a deliberate
-  pilot-scope choice (see `scripts/buildStatesProvincesTopology.mjs`), not a
-  bug: the 1:10m resolution of this same layer covers all countries
-  (~4,600 features) but is a much larger file (~40 MB uncompressed).
-  Swapping this vendored file for the 10m version and re-running
-  `npm run build:geo:states` is the upgrade path once broader coverage is
-  wanted — no pipeline redesign required.
+- **Size:** ~40 MB uncompressed, 4,596 raw features across 251 distinct
+  `adm0_a3` values — committed as-is rather than gitignored; under GitHub's
+  50 MB per-file warning threshold.
+- **Coverage caveat:** `scripts/buildStatesProvincesTopology.mjs` keeps only
+  features whose `adm0_a3` resolves to a `scripts/lib/iso3166.mjs` numeric
+  country id (4,539 of 4,596 kept). All 193 UN member states get coverage
+  (some via `SDS`, a non-standard alias this dataset uses for South Sudan
+  instead of the canonical `SSD` — see that file's own comment), plus 42
+  more ISO-coded non-UN territories/dependencies that happen to already
+  have a numeric ISO code (Taiwan, Hong Kong, Puerto Rico, Greenland,
+  Antarctica, ...) even though those don't resolve against
+  `CountryRegistry` (UN members only). The 57 skipped features have no ISO
+  country code at all — Kosovo (30), Western Sahara, Somaliland, Northern
+  Cyprus, the Gaza Strip/West Bank, the Spratly Islands, Guantanamo Bay,
+  Baikonur, the Siachen Glacier, the two Cyprus Sovereign Base Areas, and a
+  handful of uninhabited dependencies (Åland, Clipperton Island, Ashmore
+  and Cartier Islands, Coral Sea Islands, the Indian Ocean Territories) —
+  see `BACKLOG.md`'s "Geographic coverage" section for the full list and
+  the open question of whether any should route into `GeoEntity` instead.
 
 ## `ne_50m_populated_places.geojson`
 

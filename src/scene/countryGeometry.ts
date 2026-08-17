@@ -118,6 +118,19 @@ export function geometryToBorderSegments(geometry: Geometry, radius: number): Fl
 // Fixed at the source, in the one place that actually knows ring
 // boundaries, instead of trying to reverse-engineer them from a flat buffer
 // afterward — see LOGBOOK.md.
+// 2026-08-15: distances are normalized to [0, 1] per ring (divided by that
+// ring's own total length) rather than left as absolute world-space
+// distance — a fixed DASH_SIZE/GAP_SIZE against absolute distance meant a
+// small ring's entire perimeter could fit inside a single dash+gap cycle,
+// rendering as one unbroken solid line instead of a dash pattern (reported
+// once the states/provinces layer's 1:10m upgrade added far more small
+// provinces than the 1:50m pilot ever had). Normalizing means every ring
+// gets the same NUMBER of dashes regardless of its actual size — small and
+// huge rings both read as "hatched." This is a shared function
+// (ClaimsOverlayLayer.tsx's dashed claim outlines use it too), so this
+// changes their dash density slightly as a side effect — an improvement of
+// the same bug class, not a regression: a huge country's claim outline used
+// to get far more/denser dashes than a small one, purely from size.
 export function geometryToBorderSegmentsWithDistances(
   geometry: Geometry,
   radius: number
@@ -129,17 +142,24 @@ export function geometryToBorderSegmentsWithDistances(
   for (const rings of polygons) {
     for (const ring of rings) {
       const unwrapped = unwrapRingLongitudes(ring)
-      let ringDistance = 0
+      const ringDistances: number[] = []
+      let ringLength = 0
       for (let i = 0; i < unwrapped.length - 1; i++) {
         const [lngA, latA] = unwrapped[i]
         const [lngB, latB] = unwrapped[i + 1]
         const a = latLngToVector3(latA, lngA, radius)
         const b = latLngToVector3(latB, lngB, radius)
         positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
-        distances.push(ringDistance)
-        ringDistance += a.distanceTo(b)
-        distances.push(ringDistance)
+        ringDistances.push(ringLength)
+        ringLength += a.distanceTo(b)
+        ringDistances.push(ringLength)
       }
+      // ringLength === 0 is a degenerate (single-point or zero-length) ring
+      // — normalizing by 1 instead of dividing by zero just leaves it at
+      // its raw (all-zero) distances, which never renders a visible dash
+      // pattern either way.
+      const norm = ringLength > 0 ? ringLength : 1
+      for (const d of ringDistances) distances.push(d / norm)
     }
   }
 
@@ -191,6 +211,10 @@ export function geometryToLineSegments(geometry: Geometry, radius: number): Floa
 // "one shape's dash phase corrupted by a huge phantom distance carried over
 // from an unrelated line" bug geometryToBorderSegmentsWithDistances fixed
 // for country/GeoEntity rings would just resurface one level up.
+// Normalized to [0, 1] per line, same reasoning and same 2026-08-15 change
+// as geometryToBorderSegmentsWithDistances above — each arc in
+// StatesProvinces.tsx's deduplicated BoundaryMesh gets a consistent dash
+// count regardless of that arc's own length.
 export function geometryToLineSegmentsWithDistances(
   geometry: Geometry,
   radius: number
@@ -201,17 +225,20 @@ export function geometryToLineSegmentsWithDistances(
 
   for (const line of lines) {
     const unwrapped = unwrapRingLongitudes(line)
-    let lineDistance = 0
+    const lineDistances: number[] = []
+    let lineLength = 0
     for (let i = 0; i < unwrapped.length - 1; i++) {
       const [lngA, latA] = unwrapped[i]
       const [lngB, latB] = unwrapped[i + 1]
       const a = latLngToVector3(latA, lngA, radius)
       const b = latLngToVector3(latB, lngB, radius)
       positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
-      distances.push(lineDistance)
-      lineDistance += a.distanceTo(b)
-      distances.push(lineDistance)
+      lineDistances.push(lineLength)
+      lineLength += a.distanceTo(b)
+      lineDistances.push(lineLength)
     }
+    const norm = lineLength > 0 ? lineLength : 1
+    for (const d of lineDistances) distances.push(d / norm)
   }
 
   return { positions: new Float32Array(positions), distances: new Float32Array(distances) }

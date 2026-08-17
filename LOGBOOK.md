@@ -5,6 +5,479 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-17 — States/provinces FPS, part 9: chunking the 1.3-1.7s freeze, measured before and after with a real longtask observer
+
+**Fixed part 8's synchronous-freeze finding by chunking
+`buildGeoEntityEntries` across event-loop turns instead of running it all
+at once.** New `scene/useChunkedGeoEntityEntries.ts` slices the raw
+features array into batches of 400 (sized so each chunk costs roughly
+100-150ms, based on the measured ~0.3-0.4ms/feature average), processes
+one batch per `requestIdleCallback` (falling back to `setTimeout(fn, 0)`
+for Safari, which lacks it — the property that actually matters, yielding
+to the event loop between chunks, works either way), and accumulates
+results into React state that every downstream consumer
+(`useFrontFacingEntries`, `ProvinceFillLayer`, `StateProvinceLabels`)
+already treated as just an array that's fine to grow. `StatesProvinces.tsx`
+swapped its `useMemo(() => buildGeoEntityEntries(features), [features])`
+for this hook — a one-line call-site change once the hook existed.
+
+**Verified with a `PerformanceObserver({entryTypes: ['longtask']})`
+installed before toggling the layer on, not just eyeballed.** Before this
+fix (part 8): a single 1,320-1,683ms task. After: five ~102ms tasks
+instead of one giant one — a real, measured elimination of the freeze,
+not an assumption that chunking would obviously work. (An unrelated
+2,396ms task also showed up in the same capture, from page bootstrap way
+earlier in the session's timeline — not something this fix touches or
+needs to; the user's report was specifically about toggling the layer on,
+not initial page load.)
+
+**Deliberately did NOT tackle part 8's other finding (mesh count scaling
+~30x between a single-country view and "most of Europe") in the same
+pass** — asked directly, and held off per the answer. Two real options
+remain on the table for that one (cap/cluster active mesh count for wide
+views, or a BVH-accelerated single mesh), neither attempted; see
+`BACKLOG.md`.
+
+**One more open thread inherited from part 8, not yet revisited:**
+`useFrontFacingEntries.ts`'s initial state still defaults to the full
+unfiltered list, so the very first render after mount briefly requests
+ALL 235 countries before the throttled filter narrows it down — now
+somewhat mitigated by chunking (entries arrive progressively, so "all
+235" isn't actually available to request until every chunk lands
+anyway), but the underlying design tension (default to "everything" vs.
+"nothing" on first render) is still there and still worth revisiting
+alongside whichever wide-view fix gets picked.
+
+## 2026-08-17 — States/provinces FPS, part 8: two more real findings — active-mesh-count still scales with "how many countries are in frame," and a 1.3-1.7s synchronous freeze on layer mount that was there all along
+
+**Confirmed part 7's fix genuinely helped: smooth when zoomed on a single
+country, still choppy when most of Europe is in frame — so measured
+`activeCountryIds`/triangle counts at both zoom levels directly instead of
+guessing a fifth explanation.** Deep single-country zoom: 4 active
+countries, 13 visible provinces, 4,694 total triangles. The "most of
+Europe" zoom (what `flyToSelectedCountry()`'s `CAMERA_FOCUS_DISTANCE`
+actually lands on for a country Germany's size, not a tight single-country
+view — worth noting for anyone re-testing this by search+FOCUS CAMERA
+alone): 119 active countries, 2,799 visible provinces, 290,612 total
+triangles. ~30x more active meshes. Every one of those meshes still gets
+redrawn every frame during continuous camera rotation/pan (`frameloop=
+"demand"` renders on every `invalidate()` a drag produces), and none of
+part 6/7's fixes reduced mesh COUNT for a wide view — they reduced
+per-mesh raycasting cost and eliminated unnecessary re-renders, which is a
+different axis. **Not yet fixed — this needs either capping/clustering
+active mesh count for wide views, or a properly spatially-accelerated
+(BVH) single mesh instead of per-country granularity, both real design
+decisions bigger than anything applied so far. Logged, not implemented.**
+
+**Separately, the user reported a lag specifically on toggling the layer
+on — instrumented three candidate causes with `performance.now()` timers
+rather than guessing which one, since three real candidates existed at
+once (the fetch, the topology conversion, the per-country merge).** Fetch
++ JSON parse of the 3.75MB `states-provinces.json`: 368ms (one-time, real,
+but not obviously "laggy" on its own). `feature()`/`mesh()` topology
+conversion: 268ms. `useMergedFillsByCountry`'s build: 29-48ms (already
+suspected and already ruled out as the main cause). **The actual answer:
+`buildGeoEntityEntries(features)` — the earcut triangulation for every one
+of 4,539 provinces, run synchronously inside a `useMemo` in
+`StatesProvinces.tsx` — took 1,320-1,683ms.** Over a second and a half of
+main-thread blocking on every layer mount, unrelated to and much bigger
+than anything else measured today. This isn't a regression from any of
+today's changes — it's an original cost of the 1:10m upgrade itself that
+was simply never separately measured before now (masked by "features/
+entities are still fetched/built unconditionally... a one-time cost,"
+written without actually timing what that one-time cost was). **Not yet
+fixed — real options are lazy-deferring the build until the LOD tier is
+actually active (moves the freeze to first zoom-in instead of eliminating
+it), chunking the 4,539 triangulations across multiple frames/idle
+callbacks (progressive, no freeze, more complexity), or moving the work to
+a Web Worker (biggest lift, cleanest result). Logged, not implemented.**
+
+**Also discovered, incidentally, while instrumenting:** `useFrontFacingEntries`'s
+initial state defaults to the FULL unfiltered entries list (a 2026-08-16
+decision, "avoid a flash of emptiness before the first computation") —
+meaning the very first render after the layer mounts briefly shows ALL
+235 countries / 4,539 provinces / 445,720 triangles before the first
+throttled filter pass narrows it down. That was the right call when this
+hook fed a single global merged mesh (skip a flash-of-nothing), but now
+that mounting many countries has its own real cost (see above), defaulting
+to "everything" instead of "nothing" during that first render window
+works against the fix, not for it — worth revisiting alongside whichever
+active-mesh-count fix gets picked.
+
+**Diagnostic instrumentation (three `performance.now()` timers, one
+`console.log` of active-mesh counts) was added temporarily across
+`ProvinceFillLayer.tsx`, `useMergedFillsByCountry.ts`,
+`StatesProvinces.tsx`, and `useStatesProvincesFeatures.ts`, all gated
+behind `import.meta.env.DEV`, and removed once each did its job — same
+pattern as part 6's temporary diagnostic.** None of it should be
+reintroduced permanently; re-add ad hoc if this needs re-profiling again.
+
+## 2026-08-17 — States/provinces FPS, part 7 (measured before AND after this time): React re-render cost was compounding the raycasting cost
+
+**Part 6's per-country merge measurably cut mesh count and worst-case
+triangle count, but reported as still laggy — so before guessing a fourth
+time, measured the actual per-pointermove cost directly** by dispatching
+real `PointerEvent('pointermove')`s at the canvas in a 15x4 grid sweep and
+timing each dispatch with `performance.now()` (synchronous DOM event
+dispatch means the full React + R3F + raycasting + state-update chain runs
+inside that timed call). Before this pass: Brazil averaged ~11ms/event
+(max 26ms), Germany ~25ms/event (max 40ms) — worse than the triangle-count
+ratio (2.7x) alone would predict, meaning triangle count wasn't the whole
+story.
+
+**Root cause: every pointermove that actually changes the hovered
+province — which is most of them over small, densely-packed provinces,
+rarely over Brazil's large ones — triggered a full React re-render with
+two compounding costs.** (1) `selectedEntry`/`hoveredEntry` were resolved
+via `Array.find()`/`.some()` over `visibleEntries`, up to ~2,700 elements
+for Europe, re-scanned from scratch on every hover change. (2) Every one
+of the ~100+ active `<CountryFillMesh>` components re-rendered on every
+hover change, even though at most one country's visuals were ever affected
+by it (via the separate overlay mesh) — because their callback props
+(`onHover`, `onSelectEntry` (parent's `onSelect`), `wasDragGesture`) were
+fresh closures every render, defeating any attempt at `React.memo` before
+one was even added. This explains the region gap better than triangle
+count alone: Europe's smaller provinces mean the hovered id changes on
+nearly every synthetic event, paying both costs almost every time; Brazil
+often lands on the same already-hovered province between steps and skips
+both.
+
+**Fix, three pieces working together:** `useClickDragGuard.ts`'s returned
+function is now `useCallback`-wrapped (was a fresh closure per call);
+`StatesProvinces.tsx`'s `handleSelect`/`handleHoverChange` are now
+`useCallback`-wrapped too (and `handleHoverChange`'s own `entities.find()`
+became an O(1) Map lookup — same class of bug, smaller scale, same fix);
+`ProvinceFillLayer.tsx` builds one `geometryId`-keyed `Map` per
+`visibleEntries` change for O(1) `selectedEntry`/`hoveredEntry` lookups,
+and `CountryFillMesh` is now wrapped in `React.memo` — which only actually
+helps once its callback props are stable, hence the two `useCallback`
+fixes above being prerequisites, not independent changes.
+
+**Re-measured the identical sweep after the fix:** Brazil ~5.75ms/event
+(max 18.3ms, down from ~11ms/26ms), Germany ~7.9ms/event (max 14.7ms, down
+from ~25ms/40ms) — both regions improved, and critically the gap between
+them nearly closed (7.9ms vs. 5.75ms, vs. 25ms vs. 11ms before). This is
+the second fix in this saga measured both before AND after, not just
+theorized about or measured once and assumed sufficient — see part 6's
+closing note about reaching for real numbers earlier next time; this
+entry is that lesson applied a second time in the same saga, which is
+itself worth noticing.
+
+**Still not user-confirmed as smooth.** A synthetic pointermove sweep
+measures the exact code path a real mousemove triggers, but isn't
+identical to a human dragging a trackpad — report back if it's better but
+not yet good enough, since there's still a documented next step
+(rebuilding the drag-frame-counting harness properly, or profiling via
+Chrome DevTools' actual Performance panel instead of ad-hoc scripts) if
+so.
+
+## 2026-08-17 — States/provinces FPS, part 6 (measured, not guessed): a single merged mesh traded one bottleneck for a denser one
+
+**Part 5's single global merged mesh reportedly still "struggled
+massively" over Europe specifically, while the Americas were fine —
+instrumented with a temporary console diagnostic instead of guessing at a
+fourth fix.** Numbers, at a comparable "focused on one country" zoom via
+each country's own FOCUS CAMERA flight: Brazil (Americas) had 866 active
+provinces / 83,887 triangles / 251,661 vertices; Germany (Europe) had
+2,750 active provinces / 227,116 triangles / 681,348 vertices — roughly
+2.7x denser. That ratio is the whole story: Europe simply packs far more
+small countries, each with its own set of small provinces, into the same
+screen area than the Americas do at an equivalent zoom.
+
+**Why a single merged mesh makes density hurt more, not less: it has no
+internal spatial structure, so R3F's raycaster (which runs on every native
+pointermove event, not throttled) does one bounding-sphere check for the
+WHOLE mesh, then a flat linear scan of every triangle inside it if that
+passes.** With everything concentrated into one object, raycasting cost is
+directly proportional to total visible triangle count — worse than the
+original one-mesh-per-province design in exactly this respect, because
+that design's many small objects each got a cheap, individual bounding-
+sphere pre-check, and only the one or two actually near the cursor ever
+reached real per-triangle work. The merge fixed per-object/React
+overhead but accidentally threw that per-object rejection away.
+
+**Fix: merge per COUNTRY instead of globally** (`scene/
+useMergedFillsByCountry.ts`, `scene/provinceCountryGroups.ts`) — coarse
+enough to cut mesh count drastically (119 active country meshes measured
+over the same Europe view, vs. one mesh of 227k triangles before), fine
+enough that each country-sized mesh keeps a meaningful bounding-sphere
+pre-check (most countries, on any given pointer move, aren't anywhere
+near the cursor, and that's cheap to determine again). Re-measured after
+the change: same Europe view, 119 active countries, largest single
+country mesh 39,609 triangles — worst case dropped by ~83% just from
+regrouping the exact same geometry differently. Each country's merged
+buffer is also now cached (`useMemo` keyed on the full, unfiltered entries
+list, stable once the fetch completes) rather than rebuilt every time the
+front-facing filter's throttle ticks, so panning/rotating no longer
+re-copies and re-uploads a multi-megabyte buffer every ~150ms either —
+that cost is now paid once per country, the first time it's needed, not
+repeatedly.
+
+**Process note: this is the first fix in this saga backed by an actual
+measurement instead of a plausible-sounding theory.** Parts 1-5 were each
+reasoned through carefully but verified only after the fact (twice
+insufficient once actually checked). Worth remembering next time
+"still slow" comes back a third time: reach for real numbers before the
+next structural change, not after it doesn't work either.
+
+## 2026-08-16 — States/provinces FPS, part 5 (implemented, NOT yet confirmed): the merged-mesh rewrite
+
+**Implemented the deeper fix part 4 (below) confirmed was needed:
+`scene/ProvinceFillLayer.tsx` replaces `EntityRenderLayer`'s one-mesh-per-
+entry fill rendering for `StatesProvinces.tsx` specifically, merging every
+visible province's fill geometry into one `BufferGeometry`
+(`scene/mergedProvinceFill.ts`) with a per-triangle `faceIndex -> entry`
+lookup array.** Hit-testing (hover, click) now runs against one mesh
+instead of hundreds — R3F only raycasts registered objects, so this is a
+direct reduction in per-pointer-move work, and a direct reduction in
+per-camera-drag-frame draw calls. Precision is unchanged: the merged
+geometry is the exact same triangles, just concatenated into one buffer,
+so a real per-triangle raycast still resolves exactly which province was
+hit. Visual result is unchanged too — up to two small, unraycastable
+overlay meshes/borders (`raycast={() => null}`, so pointer events pass
+through to the merged mesh underneath) render the selected/hovered
+entry's own highlight color on top of the merged mesh's uniform default
+tint, reusing each entry's already-built `fillGeometry`/`borderGeometry`
+rather than rebuilding anything per-frame.
+
+**Extracted two things out of `EntityRenderLayer.tsx` to avoid duplicating
+them:** `HoverLabel` (now exported — was already self-contained) and the
+click-vs-drag pointerdown/threshold tracking, pulled into its own
+`scene/useClickDragGuard.ts` (a hook can't be exported alongside
+components from the same `.tsx` file without tripping oxlint's
+react-refresh rule — the same constraint `geoEntityEntries.ts` already
+exists to satisfy for `buildGeoEntityEntries`). Since `StatesProvinces.tsx`
+no longer calls `EntityRenderLayer` at all after this change, its
+`dashedBorders`/`hideDefaultBorders` props — both added specifically for
+that one caller — became fully dead (zero remaining callers) and were
+removed rather than left in place; `EntityRenderLayer` is back to being
+exactly what it was originally: shared by `Countries.tsx`/`GeoEntities.tsx`
+only.
+
+**Deliberately not calling this "done" yet, and deliberately not giving it
+a version number — see the versioning-discipline note above.** It
+typechecks, lints, and the existing test suite passes, but none of that
+verifies the actual FPS claim; it needs to be checked running, over
+Europe specifically, before treating the states/provinces performance
+saga as closed.
+
+## 2026-08-16 — States/provinces FPS, part 4: front-facing filter helped, Europe still lags
+
+**Confirmed in the browser: FPS is better, but movement is still choppy
+when looking at a province-dense region (Europe) — exactly the gap part 3
+(below) predicted before it was even tested.** The front-facing filter
+only excludes provinces that are back-facing or off-screen; a region where
+many small countries are all simultaneously visible together gets no
+reduction in active mesh count from it at all. Confirms the deeper fix —
+merging each country's provinces into far fewer meshes with face-index-
+based hit-testing — is the next real step, not a hypothetical fallback.
+Not yet implemented.
+
+**Also corrected course on process, not just code:** the previous three
+LOGBOOK entries in this sequence were each originally written alongside
+their own `CHANGELOG.md` version bump (v6.2.6/v6.2.7/v6.2.8) and a
+matching `package.json` version increment, as if each incremental attempt
+was its own shippable, working state. Reported directly as wrong: none of
+them actually finished the job, so treating each as a versioned release
+overstated how done this work was. Consolidated `CHANGELOG.md` back into
+one entry (the 1:10m data upgrade, which did land cleanly, plus an
+explicit "rendering performance not yet resolved" note) and rolled
+`package.json` back to match — a version number should mean "this is in a
+real, working state," not "an attempt was made." The LOGBOOK entries below
+keep their per-attempt structure regardless, since capturing what was
+tried and why it fell short is exactly what this file is for — that's
+different from implying each attempt shipped.
+
+## 2026-08-16 — States/provinces FPS, part 3: LOD-gating answers "when," not "how many" — a province still invisible behind the globe was mounting anyway (see part 4 above for the follow-up)
+
+**Confirmed directly, once actually checked in the browser: the
+choppiness wasn't gone, just delayed until you actually zoomed in far
+enough to see provinces at all.** The LOD gate (part 1, above) is a
+binary, distance-only switch — once camera distance crosses the 'states'
+tier's threshold, `StatesProvinces.tsx` mounts its FULL entry list, every
+province on the entire globe, not just whatever fraction is actually
+facing the camera and inside the current viewport. At any zoom close
+enough for the tier to be useful, that's still thousands of individually-
+raycast/redrawn meshes — the exact problem the LOD gate fixed for the
+"fully zoomed out" case was still fully present for the "zoomed in, which
+is the whole point of this feature" case.
+
+**The fix cost nothing extra to build because the exact check already
+existed, just scoped to one point at a time.** `useFrontOfGlobeVisible.ts`
+(v5.2.2) already does the real work — an analytic horizon-dot-product +
+NDC-frustum + screen-bounds check, throttled via `useFrame` — for `Html`
+labels that need it (a `Html` overlay has no WebGL depth buffer, so
+nothing hides it automatically the way a real mesh's depth test already
+would). `EntityRenderLayer`'s province meshes are real meshes, so they
+were never incorrectly VISIBLE when back-facing — `FrontSide` culling and
+the opaque core sphere's depth test already handled that correctly. What
+they weren't was cheap to have mounted: React reconciling ~4,500
+`<group>`s, each registering pointer-event listeners R3F raycasts on every
+pointer move, is real fixed cost per object regardless of whether that
+object ever draws a visible pixel. `useFrontFacingEntries.ts` generalizes
+the same point-check into a list filter, so the invisible-anyway majority
+of provinces (at any given camera angle, roughly half the globe plus
+whatever's outside the current framing) never gets a mesh built for them
+in the first place. Net effect on what's drawn: zero — this is a pure
+"stop doing invisible work" change, not a visual change.
+
+**Deliberately the lighter of the two options on the table, not the
+complete fix.** A province-dense region viewed all at once (Europe, say —
+dozens of small countries, hundreds of provinces, ALL simultaneously
+front-facing and on-screen at a normal "looking at Europe" zoom) gets no
+benefit from this filter, since none of them get excluded by it. The
+deeper fix — merging each country's provinces into far fewer meshes with
+face-index-based hit-testing instead of one mesh per province — is still
+the answer for that case if it turns out to matter in practice; deferred
+per the user's own call to try the lighter mitigation first and only
+reach for the bigger rewrite if needed. Logged as an open, likely-needed
+follow-up in `BACKLOG.md` rather than assumed solved.
+
+## 2026-08-16 — States/provinces FPS, part 2: normalizing the dash math was the right fix for the wrong complaint
+
+**v6.2.6 (below) fixed dashed province borders rendering solid on small
+provinces — a real, correctly-diagnosed bug. It didn't fix the actual
+complaint once seen running: with 4,539 provinces on screen instead of
+294, a technically-correct dash pattern on every one of them just reads as
+noise.** More boundaries showing a consistent dash count each is still a
+lot of dashing in aggregate — the per-ring normalization fix made every
+individual dash pattern *correct*, not *sparse*. Reported directly as a
+preference once checked in the browser, which the LOD-gate and dash-math
+fixes in the same session hadn't been (see `BACKLOG.md`'s open items on
+both from the same pass). Resolution: drop dashing for this layer
+entirely rather than continuing to tune dash density — `BoundaryMesh` and
+`EntityRenderLayer`'s per-entry border both switched to plain
+`LineBasicMaterial`, same as `Countries.tsx`/`GeoEntities.tsx` always
+rendered. The muted-opacity idea from v6.2.6 survived unchanged (it was
+never actually about dashing — it was about the default line reading
+quietly against the one focused, full-opacity border), which is a useful
+signal in hindsight: the opacity change addressed the "too busy" complaint
+directly, while the dash-math fix addressed a different, real but
+lower-priority bug that happened to be reported in the same sentence.
+
+**Left `EntityRenderLayer`'s `dashedBorders` prop in place, unused, rather
+than deleting it now that its only caller stopped passing `true`.** Small,
+self-contained, already covered by the existing dash-normalization fix
+whenever a future caller does turn it on — deleting and potentially
+re-adding it if a different layer wants a dashed treatment later would be
+pure churn. `hideDefaultBorders` (the other v6.2.5 prop) stays load-bearing
+regardless of dashed vs. solid: two overlapping lines at a shared
+province edge double that edge's opacity either way, dashed or not.
+
+## 2026-08-15 — States/provinces FPS, part 1: a reserved-but-unused LOD tier was the fix, once 15x more features made "always on" actually cost something
+
+**Reported directly as "destroying fps" once the states/provinces layer's
+1:10m upgrade (below) landed — the same draw-call/raycast scaling problem
+this codebase already solved once for country geometry (merge-per-entity),
+just past the feature count where that fix alone still held.** At 294
+features, every province being its own individually-hoverable `<mesh>` in
+`scene/EntityRenderLayer.tsx` was tolerable; at 4,539 it wasn't — R3F
+raycasts every registered mesh on pointer move regardless of the
+`frameloop="demand"` render-on-invalidate setup, and every camera-drag
+frame redraws all of them. The fix wasn't a new mechanism: `src/lod/
+lodLevels.ts`'s `'states'` tier had existed since v4.3 as a *reserved*
+"always on" entry (`revealDistance: null`) — never actually wired to gate
+anything, just documented as conceptually belonging to the ladder. Giving
+it a real `revealDistance` (5.0, chosen to land just outside
+`CAMERA_FOCUS_DISTANCE` so admin-1 boundaries are already visible by the
+time a country-focus camera flight completes) and gating
+`scene/StatesProvinces.tsx`'s render output behind it was the entire fix —
+the LOD Engine's whole reason for existing (per its own `CLAUDE.md`
+section) is being "the plug-in point for future zoom-gated datasets," and
+this is the first dataset since the city tiers to actually plug into it.
+
+**Needed a new `useIsLodLevelActive(id)` selector hook** (`lod/lodStore.ts`)
+because `StatesProvinces.tsx` isn't a per-frame `useFrame` consumer the way
+`UsCityLabels.tsx` (the LOD Engine's only other real consumer) is — it has
+no camera distance of its own to hand `isLodLevelActive()` directly, so it
+needs the store. Selecting a derived boolean (`isLodLevelActive(id,
+state.distance)`) rather than exposing raw `state.distance` matters here
+for the same reason `useLodLevel()` already selects only `state.level`:
+zustand's default equality check skips a re-render when the selected value
+is unchanged, so this only re-renders on an actual reveal/hide flip, not on
+every frame's distance publish.
+
+**Same session also fixed dashed borders reading as solid on small
+provinces — a second symptom of the same "more small features than the
+1:50m pilot ever had" root cause.** `DASH_SIZE`/`GAP_SIZE`
+(`scene/geoEntityEntries.ts`) were fixed absolute world-space lengths; a
+province whose entire perimeter was shorter than one dash+gap cycle
+rendered as one unbroken line. Fix: `countryGeometry.ts`'s
+`geometryToBorderSegmentsWithDistances`/`geometryToLineSegmentsWithDistances`
+now normalize each ring/line's own distances to `[0, 1]` (divided by that
+ring's own total length) instead of leaving them as absolute world
+distance — every ring now shows the same NUMBER of dashes regardless of
+its actual size. This is shared code (`ClaimsOverlayLayer.tsx`'s dashed
+claim outlines use the same functions/constants), so country-scale claim
+borders get slightly different — more size-consistent — dash density as an
+unplanned but welcome side effect, not a regression, since they had the
+exact same underlying bug at a scale where it was less visible. Layered a
+second mitigation on top rather than treating the math fix as sufficient
+on its own: `StatesProvinces.tsx`'s always-on default boundary line dropped
+from 0.55 to 0.22 opacity, so even a technically-correct dash pattern on a
+tiny province reads quietly rather than busily against the many other
+unselected boundaries on screen at once — the one live per-entry border
+`EntityRenderLayer` still draws for whichever province is actually
+hovered/selected stays at full opacity, so the focused case still pops
+against the now-quieter default.
+
+## 2026-08-15 — States/provinces upgraded to 1:10m: two schema defects the pilot's 9-country scope never exposed
+
+**Swapped the vendored source from Natural Earth's 1:50m admin-1 layer (294
+features, 9 countries) to its 1:10m layer (4,596 raw features, 251
+`adm0_a3` values) — the exact upgrade path v4.0's own header comment and
+`BACKLOG.md` had documented since the pilot shipped.** The pipeline itself
+(`topologyPipeline.mjs`) needed zero changes — same "plain GeoJSON
+`FeatureCollection` in, simplified topology out" shape v4.0 already
+generalized it for. `buildStatesProvincesTopology.mjs`'s own filtering did
+need two real fixes, both invisible at 9-country scale and both found by
+just running the build against the new file rather than by inspection.
+
+**Fix 1 — non-sovereign `adm0_a3` values now hard-fail instead of being
+silently absent.** At 1:50m, all 9 vendored countries were real UN
+members, so `ALPHA3_TO_NUMERIC` (the complete, canonical ISO 3166-1 table)
+resolved every row and the script's "throw if unresolved" behavior never
+fired. At 1:10m, Natural Earth's admin-1 layer also carries provinces for
+Kosovo, Western Sahara, Guantanamo Bay, the two Cyprus Sovereign Base
+Areas, and other classifications this codebase already models as
+`GeoEntity` records rather than `Country` rows — genuinely no numeric
+country id to resolve to, not a table gap. Changed the throw to a skip
+(logged to the console and `BACKLOG.md`, 57 features across 17 `adm0_a3`
+values) rather than either crashing the whole build or guessing at routing
+these into `GeometryMap`/`GeoEntityRegistry` — the latter is real, worthwhile
+follow-up work, but touches `GeoEntity`-adjacent code well outside a
+data-pipeline upgrade's scope. One of the 17, `SDS`, was a real bug rather
+than a non-country row: Natural Earth's admin-1 layer tags South Sudan's
+provinces with `SDS` instead of the canonical `SSD` already in
+`iso3166.mjs` — without aliasing it, South Sudan would have been the one
+actual UN member silently dropped by the same skip logic that correctly
+drops Kosovo. Aliased rather than special-cased in the build script, so any
+future consumer of `ALPHA3_TO_NUMERIC` gets the same fix for free.
+
+**Fix 2 — the province id needed a different source field entirely.**
+v4.0 stamped each province's id from its own `iso_3166_2` code
+(`"AU-WA"` → `"au-wa"`), which was safe at 9-country scale by coincidence,
+not by verification. At 1:10m, 60 groups of genuinely distinct provinces —
+all 9 Bosnian cantons, Sudan's Southern and Eastern Darfur, Malawi's
+Chitipa district listed twice — share one `iso_3166_2` code apiece, which
+is a real Natural Earth data defect at this resolution, not a merge-worthy
+multi-polygon split the way an archipelago province's rings would be.
+Switched the id source to `adm1_code` (Natural Earth's own internal key,
+e.g. `"BIH-2228"`), verified unique and present across all 4,596 raw
+features before switching — less human-legible than an ISO 3166-2 code,
+but this id is purely an internal `GeometryMap`/registry key, never
+rendered.
+
+**Result: all 193 UN members now have admin-1 coverage** (up from 9), plus
+42 more ISO-coded non-UN territories (Taiwan, Hong Kong, Puerto Rico,
+Antarctica, ...) whose provinces resolve a `parentCountryId` with no
+matching `CountryRegistry` entry — logged in `BACKLOG.md` as a fact worth
+knowing, not a bug, since nothing today reads `parentCountryId` expecting
+it to always resolve against `CountryRegistry`. 4,539 features shipped (57
+skipped), output grew from 262 KB to 3.75 MB — reported and accepted, not
+treated as a "balloons past reasonable" case the way a multi-hundred-MB
+output would have been.
+
 ## 2026-08-15 — v6.2.5: the dashed-border fix that fixed a real bug but wasn't the actual bug
 
 First diagnosis (v6.2.4, below) was real but incomplete: for a shape with

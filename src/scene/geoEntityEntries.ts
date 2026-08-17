@@ -19,14 +19,27 @@ import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 const BORDER_RADIUS = GLOBE_RADIUS * 1.004
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
 
-// Shared dash sizing for every dashed/"hatched" border this app renders
-// (world units, scaled to GLOBE_RADIUS = 2.4) — originally local to
-// layers/geoOverlays/ClaimsOverlayLayer.tsx (the first consumer of dashed
-// borders, v3.1), moved here so scene/EntityRenderLayer.tsx's own dashed-
-// border option (states/provinces, v6.2.4) uses the exact same dash scale
-// instead of picking its own and drifting apart.
-export const DASH_SIZE = 0.028
-export const GAP_SIZE = 0.02
+// Shared dash sizing for every dashed/"hatched" border this app renders —
+// originally local to layers/geoOverlays/ClaimsOverlayLayer.tsx (the first
+// consumer of dashed borders, v3.1), moved here so scene/EntityRenderLayer.tsx's
+// own dashed-border option (`dashedBorders`, currently unused — see its own
+// doc comment) uses the exact same dash scale as ClaimsOverlayLayer.tsx
+// instead of picking its own and drifting apart, should a future caller
+// turn it on again.
+//
+// 2026-08-15: fractions of each ring/line's own length (countryGeometry.ts's
+// geometryToBorderSegmentsWithDistances/geometryToLineSegmentsWithDistances
+// normalize their `distances` output to [0, 1] per ring), not world units —
+// previously these were absolute world-space lengths, which meant a small
+// shape's whole perimeter could be shorter than one dash+gap cycle and
+// render as an unbroken solid line. At these values a dash+gap cycle is
+// ~1/12 of a ring's length, so every ring shows roughly the same number of
+// dashes (~10-12) regardless of its actual size. (States/provinces itself
+// stopped using dashing on 2026-08-16 — see StatesProvinces.tsx — but
+// ClaimsOverlayLayer.tsx's dashed claim outlines still do, and still
+// benefit from this normalization.)
+export const DASH_SIZE = 0.05
+export const GAP_SIZE = 0.033
 
 export interface GeoEntityEntry {
   // The rendered shape's own id — used for hover state and as the

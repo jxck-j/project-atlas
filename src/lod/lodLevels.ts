@@ -34,8 +34,20 @@ export const LOD_LEVELS: LodLevel[] = [
   {
     id: 'states',
     label: 'States / Provinces',
-    description: 'Admin-1 boundaries for 9 large countries — same "always on" reasoning as countries.',
-    revealDistance: null,
+    // 2026-08-15: gated behind a real reveal distance, not "always on" like
+    // countries/lakes/rivers — this tier grew from 294 features (9 large
+    // countries, 1:50m) to 4,539 (nearly every country, 1:10m), and
+    // rendering all of them regardless of zoom made every one individually
+    // hoverable/clickable at once, tanking FPS (thousands of raycast
+    // targets on every pointer move, thousands of draw calls on every
+    // camera-drag frame). 5.0 reveals shortly before CAMERA_FOCUS_DISTANCE
+    // (4.8, scene/constants.ts — where a selected-country camera flight
+    // ends), so admin-1 boundaries are already visible by the time a
+    // country-focus flight completes, without cluttering the full default
+    // global view (6.5). A first-pass number, not eye-tuned in the browser
+    // the way the city tiers below were — revisit if it doesn't feel right.
+    description: 'Admin-1 boundaries — nearly every country, revealed once zoomed to roughly country-focus distance or closer.',
+    revealDistance: 5.0,
     implemented: true,
   },
   {

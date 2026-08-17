@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useThree, type ThreeEvent } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { FrontSide, type Mesh, type Vector3 } from 'three'
@@ -7,10 +7,11 @@ import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
 import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
 import { useApparentFontSize } from './useApparentFontSize'
-import { DASH_SIZE, GAP_SIZE, type GeoEntityEntry } from './geoEntityEntries'
+import { useClickDragGuard } from './useClickDragGuard'
+import type { GeoEntityEntry } from './geoEntityEntries'
 
 // Shared by scene/Countries.tsx and scene/GeoEntities.tsx (v4.4, "Phase 4"
-// dedup) — both rendered one merged border lineSegments + one merged fill
+// dedup) — both render one merged border lineSegments + one merged fill
 // mesh per entry, with identical hover/select/dim color logic, the same
 // click-vs-drag threshold, and the same large-vs-small HoverLabel callout
 // choice. Kept separate in each caller (not folded in here) is only what's
@@ -22,6 +23,17 @@ import { DASH_SIZE, GAP_SIZE, type GeoEntityEntry } from './geoEntityEntries'
 // just no-ops, since every rendered GeoEntity already has a GeometryMap
 // registration by the time it's clickable) — both live in each caller's own
 // onSelect callback, passed in as a prop.
+//
+// scene/StatesProvinces.tsx used this component too, from v4.4 through
+// 2026-08-15 — its own dashedBorders/hideDefaultBorders props existed
+// solely for that caller. Once states/provinces grew to ~4,500 individually
+// interactive entries (the 1:10m upgrade), this component's one-mesh-per-
+// entry model became the FPS bottleneck itself; scene/ProvinceFillLayer.tsx
+// (2026-08-16) replaced it there with a merged-mesh renderer built for that
+// scale, so this component is back to being Countries.tsx/GeoEntities.tsx-
+// only, and those two dead props were removed along with it rather than
+// left in place with no caller. See LOGBOOK.md's "States/provinces FPS"
+// entries for the full reasoning trail.
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
 
 // v3.1: sourced from scene/highlightColors.ts, the same palette
@@ -29,10 +41,6 @@ const FILL_RADIUS = GLOBE_RADIUS * 1.0
 const COLOR_DEFAULT = HIGHLIGHT_COLORS.default.hex
 const COLOR_HOVER = HIGHLIGHT_COLORS.hovered.hex
 const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
-
-// How far (in screen pixels) the pointer may move between down/up and still
-// count as a "click" rather than a drag-to-rotate gesture.
-const CLICK_MOVE_THRESHOLD = 6
 
 // Hover label — always inline at the entry's own centroid, in the exact
 // spot its passive label (CountryLabels.tsx/GeoEntityLabels.tsx/
@@ -77,7 +85,7 @@ const CLICK_MOVE_THRESHOLD = 6
 // being rendered for. Checking unconditionally is cheap (at most one
 // HoverLabel ever mounted now) and always correct either way. See
 // useFrontOfGlobeVisible.ts and LOGBOOK.md's v5.2.1 entry.
-function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
+export function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
   const anchor = useMemo(
     () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.006),
     [entry.centroid]
@@ -110,60 +118,12 @@ export interface EntityRenderLayerProps {
   // excludes whichever entity this one is already glow-labeling via
   // HoverLabel.
   onHoverChange?: (geometryId: string | null) => void
-  // v6.2.4: renders every entry's border dashed (LineDashedMaterial, same
-  // DASH_SIZE/GAP_SIZE ClaimsOverlayLayer.tsx's dashed borders already use)
-  // instead of the solid LineBasicMaterial every other caller gets —
-  // StatesProvinces.tsx's only difference from Countries.tsx/GeoEntities.tsx,
-  // so a state/province border reads as a visually distinct, secondary kind
-  // of boundary even while the same color/opacity hover-select logic below
-  // still applies to it. Every entry already carries the precomputed
-  // 'lineDistance' attribute LineDashedMaterial needs (buildGeoEntityEntries()
-  // sets it unconditionally, ring-aware — see geoEntityEntries.ts and
-  // countryGeometry.ts's geometryToBorderSegmentsWithDistances), so turning
-  // this on costs nothing extra per entry, only a different
-  // material at render time. Defaults to false (Countries.tsx/GeoEntities.tsx
-  // unchanged).
-  dashedBorders?: boolean
-  // v6.2.5: skips rendering a per-entry border line for any entry that
-  // isn't currently hovered or selected. StatesProvinces.tsx is the only
-  // caller — its own scene/StatesProvinces.tsx's <BoundaryMesh> already
-  // draws every province boundary once, deduplicated, via topojson-client's
-  // mesh() (see useStatesProvincesFeatures.ts). Rendering each of the 294
-  // provinces' OWN full border ring on top of that (the pre-v6.2.5
-  // behavior) drew every interior admin-1 boundary TWICE — once per
-  // adjacent province — each with its own independently-phased dash
-  // pattern; wherever the two phases happened to mostly fill in each
-  // other's gaps, the boundary looked solid instead of dashed (reported
-  // for Pará/Mato Grosso specifically, but not unique to that pair — see
-  // LOGBOOK.md's v6.2.5 entry). Still rendering the border for whichever
-  // one entry IS hovered/selected is safe: at most one extra copy overlaps
-  // the mesh at a time, and a brighter, bolder-looking highlight where it
-  // does is the intended effect for "this one is focused," not the bug the
-  // default/dimmed case had.
-  hideDefaultBorders?: boolean
 }
 
-export function EntityRenderLayer({
-  entries,
-  selectedEntityId,
-  onSelect,
-  onHoverChange,
-  dashedBorders = false,
-  hideDefaultBorders = false,
-}: EntityRenderLayerProps) {
+export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHoverChange }: EntityRenderLayerProps) {
   const { gl } = useThree()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const dragStart = useRef<{ x: number; y: number } | null>(null)
-
-  // Track where a pointer-down started (in screen space) so a drag-to-rotate
-  // gesture over an entry doesn't get misread as a click-to-select.
-  useEffect(() => {
-    const onDown = (e: PointerEvent) => {
-      dragStart.current = { x: e.clientX, y: e.clientY }
-    }
-    window.addEventListener('pointerdown', onDown)
-    return () => window.removeEventListener('pointerdown', onDown)
-  }, [])
+  const wasDragGesture = useClickDragGuard()
 
   // Reflect hover state as a cursor change on the canvas itself.
   useEffect(() => {
@@ -181,12 +141,7 @@ export function EntityRenderLayer({
 
   function handlePointerUp(entry: GeoEntityEntry, e: ThreeEvent<PointerEvent>) {
     e.stopPropagation()
-    const start = dragStart.current
-    if (start) {
-      const dx = e.nativeEvent.clientX - start.x
-      const dy = e.nativeEvent.clientY - start.y
-      if (Math.hypot(dx, dy) > CLICK_MOVE_THRESHOLD) return // was a drag, not a click
-    }
+    if (wasDragGesture(e.nativeEvent.clientX, e.nativeEvent.clientY)) return // was a drag, not a click
 
     // Use the clicked mesh's CURRENT world matrix so the direction is
     // correct even while the globe is mid-rotation at the moment of click.
@@ -215,18 +170,10 @@ export function EntityRenderLayer({
             {/* Native LineBasicMaterial ignores `linewidth` on effectively
                 every platform (WebGL caps it to 1px) — the hover/select
                 emphasis that used to come from a thicker line relies on
-                color + opacity alone. Same is true of LineDashedMaterial
-                below, so dashedBorders' visual distinction is the dash
-                pattern itself, not a thickness difference. */}
-            {(!hideDefaultBorders || isSelected || isHovered) && (
-              <lineSegments geometry={entry.borderGeometry}>
-                {dashedBorders ? (
-                  <lineDashedMaterial color={color} dashSize={DASH_SIZE} gapSize={GAP_SIZE} transparent opacity={lineOpacity} />
-                ) : (
-                  <lineBasicMaterial color={color} transparent opacity={lineOpacity} />
-                )}
-              </lineSegments>
-            )}
+                color + opacity alone. */}
+            <lineSegments geometry={entry.borderGeometry}>
+              <lineBasicMaterial color={color} transparent opacity={lineOpacity} />
+            </lineSegments>
             {entry.fillGeometry && (
               <mesh
                 geometry={entry.fillGeometry}

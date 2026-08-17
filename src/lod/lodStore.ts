@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { LOD_LEVELS, resolveDeepestLevel } from './lodLevels'
-import type { LodLevel } from './types'
+import { LOD_LEVELS, isLodLevelActive, resolveDeepestLevel } from './lodLevels'
+import type { LodLevel, LodLevelId } from './types'
 
 // Zustand-backed publisher for the current camera distance and derived LOD
 // level, same role as globeRotation.ts/telemetryStore.ts — for consumers
@@ -42,4 +42,14 @@ export function getCurrentLodLevel(): LodLevel {
 
 export function useLodLevel(): LodLevel {
   return useLodStore((state) => state.level)
+}
+
+// For a mounted-outside-the-Canvas consumer that needs one specific tier's
+// on/off state, not the whole ladder's deepest level — StatesProvinces.tsx
+// is the first user (2026-08-15). Selects a derived boolean rather than raw
+// `distance`, so — same reasoning useLodLevel() already relies on — this
+// only re-renders when the boolean itself flips, not on every frame's
+// distance publish.
+export function useIsLodLevelActive(id: LodLevelId): boolean {
+  return useLodStore((state) => isLodLevelActive(id, state.distance))
 }

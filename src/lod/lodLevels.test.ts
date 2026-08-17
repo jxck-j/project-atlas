@@ -2,13 +2,18 @@ import { describe, expect, it } from 'vitest'
 import { isLodLevelActive, LOD_LEVELS, resolveActiveLevels, resolveDeepestLevel } from './lodLevels'
 
 // These tests exercise the REAL LOD_LEVELS data (not a mock ladder) against
-// its own documented threshold values (2.85/2.7/2.6/2.55/2.52 — see
+// its own documented threshold values (5.0/2.85/2.7/2.6/2.55/2.52 — see
 // lodLevels.ts's comment for why each was tuned where it is), so a future
 // change to those numbers is a deliberate, visible diff to these
 // expectations rather than a silent behavior change. Expected values below
 // are derived directly from LOD_LEVELS' own definitions, not guessed.
 
-const ALWAYS_ON = ['earth', 'countries', 'states', 'lakes', 'rivers']
+// 'states' moved from revealDistance: null to 5.0 on 2026-08-15 (see
+// lodLevels.ts's own comment) — no longer unconditional, so it's kept out
+// of ALWAYS_ON and added explicitly at every distance below its threshold
+// instead, mirroring how metro-areas/large-cities/etc. are already handled.
+const ALWAYS_ON = ['earth', 'countries', 'lakes', 'rivers']
+const ALWAYS_ON_WITH_STATES = ['earth', 'countries', 'states', 'lakes', 'rivers']
 
 describe('resolveActiveLevels', () => {
   it('returns only the always-on levels when zoomed all the way out', () => {
@@ -16,23 +21,29 @@ describe('resolveActiveLevels', () => {
     expect(ids).toEqual(ALWAYS_ON)
   })
 
+  it('unlocks states exactly at its 5.0 threshold, not before', () => {
+    expect(resolveActiveLevels(5.01).map((l) => l.id)).toEqual(ALWAYS_ON)
+    expect(resolveActiveLevels(5.0).map((l) => l.id)).toEqual(ALWAYS_ON_WITH_STATES)
+  })
+
   it('unlocks metro-areas exactly at its 2.85 threshold, not before', () => {
-    expect(resolveActiveLevels(2.86).map((l) => l.id)).toEqual(ALWAYS_ON)
-    expect(resolveActiveLevels(2.85).map((l) => l.id)).toEqual([...ALWAYS_ON, 'metro-areas'])
+    expect(resolveActiveLevels(2.86).map((l) => l.id)).toEqual(ALWAYS_ON_WITH_STATES)
+    expect(resolveActiveLevels(2.85).map((l) => l.id)).toEqual([...ALWAYS_ON_WITH_STATES, 'metro-areas'])
   })
 
   it('is cumulative — reaching a deeper tier keeps every shallower one active', () => {
-    // 2.6 clears metro-areas (2.85), large-cities (2.7), and medium-cities
-    // (2.6) itself, but not small-cities (2.55) or every-incorporated-city
-    // (2.52), since distance <= revealDistance is false for those two.
+    // 2.6 clears states (5.0), metro-areas (2.85), large-cities (2.7), and
+    // medium-cities (2.6) itself, but not small-cities (2.55) or
+    // every-incorporated-city (2.52), since distance <= revealDistance is
+    // false for those two.
     const ids = resolveActiveLevels(2.6).map((l) => l.id)
-    expect(ids).toEqual([...ALWAYS_ON, 'metro-areas', 'large-cities', 'medium-cities'])
+    expect(ids).toEqual([...ALWAYS_ON_WITH_STATES, 'metro-areas', 'large-cities', 'medium-cities'])
   })
 
   it('activates every implemented tier at the closest zoom (2.52)', () => {
     const ids = resolveActiveLevels(2.52).map((l) => l.id)
     expect(ids).toEqual([
-      ...ALWAYS_ON,
+      ...ALWAYS_ON_WITH_STATES,
       'metro-areas',
       'large-cities',
       'medium-cities',
@@ -81,6 +92,11 @@ describe('isLodLevelActive', () => {
   it('matches resolveActiveLevels at the metro-areas boundary', () => {
     expect(isLodLevelActive('metro-areas', 2.85)).toBe(true)
     expect(isLodLevelActive('metro-areas', 2.86)).toBe(false)
+  })
+
+  it('matches resolveActiveLevels at the states boundary', () => {
+    expect(isLodLevelActive('states', 5.0)).toBe(true)
+    expect(isLodLevelActive('states', 5.01)).toBe(false)
   })
 
   it('is always false for a reserved (implemented: false) level', () => {

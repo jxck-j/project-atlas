@@ -388,13 +388,31 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 ## Geographic coverage
 
-- **States/provinces (v4.0) only cover 9 large countries** (Australia,
-  Brazil, Canada, China, India, Indonesia, Russia, South Africa, United
-  States), 294 features total — the Natural Earth 1:50m admin-1 resolution
-  this was vendored at only usefully resolves those. Deliberately partial,
-  not a bug: the 1:10m version of the same dataset covers every country and
-  is the documented upgrade path (swap `scripts/vendor/`'s vendored file,
-  rerun `npm run build:geo:states`).
+- **States/provinces upgraded to the 1:10m resolution (2026-08-15)**: 4,539
+  features (up from 294 at 1:50m) across 235 distinct parent-country ids —
+  all 193 UN member states now have coverage, plus 42 more ISO-coded
+  non-UN territories/dependencies (Taiwan, Hong Kong, Puerto Rico,
+  Greenland, Antarctica, ...) whose provinces carry a `parentCountryId`
+  that has no matching entry in `CountryRegistry` (UN members only) — not
+  wired into any consumer differently than a UN member's provinces are,
+  just worth knowing if a future feature keys off `parentCountryId`
+  expecting it to always resolve. Output is `public/geo/
+  states-provinces.json`, 3.75 MB (up from 262 KB).
+- **57 provinces skipped during the 1:10m upgrade — no ISO country code to
+  attach a parent to.** `scripts/buildStatesProvincesTopology.mjs` only
+  keeps features whose `adm0_a3` resolves via `iso3166.mjs`; these 17
+  distinct `adm0_a3` values don't, because they're not sovereign countries:
+  Kosovo (30 provinces), Western Sahara, Somaliland, Northern Cyprus, the
+  Gaza Strip, the West Bank, the Spratly Islands, Guantanamo Bay, Baikonur,
+  the Siachen Glacier, the Akrotiri and Dhekelia Sovereign Base Areas, and
+  five uninhabited dependencies (Åland, Clipperton Island, Ashmore and
+  Cartier Islands, Coral Sea Islands, the Indian Ocean Territories). Most
+  of the non-uninhabited ones already have their own `GeoEntity` record
+  (`data/registry/geoEntities.ts`) at the country/territory level — routing
+  their admin-1 subdivisions into `GeometryMap`/`GeoEntityRegistry` instead
+  of silently dropping them is a real follow-up worth considering, but a
+  bigger change than this pass (touches `GeoEntity`-adjacent code) and was
+  deliberately left out of it.
 - **South Sudan and Nauru have no capital marker (v4.1)** — Natural Earth's
   1:50m populated places layer doesn't flag either country's capital at
   this resolution. Every other of the 193 UN members does. Worth a manual
@@ -420,11 +438,98 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   `ClaimsOverlayLayer.tsx`'s dashed border + prominent fill was chosen as a
   legible stand-in achievable with stock `three.js` materials. Revisit if a
   literal hatch pattern matters more than "visibly flagged, distinct color."
-- **`DASH_SIZE`/`GAP_SIZE` constants in `ClaimsOverlayLayer.tsx` were picked
-  by eye against `GLOBE_RADIUS`, not tuned against a running browser** — no
-  browser tooling was available in the sessions that built v3.1.0/v3.1.1.
-  Worth a visual pass to confirm dash rhythm reads well across both large
-  claimants (Russia) and tiny disputed features (Scarborough Reef).
+- **`DASH_SIZE`/`GAP_SIZE` (2026-08-15) switched from absolute world units
+  to fractions of each ring/line's own normalized length**
+  (`countryGeometry.ts`'s distance functions now output `[0, 1]` per ring
+  instead of raw world distance) — fixes the underlying "small shape's
+  border renders as a solid line instead of dashed" bug the previous
+  absolute-unit version had. Now relevant only to `ClaimsOverlayLayer.tsx`'s
+  dashed claim outlines — states/provinces itself dropped dashing entirely
+  on 2026-08-16 (see the states/provinces FPS item below), so it's no
+  longer exercising this path. The values (0.05/0.033, ~12 dashes per ring)
+  are still a first-pass number chosen by reasoning about the math, not a
+  browser-confirmed visual pass — worth checking dash rhythm still reads
+  well across both large claimants (Russia) and tiny disputed features
+  (Scarborough Reef).
+- **`states` LOD reveal distance (5.0, `src/lod/lodLevels.ts`, 2026-08-15)
+  is a first-pass number, not eye-tuned in the browser** — chosen to land
+  just outside `CAMERA_FOCUS_DISTANCE` (4.8) by reasoning about the camera
+  system, the same way the existing city tiers were hand-tuned by watching
+  the app run but this one wasn't. Worth confirming in the browser that
+  admin-1 boundaries reveal at a distance that actually feels right, not
+  just "technically fixes the FPS regression" (which it didn't fully do —
+  see the states/provinces FPS item below).
+- **States/provinces FPS: per-country merge + React re-render fixes
+  implemented (2026-08-17), NOT yet confirmed by the user as smooth — this
+  is the current, open state.** LOD-gating and a front-facing filter
+  helped but didn't reduce per-mesh overhead; a first merged-mesh attempt
+  (one single global mesh) fixed that but made Europe WORSE — measured,
+  not guessed: no internal spatial structure means R3F's unthrottled
+  per-pointermove raycast does a flat linear scan of every triangle once
+  the one bounding sphere passes, and Europe had ~2.7x Brazil's active
+  triangles at a comparable zoom. `scene/useMergedFillsByCountry.ts`
+  merges per COUNTRY instead (119 meshes over Europe instead of 1, worst
+  case 39,609 triangles instead of 227,116) — genuinely better, but still
+  reported as laggy. A second, independent cost was compounding it: React
+  re-rendering every active country mesh on every hover change (unstable
+  callback props defeated any memoization) plus `Array.find()`/`.some()`
+  re-scans of up to ~2,700 entries per hover change. Fixed with
+  `useCallback` all the way from `StatesProvinces.tsx` down through
+  `useClickDragGuard.ts`, a `Map`-based O(1) lookup in
+  `ProvinceFillLayer.tsx`, and `React.memo` on `CountryFillMesh`.
+  **Measured before AND after this second fix** (a synthetic
+  `PointerEvent('pointermove')` sweep timed with `performance.now()`, the
+  exact code path a real mousemove triggers): Brazil ~11ms → ~5.75ms/event,
+  Germany ~25ms → ~7.9ms/event — the region gap nearly closed.
+  **Confirmed by the user: smooth when zoomed on a single country, still
+  choppy when most of Europe is in frame — remeasured and quantified
+  (2026-08-17): 4 active countries/4,694 triangles at single-country zoom
+  vs. 119 active countries/290,612 triangles at the "most of Europe" zoom,
+  ~30x more. None of the fixes so far reduce active MESH COUNT for a wide
+  view — they reduced per-mesh cost and eliminated wasted re-renders, a
+  different axis. Two real options, neither attempted yet: cap/cluster
+  active mesh count when many countries are simultaneously in view, or
+  replace per-country merging with a properly spatially-accelerated (BVH)
+  single mesh so mesh count stops being the lever at all.**
+- **States/provinces layer-mount freeze: FIXED and verified (2026-08-17).**
+  Was a ~1.3-1.7 SECOND synchronous main-thread block, reported by the
+  user as "delay/lag on the switch when turning on the states/provinces
+  layer." Root cause, found by instrumenting three candidates rather than
+  guessing (fetch 368ms, topology conversion 268ms, per-country merge
+  29-48ms — all ruled out): `buildGeoEntityEntries(features)` in
+  `StatesProvinces.tsx` — earcut triangulation for all 4,539 provinces run
+  synchronously inside a `useMemo`. Not a regression from anything else
+  done this session; an original, never-separately-measured cost of the
+  1:10m upgrade itself. Fixed with `scene/useChunkedGeoEntityEntries.ts` —
+  processes the triangulation in batches of 400 across
+  `requestIdleCallback`/`setTimeout` turns instead of all at once.
+  **Verified with a real `PerformanceObserver({entryTypes: ['longtask']})`
+  capture, not eyeballed**: before, one 1,320-1,683ms task; after, five
+  ~102ms tasks. `StateProvinceLabels`/`ProvinceFillLayer` now populate
+  progressively over roughly the same total wall-clock time instead of
+  appearing all at once after the freeze — an intentional, accepted
+  tradeoff, not a bug.
+- **States/provinces FPS: mesh count still scales ~30x between a
+  single-country view and "most of Europe" — open, deliberately not
+  attempted yet.** Asked directly whether to fix this in the same pass as
+  the freeze above; held off. 4 active countries/4,694 triangles at
+  single-country zoom vs. 119 active countries/290,612 triangles at the
+  "most of Europe" zoom. Two real options on the table, neither started:
+  cap/cluster active mesh count for wide views, or replace per-country
+  merging with a properly spatially-accelerated (BVH) single mesh so mesh
+  count stops being the lever at all.
+- **`useFrontFacingEntries.ts`'s initial state defaults to the FULL
+  unfiltered entries list** (deliberate, 2026-08-16, to avoid a flash of
+  emptiness before the first filter pass) — means the very first render
+  after mount briefly requests ALL 235 countries before the throttled
+  filter narrows it down. Somewhat mitigated now that entries arrive
+  chunked (all 235 aren't actually available to request until every chunk
+  lands anyway), but the underlying "default to everything vs. nothing on
+  first render" tension is still there. Worth revisiting alongside
+  whichever wide-view fix above gets picked, not in isolation.
+- See `LOGBOOK.md`'s "States/provinces FPS" parts 1-9 for the full
+  reasoning trail behind all three items above, including every round of
+  measurement methodology, if this needs re-profiling again.
 - **`hud/LegendPanel.tsx`'s overlay rows are hardcoded to specific layer
   ids** — `'parent-territory-overlay'`, `'claims-overlay'`, and now (v3.3.0)
   a list of all six `'highlight-*'` ids — rather than driven generically by
