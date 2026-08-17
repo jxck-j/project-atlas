@@ -660,6 +660,16 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   natural, does Tab's category-cycling read as useful once you can actually
   try it.
 
+- **`scene/useDistanceScaledRotateSpeed.ts`'s `MIN_DISTANCE_ROTATE_SCALE`
+  (0.25, 2026-08-17) was picked by reasoning about the math, not tuned in a
+  running browser.** Added because rotate-drag was reported as too fast when
+  zoomed in close, even at the sensitivity slider's own minimum (0.1) —
+  scales the effective `rotateSpeed` down as camera distance approaches
+  `CAMERA_MIN_DISTANCE`, leaving `CAMERA_DEFAULT_DISTANCE` and beyond
+  unchanged (the zoom level the slider's default of 0.5 was already judged
+  correct at). Worth a real check at the closest zoom to confirm 0.25 is the
+  right amount of damping, not just "less than before."
+
 ## Input Layer (v3.2.0)
 
 - **Tab/Shift+Tab were repurposed for entity-category cycling, which means

@@ -8,6 +8,7 @@ import { useFlickAutoRotate } from './useFlickAutoRotate'
 import { useCameraFlight } from './useCameraFlight'
 import { useCameraReset } from './useCameraReset'
 import { useCameraController } from '../input/CameraController'
+import { useDistanceScaledRotateSpeed } from './useDistanceScaledRotateSpeed'
 import {
   CAMERA_IDLE_AUTOROTATE_SPEED,
   CAMERA_MAX_DISTANCE,
@@ -68,6 +69,11 @@ export function CameraControls() {
   useCameraReset(controlsRef)
   // v3.2.0: WASDQE keyboard camera nudges — see src/input/CameraController.ts.
   useCameraController(controlsRef)
+  // Applies rotateSensitivity imperatively, scaled down by camera distance
+  // — see useDistanceScaledRotateSpeed.ts for why a flat rotateSpeed prop
+  // isn't enough. Replaces the static `rotateSpeed={rotateSensitivity}`
+  // prop this component used to pass directly.
+  useDistanceScaledRotateSpeed(controlsRef, rotateSensitivity)
 
   return (
     <OrbitControls
@@ -75,7 +81,6 @@ export function CameraControls() {
       enablePan={false}
       enableDamping
       dampingFactor={0.08}
-      rotateSpeed={rotateSensitivity}
       zoomSpeed={zoomSensitivity}
       minDistance={CAMERA_MIN_DISTANCE}
       maxDistance={CAMERA_MAX_DISTANCE}
