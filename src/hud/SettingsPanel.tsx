@@ -11,10 +11,14 @@ function Slider({
   label,
   value,
   onChange,
+  min = 0.1,
+  max = 1.5,
 }: {
   label: string
   value: number
   onChange: (v: number) => void
+  min?: number
+  max?: number
 }) {
   return (
     <label className="block">
@@ -24,8 +28,8 @@ function Slider({
       </div>
       <input
         type="range"
-        min={0.1}
-        max={1.5}
+        min={min}
+        max={max}
         step={0.05}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
@@ -108,7 +112,13 @@ export function SettingsPanel() {
 
         <div className="space-y-3 border-b border-[#16233c] px-4 py-3">
           <div className={PANEL_SECTION_LABEL}>CAMERA</div>
-          <Slider label="ROTATE SENS" value={rotateSensitivity} onChange={setRotateSensitivity} />
+          <Slider
+            label="ROTATE SENS"
+            value={rotateSensitivity}
+            onChange={setRotateSensitivity}
+            min={0.05}
+            max={1.0}
+          />
           <Slider label="ZOOM SENS" value={zoomSensitivity} onChange={setZoomSensitivity} />
         </div>
 

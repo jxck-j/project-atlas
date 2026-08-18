@@ -7,15 +7,22 @@ import { CAMERA_DEFAULT_DISTANCE, CAMERA_MIN_DISTANCE } from './constants'
 // angle regardless of zoom — but the same angle sweeps far more screen
 // space for a surface point the closer the camera sits to it, so rotation
 // reads as "too fast" once zoomed in even at the sensitivity slider's own
-// minimum (settingsStore.ts's rotateSensitivity, 0.1-2.0). The slider's
-// range wasn't the problem; a flat mapping to OrbitControls' rotateSpeed
-// regardless of camera distance was. This scales the *effective* speed
-// down as distance approaches CAMERA_MIN_DISTANCE, reaching
-// MIN_DISTANCE_ROTATE_SCALE right at the closest zoom, while leaving
-// CAMERA_DEFAULT_DISTANCE and beyond exactly as the slider says — that's
-// the zoom level the slider's own values (default 0.5) were judged
-// correct at, so nothing changes there.
+// minimum. This scales the *effective* speed down as distance approaches
+// CAMERA_MIN_DISTANCE, reaching MIN_DISTANCE_ROTATE_SCALE right at the
+// closest zoom, while leaving CAMERA_DEFAULT_DISTANCE and beyond exactly
+// as the slider says.
 const MIN_DISTANCE_ROTATE_SCALE = 0.25
+
+// settingsStore.ts's rotateSensitivity is a 0.2-1.0 slider range, but the
+// physical OrbitControls rotateSpeed it drives is half that (0.1-0.5) —
+// the old slider went up to 1.5 raw and even after the distance scaling
+// above, still felt too fast whenever it was set above its own default.
+// The fix was to stop letting the slider reach past what its old default
+// (0.5 raw) already produced, then relabel that new ceiling as "1.0" for a
+// friendlier range — this constant converts the relabeled slider value
+// back to that original, already-correct physical scale. See
+// settingsStore.ts's DEFAULTS comment.
+const ROTATE_SENSITIVITY_TO_SPEED = 0.5
 
 function distanceRotateScale(distance: number): number {
   const t = Math.min(
@@ -39,6 +46,7 @@ export function useDistanceScaledRotateSpeed(
   useFrame(() => {
     const controls = controlsRef.current
     if (!controls) return
-    controls.rotateSpeed = rotateSensitivity * distanceRotateScale(controls.getDistance())
+    controls.rotateSpeed =
+      rotateSensitivity * ROTATE_SENSITIVITY_TO_SPEED * distanceRotateScale(controls.getDistance())
   })
 }
