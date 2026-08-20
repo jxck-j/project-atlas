@@ -62,6 +62,30 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   comment): no id-stamping, no `GeoEntityRegistry` entry, no `GeometryMap`
   registration — lakes are physical geography, not political entities.
 
+## `military/sipri-milex.xlsx`, `military/sipri-top100.xlsx`
+
+- **Source:** SIPRI Military Expenditure Database (`sipri.org/databases/milex`)
+  and SIPRI Top 100 Arms-Producing Companies Database
+  (`sipri.org/databases/armsindustry`) — both direct, no-login Excel
+  downloads.
+- **Fetched:** 2026-08-19/20 (milex `v1.2`, revised 2026-04-27; top-100
+  covers 2002–2024).
+- **License:** SIPRI makes both databases freely available for public,
+  non-commercial use; see `sipri.org/about/terms-and-conditions`.
+- **Used by:** `scripts/buildMilitary.mjs` — expenditure (`Current US$`
+  sheet, most recent year with a real value per country) and
+  defense-industrial base (sum of `Arms revenues (2024)` grouped by HQ
+  `Country`, true-zero for every country absent from the Top 100).
+  `scripts/buildMilitary.mjs` also pulls a third SIPRI dataset (arms-import
+  TIV) live at build time rather than from a vendored file here — see that
+  script's own header comment for why (its documented CSV-export API is
+  decommissioned; the live portal's real backend had to be reverse-engineered
+  instead of vendored, since it requires a per-run POST query rather than a
+  static downloadable file).
+- **Not re-downloaded automatically:** `buildMilitary.mjs` only fetches these
+  if the local file is missing — delete the file under `military/` to force
+  a refresh against whatever SIPRI is currently serving.
+
 ## `ne_50m_rivers_lake_centerlines.geojson`
 
 - **Source:** Natural Earth 1:50m Physical Vectors, "Rivers + lake

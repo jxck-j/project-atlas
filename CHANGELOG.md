@@ -17,6 +17,43 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.3.0 — Intelligence Engine: real, sourced Military scores for all 193 countries (data only, not yet wired to the UI)
+
+**New capability, Intelligence Engine (first real data behind it).** The five status bars
+(Military/Economy/Diplomacy/Technology/Current Status) have rendered as placeholder chrome since they were
+first added — a deliberate policy against fabricating a "72% military strength" number with no real basis.
+`scripts/buildMilitary.mjs` (`npm run build:military`) is the first category to actually get sourced: a
+0–100 Military composite for all 193 UN member states, written to `src/data/militaryScores.ts`. The full
+locked design — components, zero-classification, normalization, coverage floor/confidence tiers — lives in
+`Intelligence Docs/intelligence-engine-scoring-design.md`; see `LOGBOOK.md` for the sourcing and debugging
+trail. **`hud/IntelligencePanel.tsx` does not read this data yet** — wiring it into the actual status bar is
+deferred to the next version.
+
+- **5 of the originally-designed 7 components are scored**: military expenditure (SIPRI Milex xlsx),
+  defense spending as %GDP (World Bank WDI), active personnel (WDI, falling back to the CIA Factbook
+  archive), nuclear warheads (FAS Nuclear Notebook, true-zero for the other 184 states), and
+  defense-industrial base (summed SIPRI Top-100 arms revenue by HQ country, true-zero elsewhere). Air fleet
+  size (FlightGlobal) is backlogged — confirmed a genuine paid subscription paywall, not a scraping problem,
+  with no equivalent free source at this project's citation bar.
+- **Arms import/export dependency (SIPRI TIV) is sourced but demoted to a non-scoring annotation, not
+  scored** — real output showed its directional assumption (low import volume = resilience) didn't hold:
+  alliance-embedded procurement and genuinely-too-small-to-import micro-states were scoring the same way.
+  Still shown, under `annotations.armsImportTiv`, just not blended into the composite.
+- **Expenditure is double-weighted** in the composite average — an explicit, on-the-record exception to this
+  project's own "weights need citable backing, default to equal" rule (design doc §2 Governing Principle 6),
+  made after real output showed extreme %GDP/personnel ratios (small strained countries, conscription-driven
+  counts) outranking countries with far larger absolute resources.
+- **No-standing-military override expanded from 3 countries to 17** (Costa Rica/Panama/Iceland plus 14 more),
+  each individually re-verified against the actual CIA Factbook text rather than trusted from
+  worldpopulationreview.com's compiled list directly — that verification step caught a real error in the
+  source (San Marino has an actual military; WPR listed it as having none) and left 3 more genuinely
+  ambiguous cases (Solomon Islands, Marshall Islands, Kiribati) deliberately unresolved rather than guessed.
+- SIPRI's Arms Transfers Database has no currently-documented public API — its live backend
+  (`atbackend.sipri.org`) was found by driving the actual portal UI and capturing the resulting request, not
+  a substituted source.
+- Confidence breakdown across all 193 countries: 176 `measured`, 1 `proxy`, 16 `unavailable` (below the
+  coverage floor — no score rendered, not a fabricated one).
+
 ## v6.2.7 — Category highlight draw-call lag fixed; administrative-divisions highlight removed; states/provinces "choppy over Europe" resolved
 
 **Rendering Engine — `layers/geoOverlays/CategoryHighlightLayer.tsx`.**

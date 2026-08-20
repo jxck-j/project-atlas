@@ -5,6 +5,64 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — Military scoring (`scripts/buildMilitary.mjs`): sourcing reconnaissance, two real bugs, two mid-flight design reversals
+
+First real data behind the Intelligence Engine's status bars — see `CHANGELOG.md`'s v6.3.0 entry for the
+user-facing summary and `Intelligence Docs/intelligence-engine-scoring-design.md` for the locked scoring
+design. This entry is the debugging/reasoning trail behind getting there.
+
+**SIPRI's Arms Transfers Database has no working public API — the documented one is decommissioned.** The
+URL SIPRI's own docs point to (`armstrade.sipri.org/armstrade/html/export_values.php`) just redirects to a
+marketing page now. The live portal (`armstransfers.sipri.org`) is a Svelte SPA with no visible API surface
+from the page source alone. Found the real backend by driving the actual UI (Claude-in-Chrome) and
+monkey-patching `window.fetch` to capture the outgoing request: `POST
+https://atbackend.sipri.org/api/p/trades/import-export-top-csv/`, a JSON filter-object body, response is
+`{bytes: <base64 CSV>}`. No auth, CORS-open, confirmed callable from plain `node --eval` (not just the
+browser). Toggling "Imported weapons" vs. "Exported weapons" in the UI turned out to add/remove an
+`orderbyseller` filter entry rather than changing any obvious "direction" field — would not have guessed
+that from the request shape alone.
+
+**Two real bugs found by comparing generated output against expectations, not caught by typechecking:**
+
+1. `NUCLEAR_WARHEADS` (a hand-transcribed 9-country table) keyed the US as `'United States'`, but this
+   project's topology names it `'United States of America'` — a plain object-key miss that silently fell
+   back to the true-zero default (`?? 0`) instead of erroring. The US's nuclear component read as 0 in
+   every generated output until reported directly ("you missed the nuclear count for the united states").
+   Every other nuclear-armed country's name happened to match the topology exactly, which is why this
+   surfaced as a single-country bug rather than something a broader sanity check would have caught faster.
+2. The SIPRI expenditure lookback only checked 2025/2024/2023 — too narrow. Confirmed via direct xlsx
+   inspection: Afghanistan's most recent real SIPRI figure is 2021, North Korea's is 2018 (both genuinely
+   reported, just not recently — SIPRI doesn't estimate either country's spending in most recent years).
+   Widened to a full 2000–2025 scan matching `buildGovCapitalPopGdp.mjs`'s existing
+   `WORLD_BANK_LOOKBACK_START_YEAR` precedent; recovered 13 more countries project-wide, not just the two
+   reported.
+
+Both were found by generating a full sortable/filterable data table as an Artifact and eyeballing it against
+known real-world facts, not by any automated check — worth remembering next time a build script's output
+"looks plausible" but hasn't actually been read.
+
+**No-standing-military list: verify candidates against a primary source, don't trust a compiled list.**
+worldpopulationreview.com's list itself attributes its claims to the CIA World Factbook, but re-checking
+each of its 18 UN-member candidates against the actual `factbook.json` text (not trusting WPR's table
+as-is) caught a real error: San Marino is on WPR's list but factbook.json names an actual, currently-serving
+military (the "San Marino Military Corps," with named units). Also surfaced a genuine ambiguity WPR doesn't
+distinguish: Solomon Islands/Marshall Islands/Kiribati list only a police force in factbook.json (same shape
+as the 14 added), but without that source's own explicit "no regular military forces" disclaimer phrase the
+other 14 all have — left those three deferred rather than guessed either way.
+
+**Two design decisions reversed after reviewing real generated output, not before shipping:** arms-import
+TIV was originally scored with a `100 − normalized` inversion (low import volume = resilience signal), then
+demoted to a non-scoring annotation once real output showed the direction doesn't reliably hold — NATO
+members buying allied equipment were penalized the same way genuinely exposed importers were, and
+too-small-to-import micro-states scored identically to genuinely self-sufficient ones. Separately,
+expenditure was double-weighted after real output showed extreme %GDP/personnel ratios (small strained
+countries, conscription-driven personnel counts) outranking countries with far larger absolute military
+resources. Both are recorded as explicit, on-the-record exceptions to the design doc's own principles (§2
+Governing Principle 6 specifically, for the weighting change) rather than quietly reconciled — see the
+design doc's Exclusions & Annotations Log and its Governing Principle 6 footnote for the full trail. The
+general lesson carried forward: a formula that passes a reference simulation before launch can still have a
+wrong real-world direction that only shows up once you look at what it actually produces at scale.
+
 ## 2026-08-17 — States/provinces FPS, part 10: tightening the 'states' LOD reveal distance, then easing it back out
 
 A different angle on the still-open "choppy over Europe" bug (see part 9 and
