@@ -546,6 +546,12 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   options are no longer needed for this specific case, though either would
   still be the right call if a future wide-view use case needs states
   visible at a looser zoom than 2.8 allows.
+  **2026-08-20: eased to 2.85** (matching the `'metro-areas'` city tier
+  exactly, per direct request that states/provinces read at the same zoom
+  level as major cities) — a much smaller move than the 5.0/3.5 → 2.8 jump
+  that originally fixed the wide-view case, so expected to be safe, but
+  NOT yet re-profiled in the browser the way that fix was. Re-check the
+  "most of Europe" case if choppiness is reported again.
 - **States/provinces layer-mount freeze: FIXED and verified (2026-08-17).**
   Was a ~1.3-1.7 SECOND synchronous main-thread block, reported by the
   user as "delay/lag on the switch when turning on the states/provinces
@@ -610,13 +616,17 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   treaties, trade partnerships, tensions) is schema-only; `data/relationships/
   relationships.json` ships empty. Nothing renders a relationship arc
   between two entities anywhere in the app.
-- **Intelligence Engine** — `IntelligencePanel.tsx`'s MILITARY / ECONOMY /
-  DIPLOMACY / TECHNOLOGY / CURRENT STATUS sections are hardcoded
-  "Awaiting data feed" placeholders for every entity, country or GeoEntity
-  alike. Deliberately left unfabricated — see `README.md`'s "Notes for
-  future work": fabricating country-level assessments for a defense-context
-  demo isn't something to do casually. Real data (or an explicit decision
-  to keep these placeholder forever) is still open.
+- **Intelligence Engine** — as of v6.3.1, MILITARY is wired to real data
+  (`data/militaryScores.ts`, country selections only) with a citation
+  drill-down; ECONOMY / DIPLOMACY / TECHNOLOGY / CURRENT STATUS are still
+  hardcoded "Awaiting data feed" placeholders for every entity, country or
+  GeoEntity alike. Deliberately left unfabricated — see `README.md`'s
+  "Notes for future work": fabricating country-level assessments for a
+  defense-context demo isn't something to do casually. Economy is the next
+  category with sourcing identified (design doc §3.2) but its
+  normalization/confidence model still needs the same reconciliation pass
+  Military went through before it's scoreable; Diplomacy/Technology are
+  further behind (weights not locked — see design doc §9).
 - **Data Engine** — every dataset in `src/data/registry/` is hand-curated
   and static; there's no live-refresh mechanism, and every provenance note
   says as much (`confidence: 'estimated'`, "not a comprehensive or

@@ -49,18 +49,19 @@ export const LOD_LEVELS: LodLevel[] = [
     // scene/constants.ts) after comparing against how much closer Google
     // Maps zooms before revealing admin-1 boundaries — read as too
     // aggressive (past every city tier's own threshold, tightest at 2.52).
-    // Eased out to 3.5, then dialed back in to 2.8 the same day — 2.8 sits
-    // BETWEEN metro-areas (2.85) and large-cities (2.7), so states now
-    // unlocks just after the metro-areas city tier rather than before the
-    // entire city ladder (3.5/5.0's behavior) or after all of it (2.5's).
-    // (Numeric threshold only controls WHEN a tier activates, not where it
-    // sits in resolveActiveLevels()'s returned array — that's fixed by this
-    // list's own declaration order, so 'states' always reports right after
-    // 'countries' regardless of which number is here.) Still not fully
-    // eye-tuned against this app's own camera feel — revisit if this reads
-    // as too aggressive or too loose once checked in the browser.
-    description: 'Admin-1 boundaries — nearly every country, revealed once zoomed in past metro-area city-label distance.',
-    revealDistance: 2.8,
+    // Eased out to 3.5, then dialed back in to 2.8 the same day — 2.8 sat
+    // BETWEEN metro-areas (2.85) and large-cities (2.7), so states unlocked
+    // just after the metro-areas city tier rather than before the entire
+    // city ladder (3.5/5.0's behavior) or after all of it (2.5's).
+    // 2026-08-20: eased again to 2.85, matching metro-areas exactly — direct
+    // request that states/provinces become visible at the same zoom level
+    // as major cities, not one tier later. (Numeric threshold only controls
+    // WHEN a tier activates, not where it sits in resolveActiveLevels()'s
+    // returned array — that's fixed by this list's own declaration order, so
+    // 'states' always reports right after 'countries' regardless of which
+    // number is here.)
+    description: 'Admin-1 boundaries — nearly every country, revealed at the same distance as major (metro-area) cities.',
+    revealDistance: 2.85,
     implemented: true,
   },
   {

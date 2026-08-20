@@ -5,6 +5,59 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — States/provinces reveal distance eased to match metro-areas: small change, but reopens a previously-closed FPS caveat
+
+`lod/lodLevels.ts`'s `'states'` tier moved from `revealDistance: 2.8` to `2.85` — direct request that
+states/provinces become visible at the same zoom level as major cities, i.e. exactly matching
+`'metro-areas'`'s own 2.85 rather than trailing it by one tier. Mechanically trivial (one number, plus the
+matching `IntelRow`-style doc-comment/test updates in `lodLevels.ts`/`lodLevels.test.ts`), but worth a note
+because of what it touches: `2.8` was not an arbitrary starting point — it was landed on specifically to
+close the "choppy over Europe" wide-multi-country-view FPS case (see `BACKLOG.md`'s states/provinces FPS
+entry and this file's earlier "States/provinces FPS" parts), by making the camera too close for a
+comparably-wide view to be in frame at all once states are active. Loosening the threshold at all moves back
+toward that case in principle. Judged safe without re-profiling because 2.85 vs. 2.8 is a tiny fraction of
+the 5.0/3.5 → 2.8 jump that actually caused and then fixed the original regression — but "judged safe" isn't
+"confirmed," so `BACKLOG.md`'s entry now flags this explicitly rather than silently assuming the old fix's
+margin covers it. Re-profile the same way if choppiness over a wide region gets reported again.
+
+## 2026-08-20 — IntelligencePanel MILITARY wiring: bar-color design went through three rounds before landing, drill-down scoped to what has real data
+
+`data/militaryScores.ts` (v6.3.0) sat unread by `hud/IntelligencePanel.tsx` for one version specifically so
+the UI work could be its own pass — see that version's own reasoning. Worth recording how the bar itself
+ended up looking, since none of the three iterations were the first guess:
+
+1. First pass: a fixed blue two-stop `linear-gradient` (matching the pre-existing placeholder chrome's
+   look) sized to each row's own (narrower) fill width — meaning the gradient content itself re-scaled per
+   value, which is wrong for a value-encodes-severity bar (a 20%-wide fill would show the SAME red-to-green
+   proportion as a 90%-wide one, just compressed, so a low score's fill tip would already read green).
+2. Corrected to a red→amber→green gradient sized to the FULL track width via a fixed-px `backgroundSize`
+   with the narrower fill clipping it — this fixed the re-scaling problem (a value's color now reflected its
+   true position on the 0-100 scale) but was still visually a gradient smear across each filled bar.
+3. **Reported directly**: the red/green language was describing what the color SHOULD represent at each
+   value, not asking for a gradient rendered across the bar — the bar should be ONE solid color per row,
+   computed from that row's own value. Landed on `intelValueColor()`: a single RGB lerp,
+   red(0)→amber(50)→green(100), computed once and applied to both the fill's `backgroundColor` and the value
+   text's `color` — so the number and its bar always match exactly, which a spatial gradient can't guarantee
+   (the gradient's visible edge color only approximates the value; a solid computed color IS the value).
+
+**Confirmed no-standing-military countries were reported as reading wrong**: `MilitaryScore.confirmed`
+countries (Andorra, etc.) have a real `value: 0`, which rendered as an ordinary red 0.0 bar — visually
+indistinguishable from "the worst possible score" rather than "there's nothing to score." Added
+`IntelRow`'s `notApplicable` prop specifically for this state (renders `N/A`, no fill) rather than reusing
+the existing em-dash "no data at all" treatment, since factbook-confirmed absence of a military is a
+different fact than an unmeasured gap.
+
+**Citation drill-down (design doc §7) scoped to MILITARY only, and to whenever a `MilitaryScore` record
+exists at all — not gated on the composite actually being scoreable.** Considered restricting drill-down to
+only `hasMilitaryBar` (measured/proxy) countries, but even a `confirmed`/`unavailable` country's individual
+components are real, independently sourced facts (Andorra's personnel=0 and nuclear=0 are both cited factbook/
+FAS figures, not fabricated) — the design doc's own "make the sourcing fully inspectable per category" reads
+as covering that case too, so the drill-down shows whichever of the 5 components has data and marks the rest
+"—", regardless of whether the composite itself rendered a bar or N/A. The sourced-but-not-scored arms-import
+annotation is included too (visually subordinate, labeled "not scored") since `militaryScores.ts`'s own header
+comment already says it's "shown, just not blended into value" — this drill-down is the first place anything
+actually shows it.
+
 ## 2026-08-20 — Military scoring (`scripts/buildMilitary.mjs`): sourcing reconnaissance, two real bugs, two mid-flight design reversals
 
 First real data behind the Intelligence Engine's status bars — see `CHANGELOG.md`'s v6.3.0 entry for the

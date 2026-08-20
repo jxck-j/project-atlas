@@ -17,6 +17,41 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.3.2 — LOD Engine: states/provinces now reveal at the same distance as major cities
+
+**Point release, LOD Engine.** `lod/lodLevels.ts`'s `'states'` tier `revealDistance` eased from 2.8 to 2.85,
+matching `'metro-areas'` ("Major Metropolitan Areas") exactly — direct request that states/provinces become
+visible at the same zoom level as major cities, rather than one tier later. States and metro-areas now
+unlock together instead of states trailing by a hair. This partially reopens the exact FPS concern v6.2.7's
+"choppy over Europe" fix closed by *tightening* this same threshold from 5.0 to 2.8 (a wide multi-country
+view at a looser reveal distance means far more active province meshes at once) — 2.85 vs. 2.8 is a much
+smaller move than that fix's 5.0/3.5 → 2.8 jump, so it's expected to be safe, but it hasn't been re-profiled
+in the browser the way that fix originally was. See `BACKLOG.md`'s states/provinces FPS entry.
+
+## v6.3.1 — Intelligence Engine: Military scores wired into the panel, with citation drill-down
+
+**Point release, Intelligence Engine.** `hud/IntelligencePanel.tsx`'s MILITARY status bar is the first of
+the five (Military/Economy/Diplomacy/Technology/Current Status) to read real data — `v6.3.0`'s
+`data/militaryScores.ts`, looked up by `Country.id`. Economy/Diplomacy/Technology/Current Status stay
+"Awaiting data feed" placeholders per the scoring design doc's launch scope.
+
+- **Bar restyle**: track widened 2.5× (reported as too short at the original size); the fill is a single
+  solid color — not a gradient — interpolated red(0)→amber(50)→green(100) from that row's own value, applied
+  identically to the value text beside it so a country's number and its bar always match. Value now renders
+  as `xx.x`, not a rounded percentage.
+- **N/A, not a scored zero, for confirmed no-standing-military countries** (Andorra and 16 others) — the
+  composite is genuinely inapplicable there, not merely unmeasured, so it doesn't share either the ordinary
+  em-dash "no data" state or a misleadingly low score. The sourced `confirmedNote` (e.g. "defense is the
+  responsibility of France and Spain") renders in its place.
+- **`'proxy'`-confidence countries** (currently just North Korea) get a `PROXY` tag next to the label, per
+  the scoring design doc's §6 — a coverage-floor-but-not-full-coverage score shouldn't read with the same
+  confidence as a fully measured one.
+- **Citation drill-down** (design doc §7, "status bars are clickable"): clicking the MILITARY row collapses
+  the other four out of the panel and drops down all 5 scored components — source name (linking to the real
+  citation URL), formatted value, snapshot year/date — plus the sourced-but-not-scored arms-import
+  annotation, visually subordinate and labeled "not scored." A component missing data for that country still
+  gets a row ("—"), not a silent omission. Click again, or select a different entity, to collapse back.
+
 ## v6.3.0 — Intelligence Engine: real, sourced Military scores for all 193 countries (data only, not yet wired to the UI)
 
 **New capability, Intelligence Engine (first real data behind it).** The five status bars
