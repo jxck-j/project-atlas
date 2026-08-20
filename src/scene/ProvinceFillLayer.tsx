@@ -5,6 +5,7 @@ import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
 import { HoverLabel } from './EntityRenderLayer'
+import { STATE_LABEL_FONT_CONFIG } from './stateLabelFontConfig'
 import { useClickDragGuard } from './useClickDragGuard'
 import { useMergedFillsByCountry, type CountryFill } from './useMergedFillsByCountry'
 import { getParentCountryId } from './provinceCountryGroups'
@@ -285,7 +286,7 @@ export function ProvinceFillLayer({
           <lineSegments geometry={hoveredEntry.borderGeometry} raycast={neverRaycast}>
             <lineBasicMaterial color={COLOR_HOVER} transparent opacity={0.95} />
           </lineSegments>
-          <HoverLabel key={hoveredEntry.geometryId} entry={hoveredEntry} />
+          <HoverLabel key={hoveredEntry.geometryId} entry={hoveredEntry} fontSizeConfig={STATE_LABEL_FONT_CONFIG} />
         </>
       )}
     </>

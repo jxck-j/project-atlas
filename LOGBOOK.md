@@ -5,6 +5,33 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — State/province label sizing: first attempt looked like "no change" because it only touched half the rendering path
+
+Requested: state/province name labels should read bigger once zoomed in on a region, bounded within their own
+polygon. First attempt raised `PassiveEntityLabels.tsx`'s font-size ceiling/ratio only for
+`StateProvinceLabels.tsx`'s passive label layer. Reported back as "doesn't seem different," with a concrete
+example (Hessen, Germany) and a specific target: 1.67x bigger, for all states.
+
+The "no change" report made sense once traced through: `StatesProvinces.tsx` doesn't render province
+hover/select state through `EntityRenderLayer.tsx` at all (see that file's own comment on why —
+`ProvinceFillLayer.tsx` replaced it once province count made the shared component's one-mesh-per-entry model
+an FPS bottleneck), but `ProvinceFillLayer.tsx` still reuses `EntityRenderLayer.tsx`'s `HoverLabel` component
+for the actual hover callout. `HoverLabel` calls `useApparentFontSize()` with no config — the original,
+unmodified constants. Hovering a state (the natural way to go look at one specific state's label up close) was
+showing `HoverLabel`, not the passive label the first attempt had actually changed — so the fix was invisible
+exactly where it was being checked.
+
+Fix: made the font-size formula (`useApparentFontSize.ts`) accept an optional config end-to-end — both the
+reactive hook `HoverLabel` uses and the pure function `PassiveEntityLabels.tsx`'s per-candidate loop uses —
+then created one shared config (`scene/stateLabelFontConfig.ts`, its own plain `.ts` module for the same
+oxlint react-refresh reason `geoEntityEntries.ts` already documents) passed into *both* call sites. Sized as an
+exact 1.67x scale of the original floor/ceiling/ratio (6→10px, 11→18px, 0.12→0.2) rather than picking new
+numbers by feel, per the reported target, and rather than only raising the ceiling — scaling all three
+preserves the same growth shape, just uniformly bigger at every zoom level instead of only at the top of the
+range. Lesson: when two components are documented as "meant to read as the same size" (see v5.2.8's `HoverLabel`
+fix below), a sizing change has to land in both, and the natural way a user checks a label ("hover over it to
+look closely") is likely to hit the one that's easy to miss.
+
 ## 2026-08-20 — States/provinces reveal distance eased to match metro-areas: small change, but reopens a previously-closed FPS caveat
 
 `lod/lodLevels.ts`'s `'states'` tier moved from `revealDistance: 2.8` to `2.85` — direct request that

@@ -278,6 +278,24 @@ never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
 no-op, since every rendered shape in those two already has a `GeometryMap`
 registration by the time it's clickable.
 
+**v6.3.3** made that shared apparent-size formula configurable rather than
+one fixed set of constants — `useApparentFontSize.ts`'s
+`computeApparentFontSizePx`/`useApparentFontSize` and
+`PassiveEntityLabels.tsx`/`HoverLabel` (`EntityRenderLayer.tsx`) now all take
+an optional `FontSizeConfig` (min/max font px, apparent-size ratio),
+defaulting to the original constants so every pre-existing caller is
+unchanged. `scene/stateLabelFontConfig.ts` is the first override: a direct
+request (with a concrete example, Hessen in Germany) that state/province
+labels read about 1.67x bigger than country labels at every zoom level, not
+just a raised ceiling — scaling the floor/ceiling/ratio by the same factor
+reproduces the identical growth curve, just uniformly bigger. Kept as its
+own plain `.ts` module (not exported from `StateProvinceLabels.tsx`) for the
+same oxlint react-refresh reason `geoEntityEntries.ts`/`useClickDragGuard.ts`
+already are, and imported by both `StateProvinceLabels.tsx`'s passive layer
+and `ProvinceFillLayer.tsx`'s `HoverLabel` call — the two are meant to read
+as the same size at all times per the v5.2.8 fix above, so overriding only
+one would just relocate that same mismatch bug.
+
 **`StatesProvinces.tsx` grew its own rendering path separate from
 `EntityRenderLayer` once province count made the shared component's
 one-mesh-per-entry model the actual performance bottleneck, not just a

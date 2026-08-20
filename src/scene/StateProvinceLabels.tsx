@@ -3,6 +3,7 @@ import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS, CAMERA_MIN_DISTANCE } from './constants'
 import { getHoveredStateProvinceId } from './hoveredStateProvince'
 import { PassiveEntityLabels, type PassiveLabelSource } from './PassiveEntityLabels'
+import { STATE_LABEL_FONT_CONFIG } from './stateLabelFontConfig'
 import type { GeoEntityEntry } from './geoEntityEntries'
 
 // Always-on passive admin-1 (state/province) name labels (v5.2.7) — the
@@ -51,6 +52,7 @@ export function StateProvinceLabels({ entries, hidden }: { entries: GeoEntityEnt
       getExcludeId={getHoveredStateProvinceId}
       maxCameraDistance={STATE_LABEL_REVEAL_DISTANCE}
       maxVisibleLabels={40}
+      fontSizeConfig={STATE_LABEL_FONT_CONFIG}
     />
   )
 }

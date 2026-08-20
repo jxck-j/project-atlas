@@ -6,7 +6,7 @@ import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
 import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
-import { useApparentFontSize } from './useApparentFontSize'
+import { useApparentFontSize, type FontSizeConfig } from './useApparentFontSize'
 import { useClickDragGuard } from './useClickDragGuard'
 import type { GeoEntityEntry } from './geoEntityEntries'
 
@@ -85,13 +85,13 @@ const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 // being rendered for. Checking unconditionally is cheap (at most one
 // HoverLabel ever mounted now) and always correct either way. See
 // useFrontOfGlobeVisible.ts and LOGBOOK.md's v5.2.1 entry.
-export function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
+export function HoverLabel({ entry, fontSizeConfig }: { entry: GeoEntityEntry; fontSizeConfig?: FontSizeConfig }) {
   const anchor = useMemo(
     () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.006),
     [entry.centroid]
   )
   const labelVisible = useFrontOfGlobeVisible(anchor)
-  const fontSizePx = useApparentFontSize(entry.angularExtent)
+  const fontSizePx = useApparentFontSize(entry.angularExtent, fontSizeConfig)
 
   if (!labelVisible) return null
 

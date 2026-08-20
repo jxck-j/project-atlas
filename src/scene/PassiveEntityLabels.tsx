@@ -5,7 +5,7 @@ import { Vector3 } from 'three'
 import { getGlobeRotationY } from './globeRotation'
 import { abbreviateCountryName } from './countryAbbreviation'
 import { declutterLabels, type DeclutterCandidate } from './labelDeclutter'
-import { apparentSizePxFor, computeApparentFontSizePx } from './useApparentFontSize'
+import { apparentSizePxFor, computeApparentFontSizePx, type FontSizeConfig } from './useApparentFontSize'
 import { GLOBE_RADIUS } from './constants'
 
 // Shared by CountryLabels.tsx and GeoEntityLabels.tsx (v5.2.4, extracted once
@@ -79,6 +79,16 @@ export interface PassiveEntityLabelsProps {
   // apparent-size math, rather than a second useFrame/state layer in the
   // caller.
   maxCameraDistance?: number
+  // Overrides this layer's font-size floor/ceiling/growth-rate — e.g.
+  // StateProvinceLabels.tsx (2026-08-20) wants admin-1 names to read
+  // noticeably bigger than country names once zoomed in on a region, not
+  // share CountryLabels.tsx/GeoEntityLabels.tsx's ceiling. Defaults (when
+  // omitted) match useApparentFontSize.ts's own constants exactly, so every
+  // existing caller is unaffected. The width-vs-own-apparent-size
+  // abbreviation fallback below still runs on top of whatever font size
+  // this produces — that's what keeps a bigger font from actually spilling
+  // outside the entity's own footprint, not this config by itself.
+  fontSizeConfig?: FontSizeConfig
 }
 
 export function PassiveEntityLabels({
@@ -88,6 +98,7 @@ export function PassiveEntityLabels({
   maxVisibleLabels = 80,
   minLabelSpacingPx = 80,
   maxCameraDistance,
+  fontSizeConfig,
 }: PassiveEntityLabelsProps) {
   const { camera, size } = useThree()
   const [visible, setVisible] = useState<PassiveLabelCandidate[]>([])
@@ -137,7 +148,7 @@ export function PassiveEntityLabels({
       .filter((entry) => entry.id !== currentExcludeId)
       .map((entry) => {
         const apparentPx = apparentSizePxFor(entry.extent, cameraDistance, size.height)
-        const fontSizePx = computeApparentFontSizePx(entry.extent, cameraDistance, size.height)
+        const fontSizePx = computeApparentFontSizePx(entry.extent, cameraDistance, size.height, fontSizeConfig)
         const fullNameWidthPx = estimateTextWidthPx(entry.name.toUpperCase(), fontSizePx)
         const useAbbreviation = fullNameWidthPx > apparentPx * MAX_NAME_WIDTH_FRACTION
         const displayText = useAbbreviation ? abbreviateCountryName(entry.name) : entry.name

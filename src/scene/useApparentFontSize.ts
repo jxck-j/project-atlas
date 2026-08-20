@@ -60,24 +60,47 @@ export function apparentSizePxFor(extent: number, cameraDistance: number, viewpo
   return apparentSizePx(extent, cameraDistance, viewportHeight, CAMERA_FOV_DEG, GLOBE_RADIUS)
 }
 
+export interface FontSizeConfig {
+  minFontPx?: number
+  maxFontPx?: number
+  fontToApparentRatio?: number
+}
+
 // Pure — usable directly in PassiveEntityLabels.tsx's per-candidate loop
 // (can't call the hook below there; hooks can't run a variable number of
-// times per render).
-export function computeApparentFontSizePx(extent: number, cameraDistance: number, viewportHeight: number): number {
-  return clamp(apparentSizePxFor(extent, cameraDistance, viewportHeight) * FONT_TO_APPARENT_RATIO, MIN_FONT_PX, MAX_FONT_PX)
+// times per render). `config` is optional and defaults to this file's own
+// tuned-for-countries constants — StateProvinceLabels.tsx (2026-08-20) is
+// the first caller to override it, so province names can read bigger than
+// country names once zoomed in on a region without moving the shared
+// defaults every other passive-label layer still relies on.
+export function computeApparentFontSizePx(
+  extent: number,
+  cameraDistance: number,
+  viewportHeight: number,
+  config?: FontSizeConfig
+): number {
+  const minFontPx = config?.minFontPx ?? MIN_FONT_PX
+  const maxFontPx = config?.maxFontPx ?? MAX_FONT_PX
+  const ratio = config?.fontToApparentRatio ?? FONT_TO_APPARENT_RATIO
+  return clamp(apparentSizePxFor(extent, cameraDistance, viewportHeight) * ratio, minFontPx, maxFontPx)
 }
 
 // Reactive wrapper for a single entity (EntityRenderLayer.tsx's HoverLabel —
 // at most one ever mounted at a time since v5.2.8, so there's no
 // spacing/candidate-pool cost to amortize the way the passive layer's
 // per-candidate work has, and no throttle here unlike that file's full
-// declutter pass).
-export function useApparentFontSize(extent: number): number {
+// declutter pass). Optional `config` (2026-08-20) exists so a caller whose
+// PassiveEntityLabels instance overrides its own font sizing — e.g.
+// StateProvinceLabels.tsx — can pass the SAME config into its HoverLabel too;
+// the two are meant to read as the same size (see this file's own v5.2.8
+// history above), so a caller that only overrides one of them would
+// reintroduce exactly the size mismatch that history describes fixing.
+export function useApparentFontSize(extent: number, config?: FontSizeConfig): number {
   const { camera, size } = useThree()
-  const [fontSizePx, setFontSizePx] = useState(MIN_FONT_PX)
+  const [fontSizePx, setFontSizePx] = useState(config?.minFontPx ?? MIN_FONT_PX)
 
   useFrame(() => {
-    const next = computeApparentFontSizePx(extent, camera.position.length(), size.height)
+    const next = computeApparentFontSizePx(extent, camera.position.length(), size.height, config)
     if (next !== fontSizePx) setFontSizePx(next)
   })
 

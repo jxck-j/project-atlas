@@ -17,6 +17,20 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.3.3 — State/province name labels read ~1.67x bigger
+
+**Point release.** Direct request, with a concrete example (Hessen, Germany): state/province name labels
+should read noticeably bigger once you're actually zoomed in on a region, not share
+`CountryLabels.tsx`/`GeoEntityLabels.tsx`'s font sizing. `scene/useApparentFontSize.ts`'s font-size formula
+is now configurable per caller (defaults unchanged for every other label layer);
+`scene/stateLabelFontConfig.ts` scales the floor, ceiling, and growth rate all by the same ~1.67x factor, so
+the label grows along the identical curve, just uniformly bigger at every zoom level. Applied to both
+`StateProvinceLabels.tsx`'s always-on passive labels and `ProvinceFillLayer.tsx`'s hover label — the two are
+meant to read as the same size at all times (see v5.2.8), so an earlier attempt that only widened the passive
+layer's config read as "no change" while hovering a state, since hover shows a different label component
+entirely. Doesn't risk text spilling outside a state's own shape — the existing full-name-vs-abbreviation
+width check runs on top of whatever font size this produces, unchanged.
+
 ## v6.3.2 — LOD Engine: states/provinces now reveal at the same distance as major cities
 
 **Point release, LOD Engine.** `lod/lodLevels.ts`'s `'states'` tier `revealDistance` eased from 2.8 to 2.85,
