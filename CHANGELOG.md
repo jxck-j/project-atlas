@@ -17,6 +17,18 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.6.1 — Economy: coverage floor fixes a real ranking bug
+
+**Point release.** `scripts/buildEconomy.mjs` originally scored a country from as little as 1 of its 5
+components — real output showed Monaco and Liechtenstein (1 of 5 present each, both just their GDP growth
+rate) outranking fully-measured economies like the US and China, since a single component's percentile had
+nothing to average against. Now requires at least 3 of 5 components present to receive a score at all (a
+coverage floor, mirroring the idea — not the exact mechanism — Military already uses): below the floor,
+`value` is `null` and confidence is `'unavailable'`, computed that way from the start rather than calculated
+and then withheld. Re-running the full build moved 4 countries from `'proxy'` to `'unavailable'`
+(2 `proxy` / 5 `unavailable` now, down from 6 `proxy` / 1 `unavailable`); Monaco/Liechtenstein no longer
+appear inflated at the top of the Analytics ECONOMY ranking. Normalization and weighting are unchanged.
+
 ## v6.6.0 — Economy: the second real, sourced Intelligence Engine category
 
 **New major version, Intelligence Engine.** Economy joins Military with a real 0-100 composite score for all

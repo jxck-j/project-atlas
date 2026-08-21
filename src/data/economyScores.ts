@@ -20,10 +20,17 @@
 // header comment for the convention).
 //
 // Confidence uses the design doc's general weighted-sourceCoverage model
-// (sourceCoverage = 0.2 x components present; >=0.8 'measured', >0 'proxy',
-// ==0 'unavailable'), NOT Military's coverage-floor mechanism — there is no
-// hard floor here; even a single present component still produces a
-// ('proxy'-tier) value.
+// (sourceCoverage = 0.2 x components present), with a coverage floor added
+// 2026-08-21: a country needs at least 3 of 5 components present to get a
+// score at all (>=0.8 'measured', ==0.6 'proxy', <0.6 'unavailable' —
+// `value` is null below the floor, not computed from 1-2 components and
+// then withheld). Originally had no floor at all (a single present
+// component still produced a low-confidence value); real output showed
+// Monaco/Liechtenstein (1 of 5 present each) outranking fully-measured
+// economies, since one component's percentile had nothing to average
+// against. See finalizeCountry's own comment for why the tiers are
+// computed from the integer coveragePresent count, not the literal
+// sourceCoverage float.
 //
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under — same convention as
@@ -658,8 +665,8 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "192": {
     name: "Cuba",
-    value: 48.4,
-    confidence: "proxy",
+    value: null,
+    confidence: "unavailable",
     coveragePresent: 2,
     coverageTotal: 5,
     components: {
@@ -1428,8 +1435,8 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "438": {
     name: "Liechtenstein",
-    value: 73.7,
-    confidence: "proxy",
+    value: null,
+    confidence: "unavailable",
     coveragePresent: 1,
     coverageTotal: 5,
     components: {
@@ -1638,8 +1645,8 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "492": {
     name: "Monaco",
-    value: 98.9,
-    confidence: "proxy",
+    value: null,
+    confidence: "unavailable",
     coveragePresent: 1,
     coverageTotal: 5,
     components: {
@@ -1834,8 +1841,8 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "408": {
     name: "North Korea",
-    value: 68.8,
-    confidence: "proxy",
+    value: null,
+    confidence: "unavailable",
     coveragePresent: 1,
     coverageTotal: 5,
     components: {

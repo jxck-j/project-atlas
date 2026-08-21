@@ -5,6 +5,32 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-21 — Economy coverage floor patch: a specified floating-point comparison would have silently broken the fix it was part of
+
+Requested patch: `scripts/buildEconomy.mjs`'s confidence tiering needed a coverage floor — a country needs at
+least 3 of 5 components present to get a score at all, rather than the original "even 1 of 5 produces a
+low-confidence value" behavior. Real output caught this: Monaco and Liechtenstein, each with only their GDP
+growth rate present (1 of 5), were outranking fully-measured economies because a single percentile had
+nothing to average against and was standing in for the whole composite.
+
+The patch spec described the tiers as float comparisons against the literal `sourceCoverage` value:
+`sourceCoverage >= 0.8` → measured, `sourceCoverage == 0.6` → proxy, `sourceCoverage < 0.6` → unavailable,
+where `sourceCoverage = 0.2 × componentsPresent`. Checked this in Node before implementing it literally:
+`3 * 0.2 === 0.6` evaluates to `false` in JavaScript (`3 * 0.2` is actually `0.6000000000000001` — 0.2 has no
+exact binary floating-point representation, the same class of bug as the canonical `0.1 + 0.2 !==
+0.3` example). Implementing the `== 0.6` check exactly as specified would have made the `'proxy'` tier
+unreachable — every country with exactly 3 of 5 components present would have silently fallen through to
+`'unavailable'` instead, a second real bug nested inside the fix for the first one, and one that would not
+have been obvious from reading the code (the comparison *looks* correct arithmetically). Implemented the
+identical tiering logic against the integer `coveragePresent` count instead (`>= 4` / `=== 3` / `<= 2` —
+exact, no floating-point risk) rather than the literal float comparison, and documented why directly in
+`finalizeCountry`'s comment so a future reader doesn't "simplify" it back to the float form.
+
+Re-ran the full 193-country build after the fix: confidence breakdown moved from 6 `proxy`/1 `unavailable` to
+2 `proxy`/5 `unavailable` (4 countries dropped below the new floor), and confirmed directly in the browser
+that Monaco/Liechtenstein no longer sit at the top of the Analytics ECONOMY ranking. Normalization and
+weighting untouched, per the patch's own explicit scope.
+
 ## 2026-08-21 — Wiring Economy into the UI: generalizing AnalyticsPanel's ranked-list rather than pasting a second copy
 
 Following up on the Economy build script (see the entry below): wired `data/economyScores.ts` into

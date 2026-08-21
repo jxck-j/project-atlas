@@ -343,15 +343,32 @@ function finalizeCountry(r) {
 
   const presentNormalized = [gdpPppPct, gdpPerCapitaPppPct, gdpGrowthPct, unemploymentPct, inflationPct].filter((v) => v != null)
   const coveragePresent = presentNormalized.length
-  const value = coveragePresent > 0 ? presentNormalized.reduce((a, b) => a + b, 0) / coveragePresent : null
 
-  // Section 5's general weighted model (sourceCoverage = 0.2 per present
-  // component), NOT Military's coverage-floor variant — per the build
-  // prompt. Unlike Military, there's no hard floor gating whether `value`
-  // computes at all: even a single present component still produces a
-  // (low-confidence, 'proxy'-tier) value.
-  const sourceCoverage = coveragePresent * 0.2
-  const confidence = sourceCoverage >= 0.8 ? 'measured' : sourceCoverage > 0 ? 'proxy' : 'unavailable'
+  // COVERAGE FLOOR PATCH (2026-08-21): a country needs at least 3 of the 5
+  // components present to receive an Economy score at all. Fixes real
+  // output — Monaco and Liechtenstein, each with only 1 of 5 components
+  // present, were outranking fully-measured economies because a single
+  // component's percentile had nothing to average against. Below the
+  // floor, `value` is left null rather than computed and then withheld —
+  // there's no partial composite sitting behind an 'unavailable' tag.
+  //
+  // sourceCoverage = 0.2 x components present (design doc §5's general
+  // weighted model — still not Military's coverage-floor MECHANISM, which
+  // also changes true-zero/coverage-gap handling this category doesn't
+  // have; this patch only borrows the "you need a floor" idea, applied to
+  // Economy's own shape):
+  //   sourceCoverage >= 0.8  -> 'measured'    (4 or 5 of 5 present)
+  //   sourceCoverage == 0.6  -> 'proxy'       (exactly 3 of 5 present)
+  //   sourceCoverage <  0.6  -> 'unavailable' (0, 1, or 2 of 5 present)
+  // Derived from the integer coveragePresent count rather than comparing
+  // the literal sourceCoverage float to 0.6 — `3 * 0.2 === 0.6` is FALSE
+  // in JS (0.2 has no exact binary floating-point representation; 3 * 0.2
+  // === 0.6000000000000001), so that comparison would have silently made
+  // the 'proxy' tier unreachable. coveragePresent >= 4 / === 3 / <= 2 are
+  // exactly equivalent to the sourceCoverage thresholds above, computed
+  // safely on integers instead.
+  const confidence = coveragePresent >= 4 ? 'measured' : coveragePresent === 3 ? 'proxy' : 'unavailable'
+  const value = coveragePresent >= 3 ? presentNormalized.reduce((a, b) => a + b, 0) / coveragePresent : null
 
   return {
     id: r.id,
@@ -430,10 +447,17 @@ const header = `// Economy category scores for the Intelligence Engine, generate
 // header comment for the convention).
 //
 // Confidence uses the design doc's general weighted-sourceCoverage model
-// (sourceCoverage = 0.2 x components present; >=0.8 'measured', >0 'proxy',
-// ==0 'unavailable'), NOT Military's coverage-floor mechanism — there is no
-// hard floor here; even a single present component still produces a
-// ('proxy'-tier) value.
+// (sourceCoverage = 0.2 x components present), with a coverage floor added
+// 2026-08-21: a country needs at least 3 of 5 components present to get a
+// score at all (>=0.8 'measured', ==0.6 'proxy', <0.6 'unavailable' —
+// \`value\` is null below the floor, not computed from 1-2 components and
+// then withheld). Originally had no floor at all (a single present
+// component still produced a low-confidence value); real output showed
+// Monaco/Liechtenstein (1 of 5 present each) outranking fully-measured
+// economies, since one component's percentile had nothing to average
+// against. See finalizeCountry's own comment for why the tiers are
+// computed from the integer coveragePresent count, not the literal
+// sourceCoverage float.
 //
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under — same convention as

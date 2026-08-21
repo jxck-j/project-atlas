@@ -1052,13 +1052,24 @@ implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 eq
 components (GDP PPP, GDP per capita PPP, 5yr-trailing real GDP growth, unemployment, inflation — the last
 two inverted, lower is better), **percentile-rank normalized** (average/fractional rank for ties — stopped
 and asked the user before writing this, per the build prompt's own "stop and ask before picking a
-tie-breaking convention" instruction — see `LOGBOOK.md`) and the design doc's general weighted-sourceCoverage
-confidence model, both a **deliberate divergence** from Military's log-min-max/coverage-floor mechanism, not
-an inconsistency (GDP's outlier skew is exactly the problem percentile rank was originally adopted
-project-wide to solve — design doc §4). `EconomyScore` extends the design doc's illustrative flat
+tie-breaking convention" instruction — see `LOGBOOK.md`), a **deliberate divergence** from Military's
+log-min-max, not an inconsistency (GDP's outlier skew is exactly the problem percentile rank was originally
+adopted project-wide to solve — design doc §4). `EconomyScore` extends the design doc's illustrative flat
 `CategoryScore` the same way `MilitaryScore` already does — a real per-component `raw`/`normalized`/`year`/
 `sourceUrl` breakdown instead of a bare `sources: string[]` — needed for the identical citation drill-down
 (design doc §7) every category is meant to eventually get, not just Military.
+
+**v6.6.1: added a coverage floor** — launched on the design doc's plain weighted-sourceCoverage model with no
+floor at all (any 1 of 5 components present still produced a value), which real output broke: Monaco and
+Liechtenstein (1 of 5 present — just GDP growth) outranked fully-measured economies because a single
+percentile stood in for the whole composite with nothing to average against. Now needs >= 3 of 5 present to
+score at all (`>= 0.8` measured / `=== 3` (as a component count) proxy / `<= 2` unavailable — `value` stays
+`null` below the floor rather than being computed then withheld) — this borrows Military's "you need a floor"
+idea, applied to Economy's own shape, not Military's actual coverage-floor MECHANISM (which also changes
+true-zero-vs-coverage-gap handling Economy doesn't have). Caught before shipping: the patch spec described the
+tiers as literal float comparisons (`sourceCoverage === 0.6` for the proxy case), but `3 * 0.2 === 0.6` is
+`false` in JavaScript floating point — implemented against the integer `coveragePresent` count instead
+(`=== 3`, exact) rather than the literal float form. See `LOGBOOK.md`'s v6.6.1 entry.
 
 Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
 (the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually
