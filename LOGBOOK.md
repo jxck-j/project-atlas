@@ -5,6 +5,23 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-21 — Economy component-breakdown debug dump: read-only, gitignored, not a CHANGELOG-worthy change
+
+Added `writeComponentBreakdownDebugFile()` to `scripts/buildEconomy.mjs` (full runs only, not `--sample`,
+matching the existing "sample mode writes nothing" convention) — one JSON entry per measured/proxy-tier
+country with each of the 5 components' raw value and post-inversion percentile alongside the composite,
+written to `debug/economy-component-breakdown.json`. Every field is read straight off the already-computed
+`finalScores` array; nothing about scoring, normalization, or weighting changed, and confirmed
+`src/data/economyScores.ts` (the file the app actually consumes) came out byte-identical to before this
+change. Spot-checked the US entry by hand: averaging its 5 stored percentiles reproduces `compositeScore`
+exactly (73.238 → 73.2), confirming the dump reflects real computed values rather than a parallel
+recalculation that could drift from the actual scoring path.
+
+Added `debug/` to `.gitignore` — this is explicitly a one-off review aid ("before deciding whether a
+weighting change is needed"), not a permanent data artifact the way `economyScores.ts`/`militaryScores.ts`
+are, so it shouldn't accumulate as tracked, regenerable clutter. No CHANGELOG entry or version bump for this
+one — nothing about the running app changed, only a local dev-tool output.
+
 ## 2026-08-21 — Economy coverage floor patch: a specified floating-point comparison would have silently broken the fix it was part of
 
 Requested patch: `scripts/buildEconomy.mjs`'s confidence tiering needed a coverage floor — a country needs at

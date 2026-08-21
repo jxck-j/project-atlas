@@ -22,3 +22,8 @@ yarn-error.log*
 
 # local Claude Code settings (machine-specific paths/permissions)
 .claude/settings.local.json
+
+# one-off build-script diagnostic output (e.g. scripts/buildEconomy.mjs's
+# debug/economy-component-breakdown.json) — regenerable, not consumed by
+# the app, not meant to be a permanent repo artifact
+debug/

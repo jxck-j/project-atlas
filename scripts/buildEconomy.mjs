@@ -42,7 +42,10 @@
 //     writes nothing.
 //   npm run build:economy
 //     Full run: all 193 countries, writes src/data/economyScores.ts and
-//     appends a generated gap report to BACKLOG.md.
+//     appends a generated gap report to BACKLOG.md. Also writes
+//     debug/economy-component-breakdown.json — a diagnostic-only per-entity
+//     component/percentile/composite dump, not consumed by the app, for
+//     reviewing the ranking ahead of any weighting decision (2026-08-21).
 //
 // Run via `node`, not `tsx` — same as buildMilitary.mjs, no existing .ts
 // source needs importing.
@@ -529,6 +532,41 @@ console.log(`  gdpPerCapitaPpp: ${countPresent((c) => c.gdpPerCapitaPpp.raw)}`)
 console.log(`  gdpGrowth: ${countPresent((c) => c.gdpGrowth.raw)}`)
 console.log(`  unemploymentRate: ${countPresent((c) => c.unemploymentRate.raw)}`)
 console.log(`  inflationCpi: ${countPresent((c) => c.inflationCpi.raw)}`)
+
+// ---------------------------------------------------------------------------
+// DIAGNOSTIC ONLY — debug/economy-component-breakdown.json. Read-only
+// instrumentation for reviewing the ranking (ahead of any decision about
+// whether a weighting change is needed) — every field here is read straight
+// off `finalScores`, already fully computed above; this does not affect
+// scoring, normalization, or weighting, and is not consumed by the app
+// itself (src/data/economyScores.ts, written above, is unaffected). Skips
+// 'unavailable'-confidence entities — there's no composite/percentile set
+// to show for those. `percentile` is each component's post-inversion,
+// pre-average normalized value (`components.X.normalized` — already
+// inverted for unemployment/inflation, exactly what fed the composite
+// average), not a value recomputed here.
+// ---------------------------------------------------------------------------
+function writeComponentBreakdownDebugFile() {
+  const DEBUG_OUTPUT = 'debug/economy-component-breakdown.json'
+  const breakdown = finalScores
+    .filter((s) => s.confidence !== 'unavailable')
+    .map((s) => ({
+      entity: s.name,
+      components: {
+        gdpPpp: { raw: s.components.gdpPpp.raw, percentile: s.components.gdpPpp.normalized },
+        gdpPerCapPpp: { raw: s.components.gdpPerCapitaPpp.raw, percentile: s.components.gdpPerCapitaPpp.normalized },
+        growth5yrAvg: { raw: s.components.gdpGrowth.raw, percentile: s.components.gdpGrowth.normalized },
+        unemployment: { raw: s.components.unemploymentRate.raw, percentile: s.components.unemploymentRate.normalized },
+        inflation: { raw: s.components.inflationCpi.raw, percentile: s.components.inflationCpi.normalized },
+      },
+      compositeScore: s.value,
+    }))
+  fs.mkdirSync('debug', { recursive: true })
+  fs.writeFileSync(DEBUG_OUTPUT, JSON.stringify(breakdown, null, 2))
+  console.log(`Wrote ${DEBUG_OUTPUT}: ${breakdown.length} entities (measured/proxy only; unavailable skipped).`)
+}
+
+writeComponentBreakdownDebugFile()
 
 // ---------------------------------------------------------------------------
 // BACKLOG.md — same marker-delimited idempotent append pattern as
