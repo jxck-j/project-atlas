@@ -80,11 +80,16 @@ project's pure geometry/math functions, not component behavior.
   **Search** field (type a name, press Enter — matches any country, any
   GeoEntity classification, or any of the 32,608 US Census places as of
   v4.2, then selects/flies the camera there; a matched US city also draws
-  its real boundary on demand), a **Layers** button (toggle visualization
-  layers on/off — as of v2.0 these are architecture-validating placeholders,
-  not real data; see Layer Engine below), and a **Settings** button (camera
-  rotate/zoom sensitivity, with a reset). Favorites/notifications/account
-  icons are also present but not wired to anything yet.
+  its real boundary on demand), a **Layers** button, and a **Settings**
+  button (camera rotate/zoom sensitivity, with a reset). Favorites/
+  notifications/account icons are also present but not wired to anything
+  yet. **As of v6.5.0 the Layers button opens Layer Presets** — save the
+  current on/off state of every layer under a name, then click it later to
+  restore that whole configuration at once, rather than re-toggling each
+  layer by hand. Presets persist across reloads (saved to this browser).
+  Toggling individual layers is still done from the sidebar (every
+  category row still opens the toggle list, unchanged) — this button only
+  snapshots/restores the whole thing.
 - The top bar's **ANALYTICS** tab (v6.4.0) opens a full-screen dashboard: one
   clickable thumbnail per Intelligence Engine metric (Military, Economy,
   Diplomacy, Technology, Current Status). Only **Military** has real data —
@@ -438,6 +443,9 @@ src/
     layerStore.ts                Enabled/disabled runtime state (zustand,
                                  same pattern as the hud/*Store.ts files
                                  since v4.4.0)
+    layerPresetsStore.ts           (v6.5.0) Named snapshots of layerStore's
+                                 enabled map, save/apply/delete, persisted to
+                                 localStorage — see hud/LayerPresetsPanel.tsx
     LayerManager.tsx              Mounts/unmounts enabled layers, per-layer error
                                  boundary, mount/unmount lifecycle logging
     LayerEngine.tsx                Public entry point — the only thing Globe.tsx
@@ -523,9 +531,14 @@ src/
                                  to disambiguate same-named places across
                                  states
     LayerPanel.tsx               Toggle list for registered layers, grouped by
-                                 category (opened from TopNav's Layers button
-                                 or the L key; scoped by SideRail's active
+                                 category (opened from every SideRail category
+                                 row, or the L key; scoped by SideRail's active
                                  section as of v5.0.0)
+    LayerPresetsPanel.tsx        (v6.5.0) Opened from TopNav's Layers button
+                                 instead, as of v6.5.0 — save/apply/delete a
+                                 named snapshot of every layer's on/off state
+                                 (layers/layerPresetsStore.ts), persisted to
+                                 localStorage (this codebase's first use of it)
     SettingsPanel.tsx           Camera sensitivity sliders + (v3.2.0)
                                  KEYBOARD SHORTCUTS reference (opened from
                                  TopNav's Settings button)

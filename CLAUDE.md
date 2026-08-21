@@ -799,6 +799,29 @@ one-row-per-toggle layout. `SideRail.tsx`'s click handler reads this field
 generically rather than hardcoding `'layers'`, so a future tab can open its
 own dedicated panel the same way without another rewrite of that handler.
 
+**`layers/layerPresetsStore.ts` + `hud/LayerPresetsPanel.tsx` (v6.5.0)** — direct request: a user who's already
+arranged a combination of layers they like shouldn't have to re-toggle each one by hand next time they want
+it. A preset is a named snapshot (`{id, name, layers: Record<layerId, boolean>, createdAt}`) of
+`layerStore.ts`'s enabled map at save time, captured via `getLayerDefinitions()` + `isLayerEnabled()` and
+restored via `setLayerEnabled()` (both pre-existing exports — this needed no changes to `layerStore.ts`
+itself). `applyLayerPreset()` only touches layer ids that are both in the saved snapshot AND still
+registered today: a layer removed from the app since the preset was saved has nothing left to restore, and a
+layer registered *since* the preset was saved isn't mentioned in the snapshot at all, so applying an old
+preset never silently forces an unrelated layer off. Presets persist to `localStorage`
+(`atlas.layerPresets`) — this codebase's first use of it. Every other piece of UI state
+(`hud/settingsStore.ts`'s camera sensitivity, `layerStore.ts`'s own live enabled map) resets to defaults on
+reload; a saved preset is the deliberate exception, since "store" is the whole point of the feature.
+
+This reassigns, rather than reuses, `hud/TopNav.tsx`'s Layers icon button: before v6.5.0 it toggled the same
+`'layers'` `HudPanel` (`hud/LayerPanel.tsx`'s per-layer toggle list) that every `SideRail.tsx` category row
+also opens. As of v6.5.0 it opens a new, distinct `'layerPresets'` `HudPanel` (`hud/LayerPresetsPanel.tsx`)
+instead — save-current-config / apply / delete, not another toggle list — while every `SideRail.tsx` row is
+unchanged and still opens `'layers'`. The two panels share the exact same fixed-position dock
+(`top-[72px] left-[168px]`) every other `HudPanel`-driven panel uses, and are mutually exclusive the same way
+(only one `HudPanel` open at a time) — a user can still get to individual per-layer toggles from the sidebar
+at any time; this panel only adds a way to snapshot/restore the whole map at once, it doesn't replace the
+toggle list.
+
 ### LOD Engine (`src/lod/`, v4.3)
 
 A registry + store for the camera-distance ladder any zoom-gated content

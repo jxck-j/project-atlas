@@ -17,6 +17,21 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.5.0 — Layer Presets: save and restore a whole layer configuration at once
+
+**New major version, Layer Engine.** Direct request: a user who's already arranged the layers they want
+shouldn't have to re-toggle each one by hand every time they come back to the same combination. TopNav's
+Layers icon button (beside Settings) now opens `hud/LayerPresetsPanel.tsx` instead of the per-layer toggle
+list — name the current configuration, save it, and click it later to instantly restore every layer's on/off
+state. The toggle list itself hasn't gone anywhere: every SideRail category row still opens it exactly as
+before, so individual layers are still one click away for actually building a configuration in the first
+place; the new panel only adds a way to snapshot/restore the whole map at once. `layers/layerPresetsStore.ts`
+persists presets to `localStorage` — this codebase's first use of it, deliberately: every other piece of UI
+state (camera sensitivity, the live layer on/off map itself) resets on reload, but a saved preset explicitly
+should survive one, since "store" is the whole point. Applying an old preset never forces off a layer added
+to the app since the preset was saved — only ids present in both the saved snapshot and today's registry are
+touched.
+
 ## v6.4.1 — Entering Analytics now closes a leftover IntelligencePanel
 
 **Point release.** Direct request: if a country was already selected (map click, search, or a prior ranked-list

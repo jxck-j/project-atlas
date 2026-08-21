@@ -5,6 +5,40 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — Layer Presets: reassigned an existing button rather than adding a new one, and reached for localStorage for the first time
+
+Requested: let a user store a layer configuration so they don't have to keep re-toggling the same layers on
+and off. The request specifically named "the layer's button beside the settings wheel" — TopNav's Layers icon
+— as the thing whose function should change, not a request for a brand-new button somewhere.
+
+Two decisions worth recording:
+
+1. **Reassign vs. add a third icon.** TopNav's Layers button and every SideRail category row both opened the
+   same `'layers'` `HudPanel` (the toggle list) before this change. Reassigning the TopNav button specifically
+   to a new `'layerPresets'` panel, while leaving every SideRail row pointed at `'layers'` unchanged, keeps
+   both interactions reachable without adding a third icon to an already-full utility cluster: SideRail is
+   still where you build a configuration (toggle individual layers), TopNav's button is now where you
+   save/restore one. Matches the request's own framing ("change the function of the layer's button") rather
+   than reading it as "add a presets feature somewhere."
+2. **Persistence: localStorage, the first use of it in this codebase.** Every existing piece of UI state —
+   camera sensitivity (`hud/settingsStore.ts`), the live layer enabled map (`layers/layerStore.ts`) itself —
+   resets to defaults on reload; nothing in this app persists across a session before this. Considered keeping
+   presets in-memory only, matching that existing convention, but rejected it: the request said "store," and
+   a preset that vanishes on refresh doesn't satisfy "so they don't have to go back and turn certain layers on
+   and off" as directly as one that survives a reload/new session does. `layers/layerPresetsStore.ts` wraps
+   every `localStorage` read/write in try/catch (private browsing, storage disabled, or corrupt JSON all
+   degrade to "start empty" or "this session works, next reload doesn't persist" rather than a thrown error
+   during module init) since this is the first module in the codebase relying on a browser API that isn't
+   guaranteed available.
+
+Mechanically straightforward otherwise: `layerStore.ts` already exported `setLayerEnabled(id, value)`
+alongside the existing `toggleLayer`, so applying a saved preset needed zero changes to that store — a preset
+is just a captured `{layerId: enabled}` map replayed through the existing setter. The one thing worth being
+careful about was *which* ids to replay: a preset saved before a layer existed shouldn't be able to force that
+layer off when applied later (it was never asked about it), and a preset that mentions a layer since removed
+from the app has nothing left to act on — `applyLayerPreset` intersects the saved snapshot against
+`getLayerDefinitions()`'s current ids rather than blindly replaying every saved key.
+
 ## 2026-08-20 — Analytics tab: full-screen dashboard, not a rail panel; only Military got a real ranking
 
 Requested: unlock the inert ANALYTICS top-nav tab with a clickable thumbnail per status-bar metric

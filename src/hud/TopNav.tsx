@@ -112,9 +112,9 @@ export function TopNav() {
         <IconButton icon={ICONS.user} label="Account" />
         <IconButton
           icon={ICONS.layers}
-          label="Layers"
-          active={openPanel === 'layers'}
-          onClick={() => toggleHudPanel('layers')}
+          label="Layer Presets"
+          active={openPanel === 'layerPresets'}
+          onClick={() => toggleHudPanel('layerPresets')}
         />
         <IconButton
           icon={ICONS.settings}
