@@ -1,7 +1,9 @@
 // Build-time asset generator for the Military category of the Intelligence
 // Engine (see Intelligence Docs/intelligence-engine-scoring-design.md, §3.1,
-// and Intelligence Docs/claude-code-prompt-military-scoring.md for the full
-// locked spec this script implements). Produces one Military score (0-100)
+// for the locked spec this script implements — the original Claude Code
+// build prompt that kicked this script off has since been retired; every
+// sourcing decision/deviation/revision it captured lives on in this file's
+// own comments and the design doc). Produces one Military score (0-100)
 // per country, plus per-component normalized values, written to
 // src/data/militaryScores.ts.
 //
