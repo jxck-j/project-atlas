@@ -3,14 +3,18 @@
 // in Intelligence Docs/intelligence-engine-scoring-design.md §3.2 and
 // Intelligence Docs/buildEconomy-prompt.md.
 //
-// 5 equal-weighted (0.2 each) World Bank WDI components, all coverage-gap-
-// only (no true-zero components, unlike Military's nuclear/industrial-base):
-// GDP (PPP), GDP per capita (PPP), real GDP growth (5yr trailing average —
-// see components.gdpGrowth.years for exactly which calendar years were
+// 5 World Bank WDI components, all coverage-gap-only (no true-zero
+// components, unlike Military's nuclear/industrial-base): GDP (PPP), GDP
+// per capita (PPP), real GDP growth (5yr trailing average — see
+// components.gdpGrowth.years for exactly which calendar years were
 // averaged), unemployment rate, and inflation (CPI) — the last two inverted
 // (100 - percentile) since lower is better for both. Trade volume/balance
 // was explicitly dropped from the original v1 draft, not scored or
-// annotated.
+// annotated. Originally equal-weighted (0.2 each); GDP (PPP) is
+// double-weighted as of 2026-08-21 — see finalizeCountry's own WEIGHTING
+// PATCH comment for why (large, mature economies were structurally
+// penalized against smaller, faster-growing ones by treating "size" and
+// "growth rate" as equally important).
 //
 // Normalized via PERCENTILE RANK, not Military's log-min-max — a deliberate
 // divergence (GDP's outlier skew is the same problem percentile rank was
@@ -58,7 +62,7 @@ export interface EconomyComponentValue {
 
 export interface EconomyScore {
   name: string
-  /** 0-100 composite (equal-weighted average of whichever of the 5 components have real data), null iff confidence is 'unavailable'. */
+  /** 0-100 composite — average of whichever of the 5 components have real data, with GDP (PPP) counted twice (see the file header comment above), null iff confidence is 'unavailable'. */
   value: number | null
   confidence: EconomyConfidence
   /** How many of the 5 components have a real value for this country (0-5). */
@@ -77,7 +81,7 @@ export interface EconomyScore {
 export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   "004": {
     name: "Afghanistan",
-    value: 32.7,
+    value: 35,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -91,7 +95,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "008": {
     name: "Albania",
-    value: 52.6,
+    value: 50,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -105,7 +109,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "012": {
     name: "Algeria",
-    value: 44.5,
+    value: 50.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -119,7 +123,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "020": {
     name: "Andorra",
-    value: 54.2,
+    value: 43.7,
     confidence: "proxy",
     coveragePresent: 3,
     coverageTotal: 5,
@@ -133,7 +137,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "024": {
     name: "Angola",
-    value: 28.6,
+    value: 35.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -147,7 +151,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "028": {
     name: "Antigua and Barbuda",
-    value: 29.3,
+    value: 25.2,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -161,7 +165,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "032": {
     name: "Argentina",
-    value: 40.3,
+    value: 47.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -175,7 +179,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "051": {
     name: "Armenia",
-    value: 59.1,
+    value: 56.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -189,7 +193,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "036": {
     name: "Australia",
-    value: 68.7,
+    value: 72.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -203,7 +207,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "040": {
     name: "Austria",
-    value: 57.5,
+    value: 60.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -217,7 +221,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "031": {
     name: "Azerbaijan",
-    value: 57.1,
+    value: 57.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -231,7 +235,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "044": {
     name: "Bahamas",
-    value: 55.1,
+    value: 49.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -245,7 +249,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "048": {
     name: "Bahrain",
-    value: 75.1,
+    value: 70.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -259,7 +263,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "050": {
     name: "Bangladesh",
-    value: 58.3,
+    value: 63.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -273,7 +277,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "052": {
     name: "Barbados",
-    value: 49.3,
+    value: 43.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -287,7 +291,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "112": {
     name: "Belarus",
-    value: 50.3,
+    value: 52.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -301,7 +305,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "056": {
     name: "Belgium",
-    value: 59.9,
+    value: 63.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -315,7 +319,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "084": {
     name: "Belize",
-    value: 39.8,
+    value: 35.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -329,7 +333,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "204": {
     name: "Benin",
-    value: 65.6,
+    value: 60.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -343,7 +347,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "064": {
     name: "Bhutan",
-    value: 50.4,
+    value: 45.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -357,7 +361,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "068": {
     name: "Bolivia",
-    value: 41.7,
+    value: 43.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -371,7 +375,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "070": {
     name: "Bosnia and Herzegovina",
-    value: 40.6,
+    value: 40.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -385,7 +389,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "072": {
     name: "Botswana",
-    value: 36.6,
+    value: 35.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -399,7 +403,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "076": {
     name: "Brazil",
-    value: 54.6,
+    value: 61.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -413,7 +417,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "096": {
     name: "Brunei",
-    value: 57.8,
+    value: 52.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -427,7 +431,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "100": {
     name: "Bulgaria",
-    value: 65.1,
+    value: 64.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -441,7 +445,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "854": {
     name: "Burkina Faso",
-    value: 46.5,
+    value: 45.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -455,7 +459,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "108": {
     name: "Burundi",
-    value: 37.4,
+    value: 34.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -469,7 +473,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "132": {
     name: "Cabo Verde",
-    value: 42,
+    value: 36.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -483,7 +487,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "116": {
     name: "Cambodia",
-    value: 68.2,
+    value: 65.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -497,7 +501,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "120": {
     name: "Cameroon",
-    value: 48.1,
+    value: 49.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -511,7 +515,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "124": {
     name: "Canada",
-    value: 65.4,
+    value: 69.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -525,7 +529,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "140": {
     name: "Central African Republic",
-    value: 31,
+    value: 28,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -539,7 +543,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "148": {
     name: "Chad",
-    value: 41.9,
+    value: 40.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -553,7 +557,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "152": {
     name: "Chile",
-    value: 50.9,
+    value: 55.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -567,7 +571,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "156": {
     name: "China",
-    value: 80.4,
+    value: 83.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -581,7 +585,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "170": {
     name: "Colombia",
-    value: 48.3,
+    value: 54.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -595,7 +599,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "174": {
     name: "Comoros",
-    value: 32.8,
+    value: 28.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -609,7 +613,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "178": {
     name: "Congo",
-    value: 23.7,
+    value: 24.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -623,7 +627,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "188": {
     name: "Costa Rica",
-    value: 65.7,
+    value: 63.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -637,7 +641,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "384": {
     name: "Côte d'Ivoire",
-    value: 62.1,
+    value: 61.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -651,7 +655,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "191": {
     name: "Croatia",
-    value: 63.8,
+    value: 62.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -679,7 +683,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "196": {
     name: "Cyprus",
-    value: 67.9,
+    value: 62.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -693,7 +697,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "203": {
     name: "Czechia",
-    value: 65.7,
+    value: 67.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -707,7 +711,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "180": {
     name: "Democratic Republic of the Congo",
-    value: 54.4,
+    value: 55.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -721,7 +725,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "208": {
     name: "Denmark",
-    value: 67.2,
+    value: 68.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -735,7 +739,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "262": {
     name: "Djibouti",
-    value: 40.8,
+    value: 36.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -749,7 +753,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "212": {
     name: "Dominica",
-    value: 36.5,
+    value: 30,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -763,7 +767,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "214": {
     name: "Dominican Republic",
-    value: 60.1,
+    value: 61.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -777,7 +781,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "218": {
     name: "Ecuador",
-    value: 57.5,
+    value: 58.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -791,7 +795,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "818": {
     name: "Egypt",
-    value: 52.2,
+    value: 58.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -805,7 +809,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "222": {
     name: "El Salvador",
-    value: 61.3,
+    value: 58.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -819,7 +823,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "226": {
     name: "Equatorial Guinea",
-    value: 31.4,
+    value: 30.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -833,7 +837,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "232": {
     name: "Eritrea",
-    value: 20.3,
+    value: 18.3,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -847,7 +851,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "233": {
     name: "Estonia",
-    value: 40.7,
+    value: 40.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -861,7 +865,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "748": {
     name: "Eswatini",
-    value: 30.8,
+    value: 28.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -875,7 +879,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "231": {
     name: "Ethiopia",
-    value: 51.9,
+    value: 55,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -889,7 +893,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "242": {
     name: "Fiji",
-    value: 36.9,
+    value: 33.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -903,7 +907,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "246": {
     name: "Finland",
-    value: 54.1,
+    value: 56.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -917,7 +921,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "250": {
     name: "France",
-    value: 61.4,
+    value: 67.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -931,7 +935,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "266": {
     name: "Gabon",
-    value: 42.4,
+    value: 40.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -945,7 +949,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "270": {
     name: "Gambia",
-    value: 32.6,
+    value: 29.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -959,7 +963,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "268": {
     name: "Georgia",
-    value: 61.8,
+    value: 59.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -973,7 +977,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "276": {
     name: "Germany",
-    value: 67.8,
+    value: 72.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -987,7 +991,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "288": {
     name: "Ghana",
-    value: 51.6,
+    value: 53.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1001,7 +1005,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "300": {
     name: "Greece",
-    value: 53.4,
+    value: 56.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1015,7 +1019,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "308": {
     name: "Grenada",
-    value: 42.3,
+    value: 35.4,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -1029,7 +1033,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "320": {
     name: "Guatemala",
-    value: 64.4,
+    value: 64.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1043,7 +1047,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "324": {
     name: "Guinea",
-    value: 42.4,
+    value: 41.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1057,7 +1061,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "624": {
     name: "Guinea-Bissau",
-    value: 46.2,
+    value: 40.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1071,7 +1075,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "328": {
     name: "Guyana",
-    value: 60,
+    value: 56.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1085,7 +1089,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "332": {
     name: "Haiti",
-    value: 10.6,
+    value: 13,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1099,7 +1103,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "340": {
     name: "Honduras",
-    value: 44,
+    value: 43.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1113,7 +1117,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "348": {
     name: "Hungary",
-    value: 55.2,
+    value: 58,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1127,7 +1131,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "352": {
     name: "Iceland",
-    value: 52.1,
+    value: 47.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1141,7 +1145,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "356": {
     name: "India",
-    value: 62.3,
+    value: 68.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1155,7 +1159,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "360": {
     name: "Indonesia",
-    value: 71.6,
+    value: 75.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1169,7 +1173,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "364": {
     name: "Iran",
-    value: 51.1,
+    value: 57.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1183,7 +1187,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "368": {
     name: "Iraq",
-    value: 39.5,
+    value: 45.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1197,7 +1201,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "372": {
     name: "Ireland",
-    value: 80.9,
+    value: 80.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1211,7 +1215,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "376": {
     name: "Israel",
-    value: 69.4,
+    value: 70.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1225,7 +1229,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "380": {
     name: "Italy",
-    value: 66.8,
+    value: 71.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1239,7 +1243,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "388": {
     name: "Jamaica",
-    value: 38.6,
+    value: 36.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1253,7 +1257,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "392": {
     name: "Japan",
-    value: 68.1,
+    value: 73,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1267,7 +1271,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "400": {
     name: "Jordan",
-    value: 44.9,
+    value: 46.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1281,7 +1285,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "398": {
     name: "Kazakhstan",
-    value: 57.9,
+    value: 61.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1295,7 +1299,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "404": {
     name: "Kenya",
-    value: 51.1,
+    value: 54.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1309,7 +1313,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "296": {
     name: "Kiribati",
-    value: 40.2,
+    value: 32.6,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -1323,7 +1327,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "414": {
     name: "Kuwait",
-    value: 60.1,
+    value: 60.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1337,7 +1341,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "417": {
     name: "Kyrgyzstan",
-    value: 50.8,
+    value: 48.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1351,7 +1355,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "418": {
     name: "Laos",
-    value: 47.8,
+    value: 46.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1365,7 +1369,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "428": {
     name: "Latvia",
-    value: 51,
+    value: 49.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1379,7 +1383,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "422": {
     name: "Lebanon",
-    value: 19.6,
+    value: 23.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1393,7 +1397,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "426": {
     name: "Lesotho",
-    value: 14.4,
+    value: 14.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1407,7 +1411,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "430": {
     name: "Liberia",
-    value: 37.3,
+    value: 33.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1421,7 +1425,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "434": {
     name: "Libya",
-    value: 36.2,
+    value: 38.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1449,7 +1453,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "440": {
     name: "Lithuania",
-    value: 63.4,
+    value: 61.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1463,7 +1467,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "442": {
     name: "Luxembourg",
-    value: 57.1,
+    value: 55.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1477,7 +1481,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "450": {
     name: "Madagascar",
-    value: 36.5,
+    value: 36.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1491,7 +1495,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "454": {
     name: "Malawi",
-    value: 25.9,
+    value: 26.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1505,7 +1509,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "458": {
     name: "Malaysia",
-    value: 73.1,
+    value: 75.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1519,7 +1523,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "462": {
     name: "Maldives",
-    value: 62.1,
+    value: 54.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1533,7 +1537,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "466": {
     name: "Mali",
-    value: 50.1,
+    value: 48.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1547,7 +1551,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "470": {
     name: "Malta",
-    value: 73.2,
+    value: 65.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1561,7 +1565,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "584": {
     name: "Marshall Islands",
-    value: 13.3,
+    value: 10.3,
     confidence: "proxy",
     coveragePresent: 3,
     coverageTotal: 5,
@@ -1575,7 +1579,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "478": {
     name: "Mauritania",
-    value: 43.1,
+    value: 40.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1589,7 +1593,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "480": {
     name: "Mauritius",
-    value: 41.5,
+    value: 38.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1603,7 +1607,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "484": {
     name: "Mexico",
-    value: 58.8,
+    value: 64.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1617,7 +1621,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "583": {
     name: "Micronesia",
-    value: 15,
+    value: 12.5,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -1631,7 +1635,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "498": {
     name: "Moldova",
-    value: 43.9,
+    value: 41.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1659,7 +1663,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "496": {
     name: "Mongolia",
-    value: 45.2,
+    value: 44.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1673,7 +1677,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "499": {
     name: "Montenegro",
-    value: 42.7,
+    value: 39.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1687,7 +1691,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "504": {
     name: "Morocco",
-    value: 52.1,
+    value: 55.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1701,7 +1705,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "508": {
     name: "Mozambique",
-    value: 33.4,
+    value: 33.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1715,7 +1719,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "104": {
     name: "Myanmar",
-    value: 37.5,
+    value: 42.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1729,7 +1733,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "516": {
     name: "Namibia",
-    value: 27.4,
+    value: 26.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1743,7 +1747,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "520": {
     name: "Nauru",
-    value: 45.7,
+    value: 36.6,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -1757,7 +1761,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "524": {
     name: "Nepal",
-    value: 37.4,
+    value: 40.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1771,7 +1775,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "528": {
     name: "Netherlands",
-    value: 65,
+    value: 68.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1785,7 +1789,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "554": {
     name: "New Zealand",
-    value: 58.6,
+    value: 59.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1799,7 +1803,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "558": {
     name: "Nicaragua",
-    value: 46,
+    value: 44.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1813,7 +1817,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "562": {
     name: "Niger",
-    value: 48.7,
+    value: 46.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1827,7 +1831,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "566": {
     name: "Nigeria",
-    value: 46.6,
+    value: 53.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1855,7 +1859,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "807": {
     name: "North Macedonia",
-    value: 36.2,
+    value: 35.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1869,7 +1873,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "578": {
     name: "Norway",
-    value: 64.6,
+    value: 66.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1883,7 +1887,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "512": {
     name: "Oman",
-    value: 69.8,
+    value: 68.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1897,7 +1901,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "586": {
     name: "Pakistan",
-    value: 44.2,
+    value: 51.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1911,7 +1915,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "585": {
     name: "Palau",
-    value: 32.5,
+    value: 26.3,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -1925,7 +1929,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "591": {
     name: "Panama",
-    value: 65.6,
+    value: 64.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1939,7 +1943,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "598": {
     name: "Papua New Guinea",
-    value: 54.2,
+    value: 50.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1953,7 +1957,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "600": {
     name: "Paraguay",
-    value: 47.8,
+    value: 48.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1967,7 +1971,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "604": {
     name: "Peru",
-    value: 56.5,
+    value: 59.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1981,7 +1985,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "608": {
     name: "Philippines",
-    value: 64.8,
+    value: 68.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -1995,7 +1999,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "616": {
     name: "Poland",
-    value: 70,
+    value: 73.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2009,7 +2013,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "620": {
     name: "Portugal",
-    value: 59.4,
+    value: 61.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2023,7 +2027,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "634": {
     name: "Qatar",
-    value: 75.7,
+    value: 74.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2037,7 +2041,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "642": {
     name: "Romania",
-    value: 54.1,
+    value: 58.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2051,7 +2055,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "643": {
     name: "Russia",
-    value: 65.5,
+    value: 70.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2065,7 +2069,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "646": {
     name: "Rwanda",
-    value: 46.9,
+    value: 44.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2079,7 +2083,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "659": {
     name: "Saint Kitts and Nevis",
-    value: 31.4,
+    value: 26.2,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2093,7 +2097,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "662": {
     name: "Saint Lucia",
-    value: 52.7,
+    value: 45.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2107,7 +2111,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "670": {
     name: "Saint Vincent and the Grenadines",
-    value: 30.8,
+    value: 26.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2121,7 +2125,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "882": {
     name: "Samoa",
-    value: 45.2,
+    value: 38.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2135,7 +2139,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "674": {
     name: "San Marino",
-    value: 64.7,
+    value: 53.4,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2149,7 +2153,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "678": {
     name: "Sao Tome and Principe",
-    value: 18.1,
+    value: 15.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2163,7 +2167,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "682": {
     name: "Saudi Arabia",
-    value: 80.8,
+    value: 82.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2177,7 +2181,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "686": {
     name: "Senegal",
-    value: 64.7,
+    value: 61.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2191,7 +2195,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "688": {
     name: "Serbia",
-    value: 51.9,
+    value: 53.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2205,7 +2209,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "690": {
     name: "Seychelles",
-    value: 51.3,
+    value: 43,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2219,7 +2223,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "694": {
     name: "Sierra Leone",
-    value: 39.5,
+    value: 36.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2233,7 +2237,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "702": {
     name: "Singapore",
-    value: 80.9,
+    value: 81.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2247,7 +2251,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "703": {
     name: "Slovakia",
-    value: 55.5,
+    value: 56.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2261,7 +2265,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "705": {
     name: "Slovenia",
-    value: 65,
+    value: 62.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2275,7 +2279,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "090": {
     name: "Solomon Islands",
-    value: 30.5,
+    value: 26.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2289,7 +2293,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "706": {
     name: "Somalia",
-    value: 20.6,
+    value: 20.8,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2303,7 +2307,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "710": {
     name: "South Africa",
-    value: 35.2,
+    value: 43.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2317,7 +2321,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "410": {
     name: "South Korea",
-    value: 74.8,
+    value: 77.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2345,7 +2349,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "724": {
     name: "Spain",
-    value: 57.1,
+    value: 63,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2359,7 +2363,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "144": {
     name: "Sri Lanka",
-    value: 55.7,
+    value: 57.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2373,7 +2377,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "729": {
     name: "Sudan",
-    value: 17.1,
+    value: 22.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2387,7 +2391,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "740": {
     name: "Suriname",
-    value: 23,
+    value: 22.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2401,7 +2405,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "752": {
     name: "Sweden",
-    value: 55.1,
+    value: 59,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2415,7 +2419,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "756": {
     name: "Switzerland",
-    value: 73.4,
+    value: 74.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2429,7 +2433,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "760": {
     name: "Syria",
-    value: 22.8,
+    value: 27.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2443,7 +2447,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "762": {
     name: "Tajikistan",
-    value: 41.6,
+    value: 40.3,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2457,7 +2461,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "834": {
     name: "Tanzania",
-    value: 61.6,
+    value: 62.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2471,7 +2475,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "764": {
     name: "Thailand",
-    value: 71.9,
+    value: 74.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2485,7 +2489,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "626": {
     name: "Timor-Leste",
-    value: 40.3,
+    value: 35.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2499,7 +2503,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "768": {
     name: "Togo",
-    value: 55.1,
+    value: 49.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2513,7 +2517,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "776": {
     name: "Tonga",
-    value: 38,
+    value: 32.2,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2527,7 +2531,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "780": {
     name: "Trinidad and Tobago",
-    value: 54.9,
+    value: 50.8,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2541,7 +2545,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "788": {
     name: "Tunisia",
-    value: 27.6,
+    value: 32.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2555,7 +2559,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "792": {
     name: "Turkey",
-    value: 57.5,
+    value: 63.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2569,7 +2573,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "795": {
     name: "Turkmenistan",
-    value: 66,
+    value: 63.5,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2583,7 +2587,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "798": {
     name: "Tuvalu",
-    value: 31.1,
+    value: 24.9,
     confidence: "measured",
     coveragePresent: 4,
     coverageTotal: 5,
@@ -2597,7 +2601,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "800": {
     name: "Uganda",
-    value: 56,
+    value: 56.1,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2611,7 +2615,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "804": {
     name: "Ukraine",
-    value: 33.5,
+    value: 40.7,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2625,7 +2629,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "784": {
     name: "United Arab Emirates",
-    value: 79.2,
+    value: 79.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2639,7 +2643,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "826": {
     name: "United Kingdom",
-    value: 61.8,
+    value: 67.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2653,7 +2657,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "840": {
     name: "United States of America",
-    value: 73.2,
+    value: 77.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2667,7 +2671,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "858": {
     name: "Uruguay",
-    value: 41.9,
+    value: 43.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2681,7 +2685,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "860": {
     name: "Uzbekistan",
-    value: 54.7,
+    value: 57.4,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2695,7 +2699,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "548": {
     name: "Vanuatu",
-    value: 38.7,
+    value: 33,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2709,7 +2713,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "862": {
     name: "Venezuela",
-    value: 35.9,
+    value: 42.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2723,7 +2727,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "704": {
     name: "Vietnam",
-    value: 71.3,
+    value: 73.9,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2737,7 +2741,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "887": {
     name: "Yemen",
-    value: 15.7,
+    value: 20.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2751,7 +2755,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "894": {
     name: "Zambia",
-    value: 37.2,
+    value: 38.5,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,
@@ -2765,7 +2769,7 @@ export const ECONOMY_SCORES: Record<string, EconomyScore> = {
   },
   "716": {
     name: "Zimbabwe",
-    value: 30.9,
+    value: 33.6,
     confidence: "measured",
     coveragePresent: 5,
     coverageTotal: 5,

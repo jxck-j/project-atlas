@@ -294,12 +294,12 @@ const rankGdpGrowth = buildPercentileRanker(built.map((r) => r.raw.gdpGrowth.val
 const rankUnemployment = buildPercentileRanker(built.map((r) => r.raw.unemploymentRate.value))
 const rankInflation = buildPercentileRanker(built.map((r) => r.raw.inflationCpi.value))
 
-// Equal weight, no exceptions (per the build prompt — a deliberate contrast
-// with Military's expenditure double-weight, which had a specific
-// real-output justification that doesn't apply here). Average across
-// whichever of the 5 components have real data for this country; a
-// component with no data contributes nothing to the average rather than
-// counting as a 0.
+// Originally equal weight, no exceptions, per the build prompt (a
+// deliberate contrast drawn against Military's expenditure double-weight at
+// the time — see WEIGHTING PATCH below for why that no longer holds).
+// Average across whichever of the 5 components have real data for this
+// country; a component with no data contributes nothing to the average
+// rather than counting as a 0.
 function finalizeCountry(r) {
   const gdpPppPct = rankGdpPpp(r.raw.gdpPpp.value ?? null)
   const gdpPerCapitaPppPct = rankGdpPerCapitaPpp(r.raw.gdpPerCapitaPpp.value ?? null)
@@ -371,7 +371,34 @@ function finalizeCountry(r) {
   // exactly equivalent to the sourceCoverage thresholds above, computed
   // safely on integers instead.
   const confidence = coveragePresent >= 4 ? 'measured' : coveragePresent === 3 ? 'proxy' : 'unavailable'
-  const value = coveragePresent >= 3 ? presentNormalized.reduce((a, b) => a + b, 0) / coveragePresent : null
+
+  // WEIGHTING PATCH (2026-08-21): GDP (PPP) double-weighted — mirrors
+  // Military expenditure's double-weight in buildMilitary.mjs. Real output
+  // showed large, mature economies (the US in particular) landing well
+  // below smaller, faster-growing ones despite GDP and GDP per capita being
+  // near-maxed. Not a data bug — a structural one: real GDP growth for a
+  // multi-trillion-dollar economy is mechanically constrained, since the
+  // same absolute dollar increase is a much smaller percentage of a $29T
+  // base than of a $50B one, so equal-weighting "size" against "growth
+  // rate" structurally penalizes size itself. GDP (PPP) is this category's
+  // "overall economic size" metric, so counting its percentile twice in the
+  // average gives absolute economic weight more influence than momentum/
+  // stability metrics. Uses its own doubled-and-filtered list, NOT
+  // presentNormalized/coveragePresent above — the coverage floor still
+  // gates on the real count of distinct components present, unaffected by
+  // this. If gdpPpp itself is the missing component for a country, BOTH
+  // copies are filtered out below — never a partial/half-weight, same
+  // "neither copy counts" behavior Military's expenditure double-weight
+  // already established.
+  const weightedNormalized = [
+    gdpPppPct,
+    gdpPppPct,
+    gdpPerCapitaPppPct,
+    gdpGrowthPct,
+    unemploymentPct,
+    inflationPct,
+  ].filter((v) => v != null)
+  const value = coveragePresent >= 3 ? weightedNormalized.reduce((a, b) => a + b, 0) / weightedNormalized.length : null
 
   return {
     id: r.id,
@@ -433,14 +460,18 @@ const header = `// Economy category scores for the Intelligence Engine, generate
 // in Intelligence Docs/intelligence-engine-scoring-design.md §3.2 and
 // Intelligence Docs/buildEconomy-prompt.md.
 //
-// 5 equal-weighted (0.2 each) World Bank WDI components, all coverage-gap-
-// only (no true-zero components, unlike Military's nuclear/industrial-base):
-// GDP (PPP), GDP per capita (PPP), real GDP growth (5yr trailing average —
-// see components.gdpGrowth.years for exactly which calendar years were
+// 5 World Bank WDI components, all coverage-gap-only (no true-zero
+// components, unlike Military's nuclear/industrial-base): GDP (PPP), GDP
+// per capita (PPP), real GDP growth (5yr trailing average — see
+// components.gdpGrowth.years for exactly which calendar years were
 // averaged), unemployment rate, and inflation (CPI) — the last two inverted
 // (100 - percentile) since lower is better for both. Trade volume/balance
 // was explicitly dropped from the original v1 draft, not scored or
-// annotated.
+// annotated. Originally equal-weighted (0.2 each); GDP (PPP) is
+// double-weighted as of 2026-08-21 — see finalizeCountry's own WEIGHTING
+// PATCH comment for why (large, mature economies were structurally
+// penalized against smaller, faster-growing ones by treating "size" and
+// "growth rate" as equally important).
 //
 // Normalized via PERCENTILE RANK, not Military's log-min-max — a deliberate
 // divergence (GDP's outlier skew is the same problem percentile rank was
@@ -488,7 +519,7 @@ export interface EconomyComponentValue {
 
 export interface EconomyScore {
   name: string
-  /** 0-100 composite (equal-weighted average of whichever of the 5 components have real data), null iff confidence is 'unavailable'. */
+  /** 0-100 composite — average of whichever of the 5 components have real data, with GDP (PPP) counted twice (see the file header comment above), null iff confidence is 'unavailable'. */
   value: number | null
   confidence: EconomyConfidence
   /** How many of the 5 components have a real value for this country (0-5). */

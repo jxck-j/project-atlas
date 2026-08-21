@@ -5,6 +5,36 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-21 — Economy: GDP (PPP) double-weighted after real output showed size structurally penalized against growth rate
+
+Requested patch: double-weight GDP (PPP) in the Economy composite, mirroring `buildMilitary.mjs`'s existing
+expenditure double-weight. Rationale given: large, mature economies (the US specifically) were landing well
+below smaller, faster-growing ones despite GDP/GDP-per-capita being near-maxed — a structural artifact, not a
+data bug, since real GDP growth for a multi-trillion-dollar economy is mechanically constrained (the same
+absolute dollar increase is a much smaller percentage of a $29T base than a $50B one), so equal-weighting
+"size" against "growth rate" always penalizes size.
+
+Implementation mirrored Military's exact pattern rather than reinventing it: a separate `weightedNormalized`
+array (`[gdpPppPct, gdpPppPct, ...the rest]`, filtered for non-null) feeds the composite average, while
+`coveragePresent` — used for the v6.6.1 coverage floor and confidence tiering — stays computed from the
+original, undoubled `presentNormalized` list. This was the one detail worth being careful about: if the
+doubled value had also fed `coveragePresent`, a country missing 3 of 5 real components but with GDP PPP
+present would have counted as having 4 "components" (since GDP PPP's double-entry would inflate the count),
+crossing the `>= 3` floor on a technicality rather than genuine coverage. Kept the two lists — and their two
+different jobs — deliberately separate. Also updated the "Equal weight, no exceptions... a deliberate
+contrast with Military's expenditure double-weight" comment above `finalizeCountry`, which the original
+build prompt wrote as a permanent design decision — it described something that was true when written, not a
+constraint that couldn't be revisited once real output said otherwise (the same "don't silently re-litigate,
+but do record when a locked call gets reopened" discipline the design doc's own Governing Principle 6
+documents for Military's identical override).
+
+Verified by hand before trusting the full rebuild: recomputed the US's stored composite from its 5 stored
+percentiles in `debug/economy-component-breakdown.json` with GDP PPP counted twice (77.6, matching the actual
+`compositeScore` exactly) rather than assuming the code was correct because it ran without error. Full rerun:
+China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (moved from outside the top 10 into #7) — confirmed live in the
+Analytics ECONOMY ranking, not just in the debug file. Confidence breakdown (186 measured / 2 proxy / 5
+unavailable) unchanged, as expected — this patch only touches how the composite is averaged, not coverage.
+
 ## 2026-08-21 — Economy component-breakdown debug dump: read-only, gitignored, not a CHANGELOG-worthy change
 
 Added `writeComponentBreakdownDebugFile()` to `scripts/buildEconomy.mjs` (full runs only, not `--sample`,

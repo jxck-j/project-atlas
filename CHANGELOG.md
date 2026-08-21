@@ -17,6 +17,20 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.6.2 — Economy: GDP (PPP) double-weighted, mirroring Military's expenditure precedent
+
+**Point release.** Real output showed large, mature economies (the US in particular) landing well below
+smaller, faster-growing ones despite GDP and GDP per capita being near-maxed — not a data bug, a structural
+one: the same absolute dollar increase is mechanically a much smaller percentage of a $29T base than a $50B
+one, so equal-weighting "size" against "growth rate" penalizes size itself. GDP (PPP) is this category's
+"overall economic size" metric, so its percentile now counts twice in the composite average — the same
+double-weighting pattern `buildMilitary.mjs` already uses for military expenditure, applied here for the
+matching reason (giving absolute economic weight more influence than momentum/stability metrics). If GDP
+(PPP) itself is a country's missing component, both copies are filtered out — never a partial/half-weight.
+Coverage floor/confidence tiering (v6.6.1) is unaffected — this only changes how the composite is averaged.
+China moved from 80.4 → 83.6 and now leads the ranking; the US moved from 73.2 (previously ranked outside the
+top 10) to 77.6 (#7).
+
 ## v6.6.1 — Economy: coverage floor fixes a real ranking bug
 
 **Point release.** `scripts/buildEconomy.mjs` originally scored a country from as little as 1 of its 5

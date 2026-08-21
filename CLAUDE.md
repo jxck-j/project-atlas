@@ -1048,9 +1048,10 @@ v6.5.4 entry for the `hidden`+unconditional-`flex` conflict that would have caus
 
 **v6.6.0: Economy joined Military as a second real, sourced Intelligence Engine category** —
 `scripts/buildEconomy.mjs` (`npm run build:economy`, per `Intelligence Docs/buildEconomy-prompt.md`
-implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 equal-weighted World Bank WDI
-components (GDP PPP, GDP per capita PPP, 5yr-trailing real GDP growth, unemployment, inflation — the last
-two inverted, lower is better), **percentile-rank normalized** (average/fractional rank for ties — stopped
+implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 World Bank WDI components (GDP
+PPP, GDP per capita PPP, 5yr-trailing real GDP growth, unemployment, inflation — the last two inverted, lower
+is better; originally equal-weighted, GDP (PPP) double-weighted as of v6.6.2 — see below), **percentile-rank
+normalized** (average/fractional rank for ties — stopped
 and asked the user before writing this, per the build prompt's own "stop and ask before picking a
 tie-breaking convention" instruction — see `LOGBOOK.md`), a **deliberate divergence** from Military's
 log-min-max, not an inconsistency (GDP's outlier skew is exactly the problem percentile rank was originally
@@ -1070,6 +1071,21 @@ true-zero-vs-coverage-gap handling Economy doesn't have). Caught before shipping
 tiers as literal float comparisons (`sourceCoverage === 0.6` for the proxy case), but `3 * 0.2 === 0.6` is
 `false` in JavaScript floating point — implemented against the integer `coveragePresent` count instead
 (`=== 3`, exact) rather than the literal float form. See `LOGBOOK.md`'s v6.6.1 entry.
+
+**v6.6.2: GDP (PPP) double-weighted** — mirrors `buildMilitary.mjs`'s existing expenditure double-weight, for
+the matching reason. Real output showed large, mature economies (the US specifically) landing well below
+smaller, faster-growing ones despite GDP/GDP-per-capita being near-maxed: not a data bug, a structural one —
+the same absolute dollar increase is mechanically a much smaller percentage of a $29T base than a $50B one,
+so equal-weighting "size" against "growth rate" always penalizes size. `finalizeCountry` now averages over a
+separate `weightedNormalized` list (`gdpPpp`'s percentile counted twice) rather than `presentNormalized`
+directly, while `coveragePresent` — what the v6.6.1 coverage floor and confidence tiering actually key off —
+stays computed from the original, undoubled list; the two lists deliberately serve different jobs, so a
+double-counted `gdpPpp` never lets a country cross the coverage floor on a technicality. If `gdpPpp` itself is
+a country's missing component, both copies are filtered out of the average — never a partial/half-weight,
+identical to Military's own "neither copy counts" rule. Verified by hand against `debug/
+economy-component-breakdown.json` before trusting the full rebuild (recomputed the US's composite from its 5
+stored percentiles with `gdpPpp` doubled — matched exactly) and confirmed live in the Analytics ECONOMY
+ranking: China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (was outside the top 10, now #7).
 
 Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
 (the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually
