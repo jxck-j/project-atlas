@@ -626,7 +626,11 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   category with sourcing identified (design doc §3.2) but its
   normalization/confidence model still needs the same reconciliation pass
   Military went through before it's scoreable; Diplomacy/Technology are
-  further behind (weights not locked — see design doc §9).
+  further behind (weights not locked — see design doc §9). As of v6.4.0 this
+  same gap has a second visible surface: `hud/AnalyticsPanel.tsx`'s
+  ECONOMY/DIPLOMACY/TECHNOLOGY/CURRENT STATUS thumbnails are disabled with
+  the identical "Awaiting data feed" copy, and will need a ranking function
+  added alongside whichever of these gets real data first.
 - **Data Engine** — every dataset in `src/data/registry/` is hand-curated
   and static; there's no live-refresh mechanism, and every provenance note
   says as much (`confidence: 'estimated'`, "not a comprehensive or

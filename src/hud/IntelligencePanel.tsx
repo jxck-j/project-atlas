@@ -9,9 +9,11 @@ import { AllianceBadge } from './AllianceBadge'
 import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
 import { formatArea, formatGdp, formatPopulation } from '../utils/formatScale'
+import { intelValueColor } from '../utils/intelValueColor'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
+import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
 
 // `.cp-row` — label left, value right-aligned on the same baseline, rather
 // than the stacked label-over-value the pre-restyle panel used. The
@@ -51,16 +53,6 @@ function DataRow({ label, value }: { label: string; value: string }) {
 // (`MilitaryScore.confirmed`), the composite is genuinely inapplicable, not
 // merely unmeasured, so it shouldn't share the "—" a data gap gets.
 const INTEL_BAR_WIDTH_PX = 155
-const INTEL_RED = { r: 0xef, g: 0x44, b: 0x44 }
-const INTEL_AMBER = { r: 0xf5, g: 0x9e, b: 0x0b }
-const INTEL_GREEN = { r: 0x22, g: 0xc5, b: 0x5e }
-
-function intelValueColor(value: number): string {
-  const clamped = Math.max(0, Math.min(100, value))
-  const [from, to, t] = clamped <= 50 ? [INTEL_RED, INTEL_AMBER, clamped / 50] : [INTEL_AMBER, INTEL_GREEN, (clamped - 50) / 50]
-  const lerp = (a: number, b: number) => Math.round(a + (b - a) * t)
-  return `rgb(${lerp(from.r, to.r)}, ${lerp(from.g, to.g)}, ${lerp(from.b, to.b)})`
-}
 
 // `onClick` (v6.3.2) makes the row a `<button>` instead of a `<div>` — see
 // the design doc's §7 "status bars are clickable" citation drill-down.
@@ -500,16 +492,6 @@ function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
     </>
   )
 }
-
-type IntelMetricId = 'military' | 'economy' | 'diplomacy' | 'technology' | 'current-status'
-
-const INTEL_METRICS: { id: IntelMetricId; label: string; icon: readonly string[] }[] = [
-  { id: 'military', label: 'MILITARY', icon: ICONS.military },
-  { id: 'economy', label: 'ECONOMY', icon: ICONS.economy },
-  { id: 'diplomacy', label: 'DIPLOMACY', icon: ICONS.diplomacy },
-  { id: 'technology', label: 'TECHNOLOGY', icon: ICONS.technology },
-  { id: 'current-status', label: 'CURRENT STATUS', icon: ICONS.shield },
-]
 
 export function IntelligencePanel() {
   const { selected, inspectorOpen } = useSelection()

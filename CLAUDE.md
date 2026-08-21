@@ -960,6 +960,28 @@ again (or selecting a different entity — the drill-down resets on `selected.id
 the normal 5-row view. Only MILITARY is clickable today; the other four metrics have no component data to
 drill into yet.
 
+**`hud/AnalyticsPanel.tsx` (v6.4.0)** is the first thing mounted from `hud/TopNav.tsx`'s previously-inert
+ANALYTICS tab (`navStore.ts`'s `TopNavTab` already reserved the id; `TABS` in `TopNav.tsx` just needed
+`wired: true`) — a full-screen dashboard, not another docked `LayerPanel`/`AlliancesPanel`-style rail panel,
+specifically so a 193-row ranked list has room to read. It shows one clickable thumbnail per
+`hud/intelMetrics.ts` metric (the same five ids/labels/icons `IntelligencePanel.tsx`'s status bars use —
+pulled into that shared module, along with `utils/intelValueColor.ts`'s red→amber→green interpolation, so the
+two surfaces can't drift apart on what a score's color or a metric's icon means); clicking MILITARY's — the
+only one with real per-country data behind it — drills into every registered country ranked by
+`MILITARY_SCORES`, sorted by the score's real underlying value (not the displayed one, so a confirmed
+no-standing-military country's real, sourced 0 still ranks correctly below every actually-measured country,
+while an `'unavailable'`-confidence country's `null` value sorts last of all). The other four thumbnails
+render the identical "Awaiting data feed — no assessment data currently sourced" copy `IntelligencePanel.tsx`
+already uses for those metrics — same "don't fabricate a ranking with nothing sourced behind it" discipline,
+not a separate decision. Clicking a ranked-list row calls the same `selectEntity()` a map click or search
+result does (`IntelligencePanel.tsx` slides open on top of this view, at its own higher z-index) but
+deliberately does **not** call `flyToSelectedCountry()` — the globe is hidden behind this full-screen overlay
+while it's open, so a flight nobody can see would be pointless; `direction` is still computed correctly (same
+centroid-through-current-rotation technique `SearchBar.tsx`'s `selectEntry` uses) so `FOCUS CAMERA` in the
+now-open `IntelligencePanel` still works once the user switches back to the MAP tab. The ranked list stays
+open across a row click — confirmed as the preferred behavior over auto-closing back to the map, so a user
+can click through several countries' summaries without re-navigating the ranking each time.
+
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every
 `GeoEntity` relationship field point at other records — discriminated

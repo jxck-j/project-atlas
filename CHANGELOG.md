@@ -17,6 +17,36 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.4.1 — Entering Analytics now closes a leftover IntelligencePanel
+
+**Point release.** Direct request: if a country was already selected (map click, search, or a prior ranked-list
+row click) before switching to the ANALYTICS tab, `IntelligencePanel` stayed open and covered the CURRENT
+STATUS thumbnail, so not every metric thumbnail was visible right after entering the tab. `AnalyticsPanel.tsx`
+now calls `closeInspector()` on the transition into the tab (an effect keyed on `isOpen` flipping to `true`,
+not on every render while it stays open) so the thumbnail grid always starts unobstructed. Deliberately
+`closeInspector()`, not `clearSelection()` — it only hides the panel, so the underlying selection survives:
+clicking a ranked-list row still reopens `IntelligencePanel` right there (the effect doesn't re-fire just
+because `inspectorOpen` changes, only when the tab itself changes), and switching back to MAP doesn't lose
+whatever was selected before.
+
+## v6.4.0 — Analytics tab: ranked leaderboards for Intelligence Engine metrics
+
+**New major version, Intelligence Engine.** Wires up `hud/TopNav.tsx`'s previously-inert ANALYTICS tab: a
+full-screen dashboard (not another docked rail panel — a 193-row ranked list needs the room) showing one
+clickable thumbnail per status-bar metric (Military, Economy, Diplomacy, Technology, Current Status). Clicking
+MILITARY — the only metric with real, sourced per-country data (`data/militaryScores.ts`) — drills into every
+UN member country ranked by score, colored the same red→amber→green scale `IntelligencePanel.tsx`'s status
+bars already use. The other four thumbnails render disabled, with the exact same "Awaiting data feed" wording
+`IntelligencePanel.tsx` already uses for those metrics — this project doesn't fabricate a ranking with nothing
+sourced behind it, the same discipline that's kept those four metrics unscored since v6.3.0. Clicking a country
+row selects it (`IntelligencePanel` opens alongside, on top of this view) without closing the ranked list or
+flying the camera there — see `LOGBOOK.md` for why. `hud/intelMetrics.ts` (the five metric ids/labels/icons)
+and `utils/intelValueColor.ts` (the score-to-color interpolation) were pulled out of `IntelligencePanel.tsx`
+into their own modules so this new view and the existing status bars can't drift apart on what a metric's icon
+or a score's color means. This is the second Intelligence Engine consumer after the per-entity status bars —
+reduces future complexity for a future Economy/Diplomacy/Technology/Current Status dataset, which only needs
+to flip its `METRIC_AVAILABLE` flag in `AnalyticsPanel.tsx` and add a ranking function, not a new UI.
+
 ## v6.3.3 — State/province name labels read ~1.67x bigger
 
 **Point release.** Direct request, with a concrete example (Hessen, Germany): state/province name labels

@@ -5,6 +5,45 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — Analytics tab: full-screen dashboard, not a rail panel; only Military got a real ranking
+
+Requested: unlock the inert ANALYTICS top-nav tab with a clickable thumbnail per status-bar metric
+(Military/Economy/Technology/...), each drilling into the full ranked list of countries.
+
+Three judgment calls made explicit before writing any code, since each one had a real alternative:
+
+1. **Economy has no 0-100 composite score — only raw GDP/population.** Could have ranked Economy by nominal
+   GDP (real, World Bank-sourced data already on `Country`) instead of leaving it disabled. Decided against:
+   `IntelligencePanel.tsx`'s own comment is explicit that this project doesn't fabricate assessment scores
+   without an editorial process behind them, and a GDP-sorted list sitting under an "ECONOMY" thumbnail next
+   to a genuine 0-100 composite score (Military) would read as more comparable to Military than it actually
+   is — same units problem, different kind of number. Economy/Diplomacy/Technology/Current Status all render
+   the identical disabled state, matching `IntelligencePanel.tsx` exactly.
+2. **Full-screen overlay vs. a docked rail panel matching `LayerPanel.tsx`/`AlliancesPanel.tsx`'s existing
+   264px-wide chrome.** The existing panel slot exists and reusing it would've been less code. Rejected once
+   the actual content was considered: a 193-row ranked list with a value bar per row needs real width to be
+   legible, and cramming that into a 264px rail panel would've meant either truncating names or dropping the
+   bar entirely. Full-screen, gated on `navStore.ts`'s `TopNavTab` (already had a reserved `'analytics'`
+   value and an inert `TABS` entry — this only had to flip `wired: true`) rather than `hudPanelStore.ts`'s
+   `HudPanel`, since it's a different *kind* of thing (a view replacing the globe, not a toolbar dropdown
+   floating over it) and the two are orthogonal anyway (`IntelligencePanel` still opens on its own `HudPanel`
+   independent of which `TopNavTab` is active).
+3. **Does clicking a ranked-list row fly the camera there, the way a `SearchBar.tsx` result does?** Decided
+   no. The globe is hidden behind this full-screen overlay while it's open, so a camera flight nobody can see
+   would be pure wasted motion; `direction` is still computed correctly (same centroid + current-rotation
+   technique `SearchBar.tsx` uses) so `IntelligencePanel`'s existing FOCUS CAMERA button still works once the
+   user switches back to MAP. Also decided the ranked list should stay open across a row click rather than
+   snapping back to the map — the point of the view is browsing/comparing, and forcing a re-navigation back
+   into ANALYTICS after every single click would undermine that.
+
+Mechanically, this surfaced one bit of pre-existing duplication worth fixing on the way: `intelValueColor`
+(the red→amber→green interpolation) and the five-metric id/label/icon list were both private to
+`IntelligencePanel.tsx`. The new ranked list needed the exact same color mapping and the exact same metric
+identity — copying them would have created the two-independent-copies drift risk this codebase already avoids
+elsewhere (`scene/highlightColors.ts`, `hud/panelStyles.ts`), so both got pulled into their own modules
+(`utils/intelValueColor.ts`, `hud/intelMetrics.ts`) that `IntelligencePanel.tsx` now imports from too, rather
+than duplicated.
+
 ## 2026-08-20 — State/province label sizing: first attempt looked like "no change" because it only touched half the rendering path
 
 Requested: state/province name labels should read bigger once zoomed in on a region, bounded within their own

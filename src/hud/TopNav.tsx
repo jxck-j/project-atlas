@@ -5,15 +5,16 @@ import { ICONS } from './iconPaths'
 import { setTopNavTab, useTopNavTab, type TopNavTab } from './navStore'
 import { SearchBar } from './SearchBar'
 
-// Only 'map' has a view behind it. The other four are rendered inactive
-// rather than omitted (the layout reads as incomplete without them) and
-// rather than as working tabs (that would imply views this app doesn't
-// have) — see this session's note on affordances with nothing behind them.
+// 'map' and, as of the Analytics view (hud/AnalyticsPanel.tsx), 'analytics'
+// have a view behind them. The remaining three are rendered inactive rather
+// than omitted (the layout reads as incomplete without them) and rather
+// than as working tabs (that would imply views this app doesn't have) — see
+// this session's note on affordances with nothing behind them.
 const TABS: { id: TopNavTab; label: string; wired: boolean }[] = [
   { id: 'map', label: 'MAP', wired: true },
   { id: 'intelligence', label: 'INTELLIGENCE', wired: false },
   { id: 'layers', label: 'LAYERS', wired: false },
-  { id: 'analytics', label: 'ANALYTICS', wired: false },
+  { id: 'analytics', label: 'ANALYTICS', wired: true },
   { id: 'database', label: 'DATABASE', wired: false },
 ]
 

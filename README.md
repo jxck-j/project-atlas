@@ -85,6 +85,14 @@ project's pure geometry/math functions, not component behavior.
   not real data; see Layer Engine below), and a **Settings** button (camera
   rotate/zoom sensitivity, with a reset). Favorites/notifications/account
   icons are also present but not wired to anything yet.
+- The top bar's **ANALYTICS** tab (v6.4.0) opens a full-screen dashboard: one
+  clickable thumbnail per Intelligence Engine metric (Military, Economy,
+  Diplomacy, Technology, Current Status). Only **Military** has real data —
+  clicking it shows every one of the 193 UN member states ranked by score;
+  the other four are disabled, showing the same "no assessment data
+  currently sourced" state the intelligence panel's own status bars already
+  use for them. Clicking a country in the ranked list opens its intelligence
+  panel without leaving the ranked list.
 - The left **sidebar** (v5.0.0) lists the map's ten selectable sections —
   Overview, Countries, Cities, Military, Economy, Infrastructure, Conflicts,
   Environment, Weather, Filters. Selecting one scopes the Layer Panel to
@@ -481,8 +489,9 @@ src/
                                  blur, thin border) every panel below shares
     TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
                                  also resets view) / MAP·INTELLIGENCE·LAYERS·
-                                 ANALYTICS·DATABASE tabs (middle, only MAP
-                                 wired) / search·favorites·notifications·
+                                 ANALYTICS·DATABASE tabs (middle — MAP and, as
+                                 of v6.4.0, ANALYTICS are wired) /
+                                 search·favorites·notifications·
                                  account·layers·settings (right). Replaces
                                  Header.tsx + Toolbar.tsx (both removed)
     SideRail.tsx                 (v5.0.0) Left sidebar of ten selectable
@@ -547,6 +556,19 @@ src/
                                  driven by the real parentEntity/
                                  administeredBy/claimedBy/claims data that was
                                  already here, just recast as feed rows
+    AnalyticsPanel.tsx           (v6.4.0) Full-screen dashboard behind
+                                 TopNav's ANALYTICS tab — one clickable
+                                 thumbnail per Intelligence Engine metric,
+                                 drilling into a ranked list of all 193
+                                 countries. Only MILITARY has real data
+                                 (data/militaryScores.ts); the other four
+                                 render the same "Awaiting data feed" state
+                                 IntelligencePanel.tsx already uses for them.
+                                 Clicking a row selects the country without
+                                 closing the list or moving the camera
+    intelMetrics.ts               (v6.4.0) The five metric ids/labels/icons,
+                                 shared between IntelligencePanel.tsx's status
+                                 bars and AnalyticsPanel.tsx's thumbnails
     hudPanelStore.ts             Which single top-bar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
                                  since v2.2.1 — see entities/) + usCityOutline
