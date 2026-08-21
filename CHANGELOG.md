@@ -17,6 +17,16 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.5.4 — Analytics: MILITARY column headers are now click-to-sort
+
+**Point release.** Direct request: clicking a column header (COUNTRY, EXPENDITURE, % GDP, PERSONNEL, NUCLEAR,
+DEF. INDUSTRY, or SCORE) re-orders the ranked list by that column, toggling ascending/descending on repeat
+clicks of the same header (an arrow indicator shows which). Re-sorting only ever changes row order — no row's
+own score or component values are recalculated or altered by which column is currently driving the sort. A
+genuine coverage gap on a metric column (`raw === null`) always sorts to the bottom regardless of direction,
+so toggling asc/desc can't make missing data read as "the best" value; ties break alphabetically for a stable
+order. Resets to the default (SCORE, descending) whenever you leave and re-enter a ranking.
+
 ## v6.5.3 — Analytics: MILITARY ranked list now shows all 5 scored components, not just the composite
 
 **Point release.** Direct request: the ranked list only showed the composite 0-100 score; each row now also

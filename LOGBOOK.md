@@ -5,6 +5,39 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — Analytics military ranking: sortable column headers, and a Tailwind `hidden`+`flex` conflict caught before it shipped
+
+Requested: clicking a metric column header in the Analytics MILITARY ranking should re-sort the list by that
+column (toggle ascending/descending, plus alphabetical for the country name), without changing any row's own
+score.
+
+Two things worth recording:
+
+**Caught while writing `SortableHeader`, not after:** the first draft gave every header button an unconditional
+base class list including `flex items-center gap-1 ...`, then had the 5 metric-column headers pass
+`hidden xl:block xl:w-[92px]` as an additional wrapper className to hide them below the `xl` breakpoint (matching
+`METRIC_COLUMN_CLASS`'s existing pattern on the data cells). That combination is broken: `hidden` (`display:
+none`) and the base `flex` (`display: flex`) are both *unconditional* utility classes at the same
+specificity/layer — which one wins is down to source order in Tailwind's generated stylesheet, not something
+the component's own code controls, so the column could easily have rendered visible-but-broken instead of
+actually hidden below `xl`, in a way that would only show up by resizing the browser, not by reading the JSX.
+Fixed by not giving `SortableHeader`'s base classes any `display` utility at all — buttons are direct children
+of the header row's `flex` container, so CSS auto-blockifies them as flex items regardless of their own
+`display` value, and the *only* class controlling visibility/layout width is the one the caller passes in
+(`hidden xl:block xl:w-[92px]` for a metric column, `w-12 shrink-0` for SCORE, `min-w-0 flex-1` for COUNTRY).
+Same "hidden + a responsive display utility, nothing unconditional fighting it" idiom the rest of this file
+already uses (`METRIC_COLUMN_CLASS`, the score bar's `hidden ... sm:block`) — the bug was specifically in
+mixing an unconditional `flex` into a class list that also carried `hidden`.
+
+**Null handling is asymmetric between SCORE and the other columns, on purpose.** Every metric column
+(EXPENDITURE, % GDP, ...) has a real, `null`-able coverage gap — sorting by it treats `null` as "always last,
+regardless of direction," so toggling ascending never turns a data gap into a top-of-list "best" value.
+`scoreSortValue` (the composite) is different: it's never `null` — an `'unavailable'`-confidence country
+already collapses to `-1` (a decision from the original v6.4.0 ranking, kept unchanged here) — so the SCORE
+column just sorts as an ordinary number and doesn't need the null-handling branch at all. Worth remembering if
+a future metric column is added: check whether its underlying value can genuinely be absent, versus already
+having a sentinel fallback baked in upstream, before copying the null-handling pattern wholesale.
+
 ## 2026-08-20 — Analytics military ranking: columns instead of a per-row accordion, because the row was already a click target
 
 Requested: the MILITARY ranked list in `hud/AnalyticsPanel.tsx` should show the underlying metrics

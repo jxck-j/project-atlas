@@ -1014,16 +1014,32 @@ can click through several countries' summaries without re-navigating the ranking
 
 **v6.5.3: the MILITARY ranked list shows all 5 scored components as columns, not just the composite bar** —
 direct request. `RankedRow` carries the selected country's `MilitaryScore.components` straight through
-(`buildMilitaryRanking` no longer discards them), and each row renders EXPENDITURE / % GDP / PERSONNEL /
-NUCLEAR / DEF. INDUSTRY alongside the existing SCORE bar, reusing the exact same `formatGdp`/`formatPopulation`
-formatting `IntelligencePanel.tsx`'s `MilitaryDrilldown` already uses for these same fields — a genuine
-coverage gap (`raw === null`) renders "—", never a fabricated value. Chose columns over an expand-per-row
-accordion (the pattern `MilitaryDrilldown` itself uses) specifically because a row here is already a click
-target for selecting the country — stacking a second, different click meaning onto the same row would be
-ambiguous, where a column is always visible and needs no extra interaction. The 5 metric columns are
-`xl:`-only (`hidden ... xl:block`) with a matching header row directly above the list using the identical
-column widths/gaps so the two never drift apart; below that breakpoint only rank/name/score show, same as
-before this change. The drill-down view's own container widened from `max-w-3xl` to `max-w-6xl` to fit.
+(`buildMilitaryRows` — see below), and each row renders EXPENDITURE / % GDP / PERSONNEL / NUCLEAR / DEF.
+INDUSTRY alongside the existing SCORE bar, reusing the exact same `formatGdp`/`formatPopulation` formatting
+`IntelligencePanel.tsx`'s `MilitaryDrilldown` already uses for these same fields — a genuine coverage gap
+(`raw === null`) renders "—", never a fabricated value. Chose columns over an expand-per-row accordion (the
+pattern `MilitaryDrilldown` itself uses) specifically because a row here is already a click target for
+selecting the country — stacking a second, different click meaning onto the same row would be ambiguous,
+where a column is always visible and needs no extra interaction. The 5 metric columns are `xl:`-only
+(`hidden ... xl:block`) with a matching header row directly above the list using the identical column
+widths/gaps so the two never drift apart; below that breakpoint only rank/name/score show. The drill-down
+view's own container widened from `max-w-3xl` to `max-w-6xl` to fit.
+
+**v6.5.4: every column header in that same ranked list is click-to-sort** — direct request. `buildMilitaryRows`
+(renamed from `buildMilitaryRanking`) now returns the 193 rows unsorted; `AnalyticsPanel`'s own `militarySort`
+state (`{ key, direction }`, reset to the `SCORE`/descending default whenever the active metric changes) picks
+which of `compareMilitaryRows`'s cases actually orders them, recomputed fresh each render the same
+not-memoized way the rest of this row-building already is. Clicking the already-active header flips
+`asc`/`desc`; clicking a different one switches to it (descending for a metric — reads as "biggest first" on
+first click — ascending for COUNTRY, i.e. A→Z first). Re-sorting only ever reorders `RankedListRow`s — no
+row's `value`/`components` are touched by which column is driving the order, so a country's SCORE (or any
+other cell) never changes just because a different column is now sorted. A coverage gap on a metric column
+(`raw === null`) sorts last **regardless of direction** — otherwise ascending would turn "no data" into "the
+best" value — while the SCORE column itself has no such branch, since `scoreSortValue` already has no `null`
+case (an `'unavailable'`-confidence country resolves to `-1`, same as the original v6.4.0 ranking). Every tie
+(most visibly, the long run of countries at `nuclearWarheads: 0`) breaks alphabetically for a stable,
+predictable order. `SortableHeader` carries no `display` utility of its own in its base classes — see
+`LOGBOOK.md`'s v6.5.4 entry for the `hidden`+unconditional-`flex` conflict that would have caused if it had.
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every

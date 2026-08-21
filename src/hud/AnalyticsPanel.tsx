@@ -36,22 +36,21 @@ const METRIC_AVAILABLE: Record<IntelMetricId, boolean> = {
 interface RankedRow {
   id: string
   name: string
-  rank: number
   value?: number
   confidence?: MilitaryConfidence
   notApplicable?: boolean
   components?: MilitaryScore['components']
+  // The score's real underlying value, independent of `value`/`notApplicable`
+  // (a confirmed no-standing-military country has a real, sourced 0 here —
+  // see IntelligencePanel.tsx's militaryBarValue comment — while `value`
+  // itself is left undefined for display). Used only for sorting the SCORE
+  // column; never rendered directly, so re-sorting can never make a
+  // displayed score value change.
+  scoreSortValue: number
 }
 
-// Sorts by the score's real underlying value (descending), not the
-// display value — a confirmed no-standing-military country has a real,
-// sourced 0 (see IntelligencePanel.tsx's militaryBarValue comment) and
-// ranks accordingly, last among *measured* countries but still above an
-// 'unavailable'-confidence country, which has no value at all (`?? -1`
-// sorts those to the very bottom). Ties broken alphabetically for a stable,
-// predictable order.
-function buildMilitaryRanking(): RankedRow[] {
-  const rows = getCountries().map((country) => {
+function buildMilitaryRows(): RankedRow[] {
+  return getCountries().map((country) => {
     const score = MILITARY_SCORES[country.id]
     const notApplicable = score?.confirmed === true
     return {
@@ -61,11 +60,9 @@ function buildMilitaryRanking(): RankedRow[] {
       confidence: score?.confidence,
       notApplicable,
       components: score?.components,
-      sortValue: score?.value ?? -1,
+      scoreSortValue: score?.value ?? -1,
     }
   })
-  rows.sort((a, b) => b.sortValue - a.sortValue || a.name.localeCompare(b.name))
-  return rows.map((row, index) => ({ ...row, rank: index + 1 }))
 }
 
 // Reported directly: the ranked list should show each of the 5 scored
@@ -76,6 +73,119 @@ function buildMilitaryRanking(): RankedRow[] {
 // never a fabricated zero.
 function formatComponent(raw: number | null, format: (raw: number) => string): string {
   return raw == null ? '—' : format(raw)
+}
+
+type MilitarySortKey = 'name' | 'score' | 'expenditure' | 'pctGdp' | 'personnel' | 'nuclear' | 'industrialRev'
+type SortDirection = 'asc' | 'desc'
+
+interface MetricColumnDef {
+  key: MilitarySortKey
+  label: string
+  sortValue: (row: RankedRow) => number | null
+  format: (row: RankedRow) => string
+}
+
+// One definition per metric column, read by both the header row (label +
+// click-to-sort) and each data row (format) — so a column can't have its
+// header say one thing and its cells show another.
+const METRIC_COLUMNS: MetricColumnDef[] = [
+  {
+    key: 'expenditure',
+    label: 'EXPENDITURE',
+    sortValue: (row) => row.components?.expenditureUsd.raw ?? null,
+    format: (row) => (row.components ? formatComponent(row.components.expenditureUsd.raw, (raw) => formatGdp(raw * 1e6) ?? '—') : '—'),
+  },
+  {
+    key: 'pctGdp',
+    label: '% GDP',
+    sortValue: (row) => row.components?.pctGdp.raw ?? null,
+    format: (row) => (row.components ? formatComponent(row.components.pctGdp.raw, (raw) => `${raw.toFixed(2)}%`) : '—'),
+  },
+  {
+    key: 'personnel',
+    label: 'PERSONNEL',
+    sortValue: (row) => row.components?.personnel.raw ?? null,
+    format: (row) => (row.components ? formatComponent(row.components.personnel.raw, (raw) => formatPopulation(raw) ?? '—') : '—'),
+  },
+  {
+    key: 'nuclear',
+    label: 'NUCLEAR',
+    sortValue: (row) => row.components?.nuclearWarheads.raw ?? null,
+    format: (row) => (row.components ? formatComponent(row.components.nuclearWarheads.raw, (raw) => raw.toLocaleString('en-US')) : '—'),
+  },
+  {
+    key: 'industrialRev',
+    label: 'DEF. INDUSTRY',
+    sortValue: (row) => row.components?.industrialBaseRevenueUsdM.raw ?? null,
+    format: (row) =>
+      row.components ? formatComponent(row.components.industrialBaseRevenueUsdM.raw, (raw) => formatGdp(raw * 1e6) ?? '—') : '—',
+  },
+]
+
+const DEFAULT_MILITARY_SORT: { key: MilitarySortKey; direction: SortDirection } = { key: 'score', direction: 'desc' }
+
+// Reorders the displayed list only — no row's own value/components ever
+// change, whichever column is driving the order. A genuine coverage gap
+// (`raw === null` on a metric column) always sorts last regardless of
+// direction, so flipping asc/desc can never make a missing value read as
+// "the best" by landing at the top. SCORE is the one column that's never
+// null (`scoreSortValue` already falls back to -1 for an
+// 'unavailable'-confidence country — see buildMilitaryRows), so it sorts
+// like any ordinary number instead of going through the null handling.
+function compareMilitaryRows(a: RankedRow, b: RankedRow, key: MilitarySortKey, direction: SortDirection): number {
+  if (key === 'name') {
+    const cmp = a.name.localeCompare(b.name)
+    return direction === 'asc' ? cmp : -cmp
+  }
+  if (key === 'score') {
+    const cmp = a.scoreSortValue - b.scoreSortValue
+    return (direction === 'asc' ? cmp : -cmp) || a.name.localeCompare(b.name)
+  }
+  const getValue = METRIC_COLUMNS.find((col) => col.key === key)!.sortValue
+  const av = getValue(a)
+  const bv = getValue(b)
+  if (av == null && bv == null) return a.name.localeCompare(b.name)
+  if (av == null) return 1
+  if (bv == null) return -1
+  return (direction === 'asc' ? av - bv : bv - av) || a.name.localeCompare(b.name)
+}
+
+// Header cell for a sortable column — click toggles asc/desc when it's
+// already the active sort, or switches to it (descending for a metric,
+// ascending for COUNTRY, matching how each reads most usefully on a first
+// click) otherwise. Deliberately carries no display/width utility of its
+// own in its base classes — every caller is a direct child of the header
+// row's flex container and supplies its own sizing/visibility className,
+// the same classes RankedListRow's matching cell uses, so header and data
+// columns can never drift out of alignment independently.
+function SortableHeader({
+  label,
+  sortKey,
+  activeSort,
+  onSort,
+  align = 'right',
+  className = '',
+}: {
+  label: string
+  sortKey: MilitarySortKey
+  activeSort: { key: MilitarySortKey; direction: SortDirection }
+  onSort: (key: MilitarySortKey) => void
+  align?: 'left' | 'right'
+  className?: string
+}) {
+  const isActive = activeSort.key === sortKey
+  return (
+    <button
+      type="button"
+      onClick={() => onSort(sortKey)}
+      className={`${className} text-[10px] font-bold tracking-[0.2em] transition-colors ${
+        align === 'right' ? 'text-right' : 'text-left'
+      } ${isActive ? 'text-[#8aa0c6]' : 'text-[#5a79ab] hover:text-[#8aa0c6]'}`}
+    >
+      {label}
+      {isActive && <span className="ml-1 text-[#4d95ff]">{activeSort.direction === 'asc' ? '▲' : '▼'}</span>}
+    </button>
+  )
 }
 
 function MetricThumbnail({
@@ -114,9 +224,18 @@ function MetricThumbnail({
 
 const METRIC_COLUMN_CLASS = 'hidden shrink-0 text-right text-[11px] text-[#aebfdc] xl:block xl:w-[92px]'
 
-function RankedListRow({ row, isSelected, onSelect }: { row: RankedRow; isSelected: boolean; onSelect: () => void }) {
+function RankedListRow({
+  row,
+  rank,
+  isSelected,
+  onSelect,
+}: {
+  row: RankedRow
+  rank: number
+  isSelected: boolean
+  onSelect: () => void
+}) {
   const color = row.value !== undefined ? intelValueColor(row.value) : '#51648a'
-  const components = row.components
   return (
     <button
       type="button"
@@ -125,28 +244,16 @@ function RankedListRow({ row, isSelected, onSelect }: { row: RankedRow; isSelect
         isSelected ? 'bg-[rgba(63,139,255,0.12)]' : ''
       }`}
     >
-      <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#51648a]">{row.rank}</span>
+      <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#51648a]">{rank}</span>
       <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#dce8fb]">
         {row.name}
         {row.confidence === 'proxy' && <span className="ml-1.5 text-[10px] font-bold text-[#e0a340]">PROXY</span>}
       </span>
-      <span className={METRIC_COLUMN_CLASS}>
-        {components ? formatComponent(components.expenditureUsd.raw, (raw) => formatGdp(raw * 1e6) ?? '—') : '—'}
-      </span>
-      <span className={METRIC_COLUMN_CLASS}>
-        {components ? formatComponent(components.pctGdp.raw, (raw) => `${raw.toFixed(2)}%`) : '—'}
-      </span>
-      <span className={METRIC_COLUMN_CLASS}>
-        {components ? formatComponent(components.personnel.raw, (raw) => formatPopulation(raw) ?? '—') : '—'}
-      </span>
-      <span className={METRIC_COLUMN_CLASS}>
-        {components ? formatComponent(components.nuclearWarheads.raw, (raw) => raw.toLocaleString('en-US')) : '—'}
-      </span>
-      <span className={METRIC_COLUMN_CLASS}>
-        {components
-          ? formatComponent(components.industrialBaseRevenueUsdM.raw, (raw) => formatGdp(raw * 1e6) ?? '—')
-          : '—'}
-      </span>
+      {METRIC_COLUMNS.map((col) => (
+        <span key={col.key} className={METRIC_COLUMN_CLASS}>
+          {col.format(row)}
+        </span>
+      ))}
       <span className="hidden h-1 w-[155px] shrink-0 overflow-hidden rounded-sm bg-[#14213a] sm:block">
         <span
           className="block h-full rounded-sm shadow-[0_0_6px_rgba(255,255,255,0.25)]"
@@ -175,6 +282,15 @@ export function AnalyticsPanel() {
   const { selected } = useSelection()
   const features = useCountryFeatures()
   const [metric, setMetric] = useState<IntelMetricId | null>(null)
+  const [militarySort, setMilitarySort] = useState(DEFAULT_MILITARY_SORT)
+
+  // Resets whenever the active metric changes — including back to the
+  // thumbnail grid (`metric` -> null) and into a (currently only ever
+  // military) ranking — so a sort chosen while looking at one ranking never
+  // silently carries over and surprises the next one.
+  useEffect(() => {
+    setMilitarySort(DEFAULT_MILITARY_SORT)
+  }, [metric])
 
   // On the transition INTO this tab (not on every render while it stays
   // open — that would also fire right after a ranked-list row click reopens
@@ -215,7 +331,14 @@ export function AnalyticsPanel() {
   // to recompute. A 193-row map+sort is cheap enough to just redo on every
   // render of this panel — it's already gated on `isOpen` above, so it never
   // runs at all while Analytics isn't the active tab.
-  const militaryRanking = buildMilitaryRanking()
+  const militaryRows = buildMilitaryRows()
+  // A fresh sorted copy, driven entirely by which column header was last
+  // clicked (militarySort) — reorders the list only; every row's own
+  // value/components are exactly what buildMilitaryRows produced, untouched
+  // by which column is currently driving the order.
+  const sortedMilitaryRows = [...militaryRows].sort((a, b) =>
+    compareMilitaryRows(a, b, militarySort.key, militarySort.direction),
+  )
 
   function selectCountryRow(id: string) {
     const centroid = centroidById.get(id)
@@ -224,6 +347,14 @@ export function AnalyticsPanel() {
     const local = latLngToVector3(centroid.lat, centroid.lng, GLOBE_RADIUS)
     const direction = local.applyAxisAngle(UP_AXIS, getGlobeRotationY()).normalize()
     selectEntity(resolved, direction)
+  }
+
+  function handleMilitarySort(key: MilitarySortKey) {
+    setMilitarySort((current) =>
+      current.key === key
+        ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+        : { key, direction: key === 'name' ? 'asc' : 'desc' },
+    )
   }
 
   const activeMetric = INTEL_METRICS.find((m) => m.id === metric)
@@ -238,7 +369,7 @@ export function AnalyticsPanel() {
           </h1>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {INTEL_METRICS.map((m) => (
-              <MetricThumbnail key={m.id} metric={m} countryCount={militaryRanking.length} onSelect={() => setMetric(m.id)} />
+              <MetricThumbnail key={m.id} metric={m} countryCount={militaryRows.length} onSelect={() => setMetric(m.id)} />
             ))}
           </div>
         </div>
@@ -258,26 +389,53 @@ export function AnalyticsPanel() {
               {activeMetric.label}
             </span>
             <span className="ml-auto text-[9.5px] tracking-[0.16em] text-[#51648a]">
-              {militaryRanking.length} COUNTRIES · SIPRI / WORLD BANK / FAS SOURCED
+              {sortedMilitaryRows.length} COUNTRIES · SIPRI / WORLD BANK / FAS SOURCED
             </span>
           </div>
-          {/* Column header row — same widths/gaps as RankedListRow below it,
-              including the same xl-only visibility on the 5 component
-              columns, so headers and data always line up. */}
-          <div className="mb-1 hidden items-center gap-3 px-3 xl:flex">
+          {/* Column header row — every cell here is clickable and re-sorts
+              the list by that column (toggling asc/desc on repeat clicks);
+              same widths/gaps as RankedListRow below it, including the same
+              xl-only visibility on the 5 component columns, so headers and
+              data always line up. Re-sorting only ever reorders rows — no
+              row's own value changes because of which column is active. */}
+          <div className="mb-1 flex items-center gap-3 px-3">
             <span className="w-8 shrink-0" />
-            <span className="min-w-0 flex-1" />
-            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>EXPENDITURE</span>
-            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>% GDP</span>
-            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>PERSONNEL</span>
-            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>NUCLEAR</span>
-            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>DEF. INDUSTRY</span>
+            <SortableHeader
+              label="COUNTRY"
+              sortKey="name"
+              activeSort={militarySort}
+              onSort={handleMilitarySort}
+              align="left"
+              className="min-w-0 flex-1"
+            />
+            {METRIC_COLUMNS.map((col) => (
+              <SortableHeader
+                key={col.key}
+                label={col.label}
+                sortKey={col.key}
+                activeSort={militarySort}
+                onSort={handleMilitarySort}
+                className="hidden shrink-0 xl:block xl:w-[92px]"
+              />
+            ))}
             <span className="hidden w-[155px] shrink-0 sm:block" />
-            <span className={`${PANEL_SECTION_LABEL} w-12 shrink-0 text-right`}>SCORE</span>
+            <SortableHeader
+              label="SCORE"
+              sortKey="score"
+              activeSort={militarySort}
+              onSort={handleMilitarySort}
+              className="w-12 shrink-0"
+            />
           </div>
           <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-            {militaryRanking.map((row) => (
-              <RankedListRow key={row.id} row={row} isSelected={selected?.id === row.id} onSelect={() => selectCountryRow(row.id)} />
+            {sortedMilitaryRows.map((row, index) => (
+              <RankedListRow
+                key={row.id}
+                row={row}
+                rank={index + 1}
+                isSelected={selected?.id === row.id}
+                onSelect={() => selectCountryRow(row.id)}
+              />
             ))}
           </div>
         </div>
