@@ -17,6 +17,23 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.6.0 — Economy: the second real, sourced Intelligence Engine category
+
+**New major version, Intelligence Engine.** Economy joins Military with a real 0-100 composite score for all
+193 countries — GDP (PPP), GDP per capita (PPP), 5-year trailing real GDP growth, unemployment, and inflation
+(the last two inverted, since lower is better for both), all sourced from World Bank WDI
+(`scripts/buildEconomy.mjs`, `npm run build:economy`, per the locked design in
+`Intelligence Docs/intelligence-engine-scoring-design.md` §3.2 and
+`Intelligence Docs/buildEconomy-prompt.md`). Deliberately normalized via percentile rank (not Military's
+log-min-max) and the general weighted-sourceCoverage confidence model (not Military's coverage-floor
+mechanism) — both intentional divergences the design doc itself calls for, not inconsistencies to reconcile.
+
+Wired into both places Military already was: `IntelligencePanel.tsx`'s ECONOMY status bar now shows a real
+score with the same citation-drill-down (§7) treatment, and `AnalyticsPanel.tsx`'s ECONOMY thumbnail opens a
+full ranked list of all 193 countries with every component as its own sortable column — reusing, not
+duplicating, the generic ranked-list machinery Military's own columns (v6.5.3) and sortable headers (v6.5.4)
+already established. `formatGdpPerCapita` is the one new shared formatting utility this needed.
+
 ## v6.5.4 — Analytics: MILITARY column headers are now click-to-sort
 
 **Point release.** Direct request: clicking a column header (COUNTRY, EXPENDITURE, % GDP, PERSONNEL, NUCLEAR,

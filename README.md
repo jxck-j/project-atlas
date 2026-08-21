@@ -92,12 +92,16 @@ project's pure geometry/math functions, not component behavior.
   snapshots/restores the whole thing.
 - The top bar's **ANALYTICS** tab (v6.4.0) opens a full-screen dashboard: one
   clickable thumbnail per Intelligence Engine metric (Military, Economy,
-  Diplomacy, Technology, Current Status). Only **Military** has real data —
-  clicking it shows every one of the 193 UN member states ranked by score;
-  the other four are disabled, showing the same "no assessment data
-  currently sourced" state the intelligence panel's own status bars already
-  use for them. Clicking a country in the ranked list opens its intelligence
-  panel without leaving the ranked list.
+  Diplomacy, Technology, Current Status). **Military and, as of v6.6.0,
+  Economy** have real data — clicking either shows every one of the 193 UN
+  member states ranked by score, with every underlying component (5 per
+  category) as its own sortable column, not just the composite; Diplomacy/
+  Technology/Current Status are disabled, showing the same "no assessment
+  data currently sourced" state the intelligence panel's own status bars
+  already use for them. Clicking any column header re-sorts the list by
+  that column (toggle ascending/descending on repeat clicks) without
+  changing any country's actual score. Clicking a country in the ranked
+  list opens its intelligence panel without leaving the ranked list.
 - The left **sidebar** (v5.0.0) lists the map's ten selectable sections —
   Overview, Countries, Cities, Military, Economy, Infrastructure, Conflicts,
   Environment, Weather, Filters. Selecting one scopes the Layer Panel to
@@ -564,10 +568,17 @@ src/
                                  dispatched on entity kind. Restyled v5.0.0
                                  to a gradient masthead + sectioned body;
                                  gained an INTELLIGENCE SUMMARY block of
-                                 progress-bar metric rows (chrome only — no
-                                 score field exists anywhere in the schema,
-                                 so every bar renders in its empty state) and
-                                 a RELATIONSHIPS feed-row list for GeoEntities,
+                                 progress-bar metric rows — chrome-only at
+                                 first (no score field existed anywhere in the
+                                 schema, so every bar rendered in its empty
+                                 state), until MILITARY (v6.3.1, data/
+                                 militaryScores.ts) and ECONOMY (v6.6.0, data/
+                                 economyScores.ts) each got a real 0-100 score
+                                 with a citation drill-down (v6.3.2, §7 of the
+                                 design doc — click a wired bar to see its
+                                 sourced components); DIPLOMACY/TECHNOLOGY/
+                                 CURRENT STATUS still render empty — and a
+                                 RELATIONSHIPS feed-row list for GeoEntities,
                                  driven by the real parentEntity/
                                  administeredBy/claimedBy/claims data that was
                                  already here, just recast as feed rows
@@ -575,12 +586,18 @@ src/
                                  TopNav's ANALYTICS tab — one clickable
                                  thumbnail per Intelligence Engine metric,
                                  drilling into a ranked list of all 193
-                                 countries. Only MILITARY has real data
-                                 (data/militaryScores.ts); the other four
-                                 render the same "Awaiting data feed" state
-                                 IntelligencePanel.tsx already uses for them.
-                                 Clicking a row selects the country without
-                                 closing the list or moving the camera
+                                 countries with every underlying component as
+                                 its own sortable column (v6.5.3/v6.5.4).
+                                 MILITARY (data/militaryScores.ts) and, as of
+                                 v6.6.0, ECONOMY (data/economyScores.ts) have
+                                 real data, sharing one generic sortable-table
+                                 implementation (BaseRankedRow/AnalyticsColumn)
+                                 rather than two near-identical copies; the
+                                 other three render the same "Awaiting data
+                                 feed" state IntelligencePanel.tsx already
+                                 uses for them. Clicking a row selects the
+                                 country without closing the list or moving
+                                 the camera
     intelMetrics.ts               (v6.4.0) The five metric ids/labels/icons,
                                  shared between IntelligencePanel.tsx's status
                                  bars and AnalyticsPanel.tsx's thumbnails
@@ -818,11 +835,14 @@ to build against without refactoring the globe itself.
   source before this is anything but a portfolio piece. Only ~60 of the 193
   countries are covered; the intelligence panel degrades gracefully ("No
   profile data available") for the rest.
-- The Military / Economy / Diplomacy / Technology / Current Status sections
-  in the intelligence panel are intentionally left as labeled placeholders
-  ("Awaiting data feed") — the brief didn't specify what should populate
-  them, and fabricating country-level assessments for a defense-context demo
-  isn't something to do casually. That's real future work.
+- Military (v6.3.1) and Economy (v6.6.0) are real, sourced Intelligence
+  Engine categories now — see `Intelligence Docs/
+  intelligence-engine-scoring-design.md`. Diplomacy / Technology / Current
+  Status are still intentionally left as labeled placeholders ("Awaiting
+  data feed") in both the intelligence panel and the Analytics ranked-list
+  thumbnails — fabricating country-level assessments for a defense-context
+  demo isn't something to do casually, and neither category's sourcing/
+  weighting is locked yet (see that doc's §9). That's real future work.
 - See `CLAUDE.md` for the harder-won technical details: antimeridian
   triangulation, why country geometry is merged per-country instead of
   per-ring/per-polygon (a real 7,234→386 draw-call fix), and the

@@ -4,11 +4,12 @@ import { COUNTRY_PROFILES } from '../data/countryProfiles'
 import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
 import { ALLIANCES } from '../data/allianceMemberships'
 import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
-import { MILITARY_SCORES, type MilitaryConfidence, type MilitaryScore } from '../data/militaryScores'
+import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
+import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
 import { AllianceBadge } from './AllianceBadge'
 import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
-import { formatArea, formatGdp, formatPopulation } from '../utils/formatScale'
+import { formatArea, formatGdp, formatGdpPerCapita, formatPopulation } from '../utils/formatScale'
 import { intelValueColor } from '../utils/intelValueColor'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
@@ -37,14 +38,16 @@ function DataRow({ label, value }: { label: string; value: string }) {
 // as the same color.
 //
 // `value` is optional: as of v6.3.1 it's real for MILITARY (see
-// militaryIntelValue below, sourced from data/militaryScores.ts) but still
-// never passed for ECONOMY/DIPLOMACY/TECHNOLOGY/CURRENT STATUS — nothing in
-// data/types.ts carries a 0-100 score for those yet (Country.population and
-// .gdpUsd are populated — see data/countryEconomics.ts — but neither is a
-// rating), and the Conflict type's own doc comment is explicit that this
-// project does not fabricate assessments without an editorial process
-// behind them. Those four still render the empty state: flat track,
-// em-dash value. `confidence === 'proxy'` tags the label — see
+// militaryIntelValue below, sourced from data/militaryScores.ts), joined by
+// ECONOMY (economyIntelValue, data/economyScores.ts) once that category was
+// built. Still never passed for DIPLOMACY/TECHNOLOGY/CURRENT STATUS —
+// nothing in data/types.ts carries a 0-100 score for those yet
+// (Country.population and .gdpUsd are populated — see
+// data/countryEconomics.ts — but neither is a rating), and the Conflict
+// type's own doc comment is explicit that this project does not fabricate
+// assessments without an editorial process behind them. Those three still
+// render the empty state: flat track, em-dash value. `confidence === 'proxy'`
+// tags the label — see
 // Intelligence Docs/intelligence-engine-scoring-design.md §6's "UI should
 // visually flag this is a proxy metric, not a direct measurement" — so a
 // coverage-floor-but-not-full-coverage score never reads with the same
@@ -53,6 +56,14 @@ function DataRow({ label, value }: { label: string; value: string }) {
 // (`MilitaryScore.confirmed`), the composite is genuinely inapplicable, not
 // merely unmeasured, so it shouldn't share the "—" a data gap gets.
 const INTEL_BAR_WIDTH_PX = 155
+
+// MilitaryConfidence and EconomyConfidence (militaryScores.ts / economyScores.ts)
+// are independently-declared but identical 3-value unions — both trace back
+// to the design doc §6's illustrative ScoreConfidence, which was never
+// actually factored into a shared exported type in data/types.ts. IntelRow
+// takes this shape directly rather than importing both category-specific
+// aliases just to satisfy a prop type.
+type ScoreConfidence = 'measured' | 'proxy' | 'unavailable'
 
 // `onClick` (v6.3.2) makes the row a `<button>` instead of a `<div>` — see
 // the design doc's §7 "status bars are clickable" citation drill-down.
@@ -72,7 +83,7 @@ function IntelRow({
   label: string
   icon: readonly string[]
   value?: number
-  confidence?: MilitaryConfidence
+  confidence?: ScoreConfidence
   notApplicable?: boolean
   onClick?: () => void
   expanded?: boolean
@@ -117,10 +128,12 @@ function IntelRow({
   )
 }
 
-// Friendly citation labels for data/militaryScores.ts's `sourceUrl`s — the
-// raw URLs are what's actually stored (so a real link can be followed), but
-// a domain isn't a citation a reader recognizes at a glance.
-function militarySourceLabel(url: string | undefined): string {
+// Friendly citation labels for a component's `sourceUrl` — the raw URLs are
+// what's actually stored (so a real link can be followed), but a domain
+// isn't a citation a reader recognizes at a glance. Shared across every
+// category's drill-down (originally Military-only, generalized once Economy
+// needed the exact same World Bank WDI branch this already had).
+function sourceLabel(url: string | undefined): string {
   if (!url) return 'Source unavailable'
   if (url.includes('sipri.org/sites/default/files/SIPRI-Milex')) return 'SIPRI Military Expenditure Database'
   if (url.includes('sipri.org/sites/default/files/SIPRI-Top-100')) return 'SIPRI Top 100 Arms-Producing Companies'
@@ -207,7 +220,7 @@ function MilitaryDrilldown({ score }: { score: MilitaryScore }) {
                 rel="noreferrer"
                 className="text-[10px] text-[#4d95ff] hover:underline"
               >
-                {militarySourceLabel(row.sourceUrl)}
+                {sourceLabel(row.sourceUrl)}
               </a>
             ) : (
               <div className="text-[10px] text-[#51648a]">No source</div>
@@ -224,7 +237,7 @@ function MilitaryDrilldown({ score }: { score: MilitaryScore }) {
           <div className="min-w-0">
             <div className="text-[11px] font-semibold italic text-[#aebfdc]">Arms Import (TIV) — not scored</div>
             <a href={tiv.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
-              {militarySourceLabel(tiv.sourceUrl)}
+              {sourceLabel(tiv.sourceUrl)}
             </a>
           </div>
           <div className="shrink-0 text-right">
@@ -245,6 +258,102 @@ function MilitaryDrilldown({ score }: { score: MilitaryScore }) {
 function militaryIntelValue(selected: SelectedEntity | null) {
   if (selected?.entity.kind !== 'country') return undefined
   return MILITARY_SCORES[selected.entity.data.id]
+}
+
+// Country-only, same convention as militaryIntelValue above — ECONOMY_SCORES
+// is keyed by the same numeric ISO topology id. No GeoEntity has an Economy
+// score either.
+function economyIntelValue(selected: SelectedEntity | null) {
+  if (selected?.entity.kind !== 'country') return undefined
+  return ECONOMY_SCORES[selected.entity.data.id]
+}
+
+interface EconomyDrilldownRow {
+  label: string
+  raw: number | null
+  format: (raw: number) => string
+  sourceUrl?: string
+  dateLabel?: string
+}
+
+// Same citation-drill-down shape as MilitaryDrilldown (design doc §7), for
+// Economy's 5 components. No annotations row — none exist for Economy v1
+// (see economyScores.ts's own header comment). gdpGrowth's dateLabel shows
+// the year RANGE actually averaged (components.gdpGrowth.years, sorted
+// ascending by the build script) rather than a single year, since the value
+// itself is a 5-year mean, not a single snapshot.
+function EconomyDrilldown({ score }: { score: EconomyScore }) {
+  const growthYears = score.components.gdpGrowth.years
+  const growthDateLabel =
+    growthYears && growthYears.length > 0
+      ? growthYears.length === 1
+        ? `${growthYears[0]}`
+        : `${growthYears[0]}–${growthYears[growthYears.length - 1]}`
+      : undefined
+
+  const rows: EconomyDrilldownRow[] = [
+    {
+      label: 'GDP (PPP)',
+      raw: score.components.gdpPpp.raw,
+      format: (raw) => formatGdp(raw) ?? '—',
+      sourceUrl: score.components.gdpPpp.sourceUrl,
+      dateLabel: score.components.gdpPpp.year?.toString(),
+    },
+    {
+      label: 'GDP per Capita (PPP)',
+      raw: score.components.gdpPerCapitaPpp.raw,
+      format: (raw) => formatGdpPerCapita(raw) ?? '—',
+      sourceUrl: score.components.gdpPerCapitaPpp.sourceUrl,
+      dateLabel: score.components.gdpPerCapitaPpp.year?.toString(),
+    },
+    {
+      label: 'Real GDP Growth (5yr avg)',
+      raw: score.components.gdpGrowth.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.gdpGrowth.sourceUrl,
+      dateLabel: growthDateLabel,
+    },
+    {
+      label: 'Unemployment Rate',
+      raw: score.components.unemploymentRate.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.unemploymentRate.sourceUrl,
+      dateLabel: score.components.unemploymentRate.year?.toString(),
+    },
+    {
+      label: 'Inflation (CPI)',
+      raw: score.components.inflationCpi.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.inflationCpi.sourceUrl,
+      dateLabel: score.components.inflationCpi.year?.toString(),
+    },
+  ]
+
+  return (
+    <div className="pt-1">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 border-b border-[rgba(22,35,60,0.6)] py-2 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.label}</div>
+            {row.sourceUrl ? (
+              <a href={row.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
+                {sourceLabel(row.sourceUrl)}
+              </a>
+            ) : (
+              <div className="text-[10px] text-[#51648a]">No source</div>
+            )}
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.raw == null ? '—' : row.format(row.raw)}</div>
+            <div className="text-[10px] text-[#6d82a8]">{row.dateLabel ?? '—'}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 // `.feed-row` — left rail (marker + ringed glyph), then category / primary
@@ -528,14 +637,22 @@ export function IntelligencePanel() {
   const militaryBarValue = militaryScore && !militaryIsNoMilitary ? (militaryScore.value ?? undefined) : undefined
   const hasMilitaryBar = militaryBarValue != null
 
-  // v6.3.2: citation drill-down (design doc §7) — clicking the MILITARY bar
-  // collapses the other four rows and drops down its component sources.
-  // Only MILITARY is ever clickable: it's the only metric with a
-  // MilitaryScore record to drill into (every one of the 5 components is
-  // real per-country source data, even for a country whose composite itself
-  // is N/A or unavailable — see MilitaryDrilldown). Resets whenever the
-  // selection changes so a drill-down never carries over onto a newly
-  // selected entity.
+  // Second Intelligence Engine category wired into this panel — see
+  // data/economyScores.ts's header comment. No `confirmed`/`notApplicable`
+  // concept here (that's Military-specific), so unlike militaryBarValue this
+  // is just the raw score value.
+  const economyScore = economyIntelValue(selected)
+  const economyBarValue = economyScore?.value ?? undefined
+  const hasEconomyBar = economyBarValue != null
+
+  // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
+  // (MILITARY, and as of the Economy build, ECONOMY too) collapses the
+  // other four rows and drops down its component sources. Only a metric
+  // with a real score record to drill into is ever clickable — the
+  // remaining two (Diplomacy/Technology/Current Status minus whichever of
+  // these two is wired) have no sources yet, so they stay plain, inert
+  // rows. Resets whenever the selection changes so a drill-down never
+  // carries over onto a newly selected entity.
   const [expandedMetric, setExpandedMetric] = useState<IntelMetricId | null>(null)
   useEffect(() => {
     setExpandedMetric(null)
@@ -589,43 +706,102 @@ export function IntelligencePanel() {
 
             <div className="border-b border-[#16233c] px-4 py-3">
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>INTELLIGENCE SUMMARY</div>
-              {INTEL_METRICS.filter((metric) => expandedMetric === null || metric.id === expandedMetric).map((metric) =>
-                metric.id === 'military' ? (
-                  <IntelRow
-                    key={metric.id}
-                    label={metric.label}
-                    icon={metric.icon}
-                    value={militaryBarValue}
-                    confidence={militaryScore?.confidence}
-                    notApplicable={militaryIsNoMilitary}
-                    expanded={expandedMetric === 'military'}
-                    onClick={
-                      militaryScore
-                        ? () => setExpandedMetric((current) => (current === 'military' ? null : 'military'))
-                        : undefined
-                    }
-                  />
-                ) : (
-                  <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
-                ),
-              )}
+              {INTEL_METRICS.filter((metric) => expandedMetric === null || metric.id === expandedMetric).map((metric) => {
+                if (metric.id === 'military') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={militaryBarValue}
+                      confidence={militaryScore?.confidence}
+                      notApplicable={militaryIsNoMilitary}
+                      expanded={expandedMetric === 'military'}
+                      onClick={
+                        militaryScore
+                          ? () => setExpandedMetric((current) => (current === 'military' ? null : 'military'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
+                if (metric.id === 'economy') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={economyBarValue}
+                      confidence={economyScore?.confidence}
+                      expanded={expandedMetric === 'economy'}
+                      onClick={
+                        economyScore
+                          ? () => setExpandedMetric((current) => (current === 'economy' ? null : 'economy'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
+                return <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
+              })}
               {expandedMetric === 'military' && militaryScore ? (
                 <MilitaryDrilldown score={militaryScore} />
+              ) : expandedMetric === 'economy' && economyScore ? (
+                <EconomyDrilldown score={economyScore} />
               ) : (
                 <>
-                  {hasMilitaryBar ? (
-                    <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
-                      Military: sourced (SIPRI/World Bank/FAS
-                      {militaryScore!.confidence === 'proxy'
-                        ? `, ${militaryScore!.coveragePresent}/${militaryScore!.coverageTotal} components`
-                        : ''}
-                      ). Economy/Diplomacy/Technology/Current Status — no assessment data currently sourced.
-                    </div>
-                  ) : militaryIsNoMilitary ? null : (
-                    <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
-                      Awaiting data feed — no assessment data is currently sourced.
-                    </div>
-                  )}
+                  {(() => {
+                    // military is "resolved" (not a data gap) either when it
+                    // has a real bar, or when it's a confirmed
+                    // no-standing-military country — see militaryIsNoMilitary
+                    // above. Economy has no equivalent confirmed-N/A state.
+                    const militaryResolved = hasMilitaryBar || militaryIsNoMilitary
+                    const sourcedParts: string[] = []
+                    if (hasMilitaryBar) {
+                      sourcedParts.push(
+                        `Military (SIPRI/World Bank/FAS${
+                          militaryScore!.confidence === 'proxy'
+                            ? `, ${militaryScore!.coveragePresent}/${militaryScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
+                    if (hasEconomyBar) {
+                      sourcedParts.push(
+                        `Economy (World Bank WDI${
+                          economyScore!.confidence === 'proxy'
+                            ? `, ${economyScore!.coveragePresent}/${economyScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
+                    const unsourcedLabels = INTEL_METRICS.filter((metric) => {
+                      if (metric.id === 'military') return !militaryResolved
+                      if (metric.id === 'economy') return !hasEconomyBar
+                      return true
+                    }).map((metric) => metric.label)
+
+                    if (sourcedParts.length > 0) {
+                      return (
+                        <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                          {sourcedParts.join('; ')} sourced.
+                          {unsourcedLabels.length > 0 && ` ${unsourcedLabels.join('/')} — no assessment data currently sourced.`}
+                        </div>
+                      )
+                    }
+                    if (militaryIsNoMilitary) {
+                      return unsourcedLabels.length > 0 ? (
+                        <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                          {unsourcedLabels.join('/')} — no assessment data currently sourced.
+                        </div>
+                      ) : null
+                    }
+                    return (
+                      <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                        Awaiting data feed — no assessment data is currently sourced.
+                      </div>
+                    )
+                  })()}
                   {militaryIsNoMilitary && militaryScore?.confirmedNote && (
                     <div className="mt-1 text-[10px] leading-relaxed italic text-[#51648a]">
                       {militaryScore.confirmedNote}

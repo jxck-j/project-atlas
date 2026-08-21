@@ -5,6 +5,92 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-21 — Wiring Economy into the UI: generalizing AnalyticsPanel's ranked-list rather than pasting a second copy
+
+Following up on the Economy build script (see the entry below): wired `data/economyScores.ts` into
+`hud/IntelligencePanel.tsx`'s ECONOMY status bar + citation drill-down and `hud/AnalyticsPanel.tsx`'s ECONOMY
+thumbnail + sortable ranked list, mirroring exactly what Military already had.
+
+The one real decision here: `AnalyticsPanel.tsx`'s Military ranked-list machinery
+(`RankedRow`/`METRIC_COLUMNS`/`compareMilitaryRows`/`SortableHeader`/`RankedListRow`, built across v6.4.0/
+v6.5.3/v6.5.4) was written before a second category existed to prove out against. Two options: paste a
+near-identical copy for Economy (`EconomyRankedRow`/`ECONOMY_METRIC_COLUMNS`/`compareEconomyRows`/...), or
+generalize the shared machinery now that a real second consumer exists. Went with generalizing —
+`BaseRankedRow`/`AnalyticsColumn<TRow>`/`compareRows<TRow>`/`SortableHeader`/`ColumnHeaderRow`/
+`RankedListRow<TRow>` are now generic over any category's row shape via a TypeScript generic parameter, and
+`MILITARY_COLUMNS`/`ECONOMY_COLUMNS` (plus each category's own `buildXRows`) are the only genuinely
+category-specific pieces left. This is the "second real consumer justifies the extraction" moment this
+codebase generally waits for before generalizing (same reasoning `scene/EntityRenderLayer.tsx`'s extraction
+out of `Countries.tsx`/`GeoEntities.tsx` followed, per `CLAUDE.md`) — not a departure from that discipline,
+an instance of it. Verified the generic sort/comparator logic against BOTH categories in the browser (Military
+sorted by NUCLEAR/name/etc., Economy sorted by GDP PPP/name/etc.) rather than assuming the generalization was
+correct just because it type-checked, since a generic comparator silently sorting by the wrong field would be
+exactly the kind of bug that type-checks fine and only shows up as visibly wrong country ordering.
+
+Smaller generalizations that fell out of the same pass: `IntelligencePanel.tsx`'s `militarySourceLabel()`
+renamed to `sourceLabel()` (it already had a `worldbank.org` branch returning "World Bank (WDI)" — Economy is
+entirely World Bank-sourced, so this needed zero new logic, just a name that doesn't lie about what it's for
+now); `IntelRow`'s `confidence` prop widened from the Military-only `MilitaryConfidence` type to a local
+`ScoreConfidence` union, since `MilitaryConfidence`/`EconomyConfidence` are independently-declared but
+identical 3-value unions (confirmed neither codebase's `data/types.ts` nor anywhere else actually factors this
+into one shared exported type — both categories independently reinvented the design doc's illustrative
+`ScoreConfidence`, so the widened local alias in `IntelligencePanel.tsx` is a pragmatic fix at the *usage*
+site, not a claim that the underlying duplication was resolved). The footer caption under INTELLIGENCE SUMMARY
+needed the most rework: it was a single hardcoded "Military: sourced (...). Economy/Diplomacy/Technology/
+Current Status — no assessment data currently sourced." string; now composes from however many of
+Military/Economy are actually resolved for the current selection (`sourcedParts`/`unsourcedLabels`, built by
+filtering `INTEL_METRICS`), since a real selection can now have either, both, or neither wired category
+present independently — the old string assumed Military was always the only possible "yes."
+
+`formatGdpPerCapita` was the one genuinely new piece of shared infrastructure needed: `formatGdp` assumes an
+aggregate country-level figure (its smallest tier is Million) and a per-capita dollar figure (tens of
+thousands) doesn't clear that floor — confirmed by checking what `formatGdp` would actually produce for a
+per-capita input (an ugly "0.086 Million") before writing the new formatter, rather than assuming the mismatch
+existed from the tier-table comment alone.
+
+## 2026-08-20 — Economy scoring: percentile rank + weighted-sourceCoverage, a deliberate divergence from Military, not an inconsistency to reconcile
+
+Built `scripts/buildEconomy.mjs` per the locked spec in `Intelligence Docs/buildEconomy-prompt.md` (itself
+implementing `Intelligence Docs/intelligence-engine-scoring-design.md` §3.2) — 5 equal-weighted World Bank WDI
+components (GDP PPP, GDP per capita PPP, 5yr-trailing real GDP growth, unemployment, inflation), percentile-rank
+normalized, unemployment/inflation inverted since lower is better for both. All 193 countries scored: 186
+`measured`, 6 `proxy`, 1 `unavailable` (South Sudan — already known in this codebase as the worst-case World
+Bank data gap, see `countryEconomics.ts`'s header comment).
+
+**Recorded per the build prompt's own "After completion" instruction, so this isn't mistaken for an
+inconsistency to fix later:** Economy intentionally uses percentile-rank normalization and the design doc's
+original weighted-sourceCoverage confidence model (`sourceCoverage = 0.2 × components present`; `>=0.8`
+measured, `>0` proxy, `==0` unavailable — no hard floor, so even a single present component still produces a
+`proxy`-tier value), diverging from Military's log-min-max normalization and coverage-floor mechanism. Both
+divergences are deliberate per the design doc's own reasoning (§3.2, §4, §5): GDP's outlier skew is exactly the
+problem percentile rank was originally adopted project-wide to solve, and Military's floor/true-zero machinery
+grew out of Military's own multi-source, true-zero-component shape (nuclear warheads, industrial base) that
+Economy's 5 coverage-gap-only components don't have an equivalent of.
+
+**Tie-handling: stopped and asked before writing the normalizer, per the build prompt's explicit instruction**
+("If percentile rank produces a tie-handling ambiguity... stop and ask before picking a tie-breaking convention
+— don't silently pick one"). Confirmed: average/fractional rank (tied countries share the mean percentile of
+the ranks they'd jointly occupy — matches Excel's PERCENTRANK / scipy's `rankdata(method='average')`), over
+competition ranking (shared rank, next value skips ahead). Asked before running the full 193-country pipeline
+rather than after discovering a real tie in the output, since the general percentile-rank formula itself
+(`(rank-1)/(n-1)×100`) needed deciding either way and re-running a ~965-request build to fix a tie-handling
+choice after the fact would have been wasteful.
+
+**Output shape extends, rather than strictly matches, the build prompt's illustrative `CategoryScore`:** the
+prompt's own example shows a flat `sources: string[]` of citation keys, but `EconomyScore` instead carries a
+per-component `raw`/`normalized`/`year`/`sourceUrl` breakdown, mirroring `MilitaryScore`'s actual shape. This
+isn't a deviation from the prompt so much as following its *other* instruction ("read buildMilitary.mjs first
+for the established patterns this script should follow") over its own flat illustrative sketch — `MilitaryScore`
+already set the real codebase precedent of extending the design doc's abstract Section 6 interface with
+category-specific per-component detail, needed for the same citation drill-down (design doc §7) every category
+is meant to eventually support, not just Military. Still respects the prompt's explicit exclusions: no
+`confirmed`/`confirmedNote` (Military-specific), no stubbed empty `annotations` (none planned for Economy v1).
+
+**Scope respected as written:** did not touch `scripts/buildMilitary.mjs`, `GeoEntity`/`Country` schema fields,
+or any UI component — `hud/IntelligencePanel.tsx` and `hud/AnalyticsPanel.tsx` are untouched by this script, per
+the prompt's explicit "rendering is a separate task." Wiring Economy into those is a natural next step but a
+separate decision, not assumed here.
+
 ## 2026-08-20 — Analytics military ranking: sortable column headers, and a Tailwind `hidden`+`flex` conflict caught before it shipped
 
 Requested: clicking a metric column header in the Analytics MILITARY ranking should re-sort the list by that

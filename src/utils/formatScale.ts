@@ -70,6 +70,16 @@ export function formatGdp(raw: number | undefined): string | undefined {
   return `$${formatScaled(raw, GDP_TIERS)}`
 }
 
+// A per-person figure (e.g. GDP per capita PPP) never reaches the Million
+// tier GDP_TIERS assumes as its floor — plain comma-grouped currency, same
+// "no unit-promotion tier needed" reasoning formatArea's own comment gives
+// for area.
+/** Raw current-international-$ per person -> "$86,170" / "$743". `undefined` in, `undefined` out — see formatPopulation. */
+export function formatGdpPerCapita(raw: number | undefined): string | undefined {
+  if (raw == null) return undefined
+  return `$${Math.round(raw).toLocaleString('en-US')}`
+}
+
 // Area doesn't get the Million/Billion tier treatment population/GDP do —
 // its whole range (Nauru's ~21 km² to Russia's ~17.1 million km²) reads
 // naturally as a single comma-grouped count, the way the CIA Factbook
