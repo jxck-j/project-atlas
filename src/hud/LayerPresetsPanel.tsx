@@ -7,7 +7,7 @@ import {
   useLayerEnabledMap,
   useLayerPresets,
 } from '../layers'
-import { useHudPanel } from './hudPanelStore'
+import { closeHudPanel, useHudPanel } from './hudPanelStore'
 import { PANEL_HEAD, PANEL_SURFACE, PANEL_TITLE, PANEL_SECTION_LABEL } from './panelStyles'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
@@ -41,7 +41,15 @@ export function LayerPresetsPanel() {
       <div className={PANEL_SURFACE}>
         <div className={PANEL_HEAD}>
           <span className={PANEL_TITLE}>LAYER PRESETS</span>
-          <span className="text-[9px] tracking-[0.18em] text-[#4d95ff]">{presets.length}</span>
+          <button
+            type="button"
+            onClick={closeHudPanel}
+            aria-label="Close layer presets"
+            title="Close"
+            className="text-sm leading-none text-[#8aa0c6] transition-colors hover:text-white"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="border-b border-[#16233c] px-3 py-2.5">

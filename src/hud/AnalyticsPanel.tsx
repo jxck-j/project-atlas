@@ -7,12 +7,13 @@ import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
 import { getCountries } from '../data'
-import { MILITARY_SCORES, type MilitaryConfidence } from '../data/militaryScores'
+import { MILITARY_SCORES, type MilitaryConfidence, type MilitaryScore } from '../data/militaryScores'
 import { resolveEntity } from '../entities/EntityResolver'
 import { closeInspector, selectEntity, useSelection } from './selectionStore'
 import { Icon } from './icons'
 import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
 import { intelValueColor } from '../utils/intelValueColor'
+import { formatGdp, formatPopulation } from '../utils/formatScale'
 import { PANEL_SECTION_LABEL } from './panelStyles'
 
 const UP_AXIS = new Vector3(0, 1, 0)
@@ -39,6 +40,7 @@ interface RankedRow {
   value?: number
   confidence?: MilitaryConfidence
   notApplicable?: boolean
+  components?: MilitaryScore['components']
 }
 
 // Sorts by the score's real underlying value (descending), not the
@@ -58,11 +60,22 @@ function buildMilitaryRanking(): RankedRow[] {
       value: notApplicable ? undefined : (score?.value ?? undefined),
       confidence: score?.confidence,
       notApplicable,
+      components: score?.components,
       sortValue: score?.value ?? -1,
     }
   })
   rows.sort((a, b) => b.sortValue - a.sortValue || a.name.localeCompare(b.name))
   return rows.map((row, index) => ({ ...row, rank: index + 1 }))
+}
+
+// Reported directly: the ranked list should show each of the 5 scored
+// components (data/militaryScores.ts — the exact same values
+// IntelligencePanel.tsx's MilitaryDrilldown cites per-country), not just the
+// composite bar. `raw` is `null` for a genuine coverage gap — rendered as
+// "—", the same convention every other missing-data cell in this app uses,
+// never a fabricated zero.
+function formatComponent(raw: number | null, format: (raw: number) => string): string {
+  return raw == null ? '—' : format(raw)
 }
 
 function MetricThumbnail({
@@ -99,8 +112,11 @@ function MetricThumbnail({
   )
 }
 
+const METRIC_COLUMN_CLASS = 'hidden shrink-0 text-right text-[11px] text-[#aebfdc] xl:block xl:w-[92px]'
+
 function RankedListRow({ row, isSelected, onSelect }: { row: RankedRow; isSelected: boolean; onSelect: () => void }) {
   const color = row.value !== undefined ? intelValueColor(row.value) : '#51648a'
+  const components = row.components
   return (
     <button
       type="button"
@@ -114,7 +130,24 @@ function RankedListRow({ row, isSelected, onSelect }: { row: RankedRow; isSelect
         {row.name}
         {row.confidence === 'proxy' && <span className="ml-1.5 text-[10px] font-bold text-[#e0a340]">PROXY</span>}
       </span>
-      <span className="hidden h-1 w-[220px] shrink-0 overflow-hidden rounded-sm bg-[#14213a] sm:block">
+      <span className={METRIC_COLUMN_CLASS}>
+        {components ? formatComponent(components.expenditureUsd.raw, (raw) => formatGdp(raw * 1e6) ?? '—') : '—'}
+      </span>
+      <span className={METRIC_COLUMN_CLASS}>
+        {components ? formatComponent(components.pctGdp.raw, (raw) => `${raw.toFixed(2)}%`) : '—'}
+      </span>
+      <span className={METRIC_COLUMN_CLASS}>
+        {components ? formatComponent(components.personnel.raw, (raw) => formatPopulation(raw) ?? '—') : '—'}
+      </span>
+      <span className={METRIC_COLUMN_CLASS}>
+        {components ? formatComponent(components.nuclearWarheads.raw, (raw) => raw.toLocaleString('en-US')) : '—'}
+      </span>
+      <span className={METRIC_COLUMN_CLASS}>
+        {components
+          ? formatComponent(components.industrialBaseRevenueUsdM.raw, (raw) => formatGdp(raw * 1e6) ?? '—')
+          : '—'}
+      </span>
+      <span className="hidden h-1 w-[155px] shrink-0 overflow-hidden rounded-sm bg-[#14213a] sm:block">
         <span
           className="block h-full rounded-sm shadow-[0_0_6px_rgba(255,255,255,0.25)]"
           style={{ width: `${row.value ?? 0}%`, backgroundColor: color }}
@@ -210,7 +243,7 @@ export function AnalyticsPanel() {
           </div>
         </div>
       ) : (
-        <div className="mx-auto w-full max-w-3xl px-6 py-8">
+        <div className="mx-auto w-full max-w-6xl px-6 py-8">
           <div className="mb-4 flex items-center gap-3 border-b border-[#16233c] pb-4">
             <button
               type="button"
@@ -227,6 +260,20 @@ export function AnalyticsPanel() {
             <span className="ml-auto text-[9.5px] tracking-[0.16em] text-[#51648a]">
               {militaryRanking.length} COUNTRIES · SIPRI / WORLD BANK / FAS SOURCED
             </span>
+          </div>
+          {/* Column header row — same widths/gaps as RankedListRow below it,
+              including the same xl-only visibility on the 5 component
+              columns, so headers and data always line up. */}
+          <div className="mb-1 hidden items-center gap-3 px-3 xl:flex">
+            <span className="w-8 shrink-0" />
+            <span className="min-w-0 flex-1" />
+            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>EXPENDITURE</span>
+            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>% GDP</span>
+            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>PERSONNEL</span>
+            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>NUCLEAR</span>
+            <span className={`${PANEL_SECTION_LABEL} w-[92px] shrink-0 text-right`}>DEF. INDUSTRY</span>
+            <span className="hidden w-[155px] shrink-0 sm:block" />
+            <span className={`${PANEL_SECTION_LABEL} w-12 shrink-0 text-right`}>SCORE</span>
           </div>
           <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
             {militaryRanking.map((row) => (

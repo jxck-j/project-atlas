@@ -496,11 +496,13 @@ src/
                                  panel chrome (rounded corners, translucent
                                  blur, thin border) every panel below shares
     TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
-                                 also resets view) / MAP·INTELLIGENCE·LAYERS·
+                                 also resets view) / MAP·INTELLIGENCE·NEWS·
                                  ANALYTICS·DATABASE tabs (middle — MAP and, as
-                                 of v6.4.0, ANALYTICS are wired) /
-                                 search·favorites·notifications·
-                                 account·layers·settings (right). Replaces
+                                 of v6.4.0, ANALYTICS are wired; NEWS replaced
+                                 what was a redundant LAYERS tab as of
+                                 v6.5.1, since SideRail already owns layer
+                                 selection) / search·favorites·notifications·
+                                 account·layer presets·settings (right). Replaces
                                  Header.tsx + Toolbar.tsx (both removed)
     SideRail.tsx                 (v5.0.0) Left sidebar of ten selectable
                                  sections; each scopes LayerPanel.tsx to that

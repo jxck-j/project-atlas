@@ -9,11 +9,14 @@ import { SearchBar } from './SearchBar'
 // have a view behind them. The remaining three are rendered inactive rather
 // than omitted (the layout reads as incomplete without them) and rather
 // than as working tabs (that would imply views this app doesn't have) — see
-// this session's note on affordances with nothing behind them.
+// this session's note on affordances with nothing behind them. NEWS
+// (v6.5.1) replaced what used to be a LAYERS tab here — direct request,
+// since layer selection already lives on SideRail (every category row),
+// making a second, top-bar LAYERS destination redundant.
 const TABS: { id: TopNavTab; label: string; wired: boolean }[] = [
   { id: 'map', label: 'MAP', wired: true },
   { id: 'intelligence', label: 'INTELLIGENCE', wired: false },
-  { id: 'layers', label: 'LAYERS', wired: false },
+  { id: 'news', label: 'NEWS', wired: false },
   { id: 'analytics', label: 'ANALYTICS', wired: true },
   { id: 'database', label: 'DATABASE', wired: false },
 ]

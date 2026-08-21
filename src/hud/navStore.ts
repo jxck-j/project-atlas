@@ -21,10 +21,12 @@ export type SideNavId =
   | 'filters'
   | 'alliances'
 
-// Which top-bar tab is active. Only 'map' has anything behind it today —
-// the other three are rendered inactive (see TopNav.tsx) because no
-// corresponding view exists.
-export type TopNavTab = 'map' | 'intelligence' | 'layers' | 'analytics' | 'database'
+// Which top-bar tab is active. 'map' and 'analytics' have a real view
+// behind them (see TopNav.tsx); the rest are rendered inactive because no
+// corresponding view exists yet. 'news' (previously 'layers' — replaced
+// since SideRail already owns layer selection, making a top-bar LAYERS tab
+// redundant) has no view either, same as 'intelligence'/'database'.
+export type TopNavTab = 'map' | 'intelligence' | 'news' | 'analytics' | 'database'
 
 const useNavStore = create<{ section: SideNavId; tab: TopNavTab; sideRailCollapsed: boolean }>(() => ({
   section: 'overview',

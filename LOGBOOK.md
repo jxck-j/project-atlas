@@ -5,6 +5,30 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-20 — Analytics military ranking: columns instead of a per-row accordion, because the row was already a click target
+
+Requested: the MILITARY ranked list in `hud/AnalyticsPanel.tsx` should show the underlying metrics
+(expenditure, % GDP, personnel, nuclear warheads, defense-industrial base revenue), not just the composite
+0-100 bar.
+
+The obvious template to copy was already in the codebase: `IntelligencePanel.tsx`'s `MilitaryDrilldown`
+component (v6.3.2) shows exactly these 5 fields, but as a click-to-expand accordion under the status bar —
+clicking the MILITARY row collapses everything else and drops the components down inline. Considered doing
+the same thing here (click a ranked-list row to expand its components inline, collapsing the rest of the
+list). Rejected: a ranked-list row already has a real click meaning — `selectCountryRow`, which opens
+`IntelligencePanel` for that country. Reusing the same click for "expand this row's metrics" would either
+silently drop the select behavior or require a second, separate click target crammed into an already-dense
+row, and either way a user would have to guess which action a click on the row name actually did. Columns
+sidestep the ambiguity entirely: every row's 5 components are simply always visible, no interaction needed,
+and the existing row-click → select behavior is untouched.
+
+The tradeoff is horizontal space — 5 more columns plus rank/name/bar/score doesn't fit a narrow view. Gated
+the metric columns behind `xl:` (matching a header row placed directly above the list, built with identical
+column widths so header and data can't drift out of alignment independently) rather than trying to
+responsively reflow them into multiple lines per row, which would have made the "one row = one country"
+scan-ability the whole ranked-list format exists for much worse. Below `xl`, the view degrades to exactly
+what shipped before this change (rank/name/bar/score) rather than something half-broken.
+
 ## 2026-08-20 — Layer Presets: reassigned an existing button rather than adding a new one, and reached for localStorage for the first time
 
 Requested: let a user store a layer configuration so they don't have to keep re-toggling the same layers on

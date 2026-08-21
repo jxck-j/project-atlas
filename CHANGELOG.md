@@ -17,6 +17,33 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.5.3 — Analytics: MILITARY ranked list now shows all 5 scored components, not just the composite
+
+**Point release.** Direct request: the ranked list only showed the composite 0-100 score; each row now also
+shows EXPENDITURE, % GDP, PERSONNEL, NUCLEAR, and DEF. INDUSTRY as columns, reusing the exact same source
+data and formatting `IntelligencePanel.tsx`'s citation drill-down already cites per-country
+(`data/militaryScores.ts`'s `MilitaryScore.components`). Columns over a per-row expand/accordion: a row is
+already the click target for selecting the country, so a column that's simply always visible avoids
+overloading that click with a second meaning. The 5 metric columns show at `xl` and wider (a matching header
+row lines up above them); rank/name/score still show at every width. The drill-down container widened from
+`max-w-3xl` to `max-w-6xl` to fit.
+
+## v6.5.2 — TopNav's LAYERS tab replaced with NEWS
+
+**Point release.** Direct request: the top-bar tab strip's LAYERS tab (inert since it was added — see v5.0.0)
+was redundant with SideRail, which already owns real layer selection (every category row opens the toggle
+list). Replaced with NEWS, still inert like INTELLIGENCE/DATABASE — no news feature exists, this only frees
+the slot from duplicating a destination that already exists elsewhere. `navStore.ts`'s `TopNavTab` union
+renamed `'layers'` to `'news'`; nothing else referenced that id (it's a distinct type from `HudPanel`'s own
+`'layers'` value, untouched).
+
+## v6.5.1 — Layer Presets panel: counter replaced with a close button
+
+**Point release.** Direct request: the panel's header showed a preset count where every other `HudPanel`
+panel this size (AlliancesPanel, LayerPanel) has no equivalent close affordance of its own — closing meant
+re-clicking TopNav's Layers button to toggle it off. Replaced the count with a ✕ button (`closeHudPanel()`),
+matching `IntelligencePanel.tsx`'s own close-button styling.
+
 ## v6.5.0 — Layer Presets: save and restore a whole layer configuration at once
 
 **New major version, Layer Engine.** Direct request: a user who's already arranged the layers they want

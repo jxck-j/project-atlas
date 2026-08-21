@@ -822,6 +822,13 @@ unchanged and still opens `'layers'`. The two panels share the exact same fixed-
 at any time; this panel only adds a way to snapshot/restore the whole map at once, it doesn't replace the
 toggle list.
 
+**v6.5.1** replaced the panel header's preset-count badge with a ✕ close button (`closeHudPanel()`, styled
+like `IntelligencePanel.tsx`'s own) — every other panel this size has no way to close itself short of
+re-clicking the toolbar icon that opened it; direct request. **v6.5.2** replaced `hud/TopNav.tsx`'s top-bar
+LAYERS tab (the tab-strip one, `navStore.ts`'s `TopNavTab` — a different, unrelated `'layers'` string from
+`HudPanel`'s) with NEWS, still inert like INTELLIGENCE/DATABASE — direct request, since `SideRail.tsx` already
+owns real layer selection, leaving that tab-strip destination pure duplication.
+
 ### LOD Engine (`src/lod/`, v4.3)
 
 A registry + store for the camera-distance ladder any zoom-gated content
@@ -1004,6 +1011,19 @@ centroid-through-current-rotation technique `SearchBar.tsx`'s `selectEntry` uses
 now-open `IntelligencePanel` still works once the user switches back to the MAP tab. The ranked list stays
 open across a row click — confirmed as the preferred behavior over auto-closing back to the map, so a user
 can click through several countries' summaries without re-navigating the ranking each time.
+
+**v6.5.3: the MILITARY ranked list shows all 5 scored components as columns, not just the composite bar** —
+direct request. `RankedRow` carries the selected country's `MilitaryScore.components` straight through
+(`buildMilitaryRanking` no longer discards them), and each row renders EXPENDITURE / % GDP / PERSONNEL /
+NUCLEAR / DEF. INDUSTRY alongside the existing SCORE bar, reusing the exact same `formatGdp`/`formatPopulation`
+formatting `IntelligencePanel.tsx`'s `MilitaryDrilldown` already uses for these same fields — a genuine
+coverage gap (`raw === null`) renders "—", never a fabricated value. Chose columns over an expand-per-row
+accordion (the pattern `MilitaryDrilldown` itself uses) specifically because a row here is already a click
+target for selecting the country — stacking a second, different click meaning onto the same row would be
+ambiguous, where a column is always visible and needs no extra interaction. The 5 metric columns are
+`xl:`-only (`hidden ... xl:block`) with a matching header row directly above the list using the identical
+column widths/gaps so the two never drift apart; below that breakpoint only rank/name/score show, same as
+before this change. The drill-down view's own container widened from `max-w-3xl` to `max-w-6xl` to fit.
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every
