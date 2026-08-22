@@ -5,6 +5,85 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-22 — Economy: IMF WEO source trial — verified the API for real, caught a real bug, found a real coverage regression
+
+Built `scripts/buildEconomyWeo.mjs`, a standalone trial re-sourcing Economy's 5 components from IMF World
+Economic Outlook (WEO) instead of World Bank WDI, per the patch's explicit "keep the WDI-based output around,
+diff before deciding" instruction. Does not touch `buildEconomy.mjs` or `src/data/economyScores.ts` — writes
+to `debug/` only (gitignored), not wired into the app.
+
+**Two things needed resolving with the user before writing any code, both via `AskUserQuestion`:**
+
+1. **The patch's Taiwan premise didn't match the codebase.** It described Taiwan as having "a documented IMF
+   WEO override because WDI doesn't cover it" that would become "redundant" once WEO was the default. Checked
+   first: no such override exists anywhere in `buildEconomy.mjs` or the Economy-scoring path — Taiwan was
+   never even in this script's 193-country loop (it's a GeoEntity in this app's registry, not a Country,
+   precisely because it isn't a UN member, so `countries-un193.json` never included it). The only real
+   Taiwan+WEO reference anywhere in the codebase is an *unimplemented* backlog note in
+   `buildGeoEntityEconomics.mjs` (a different dataset — GeoEntity population/gdpUsd, not Economy category
+   scores). Flagged this rather than either fabricating a "retirement" of an override that never existed, or
+   silently expanding scope by adding Taiwan without asking. User chose to add Taiwan now — implemented as a
+   one-off synthetic entry (`{id: 'taiwan', alpha3Override: 'TWN'}`) appended to the country loop, keyed by
+   its GeoEntity registry id since it has no numeric topology id. Confirmed live that WEO covers Taiwan
+   directly under standard ISO3 "TWN" (real GDP PPP data back to 1980) — no special "Taiwan Province of
+   China" code needed.
+2. **The official actual-vs-projection field wasn't reliably extractable.** WEO's data model really does
+   have a `LATEST_ACTUAL_ANNUAL_DATA` attribute (confirmed via the SDMX `/structure/` endpoint with its full
+   definition: "the latest annual period for which official statistics are available... data following this
+   period are normal staff estimates") — but it came back `null`/absent across every query variant tried
+   against the live `/data/` endpoint (the documented `?attributes=LATEST_ACTUAL_ANNUAL_DATA&detail=
+   serieskeysonly` pattern, several other attribute-request shapes, with and without `detail=serieskeysonly`).
+   Independently corroborated as a known pain point rather than a mistake on this session's part: the
+   `imfweo` R package — a tool purpose-built for WEO access — explicitly documents avoiding the SDMX API for
+   exactly this kind of extraction difficulty and downloads the classic bulk Excel/CSV file instead. That
+   fallback wasn't available here either — `imf.org`'s own site (where the bulk file lives) returns 403 to
+   every non-browser fetch attempted, unlike `api.imf.org` itself. User's preference was "keep trying the
+   official field first," which is what happened before falling back — not a shortcut taken instead of
+   trying.
+
+**Fallback actually used, and why it's the safer failure direction:** every WEO series response reliably
+includes a `COUNTRY_UPDATE_DATE` attribute (confirmed working on every query — the date that specific
+country+indicator series was last refreshed). `vintageYear` = that date's year; any observation year
+`>= vintageYear` is flagged as a projection. This deliberately over-flags rather than under-flags (a
+near-final estimate for the vintage year itself might get called "projection" when IMF would treat it as
+close to actual) — the safer direction, since the whole point of the feature is never presenting a forecast
+as an equivalent-confidence reported figure. It's also self-updating: re-running after IMF publishes a newer
+WEO edition shifts every vintageYear forward automatically, no hardcoded date to bump.
+
+**A real bug, caught by reading actual sample output rather than trusting the code because it ran without
+error:** the first version's "most recent value" resolver did what `buildEconomy.mjs`'s WDI resolver
+correctly does — sort observations descending, take the newest — which is right for WDI (no forward
+projections at all) but wrong for WEO, which genuinely publishes 5-7 years of real forward projections
+alongside history. Taiwan's sample output came back with every component dated **2031**, the single furthest
+lookahead year requested, instead of any real reported figure. Fixed by preferring the most recent row with
+`year < vintageYear` (a genuine actual), falling back to the nearest available row overall only when no
+actual exists in the lookback window at all; the 5yr growth average got the equivalent fix (fill from actuals
+first, backfill with the *nearest* — not furthest — projected years only if fewer than 5 actuals exist).
+Re-verified Taiwan after the fix: 2024 actuals across all 5 components, 2020-2024 for the growth window, zero
+projection flags — and confirmed the fix held across the full 194-entity run too: **zero component values in
+the entire dataset ended up flagged as projections**, meaning WEO's real historical depth made the fallback
+path unnecessary in practice for every entity this run actually covered, not just Taiwan.
+
+**Coverage diff (`debug/economy-wdi-vs-weo-coverage-diff.md`, generated against the real, committed
+`src/data/economyScores.ts` — imported via `tsx`, not re-fetched) confirmed the "not a strict improvement"
+warning was well-founded, in both directions:**
+- **Liechtenstein**: WDI 1/5 (unavailable) → WEO 5/5 (measured) — a real, large gain, exactly matching what a
+  pre-implementation live API check had already predicted.
+- **Monaco**: WDI 1/5 (unavailable) → WEO 0/5 (unavailable) — Monaco isn't an IMF member; the country code
+  doesn't resolve in WEO at all. Same confidence *label* both ways, but a real regression in raw coverage
+  (1 real component down to zero) that a tier-only diff would have hidden — the per-entity table reports both
+  the tier and the raw coverage count for exactly this reason.
+- **Unemployment coverage regressed broadly**: WEO is missing `LUR` for 82 of 194 entities, versus WDI
+  missing its unemployment indicator for only 16 of 193 — by far the largest per-component gap between the
+  two sources (the other 4 components are each missing for only ~4 entities under WEO, comparable to or
+  better than WDI). This is the actual driver behind the widespread "measured 5/5 → measured 4/5" pattern
+  visible across the diff table (still above the 3-of-5 floor, so no tier changes resulted, but a real
+  completeness loss worth knowing about before adopting WEO wholesale).
+- Net tier-level summary: 2 gained/improved tier (Liechtenstein, Andorra, Marshall Islands), 186 unchanged
+  tier (many with a lower raw coverage count per the unemployment finding above), 4 unchanged-both-unavailable
+  (Monaco, North Korea, Cuba, South Sudan), 1 new entity (Taiwan). Not adopted — this is exactly the
+  before-deciding diff the patch asked for, not a recommendation either way.
+
 ## 2026-08-21 — Economy: GDP (PPP) double-weighted after real output showed size structurally penalized against growth rate
 
 Requested patch: double-weight GDP (PPP) in the Economy composite, mirroring `buildMilitary.mjs`'s existing

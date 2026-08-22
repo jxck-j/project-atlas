@@ -1087,6 +1087,20 @@ economy-component-breakdown.json` before trusting the full rebuild (recomputed t
 stored percentiles with `gdpPpp` doubled — matched exactly) and confirmed live in the Analytics ECONOMY
 ranking: China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (was outside the top 10, now #7).
 
+**`scripts/buildEconomyWeo.mjs` (2026-08-22) is a standalone, NOT-adopted trial** re-sourcing all 5 components
+from IMF World Economic Outlook (WEO) instead of World Bank WDI — does not touch `buildEconomy.mjs` or
+`src/data/economyScores.ts`, writes only to `debug/` (gitignored, not wired into the app). Run via
+`npm run build:economy-weo-trial`. Findings, in case source-swapping Economy comes up again — see
+`LOGBOOK.md`'s full entry for the reasoning trail, not repeated here: all 5 indicator codes (`PPPGDP`,
+`PPPPC`, `NGDP_RPCH`, `LUR`, `PCPIPCH`) confirmed current via the live API; WEO's official actual-vs-
+projection field (`LATEST_ACTUAL_ANNUAL_DATA`) exists but isn't reliably extractable through the live data
+API (a `COUNTRY_UPDATE_DATE`-derived vintage-year fallback is used instead, self-updating, and ended up
+flagging zero values across the full run); Taiwan is now scored under this trial as a one-off (`alpha3Override:
+'TWN'`, keyed by `'taiwan'` instead of a numeric id — WDI structurally excludes Taiwan, WEO doesn't); and the
+coverage diff is genuinely mixed, not a strict improvement — Liechtenstein gains real coverage, Monaco stays
+at zero (not an IMF member), and WEO's unemployment-rate coverage is meaningfully worse than WDI's (82 of 194
+missing vs. 16 of 193).
+
 Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
 (the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually
 justified generalizing `AnalyticsPanel.tsx`'s ranked-list machinery rather than pasting a second near-copy of
