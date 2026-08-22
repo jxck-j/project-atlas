@@ -17,6 +17,22 @@
 // comments for the reasoning behind each of these — not repeated here.
 //
 // ---------------------------------------------------------------------------
+// WHAT'S DIFFERENT FROM buildEconomy.mjs — GDP (PPP) (2026-08-22, direct
+// request): the other 4 indicators (GDP per capita PPP, growth, unemployment,
+// inflation) use resolveWeoIndicator, which prefers the most recent ACTUAL
+// year over a projection. GDP (PPP) alone uses a separate resolveWeoLatest,
+// which resolves to THIS CALENDAR YEAR's figure specifically (a real,
+// specific request for "this year's number, whatever it is," not the latest
+// finalized actual) — see that function's own comment for a real bug this
+// caught along the way (a first version took the single furthest-out row in
+// the series instead, landing on 2031 rather than the current year, before
+// being fixed to target `new Date().getFullYear()` directly). GDP per
+// capita PPP, unemployment, and inflation are unaffected — still
+// resolveWeoIndicator, still prefer-actual — and GDP growth is unaffected
+// too, still the unmodified 5yr trailing average this trial has always
+// used, copied from buildEconomy.mjs (see "WHAT STAYS THE SAME" above).
+//
+// ---------------------------------------------------------------------------
 // INDICATOR CODE VERIFICATION (2026-08-22) — the patch's mapping table was
 // checked against the LIVE WEO SDMX API before relying on it, not trusted
 // as-is (real risk: IMF revises series codes between April/October
@@ -241,18 +257,19 @@ async function fetchWeoSeries(alpha3, indicatorCode) {
   return { rows, vintageYear }
 }
 
-// Single most-recent-value indicators (GDP PPP, GDP per capita PPP,
-// unemployment, inflation) — same "most recent available, explicitly
-// dated" INTENT as buildEconomy.mjs's resolveWorldBankIndicator, but NOT
-// the same "just take rows[0]" implementation: unlike WDI (no forward
-// projections at all), WEO rows genuinely extend 5-7 years into the future,
-// so naively taking the single most-recent row grabs a speculative
-// far-future projection almost every time instead of a real reported
-// figure — caught by inspecting actual sample output (Taiwan's GDP PPP came
-// back dated 2031, the outermost lookahead year, before this fix). Prefers
-// the most recent ACTUAL (year < vintageYear); falls back to the most
-// recent row overall (a projection, correctly flagged via isProjection)
-// only when no actual exists in the lookback window at all.
+// Single most-recent-value indicators (GDP per capita PPP, unemployment,
+// inflation — GDP PPP moved to resolveWeoLatest below, 2026-08-22) — same
+// "most recent available, explicitly dated" INTENT as buildEconomy.mjs's
+// resolveWorldBankIndicator, but NOT the same "just take rows[0]"
+// implementation: unlike WDI (no forward projections at all), WEO rows
+// genuinely extend 5-7 years into the future, so naively taking the single
+// most-recent row grabs a speculative far-future projection almost every
+// time instead of a real reported figure — caught by inspecting actual
+// sample output (Taiwan's GDP PPP came back dated 2031, the outermost
+// lookahead year, before this fix). Prefers the most recent ACTUAL (year <
+// vintageYear); falls back to the most recent row overall (a projection,
+// correctly flagged via isProjection) only when no actual exists in the
+// lookback window at all.
 async function resolveWeoIndicator(alpha3, indicatorCode) {
   const { rows, vintageYear } = await fetchWeoSeries(alpha3, indicatorCode)
   if (rows.length === 0) return { value: undefined, year: undefined, isProjection: false, vintageYear }
@@ -262,13 +279,52 @@ async function resolveWeoIndicator(alpha3, indicatorCode) {
   return { value: best.value, year: best.year, isProjection, vintageYear }
 }
 
+// GDP (PPP) ONLY (2026-08-22, direct request): unlike resolveWeoIndicator
+// above, this does NOT prefer the most recent actual — it resolves to
+// THIS CALENDAR YEAR's figure specifically (actual or, more often,
+// projected), correctly flagged via isProjection either way.
+//
+// NOT simply "the last row in the series" — WEO_LOOKAHEAD_END_YEAR requests
+// a wide window (through 2032) so the 5yr growth average always has enough
+// room, but that means rows[0] (sorted most-recent-first) is the FURTHEST
+// projected year available (2031 as of this run), not the current one. A
+// first version of this function took rows[0] directly and got exactly
+// that bug — caught by inspecting sample output (GDP PPP came back dated
+// 2031 for every country, not 2026) before trusting it, the same kind of
+// mistake resolveWeoIndicator's own comment already documents avoiding for
+// a different reason. Fixed by resolving to the row matching
+// `new Date().getFullYear()` (an exact year match, since WEO's series is
+// annual and gapless within its covered range), falling back to the
+// nearest available year only in the (untested-in-practice) case that year
+// is missing. Self-updating — no hardcoded "2026" — the target year is
+// always "whatever this script's clock reads today," so re-running this in
+// a future year moves the target year forward automatically, same
+// self-updating property vintageYear already has.
+//
+// Every other component (GDP per capita PPP, growth, unemployment,
+// inflation) keeps preferring the most recent ACTUAL via resolveWeoIndicator
+// above; this is a deliberate, request-specific divergence for GDP (PPP)
+// only, not a change to the general policy.
+const WEO_TARGET_YEAR = new Date().getFullYear()
+
+async function resolveWeoLatest(alpha3, indicatorCode) {
+  const { rows, vintageYear } = await fetchWeoSeries(alpha3, indicatorCode)
+  if (rows.length === 0) return { value: undefined, year: undefined, isProjection: false, vintageYear }
+  const exact = rows.find((r) => r.year === WEO_TARGET_YEAR)
+  const best =
+    exact ?? rows.reduce((closest, r) => (Math.abs(r.year - WEO_TARGET_YEAR) < Math.abs(closest.year - WEO_TARGET_YEAR) ? r : closest))
+  const isProjection = vintageYear != null && best.year >= vintageYear
+  return { value: best.value, year: best.year, isProjection, vintageYear }
+}
+
 // Growth: 5yr trailing average, same target window as buildEconomy.mjs's
-// resolveGrowthAverage — but, per the same reasoning as
-// resolveWeoIndicator above, built from the most recent ACTUAL years first
-// (not just the 5 most recent rows overall, which would mean 5 years of
-// pure IMF projection for any country with a long actual history). Only
-// backfills with projected years — nearest-term first, not furthest-out —
-// when fewer than 5 actuals exist in the lookback window.
+// resolveGrowthAverage — but, per the same reasoning as resolveWeoIndicator
+// above, built from the most recent ACTUAL years first (not just the 5 most
+// recent rows overall, which would mean 5 years of pure IMF projection for
+// any country with a long actual history). Only backfills with projected
+// years — nearest-term first, not furthest-out — when fewer than 5 actuals
+// exist in the lookback window. Unaffected by the 2026-08-22 GDP (PPP)
+// change above — still the original, unmodified 5yr average.
 async function resolveWeoGrowthAverage(alpha3) {
   const { rows, vintageYear } = await fetchWeoSeries(alpha3, WEO_GDP_GROWTH_INDICATOR)
   if (rows.length === 0) return { value: undefined, years: [], projectedYears: [], vintageYear }
@@ -341,7 +397,7 @@ async function buildCountryScore(country) {
   }
 
   const [gdpPpp, gdpPerCapitaPpp, gdpGrowth, unemploymentRate, inflationCpi] = await Promise.all([
-    resolveWeoIndicator(alpha3, WEO_GDP_PPP_INDICATOR),
+    resolveWeoLatest(alpha3, WEO_GDP_PPP_INDICATOR),
     resolveWeoIndicator(alpha3, WEO_GDP_PER_CAPITA_PPP_INDICATOR),
     resolveWeoGrowthAverage(alpha3),
     resolveWeoIndicator(alpha3, WEO_UNEMPLOYMENT_INDICATOR),

@@ -1102,7 +1102,13 @@ flagging zero values across the full run); Taiwan is now scored under this trial
 'TWN'`, keyed by `'taiwan'` instead of a numeric id — WDI structurally excludes Taiwan, WEO doesn't); and the
 coverage diff is genuinely mixed, not a strict improvement — Liechtenstein gains real coverage, Monaco stays
 at zero (not an IMF member), and WEO's unemployment-rate coverage is meaningfully worse than WDI's (82 of 194
-missing vs. 16 of 193).
+missing vs. 16 of 193). **GDP (PPP) alone (2026-08-22, direct request) targets THIS CALENDAR YEAR's figure**
+(`resolveWeoLatest`, keyed off `new Date().getFullYear()`, self-updating) rather than the most recent actual
+the other 4 components still prefer (`resolveWeoIndicator`) — usually a real IMF staff projection rather than
+a finalized figure, correctly flagged via `projectionNote`. GDP growth stays the unmodified 5yr trailing
+average throughout — an early attempt applied the "current year, no averaging" request to growth instead of
+GDP (PPP) before being corrected; see `LOGBOOK.md`'s entry for the clean revert and the real rows[0]-picks-
+the-furthest-not-nearest-year bug this caught along the way.
 
 **`hud/useEconomyScoresWeo.ts` (2026-08-22)** is the runtime side of that same trial — a singleton
 `useSyncExternalStore` hook fetching `public/debug/economyScoresWeo.json`, same "fetch once, share the

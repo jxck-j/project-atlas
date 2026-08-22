@@ -5,6 +5,45 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-22 — Economy WEO trial: GDP (PPP) now targets the current calendar year, not the most recent actual
+
+Follow-up patch: "rerun it with most recent gdp(2026) only, no average," later clarified to mean plain GDP
+(PPP), not GDP growth (the request's parenthetical "(2026)" — today's year — was the key signal once
+clarified, not an instruction to average anything; GDP (PPP) was never averaged to begin with).
+
+First implementation attempt applied this to the wrong component (GDP growth) before the clarification —
+reverted cleanly, no residue: growth is back to its original, unmodified 5yr trailing average, and the
+IntelligencePanel/useEconomyScoresWeo changes made for that attempt (a `years`-vs-`year` fallback in
+`EconomyDrilldown`) were reverted too, since once growth stopped diverging from the WDI script's shape, the
+fallback was complexity with nothing left to guard against — `git diff` after finishing confirmed only
+`scripts/buildEconomyWeo.mjs` actually changed.
+
+**A real bug surfaced building the correct version:** the first cut of the new resolver (`resolveWeoLatest`)
+took `rows[0]` — the single most-recent row in the fetched series — assuming that meant "the current year."
+It doesn't: `WEO_LOOKAHEAD_END_YEAR` requests data through 2032 so the (unrelated) growth average always has
+enough room, and WEO's real projections extend that far, so `rows[0]` was actually the FURTHEST year
+available (2031), not the nearest one. Caught the same way this file's other WEO bugs have been caught —
+inspecting actual sample output, not trusting the code because it ran without error — every sample country's
+GDP (PPP) came back dated 2031, not 2026. Fixed by resolving to the row matching
+`new Date().getFullYear()` exactly (falling back to the nearest available year only if that exact year is
+somehow missing), which is also self-updating the same way `vintageYear` already is — no hardcoded "2026" to
+go stale next year.
+
+Verified against Brazil's raw `PPPGDP` series before trusting the fix: 2024 (the newest actual) is $4.74T,
+2026 (now correctly selected) is $5.23T, both real published figures, not interpolated. Full rerun: same
+190 measured / 0 proxy / 4 unavailable confidence breakdown as before (this only changes which year's value
+gets used, not whether one exists), and the coverage diff summary is byte-identical. Reflected live in the
+already-wired UI without any app-code changes: Saudi Arabia's GDP (PPP) column moved from $2.54T to $2.89T,
+China's composite score shifted from 83.5 to a re-ranked position with GDP (PPP) now showing $44.3T dated
+2026 in the drill-down, sourced and flagged as an IMF WEO projection via the existing `projectionNote`
+mechanism.
+
+**Known gap, not fixed here (out of scope for this patch):** `IntelligencePanel.tsx` never actually renders
+`projectionNote` anywhere in the UI — the field is computed, stored, and correctly flagges internally, but a
+user looking at the drill-down has no visual cue that a value is a projection vs. a finalized actual, for
+either GDP (PPP) now or growth's pre-existing projection-flagging. Worth a follow-up if the WEO trial is ever
+taken further.
+
 ## 2026-08-22 — Economy: wired the IMF WEO trial into the running app for review
 
 Follow-up to the trial below, once "diff before deciding" needed to become "actually look at it live" — the
