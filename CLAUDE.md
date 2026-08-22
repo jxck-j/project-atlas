@@ -1089,17 +1089,39 @@ ranking: China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (was outside the top 10,
 
 **`scripts/buildEconomyWeo.mjs` (2026-08-22) is a standalone, NOT-adopted trial** re-sourcing all 5 components
 from IMF World Economic Outlook (WEO) instead of World Bank WDI — does not touch `buildEconomy.mjs` or
-`src/data/economyScores.ts`, writes only to `debug/` (gitignored, not wired into the app). Run via
-`npm run build:economy-weo-trial`. Findings, in case source-swapping Economy comes up again — see
-`LOGBOOK.md`'s full entry for the reasoning trail, not repeated here: all 5 indicator codes (`PPPGDP`,
-`PPPPC`, `NGDP_RPCH`, `LUR`, `PCPIPCH`) confirmed current via the live API; WEO's official actual-vs-
-projection field (`LATEST_ACTUAL_ANNUAL_DATA`) exists but isn't reliably extractable through the live data
+`src/data/economyScores.ts`. Run via `npm run build:economy-weo-trial`, which now writes to
+`public/debug/economyScoresWeo.json` (moved from plain `debug/` the same day, once the trial needed to be
+*viewable* inside the running app, not just diffable as a downloaded file — `public/` is what Vite actually
+serves to the dev server, `debug/` isn't; both stay gitignored, see `.gitignore`'s own comment for why
+they're two separate ignored paths rather than one). Findings, in case source-swapping Economy comes up
+again — see `LOGBOOK.md`'s full entry for the reasoning trail, not repeated here: all 5 indicator codes
+(`PPPGDP`, `PPPPC`, `NGDP_RPCH`, `LUR`, `PCPIPCH`) confirmed current via the live API; WEO's official actual-
+vs-projection field (`LATEST_ACTUAL_ANNUAL_DATA`) exists but isn't reliably extractable through the live data
 API (a `COUNTRY_UPDATE_DATE`-derived vintage-year fallback is used instead, self-updating, and ended up
 flagging zero values across the full run); Taiwan is now scored under this trial as a one-off (`alpha3Override:
 'TWN'`, keyed by `'taiwan'` instead of a numeric id — WDI structurally excludes Taiwan, WEO doesn't); and the
 coverage diff is genuinely mixed, not a strict improvement — Liechtenstein gains real coverage, Monaco stays
 at zero (not an IMF member), and WEO's unemployment-rate coverage is meaningfully worse than WDI's (82 of 194
 missing vs. 16 of 193).
+
+**`hud/useEconomyScoresWeo.ts` (2026-08-22)** is the runtime side of that same trial — a singleton
+`useSyncExternalStore` hook fetching `public/debug/economyScoresWeo.json`, same "fetch once, share the
+result" shape as `scene/useCountryFeatures.ts`. Unlike that hook's real-data fetch, a failed/missing fetch
+here (`scores: null`) is an *expected*, silent state — most machines won't have run
+`build:economy-weo-trial` at all — not a warning-worthy error. `AnalyticsPanel.tsx`'s Economy ranked list and
+`IntelligencePanel.tsx`'s Economy drill-down both gained a WDI/IMF WEO (TRIAL) toggle pair, disabled (with a
+tooltip) whenever this hook returns `null`. The two toggles are independent and scoped differently on
+purpose: `AnalyticsPanel.tsx`'s swaps the *entire ranked list* — rows, columns, and sort all rebuild from
+`buildEconomyRowsFromWeo()` instead of `buildEconomyRows()`, which is also how Taiwan (WEO-only, no WDI
+Economy score at all) becomes visible and selectable in this list for the first time — its centroid comes
+from `useGeoEntityFeatures()` bridged through `entities/entityGeometryIds.ts`'s `ENTITY_GEOMETRY_IDS`,
+extending `AnalyticsPanel.tsx`'s existing `centroidById` map, which previously only covered
+`useCountryFeatures()`. `IntelligencePanel.tsx`'s toggle is narrower and deliberately does NOT touch the
+ECONOMY status bar's own headline number — that number, and every other status bar, stays WDI-sourced
+regardless of the toggle; only the *expanded drill-down's* 5-component breakdown swaps source, matching how
+the drill-down already works for a single category (see "Citation drill-down" in the Intelligence Engine
+section above). Selecting Taiwan itself still shows no Economy status-bar value at all (a GeoEntity, not a
+`Country` — the same "no score for GeoEntities" gap Military already has, not a regression introduced here).
 
 Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
 (the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually

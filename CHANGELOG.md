@@ -17,6 +17,19 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.6.3 — Economy: IMF WEO trial is now viewable live in the app
+
+**Point release.** The IMF WEO source trial (v6.6.2-era `scripts/buildEconomyWeo.mjs`) previously only produced
+downloadable files for offline review. Both the Analytics ECONOMY ranked list and the Intelligence panel's
+ECONOMY drill-down now have a WDI / IMF WEO (TRIAL) toggle, so the trial data can actually be looked at inside
+the running app instead of a separate JSON dump. In `AnalyticsPanel.tsx`, toggling swaps the entire ranked
+list — including Taiwan, which only has a WEO score (WDI structurally excludes it) and is now selectable from
+that list for the first time. In `IntelligencePanel.tsx`, toggling only swaps the expanded ECONOMY
+drill-down's component breakdown — the ECONOMY status-bar headline number stays WDI-sourced regardless, same
+as every other status bar. The toggle is disabled (with a tooltip) on any machine that hasn't run
+`npm run build:economy-weo-trial` locally — the trial output stays gitignored and not part of the shipped
+build. Still not adopted as the real Economy data source; this only makes the trial reviewable.
+
 ## v6.6.2 — Economy: GDP (PPP) double-weighted, mirroring Military's expenditure precedent
 
 **Point release.** Real output showed large, mature economies (the US in particular) landing well below

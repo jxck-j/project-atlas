@@ -6,6 +6,7 @@ import { ALLIANCES } from '../data/allianceMemberships'
 import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
+import { useEconomyScoresWeo, type WeoEconomyScore } from './useEconomyScoresWeo'
 import { AllianceBadge } from './AllianceBadge'
 import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
@@ -268,6 +269,16 @@ function economyIntelValue(selected: SelectedEntity | null) {
   return ECONOMY_SCORES[selected.entity.data.id]
 }
 
+// IMF WEO source trial (2026-08-22) — see hud/useEconomyScoresWeo.ts and
+// scripts/buildEconomyWeo.mjs's own header comment. Country-only, same
+// restriction as economyIntelValue above — Taiwan's WEO entry (a
+// GeoEntity, not a Country) is deliberately out of scope for this panel;
+// hud/AnalyticsPanel.tsx's ranked list is where that one's reviewable.
+function weoEconomyIntelValue(selected: SelectedEntity | null, weoScores: Record<string, WeoEconomyScore> | null) {
+  if (!weoScores || selected?.entity.kind !== 'country') return undefined
+  return weoScores[selected.entity.data.id]
+}
+
 interface EconomyDrilldownRow {
   label: string
   raw: number | null
@@ -282,7 +293,12 @@ interface EconomyDrilldownRow {
 // the year RANGE actually averaged (components.gdpGrowth.years, sorted
 // ascending by the build script) rather than a single year, since the value
 // itself is a 5-year mean, not a single snapshot.
-function EconomyDrilldown({ score }: { score: EconomyScore }) {
+//
+// `score` accepts either the real WDI-sourced EconomyScore or the IMF WEO
+// trial's WeoEconomyScore (hud/useEconomyScoresWeo.ts) — structurally
+// compatible on every field this component reads, so no branching needed
+// here; the caller decides which one to pass in based on the source toggle.
+function EconomyDrilldown({ score }: { score: EconomyScore | WeoEconomyScore }) {
   const growthYears = score.components.gdpGrowth.years
   const growthDateLabel =
     growthYears && growthYears.length > 0
@@ -645,6 +661,14 @@ export function IntelligencePanel() {
   const economyBarValue = economyScore?.value ?? undefined
   const hasEconomyBar = economyBarValue != null
 
+  // IMF WEO source trial — the status bar itself always reflects the real,
+  // WDI-sourced economyScore (never the trial); only the drill-down, once
+  // expanded, offers a toggle to view WEO's breakdown instead. See
+  // hud/useEconomyScoresWeo.ts and EconomyDrilldown's own comment above.
+  const weoEconomyScores = useEconomyScoresWeo()
+  const weoEconomyScore = weoEconomyIntelValue(selected, weoEconomyScores)
+  const [economyDrilldownSource, setEconomyDrilldownSource] = useState<'wdi' | 'weo'>('wdi')
+
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
   // (MILITARY, and as of the Economy build, ECONOMY too) collapses the
   // other four rows and drops down its component sources. Only a metric
@@ -656,6 +680,7 @@ export function IntelligencePanel() {
   const [expandedMetric, setExpandedMetric] = useState<IntelMetricId | null>(null)
   useEffect(() => {
     setExpandedMetric(null)
+    setEconomyDrilldownSource('wdi')
   }, [selected?.id])
 
   return (
@@ -747,7 +772,35 @@ export function IntelligencePanel() {
               {expandedMetric === 'military' && militaryScore ? (
                 <MilitaryDrilldown score={militaryScore} />
               ) : expandedMetric === 'economy' && economyScore ? (
-                <EconomyDrilldown score={economyScore} />
+                <>
+                  {/* IMF WEO source trial toggle — only shown once the
+                      trial data actually exists for this country (see
+                      hud/useEconomyScoresWeo.ts). Defaults to WDI (the
+                      real source) every time the drill-down opens. */}
+                  {weoEconomyScore && (
+                    <div className="flex items-center gap-0.5 pt-1 pb-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setEconomyDrilldownSource('wdi')}
+                        className={`rounded px-2 py-1 text-[9.5px] font-bold tracking-[0.08em] transition-colors ${
+                          economyDrilldownSource === 'wdi' ? 'bg-[rgba(63,139,255,0.2)] text-white' : 'text-[#6d82a8] hover:text-[#aebfdc]'
+                        }`}
+                      >
+                        WDI
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEconomyDrilldownSource('weo')}
+                        className={`rounded px-2 py-1 text-[9.5px] font-bold tracking-[0.08em] transition-colors ${
+                          economyDrilldownSource === 'weo' ? 'bg-[rgba(63,139,255,0.2)] text-white' : 'text-[#6d82a8] hover:text-[#aebfdc]'
+                        }`}
+                      >
+                        IMF WEO (TRIAL)
+                      </button>
+                    </div>
+                  )}
+                  <EconomyDrilldown score={economyDrilldownSource === 'weo' && weoEconomyScore ? weoEconomyScore : economyScore} />
+                </>
               ) : (
                 <>
                   {(() => {

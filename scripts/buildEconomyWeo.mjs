@@ -115,7 +115,14 @@ import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
 import { ECONOMY_SCORES as WDI_ECONOMY_SCORES } from '../src/data/economyScores.ts'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
-const DEBUG_OUTPUT = 'debug/economyScoresWeo.json'
+// Under public/, not debug/, specifically so the running dev server can
+// fetch it at runtime (see hud/useEconomyScoresWeo.ts) — Vite serves
+// public/ from the site root regardless of git-ignore status. Still
+// gitignored (see .gitignore's public/debug/ entry) — this is trial data,
+// not meant to ship, just to be reviewable in a locally-running app.
+const DEBUG_OUTPUT = 'public/debug/economyScoresWeo.json'
+// The diff report is pure human review, never fetched by the app — stays
+// in the repo-root debug/ dir alongside the component-breakdown dump.
 const DIFF_OUTPUT = 'debug/economy-wdi-vs-weo-coverage-diff.md'
 
 const WEO_BASE = 'https://api.imf.org/external/sdmx/3.0/data/dataflow/IMF.RES/WEO/~'
@@ -465,6 +472,7 @@ if (isSample) {
   process.exit(0)
 }
 
+fs.mkdirSync('public/debug', { recursive: true })
 fs.mkdirSync('debug', { recursive: true })
 fs.writeFileSync(DEBUG_OUTPUT, JSON.stringify(finalScores, null, 2))
 console.log(`Wrote ${DEBUG_OUTPUT}: ${finalScores.length} entities (193 countries + Taiwan).`)

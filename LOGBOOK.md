@@ -5,6 +5,47 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-22 — Economy: wired the IMF WEO trial into the running app for review
+
+Follow-up to the trial below, once "diff before deciding" needed to become "actually look at it live" — the
+markdown coverage diff and sample JSON answer "is this a strict improvement" in aggregate, but not "what does
+this look like for a specific country I care about."
+
+Two moving pieces: (1) `scripts/buildEconomyWeo.mjs`'s output moved from `debug/economyScoresWeo.json` to
+`public/debug/economyScoresWeo.json` — the dev server only serves `public/`, and this data has to actually be
+fetchable at runtime, not just readable off disk. Both paths stay gitignored (added `public/debug/` as its
+own `.gitignore` entry, right under the existing `debug/` one, with a comment distinguishing "servable" from
+"not"). (2) a new hook, `hud/useEconomyScoresWeo.ts`, copying `scene/useCountryFeatures.ts`'s singleton
+fetch-once-share-result pattern rather than inventing a new one — the one deliberate difference is that a
+failed fetch here sets `scores: null` silently, no console warning, since "this machine never ran the trial
+build script" is the expected common case, not an error condition the way a missing *real* data file would be.
+
+Two independent toggle points, not one shared "economy source" store — considered a global store first, but
+the two views want different scope. `AnalyticsPanel.tsx`'s Economy ranked list toggle swaps the *entire
+table* (rows/columns/sort all rebuild from `buildEconomyRowsFromWeo()`), because a ranked list only makes
+sense body-and-headline from one consistent source at a time — a mixed list would rank some rows by a WDI
+composite and others by a WEO one. `IntelligencePanel.tsx`'s toggle only swaps the *expanded drill-down*
+breakdown; the ECONOMY status-bar headline number stays WDI always, matching what already covers "which
+source is the real one" for every other status bar. Getting this right mattered because the alternative
+(status bar also flipping) would make WDI vs. WEO look like two equally-authoritative app-wide modes rather
+than "one real number, one reviewable trial."
+
+**A real, if minor, gap surfaced by wiring this in rather than just eyeballing JSON:** Taiwan is WEO-only (no
+WDI Economy score exists for it at all — WDI structurally excludes it), so it needed to actually render and
+be clickable in `AnalyticsPanel.tsx`'s WEO-mode ranked list. Its centroid wasn't available the way every other
+row's was — `AnalyticsPanel.tsx`'s pre-existing `centroidById` map was built only from `useCountryFeatures()`,
+and Taiwan is a GeoEntity, not a Country. Extended it with a second pass over `useGeoEntityFeatures()`,
+bridged through the existing `entities/entityGeometryIds.ts` id maps (the same geometryId/entityId split
+`GeoEntities.tsx` already has to account for — see CLAUDE.md's "GeoEntity geometry" section) rather than
+special-casing Taiwan by name. Verified live: clicking Taiwan's row opens the same selection panel a country
+click does, correctly labeled "Geopolitical Entity," with the existing (pre-existing, not a new gap) "—" for
+every status bar including Economy, since none of those are GeoEntity-aware yet.
+
+Verified all three toggle states live in the browser (WDI list → WEO list → China's drill-down WDI → WEO,
+values changing and source-URL labels changing from "World Bank (WDI)" to "api.imf.org" as expected) before
+calling this done — this file's own recurring lesson (typecheck/lint/tests passing isn't proof a UI feature
+actually renders and behaves correctly) applied once more here.
+
 ## 2026-08-22 — Economy: IMF WEO source trial — verified the API for real, caught a real bug, found a real coverage regression
 
 Built `scripts/buildEconomyWeo.mjs`, a standalone trial re-sourcing Economy's 5 components from IMF World
