@@ -5,6 +5,165 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-26 — Economy: GDP → log-min-max, inflation → gaussian (superseding the 2026-08-22 distance-percentile patch)
+
+Two independent patches to `scripts/buildEconomy.mjs`, requested together. Growth and unemployment unaffected
+by either — both stay percentile rank as before.
+
+**GDP (size): percentile rank → log-min-max.** Same method `buildMilitary.mjs` already uses for its own
+magnitude-driven components (`buildNormalizer`) — copied here as `buildLogMinMaxNormalizer`, identical
+epsilon/min/max derivation (epsilon = 1% of the smallest nonzero value in the dataset, min/max taken after
+the log transform). GDP per capita stays on percentile rank, deliberately — the rationale given was that
+log-min-max only makes sense where raw magnitude itself carries weight (aggregate size/power), not for a
+per-capita prosperity comparison where two similarly-prosperous countries of very different population sizes
+should score similarly. Real motivation, confirmed against actual output before this patch: China's GDP
+(nominal) percentile was 100.00 against the US's 99.47 — a 0.53-point gap that barely registered even with
+GDP double-weighted, despite the real ~$10.6T dollar difference between them. Percentile rank only ever
+encodes ORDER; it has no way to represent "these two are close in rank but far apart in magnitude" or vice
+versa. Post-patch: US 100.00, China 96.60 on the same component — still not a huge gap (log compression is
+deliberate, not accidental), but real and directionally correct. GDP stays double-weighted in the composite,
+unchanged from the 2026-08-21 patch — this only changed which normalization feeds that already-doubled slot.
+
+**Inflation: percentile-of-distance → gaussian, no percentile step at all.**
+`score = 100 * exp(-((inflation - 2.0)^2) / (2 * 1.0^2))`, used directly — this is the SECOND inflation-
+scoring change in less than a week (see the 2026-08-22 entry below for the first: inverted percentile →
+percentile-of-distance-from-target). Explicit instruction this time: do NOT derive σ (the gaussian's spread)
+from the sample data — a data-derived spread would get distorted by hyperinflation outliers (a handful of
+countries with -50%+ or +200%+ inflation would blow out a computed standard deviation and flatten everyone
+else's score toward the middle, defeating the point of a target-centered score). σ = 1.0 percentage point
+instead, from a real, stated policy threshold: the Bank of England's own tolerance band — a governor's open
+letter to the Chancellor is required if CPI moves more than 1pp from the 2% target. Verified the formula by
+hand against real sample output before trusting the full rebuild: Taiwan's 2.180626% inflation →
+`100 * exp(-(0.180626² / 2))` = 98.38, matched the script's own output exactly; the US's 2.94953% →
+`100 * exp(-(0.94953² / 2))` = 63.71, also matched exactly.
+
+**Removed the 2026-08-22 patch's diff-preservation scaffolding** (`rankInflationOld`, `inflationPctOld`, the
+`_diffOnly` field on `finalizeCountry`'s return value, and `writeInflationScoringDiff()` /
+`debug/economy-inflation-scoring-diff.md`) — that machinery existed specifically to diff THAT patch's
+before/after (inverted-percentile vs. distance-percentile), a comparison this patch makes moot by replacing
+the distance-percentile method itself. Kept it up through verifying this patch's own diff, then removed it
+rather than leaving dead, no-longer-meaningful diff code sitting alongside the real scoring path. This
+patch's own before/after review used `git diff` against the actually-committed `economyScores.ts` instead
+(HEAD still had last week's PPP-based, percentile-only, no-Taiwan version, since nothing from this week's
+Economy work had been committed yet) — no new permanent diff tooling was added to the script for it.
+
+**Real before/after, US vs. China specifically** (the case the GDP rationale was built around): under the
+last COMMITTED version (PPP GDP, percentile rank, distance-percentile inflation) the US scored 77.6 and China
+83.6 — China ranked ahead despite the size argument. Under this patch (nominal GDP log-min-max + gaussian
+inflation, still uncommitted at time of writing): US 79.5, China 69.7 — the US now clearly leads, driven by
+both changes together (GDP log-min-max modestly widens the US's size edge; separately, China's near-zero
+0.22% inflation now scores 20.4 under the gaussian, versus 63.7 for the US's 2.95%, which is itself close to
+target). Across the full 194-entity dataset: average composite delta -1.24, 78 entities moved up more than
+0.5 points, 95 moved down more than 0.5 — the biggest single movers were Sri Lanka (-19.2), Afghanistan
+(-17.6), and Thailand (-17.5), all countries whose inflation sits well outside the gaussian's effective range
+around 2%. Confidence tiers unaffected (still 187 measured / 3 proxy / 4 unavailable) — both changes are
+normalization-only, not coverage-only.
+
+## 2026-08-22 — Economy: inflation scored as distance from a 2% target, not "lower is always better"
+
+Direct patch request. `scripts/buildEconomy.mjs`'s inflation component previously used the same inverted
+percentile every other "lower is better" component (unemployment) uses: rank the raw inflation rate, then
+`100 - percentile`, so the country with the lowest raw inflation always scored highest. That's wrong for
+inflation specifically — 2% is the explicit longer-run target both the Federal Reserve
+(federalreserve.gov/faqs/economy_14400.htm) and the Bank of England (bankofengland.co.uk/monetary-policy/
+inflation) state outright, and the old method scored inflation near 0% (or negative — deflation) as
+excellent, which misrepresents deflation risk: deflation is its own economic hazard (falling prices delay
+spending, raise the real burden of debt, and correlate with recession), not "very good low inflation."
+
+New formula, exactly as specified:
+```
+distance = Math.abs(inflation - 2.0)
+percentile = invertedPercentile(distance)   // smallest distance to 2% scores highest
+```
+Implemented as a second percentile ranker (`rankInflationDistance`, built from each country's `|raw - 2.0|`)
+alongside the existing `buildPercentileRanker` — no new normalization primitive needed, distance is just
+another value to rank. A missing raw inflation value maps to `distance = null`, not `distance = 2.0` (which
+would have falsely claimed "this country's inflation is exactly on target" for a country with no data at
+all) — `buildPercentileRanker`'s existing null-handling (`if (v == null) return null`) already does the right
+thing once the input is properly null, so this needed no special-casing beyond computing the distance
+correctly in the first place.
+
+**Kept the old inverted-percentile method in the code, specifically to diff against** (per the patch's own
+instruction) — `rankInflationOld` (built the old way, on raw inflation directly) and, inside
+`finalizeCountry`, `inflationPctOld` computed alongside the new `inflationPct`, plus a full parallel
+composite (`valueOld`, the same weighted-average formula with `inflationPctOld` substituted for the real
+`inflationPct`) — attached to each entity's return value as a `_diffOnly` field that `scoreToTs` never reads
+(it only serializes the fields it explicitly names), so none of this reaches `economyScores.ts`. A new
+`writeInflationScoringDiff()` writes `debug/economy-inflation-scoring-diff.md` (gitignored, same as the
+existing component-breakdown dump) — full per-entity old/new inflation percentile and composite score, sorted
+by `|composite delta|` descending — plus prints a summary and top-10 movers straight to the console, so the
+before/after is visible immediately on a full run without needing to open the file.
+
+**Real output confirms the fix does what it's supposed to, not just what the formula says it should:**
+France (1.999% — essentially exactly 2%) moved from 85.7 to a perfect 100 on the inflation component (old
+method never gave anything but the single lowest-inflation country 100). The entities with the single biggest
+composite swings are dominated by deflation/near-zero cases exactly as expected: Afghanistan (-6.60% —
+deflation) dropped 14.6 composite points (its inflation percentile fell from a old-method 100 to 12.6 new),
+Nauru (-0.12%) dropped 11.7, Costa Rica (-0.41%) dropped 10.7, China (0.22%) dropped 9.1. Countries actually
+near the 2% target (France, Peru at 2.01%, Djibouti at 2.11%) gained instead. Average composite delta across
+all 184 scored entities: ~0.0 (the redistribution is relative, not a systematic up- or down-shift of the whole
+category) — 124 entities moved up, 34 moved down, the rest changed by less than the 0.05 threshold used for
+that count. Confidence tiers unaffected (still 187 measured / 3 proxy / 4 unavailable) — this only changes how
+the composite is computed for entities that already had inflation data, never coverage.
+
+## 2026-08-22 — Economy: removed the IMF WEO trial entirely, switched GDP to nominal, kept Taiwan on IMF
+
+Direct request, after the user "figured out the issue" with the whole WEO-trial direction below: remove all
+IMF/WEO data and app wiring, go back to World Bank WDI like the original v6.6.0 Economy build, replace the
+"GDP size" component with nominal GDP instead of PPP-adjusted, and — the one thing to keep from the otherwise-
+fully-reverted trial — Taiwan's coverage, since that's the actual, narrow reason IMF sourcing was ever needed
+(WDI structurally excludes Taiwan). In hindsight the whole standalone trial — re-sourcing all 5 components
+for all 193+1 entities from IMF WEO, plus the WDI/IMF WEO toggle UI in both `AnalyticsPanel.tsx` and
+`IntelligencePanel.tsx` — was solving a much bigger problem than the one that actually existed: the real gap
+was always just "Taiwan has no WDI data," not "WDI as a whole needs reconsidering."
+
+**Removal, verified clean via `git diff` before committing anything:** `scripts/buildEconomyWeo.mjs` and
+`hud/useEconomyScoresWeo.ts` deleted outright. `AnalyticsPanel.tsx` and `IntelligencePanel.tsx` restored from
+commit `c8cdce9` (the last commit before the trial's wiring work) rather than hand-reverting the toggle UI —
+the earlier diff against that commit was confirmed purely additive (the trial's own commits never touched any
+pre-existing line in either file), so restoring the whole file was safe and exact, not an approximation.
+`package.json`'s `build:economy-weo-trial` script and `.gitignore`'s `public/debug/` entry (added only for
+the trial's runtime-fetchable output) removed. Regenerated local trial artifacts (`public/debug/`,
+`debug/economy-wdi-vs-weo-coverage-diff.md`) deleted from disk.
+
+**GDP (size) component: PPP-adjusted → nominal.** `GDP_NOMINAL_INDICATOR` is now World Bank's `NY.GDP.MKTP.CD`
+(was `NY.GDP.MKTP.PP.CD`). Renamed the field `gdpPpp` → `gdpNominal` everywhere — the build script, the
+generated `economyScores.ts` type/data, and both UI consumers' column/row labels (`AnalyticsPanel.tsx`'s
+`ECONOMY_COLUMNS`, `IntelligencePanel.tsx`'s `EconomyDrilldown`) — rather than keeping the old field name for
+a different underlying metric, which would have silently misled anyone reading the type later. GDP per capita
+stays PPP-adjusted, untouched — this was specifically about the aggregate size metric. The v6.6.2
+double-weighting (real GDP growth structurally penalizes large economies — see that entry below) carried over
+unchanged, just re-pointed at the renamed field; verified the ranking still made sense post-swap (nominal GDP
+being smaller than PPP GDP for most economies shifts everyone's raw number down, but percentile RANK — what
+actually feeds the composite — only cares about relative ordering, which nominal vs. PPP doesn't necessarily
+preserve identically, so this was worth an eyeball check, not an assumption).
+
+**Taiwan, kept on IMF WEO as a narrow, permanent exception** — not a revival of the removed trial, a single
+`buildTaiwanScore()` function appended to `buildEconomy.mjs` (~120 lines, self-contained: its own indicator
+constants, its own SDMX fetch/parse helpers, its own actual-vs-projection filtering) whose result gets pushed
+into the same `built` array the 193 WDI countries populate, BEFORE percentile ranking runs — meaning Taiwan's
+real values compete in the same ranking pool as every WDI country, not a segregated one. Resolved to the same
+"most recent ACTUAL year, projections excluded" standard the WDI-sourced components already meet by
+construction (WDI has no projections at all to worry about; WEO does, so this needed the same
+`COUNTRY_UPDATE_DATE`-derived vintage-year filtering technique the now-deleted trial script pioneered — see
+that work's own entries below for the original research trail, not repeated here since this is a much smaller
+reuse of it, not a new investigation).
+
+**A real bug, caught before it shipped by inspecting sample output rather than trusting the code:** IMF's
+`NGDPD` indicator ("GDP, current prices, US dollars") is commonly documented — and was assumed here at
+first — to report values in billions, so the first implementation multiplied by `1e9` to convert to raw
+dollars matching WDI's units. Taiwan's `--sample` output came back with a nominal GDP of
+`801495464000000000000` ($801 sextillion) instead of a plausible ~$800 billion. Checked the raw API response
+directly via `curl`: Taiwan's actual 2024 `NGDPD` value is `801495464000` — already in whole current US$, not
+billions, despite the indicator's common documentation. Removed the `× 1e9` conversion entirely; re-verified
+against the raw series before trusting the fix. Worth remembering if `NGDPD` (or any other WEO indicator
+whose documented "billions" unit doesn't match live behavior) comes up again — the live API's actual values,
+not the indicator's documented unit, are the ground truth.
+
+Full rebuild: 194 entities (193 WDI + Taiwan), confidence breakdown 187 measured / 3 proxy / 4 unavailable.
+Taiwan itself: `measured`, 5/5 coverage, composite 87.1. Verified `tsc -b --noEmit`, `oxlint`, and
+`vitest run` (96/96) all clean after every file touched by this change.
+
 ## 2026-08-22 — Economy WEO trial: GDP (PPP) now targets the current calendar year, not the most recent actual
 
 Follow-up patch: "rerun it with most recent gdp(2026) only, no average," later clarified to mean plain GDP

@@ -9,9 +9,6 @@ import { getGlobeRotationY } from '../scene/globeRotation'
 import { getCountries } from '../data'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
-import { useEconomyScoresWeo, type WeoEconomyScore } from './useEconomyScoresWeo'
-import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
-import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 import { resolveEntity } from '../entities/EntityResolver'
 import { closeInspector, selectEntity, useSelection } from './selectionStore'
 import { Icon } from './icons'
@@ -343,36 +340,16 @@ function buildEconomyRows(): EconomyRankedRow[] {
   })
 }
 
-// IMF WEO source trial (2026-08-22) — see hud/useEconomyScoresWeo.ts and
-// scripts/buildEconomyWeo.mjs's own header comment. Not the app's real
-// Economy data (that's ECONOMY_SCORES/buildEconomyRows above); this reads
-// the locally-generated, gitignored public/debug/economyScoresWeo.json
-// instead, so it can only ever be reviewed on a machine that's actually run
-// `npm run build:economy-weo-trial`. Reuses ECONOMY_COLUMNS unchanged below
-// — WeoEconomyScore's components have the exact same field names as
-// EconomyScore's (structurally compatible, with the addition of an
-// optional projectionNote per field the columns simply don't read).
-function buildEconomyRowsFromWeo(weoScores: Record<string, WeoEconomyScore>): EconomyRankedRow[] {
-  return Object.values(weoScores).map((score) => ({
-    id: score.id,
-    name: score.name,
-    value: score.value ?? undefined,
-    confidence: score.confidence,
-    components: score.components,
-    scoreSortValue: score.value ?? -1,
-  }))
-}
-
 // World Bank's GDP indicators (unlike SIPRI's Top-100 arms revenue) are
 // already in whole current-international dollars, not millions — no *1e6
 // multiplication before formatGdp, unlike Military's expenditure/
 // industrial-base columns above.
 const ECONOMY_COLUMNS: AnalyticsColumn<EconomyRankedRow>[] = [
   {
-    key: 'gdpPpp',
-    label: 'GDP (PPP)',
-    getSortValue: (row) => row.components?.gdpPpp.raw ?? null,
-    format: (row) => (row.components ? formatComponent(row.components.gdpPpp.raw, (raw) => formatGdp(raw) ?? '—') : '—'),
+    key: 'gdpNominal',
+    label: 'GDP',
+    getSortValue: (row) => row.components?.gdpNominal.raw ?? null,
+    format: (row) => (row.components ? formatComponent(row.components.gdpNominal.raw, (raw) => formatGdp(raw) ?? '—') : '—'),
   },
   {
     key: 'gdpPerCapitaPpp',
@@ -423,21 +400,15 @@ export function AnalyticsPanel() {
   const isOpen = useTopNavTab() === 'analytics'
   const { selected } = useSelection()
   const features = useCountryFeatures()
-  const geoEntityFeatures = useGeoEntityFeatures()
-  const weoScores = useEconomyScoresWeo()
   const [metric, setMetric] = useState<IntelMetricId | null>(null)
   const [sort, setSort] = useState(DEFAULT_SORT)
-  const [economySource, setEconomySource] = useState<'wdi' | 'weo'>('wdi')
 
   // Resets whenever the active metric changes — including back to the
   // thumbnail grid (`metric` -> null) and into a newly opened ranking — so a
   // sort chosen while looking at one ranking never silently carries over
-  // and surprises the next one. economySource resets alongside it for the
-  // same reason — leaving ECONOMY on the IMF WEO trial shouldn't silently
-  // still be selected next time ECONOMY is opened.
+  // and surprises the next one.
   useEffect(() => {
     setSort(DEFAULT_SORT)
-    setEconomySource('wdi')
   }, [metric])
 
   // On the transition INTO this tab (not on every render while it stays
@@ -461,24 +432,14 @@ export function AnalyticsPanel() {
   // selectEntry — needed so a row-clicked country's `selected.direction` is
   // real (not just needed right now, but for whenever the user later hits
   // IntelligencePanel's FOCUS CAMERA button after switching back to MAP).
-  // Also includes GeoEntity centroids (same ENTITY_GEOMETRY_IDS bridge
-  // SearchBar.tsx uses) — needed specifically for the IMF WEO trial's
-  // Taiwan row: Taiwan is a GeoEntity, not a Country, so its geometry only
-  // exists in geoEntityFeatures, not features.
   const centroidById = useMemo(() => {
     const map = new Map<string, { lat: number; lng: number }>()
     for (const f of features) {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (id) map.set(id, geometryToCentroid(f.geometry))
     }
-    for (const f of geoEntityFeatures) {
-      const geometryId = f.id !== undefined && f.id !== null ? String(f.id) : undefined
-      if (!geometryId) continue
-      const entityId = ENTITY_GEOMETRY_IDS[geometryId] ?? geometryId
-      map.set(entityId, geometryToCentroid(f.geometry))
-    }
     return map
-  }, [features, geoEntityFeatures])
+  }, [features])
 
   if (!isOpen) return null
 
@@ -501,8 +462,6 @@ export function AnalyticsPanel() {
   }
 
   const activeMetric = INTEL_METRICS.find((m) => m.id === metric)
-  const isEconomyWeo = activeMetric?.id === 'economy' && economySource === 'weo'
-  const economyRows = isEconomyWeo ? (weoScores ? buildEconomyRowsFromWeo(weoScores) : []) : buildEconomyRows()
 
   return (
     <div className="pointer-events-auto fixed inset-x-0 top-14 bottom-0 z-20 overflow-y-auto bg-[#04070a]">
@@ -533,73 +492,27 @@ export function AnalyticsPanel() {
               <Icon paths={activeMetric.icon} size={16} />
               {activeMetric.label}
             </span>
-            {/* IMF WEO source trial (2026-08-22) — WDI/Military both stay
-                on their one real source; ECONOMY alone gets a source
-                toggle, since this is the one category with two data
-                sources to actually compare. See
-                hud/useEconomyScoresWeo.ts's own header comment for why the
-                WEO option only lights up once public/debug/
-                economyScoresWeo.json has actually been generated. */}
-            {activeMetric.id === 'economy' && (
-              <div className="flex items-center gap-0.5 rounded-full border border-[#172440] bg-[rgba(7,11,20,0.6)] p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setEconomySource('wdi')}
-                  className={`rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.1em] transition-colors ${
-                    economySource === 'wdi' ? 'bg-[rgba(63,139,255,0.2)] text-white' : 'text-[#6d82a8] hover:text-[#aebfdc]'
-                  }`}
-                >
-                  WDI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEconomySource('weo')}
-                  disabled={!weoScores}
-                  title={weoScores ? 'IMF World Economic Outlook (trial source)' : 'Run npm run build:economy-weo-trial to generate this'}
-                  className={`rounded-full px-2.5 py-1 text-[9.5px] font-bold tracking-[0.1em] transition-colors ${
-                    economySource === 'weo' && weoScores
-                      ? 'bg-[rgba(63,139,255,0.2)] text-white'
-                      : weoScores
-                        ? 'text-[#6d82a8] hover:text-[#aebfdc]'
-                        : 'cursor-not-allowed text-[#3d5074]'
-                  }`}
-                >
-                  IMF WEO (TRIAL)
-                </button>
-              </div>
-            )}
             <span className="ml-auto text-[9.5px] tracking-[0.16em] text-[#51648a]">
-              {activeMetric.id === 'economy'
-                ? isEconomyWeo
-                  ? `${economyRows.length} ENTITIES · IMF WEO SOURCED (TRIAL, LOCAL ONLY)`
-                  : `${economyRows.length} COUNTRIES · WORLD BANK WDI SOURCED`
-                : `${militaryRows.length} COUNTRIES · SIPRI / WORLD BANK / FAS SOURCED`}
+              193 COUNTRIES · {activeMetric.id === 'economy' ? 'WORLD BANK WDI SOURCED' : 'SIPRI / WORLD BANK / FAS SOURCED'}
             </span>
           </div>
           {activeMetric.id === 'economy' ? (
             <>
               <ColumnHeaderRow columns={ECONOMY_COLUMNS} sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
-              {isEconomyWeo && !weoScores ? (
-                <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-4 py-6 text-center text-[11px] italic text-[#51648a]">
-                  IMF WEO trial data not found on this machine. Run{' '}
-                  <code className="text-[#8aa0c6]">npm run build:economy-weo-trial</code> to generate it.
-                </div>
-              ) : (
-                <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-                  {[...economyRows]
-                    .sort((a, b) => compareRows(a, b, sort.key, sort.direction, ECONOMY_COLUMNS))
-                    .map((row, index) => (
-                      <RankedListRow
-                        key={row.id}
-                        row={row}
-                        rank={index + 1}
-                        columns={ECONOMY_COLUMNS}
-                        isSelected={selected?.id === row.id}
-                        onSelect={() => selectCountryRow(row.id)}
-                      />
-                    ))}
-                </div>
-              )}
+              <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
+                {[...buildEconomyRows()]
+                  .sort((a, b) => compareRows(a, b, sort.key, sort.direction, ECONOMY_COLUMNS))
+                  .map((row, index) => (
+                    <RankedListRow
+                      key={row.id}
+                      row={row}
+                      rank={index + 1}
+                      columns={ECONOMY_COLUMNS}
+                      isSelected={selected?.id === row.id}
+                      onSelect={() => selectCountryRow(row.id)}
+                    />
+                  ))}
+              </div>
             </>
           ) : (
             <>

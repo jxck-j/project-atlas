@@ -1048,9 +1048,10 @@ v6.5.4 entry for the `hidden`+unconditional-`flex` conflict that would have caus
 
 **v6.6.0: Economy joined Military as a second real, sourced Intelligence Engine category** —
 `scripts/buildEconomy.mjs` (`npm run build:economy`, per `Intelligence Docs/buildEconomy-prompt.md`
-implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 World Bank WDI components (GDP
-PPP, GDP per capita PPP, 5yr-trailing real GDP growth, unemployment, inflation — the last two inverted, lower
-is better; originally equal-weighted, GDP (PPP) double-weighted as of v6.6.2 — see below), **percentile-rank
+implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 World Bank WDI components (GDP —
+nominal as of 2026-08-22, was PPP through v6.6.2, see below — GDP per capita PPP, 5yr-trailing real GDP
+growth, unemployment, inflation — the last two inverted, lower is better; originally equal-weighted, GDP
+double-weighted as of v6.6.2 — see below), **percentile-rank
 normalized** (average/fractional rank for ties — stopped
 and asked the user before writing this, per the build prompt's own "stop and ask before picking a
 tie-breaking convention" instruction — see `LOGBOOK.md`), a **deliberate divergence** from Military's
@@ -1087,47 +1088,68 @@ economy-component-breakdown.json` before trusting the full rebuild (recomputed t
 stored percentiles with `gdpPpp` doubled — matched exactly) and confirmed live in the Analytics ECONOMY
 ranking: China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (was outside the top 10, now #7).
 
-**`scripts/buildEconomyWeo.mjs` (2026-08-22) is a standalone, NOT-adopted trial** re-sourcing all 5 components
-from IMF World Economic Outlook (WEO) instead of World Bank WDI — does not touch `buildEconomy.mjs` or
-`src/data/economyScores.ts`. Run via `npm run build:economy-weo-trial`, which now writes to
-`public/debug/economyScoresWeo.json` (moved from plain `debug/` the same day, once the trial needed to be
-*viewable* inside the running app, not just diffable as a downloaded file — `public/` is what Vite actually
-serves to the dev server, `debug/` isn't; both stay gitignored, see `.gitignore`'s own comment for why
-they're two separate ignored paths rather than one). Findings, in case source-swapping Economy comes up
-again — see `LOGBOOK.md`'s full entry for the reasoning trail, not repeated here: all 5 indicator codes
-(`PPPGDP`, `PPPPC`, `NGDP_RPCH`, `LUR`, `PCPIPCH`) confirmed current via the live API; WEO's official actual-
-vs-projection field (`LATEST_ACTUAL_ANNUAL_DATA`) exists but isn't reliably extractable through the live data
-API (a `COUNTRY_UPDATE_DATE`-derived vintage-year fallback is used instead, self-updating, and ended up
-flagging zero values across the full run); Taiwan is now scored under this trial as a one-off (`alpha3Override:
-'TWN'`, keyed by `'taiwan'` instead of a numeric id — WDI structurally excludes Taiwan, WEO doesn't); and the
-coverage diff is genuinely mixed, not a strict improvement — Liechtenstein gains real coverage, Monaco stays
-at zero (not an IMF member), and WEO's unemployment-rate coverage is meaningfully worse than WDI's (82 of 194
-missing vs. 16 of 193). **GDP (PPP) alone (2026-08-22, direct request) targets THIS CALENDAR YEAR's figure**
-(`resolveWeoLatest`, keyed off `new Date().getFullYear()`, self-updating) rather than the most recent actual
-the other 4 components still prefer (`resolveWeoIndicator`) — usually a real IMF staff projection rather than
-a finalized figure, correctly flagged via `projectionNote`. GDP growth stays the unmodified 5yr trailing
-average throughout — an early attempt applied the "current year, no averaging" request to growth instead of
-GDP (PPP) before being corrected; see `LOGBOOK.md`'s entry for the clean revert and the real rows[0]-picks-
-the-furthest-not-nearest-year bug this caught along the way.
+**2026-08-22: the "GDP size" component switched from PPP-adjusted to NOMINAL GDP** (direct request; field
+renamed `gdpPpp` → `gdpNominal` throughout `buildEconomy.mjs`, `economyScores.ts`, and both UI consumers) —
+`GDP_NOMINAL_INDICATOR` is now World Bank's `NY.GDP.MKTP.CD`, was `NY.GDP.MKTP.PP.CD`. GDP per capita stays
+PPP-adjusted, unaffected — only the aggregate "how big is this economy" metric changed. The double-weighting
+from v6.6.2 carried over unchanged, just applied to the new metric. This same change also **fully removed**
+the standalone IMF WEO trial (`scripts/buildEconomyWeo.mjs`, `hud/useEconomyScoresWeo.ts`, and the WDI/IMF WEO
+toggle UI in both `AnalyticsPanel.tsx` and `IntelligencePanel.tsx`, all added 2026-08-22 and reverted the same
+day once the trial's actual purpose — resolved — was to source Taiwan, not to re-source the whole category)
+— Economy is 100% World Bank WDI again, with one narrow, permanent exception:
 
-**`hud/useEconomyScoresWeo.ts` (2026-08-22)** is the runtime side of that same trial — a singleton
-`useSyncExternalStore` hook fetching `public/debug/economyScoresWeo.json`, same "fetch once, share the
-result" shape as `scene/useCountryFeatures.ts`. Unlike that hook's real-data fetch, a failed/missing fetch
-here (`scores: null`) is an *expected*, silent state — most machines won't have run
-`build:economy-weo-trial` at all — not a warning-worthy error. `AnalyticsPanel.tsx`'s Economy ranked list and
-`IntelligencePanel.tsx`'s Economy drill-down both gained a WDI/IMF WEO (TRIAL) toggle pair, disabled (with a
-tooltip) whenever this hook returns `null`. The two toggles are independent and scoped differently on
-purpose: `AnalyticsPanel.tsx`'s swaps the *entire ranked list* — rows, columns, and sort all rebuild from
-`buildEconomyRowsFromWeo()` instead of `buildEconomyRows()`, which is also how Taiwan (WEO-only, no WDI
-Economy score at all) becomes visible and selectable in this list for the first time — its centroid comes
-from `useGeoEntityFeatures()` bridged through `entities/entityGeometryIds.ts`'s `ENTITY_GEOMETRY_IDS`,
-extending `AnalyticsPanel.tsx`'s existing `centroidById` map, which previously only covered
-`useCountryFeatures()`. `IntelligencePanel.tsx`'s toggle is narrower and deliberately does NOT touch the
-ECONOMY status bar's own headline number — that number, and every other status bar, stays WDI-sourced
-regardless of the toggle; only the *expanded drill-down's* 5-component breakdown swaps source, matching how
-the drill-down already works for a single category (see "Citation drill-down" in the Intelligence Engine
-section above). Selecting Taiwan itself still shows no Economy status-bar value at all (a GeoEntity, not a
-`Country` — the same "no score for GeoEntities" gap Military already has, not a regression introduced here).
+**Taiwan (2026-08-22, direct request, kept from the otherwise-removed trial)** — WDI structurally excludes
+Taiwan (see `scripts/buildGeoEntityEconomics.mjs`'s identical reasoning for the same country), so
+`buildEconomy.mjs` sources all 5 of Taiwan's components from IMF WEO as a one-off `buildTaiwanScore()`,
+appended to `built` before the percentile ranking runs (so Taiwan's real values participate in the same
+193-vs-1 ranking pool, not a segregated one) — the ONLY IMF/WEO dependency left in this script. Resolved to
+the same "most recent ACTUAL year only" standard the WDI components already meet by construction (WDI has no
+forward projections; a WEO series does, so those are explicitly filtered out via the same
+`COUNTRY_UPDATE_DATE`-derived vintage-year technique the removed trial used — see `LOGBOOK.md`'s 2026-08-22
+entry for the full trail, including a real unit-conversion bug caught along the way: IMF's `NGDPD` indicator
+is commonly documented as reporting GDP in billions, but the live API's raw observation values are already in
+whole current US$ — Taiwan's 2024 figure came back as `801495464000`, not `801.495464`; an initial `× 1e9`
+conversion produced a $801-sextillion GDP before being caught and removed). Taiwan is keyed by its GeoEntity
+registry id (`'taiwan'`) rather than a numeric ISO topology id — the one exception to this file's "keyed by
+numeric id" convention, called out in both the file header and the `ECONOMY_SCORES` type comment. No UI
+wiring was added for GeoEntity Economy selection — Taiwan's score exists in the generated data (and factors
+into every other country's percentile ranking) but isn't yet surfaced anywhere a GeoEntity selection is made,
+the same pre-existing "no score for GeoEntities" gap Military already has.
+
+**2026-08-22: inflation switched from inverted-percentile to DISTANCE FROM A 2% TARGET** — `INFLATION_TARGET_PCT
+= 2.0` (Federal Reserve and Bank of England both state 2% as their explicit longer-run target). Fixed a real
+misrepresentation the old "lower is always better" method had: inflation near 0% (or negative, i.e.
+deflation) used to score as excellent, when deflation is its own economic hazard. **Superseded four days later
+by the gaussian method below** — this percentile-of-distance version, and the diff-preservation scaffolding
+built to review it (`rankInflationOld`, `_diffOnly`, `writeInflationScoringDiff()`), no longer exist in the
+script. See `LOGBOOK.md`'s 2026-08-22 and 2026-08-26 entries for the full history of both changes.
+
+**2026-08-26: GDP (size) → log-min-max; inflation → gaussian around 2%, no percentile step** — two independent
+patches, requested together. Growth and unemployment unaffected by either.
+
+GDP (nominal): switched from percentile rank to log-min-max (`buildLogMinMaxNormalizer`, identical
+epsilon/min/max derivation to `buildMilitary.mjs`'s own log-min-max normalizer). GDP per capita stays
+percentile rank — log-min-max only makes sense where raw magnitude itself carries weight (aggregate economic
+size/power), not for a per-capita prosperity comparison. Real motivation: China's GDP percentile was 100.00
+against the US's 99.47 under the old method — a gap that barely registered even with GDP double-weighted,
+despite the real ~$10.6T dollar difference. Post-patch: US 100.00, China 96.60 on the same component — real
+and directionally correct, though log compression keeps it from being a huge gap. GDP stays double-weighted
+in the composite, unchanged.
+
+Inflation: switched again, this time to a gaussian centered on the same 2% target —
+`score = 100 * exp(-((inflation - 2.0)^2) / (2 * 1.0^2))`, used directly, no percentile step at all. σ = 1.0pp
+is a fixed, real policy threshold (the Bank of England's own tolerance band — a governor's open letter is
+required if CPI moves more than 1pp from target), deliberately NOT derived from the sample's own spread,
+which would get distorted by hyperinflation outliers. Verified by hand against real output: Taiwan's
+2.180626% → 98.38, the US's 2.94953% → 63.71, both matching the script's own computed values exactly.
+
+Both changes are normalization-only — missing raw values still produce a null score for the coverage floor in
+both cases, and confidence tiers were unaffected by either change. Real before/after on the US-vs-China case
+the GDP rationale was built around: under the last committed version (PPP GDP percentile + distance-percentile
+inflation) the US scored 77.6 and China 83.6; under this patch, US 79.5 and China 69.7 — the US now clearly
+leads, driven by both the GDP log-min-max widening and China's near-zero inflation (0.22%) scoring poorly
+under the gaussian (20.4) against the US's near-target 2.95% (63.7). See `LOGBOOK.md`'s 2026-08-26 entry for
+the full diff, including the dataset-wide movers.
 
 Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
 (the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually
