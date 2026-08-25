@@ -109,7 +109,14 @@ function mergeFillGeometries(entries: HighlightEntry[]): BufferGeometry | null {
   return geometry
 }
 
-export function CategoryHighlightGeometry({ entries }: { entries: HighlightEntry[] }) {
+// `color` defaults to the shared category-highlight violet every existing
+// caller already expects — layers/geoOverlays/SanctionHighlightLayer.tsx is
+// the first caller to override it (one of three OFAC-tier colors instead),
+// since "every country in the highlighted sanction tier" is the same
+// "extra highlighted pass on top of Countries.tsx" idea as a category
+// highlight, just needing its own color per tier rather than one shared
+// color the way every category/alliance highlight already does.
+export function CategoryHighlightGeometry({ entries, color = HIGHLIGHT_COLOR }: { entries: HighlightEntry[]; color?: string }) {
   const borderGeometry = useMemo(() => mergeBorderGeometries(entries), [entries])
   const fillGeometry = useMemo(() => mergeFillGeometries(entries), [entries])
 
@@ -118,11 +125,11 @@ export function CategoryHighlightGeometry({ entries }: { entries: HighlightEntry
   return (
     <group>
       <lineSegments geometry={borderGeometry}>
-        <lineBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={BORDER_OPACITY} />
+        <lineBasicMaterial color={color} transparent opacity={BORDER_OPACITY} />
       </lineSegments>
       {fillGeometry && (
         <mesh geometry={fillGeometry} scale={FILL_SCALE}>
-          <meshBasicMaterial color={HIGHLIGHT_COLOR} transparent opacity={FILL_OPACITY} side={FrontSide} depthWrite={false} />
+          <meshBasicMaterial color={color} transparent opacity={FILL_OPACITY} side={FrontSide} depthWrite={false} />
         </mesh>
       )}
     </group>

@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { clearSelection, flyToSelectedCountry, useSelection, type SelectedEntity } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
 import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
@@ -6,6 +7,10 @@ import { ALLIANCES } from '../data/allianceMemberships'
 import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
+import { CURRENT_STATUS, type ConflictEntry, type ConflictType, type CurrentStatus } from '../data/currentStatus'
+import { SANCTION_TIER_STYLE, withAlpha } from '../scene/sanctionTierColors'
+import { SanctionTierMenu } from './SanctionTierMenu'
+import { toggleConflictPartiesHighlight, useConflictPartiesHighlight } from './conflictPartiesHighlightStore'
 import { AllianceBadge } from './AllianceBadge'
 import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
@@ -356,6 +361,315 @@ function EconomyDrilldown({ score }: { score: EconomyScore }) {
   )
 }
 
+// Country-only, same convention as militaryIntelValue/economyIntelValue above
+// — CURRENT_STATUS is keyed by the same numeric ISO topology id. No
+// GeoEntity has a Current Status record either (see data/currentStatus.ts's
+// header comment) — `undefined` here is what tells the render below to fall
+// back to the plain unsourced IntelRow, the same way a GeoEntity selection
+// already falls back for Military/Economy.
+function currentStatusIntelValue(selected: SelectedEntity | null): CurrentStatus | undefined {
+  if (selected?.entity.kind !== 'country') return undefined
+  return CURRENT_STATUS[selected.entity.data.id]
+}
+
+// Current Status is categorical, not a magnitude (design doc §3.5) — a
+// conflict chip per entry, colored/labeled by conflictType, deliberately
+// does NOT reuse IntelRow's scored-bar treatment, the same reasoning
+// AllianceBadge's own doc comment gives for alliance membership. Severity
+// ordering (roughly: a state-vs-state war reads as more severe than an
+// unconfirmed internal skirmish) drives the color, not any real UCDP
+// ranking — UCDP itself doesn't rank these types against each other.
+//
+// Labels are plain-language, not UCDP's own technical vocabulary
+// ("internationalized_internal", "extrasystemic") — direct feedback that
+// the raw terms read as confusing jargon to anyone outside conflict
+// studies. The underlying `ConflictType` values themselves are unchanged
+// (they're what's actually sourced from UCDP and what a future citation
+// needs to stay accurate to), only this display-layer label changed.
+const CONFLICT_TYPE_STYLE: Record<ConflictType, { label: string; color: string; background: string }> = {
+  interstate: { label: 'INTERNATIONAL WAR', color: '#ff6b63', background: 'rgba(255,74,66,0.16)' },
+  internationalized_internal: { label: 'FOREIGN-BACKED CIVIL WAR', color: '#ff9d5c', background: 'rgba(255,138,61,0.16)' },
+  internal: { label: 'CIVIL WAR', color: '#e0a340', background: 'rgba(224,163,64,0.16)' },
+  extrasystemic: { label: 'COLONIAL CONFLICT', color: '#c084fc', background: 'rgba(192,132,252,0.16)' },
+  unclassified: { label: 'RECENTLY DETECTED', color: '#8aa0c6', background: 'rgba(109,130,168,0.16)' },
+}
+
+// Differentiates same-type chips for one country (direct feedback: Myanmar
+// shows 5 separate "CIVIL WAR" chips with nothing to tell them apart) by
+// pulling the OTHER party out of the raw `conflictName` UCDP already gives
+// us, rather than inventing a new field. Two source shapes to handle:
+//   - PRIO-sourced names are literally "`${side_a} vs. ${side_b}`" (see
+//     buildCurrentStatus.mjs) — one side is always this country's own
+//     government, which is redundant context here (we already know whose
+//     panel this is), so this strips it and keeps only the other side.
+//     Works from either side of an interstate conflict without knowing in
+//     advance which side this country is on.
+//   - Candidate-sourced names are UCDP's own GED `conflict_name` field,
+//     shaped "`${country}: ${label}`" (e.g. "Iran: Kurdistan") — strips the
+//     leading "<country>: " the same way.
+// Falls back to the untouched name (still a real, if less trimmed,
+// distinguisher) whenever neither shape matches cleanly, rather than
+// guessing at a country name that isn't actually present verbatim in the
+// string (e.g. a Gleditsch-Ward historical alias like "Russia (Soviet
+// Union): Government").
+function shortenConflictName(name: string | undefined, countryName: string): string | undefined {
+  if (!name) return undefined
+  if (name.includes(' vs. ')) {
+    const [a, b] = name.split(' vs. ')
+    const aIsThisCountry = a.includes(`Government of ${countryName}`)
+    const bIsThisCountry = b.includes(`Government of ${countryName}`)
+    if (aIsThisCountry && !bIsThisCountry) return b
+    if (bIsThisCountry && !aIsThisCountry) return a
+    return name
+  }
+  const prefix = `${countryName}: `
+  return name.startsWith(prefix) ? name.slice(prefix.length) : name
+}
+
+// Resolves a conflict's real parties back to Country ids so clicking a chip
+// can highlight them on the globe (direct request). Only meaningful for
+// PRIO-sourced names (the "`${side_a} vs. ${side_b}`" shape) — each side is
+// comma-joined when more than one state is involved (e.g. "Government of
+// United Kingdom, Government of United States of America"), so this splits
+// on both ' vs. ' and ', ', strips the "Government of " prefix, and looks
+// up whatever's left. A rebel/non-state side_b (the common case for a civil
+// war — "KNU", "Hamas, ...") never resolves to a country, which is
+// correct: it has no geometry to highlight. Falls back to just the
+// selected-country's own id whenever nothing else resolves (candidate-
+// sourced names have no side_a/side_b structure at all, and a pure civil
+// war only ever resolves its own government) — clicking a chip should
+// always highlight *something*, never silently no-op.
+function resolvePartyCountryIds(
+  conflictName: string | undefined,
+  fallbackCountryId: string,
+  countryNameToId: Map<string, string>
+): string[] {
+  function resolveOne(rawName: string): string | undefined {
+    const name = rawName.startsWith('Government of ') ? rawName.slice('Government of '.length) : rawName
+    if (countryNameToId.has(name)) return countryNameToId.get(name)
+    // Historical/Gleditsch-Ward-style government names UCDP's own ACD text
+    // uses ("Myanmar (Burma)", "Yemen (North Yemen)", "Russia (Soviet
+    // Union)") aren't literal matches for this project's canonical UN-193
+    // name, but always start with it — same prefix heuristic
+    // shortenConflictName uses above, just checked against every country
+    // instead of one already-known one.
+    for (const [canonicalName, id] of countryNameToId) {
+      if (name.startsWith(`${canonicalName} (`)) return id
+    }
+    return undefined
+  }
+
+  if (!conflictName || !conflictName.includes(' vs. ')) return [fallbackCountryId]
+  const ids = conflictName
+    .split(' vs. ')
+    .flatMap((side) => side.split(', '))
+    .map(resolveOne)
+    .filter((id): id is string => id != null)
+  return ids.length > 0 ? ids : [fallbackCountryId]
+}
+
+// The full citation (conflict name, which UCDP product, which release) is
+// real and sourced but too long for a chip — it's surfaced as a native
+// tooltip instead of a click-to-drilldown, unlike Military/Economy, since
+// there's no per-component breakdown here to justify that heavier
+// mechanism (design doc §7's drill-down is for a composite's components;
+// a conflict chip already shows its type up front, plus the other party
+// when one is distinguishable — see shortenConflictName above). Clickable
+// (direct request) — highlights every resolved party on the globe via
+// conflictPartiesHighlightStore.ts, colored the same as the chip itself so
+// the highlight visually traces back to the chip that caused it.
+// `highlightKey` is `${countryId}:${index}` rather than anything derived
+// from the entry's own content — simplest way to guarantee uniqueness even
+// for two chips that happen to share both conflictType and conflictName
+// (both currently possible if a country had two distinct unclassified
+// candidate detections with no name yet).
+function ConflictChip({
+  entry,
+  countryName,
+  countryId,
+  index,
+}: {
+  entry: ConflictEntry
+  countryName: string
+  countryId: string
+  index: number
+}) {
+  const style = CONFLICT_TYPE_STYLE[entry.conflictType]
+  const shortName = shortenConflictName(entry.conflictName, countryName)
+  const sourceLabel = entry.source === 'ucdp-prio-annual' ? 'UCDP/PRIO ACD' : 'UCDP Candidate'
+  const title = [entry.conflictName, `${sourceLabel} ${entry.snapshotDate}`].filter(Boolean).join(' — ')
+
+  const features = useCountryFeatures()
+  const countryNameToId = useMemo(
+    () => new Map(features.map((f) => [(f.properties?.name as string) ?? '', String(f.id)])),
+    [features]
+  )
+  const highlight = useConflictPartiesHighlight()
+  const highlightKey = `${countryId}:${index}`
+  const isHighlighted = highlight?.key === highlightKey
+
+  function handleClick() {
+    const countryIds = resolvePartyCountryIds(entry.conflictName, countryId, countryNameToId)
+    toggleConflictPartiesHighlight({ key: highlightKey, countryIds, color: style.color })
+  }
+
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={handleClick}
+      className="rounded-full border px-2 py-0.5 text-[9.5px] font-bold tracking-[0.06em] transition-shadow"
+      style={{
+        borderColor: style.color,
+        backgroundColor: isHighlighted ? style.color : style.background,
+        color: isHighlighted ? '#0a0f1a' : style.color,
+        boxShadow: isHighlighted ? `0 0 6px ${style.color}` : undefined,
+      }}
+    >
+      {style.label}
+      {shortName && <span className="ml-1 font-semibold opacity-80">— {shortName}</span>}
+    </button>
+  )
+}
+
+// A compact "S" badge rather than a chip — design doc §3.5 is explicit that
+// `sanctionTier` is a standalone fact, not one-of-many the way conflicts
+// are, so it never shares ConflictChip's pill treatment. Same badge shape
+// regardless of tier, just recolored; the real OFAC program name(s) — the
+// only part of this that isn't yet individually verified for ORANGE/YELLOW,
+// see the build script's own header comment — surface in the tooltip, not
+// on the badge face itself. Clickable (direct request) — opens
+// SanctionTierMenu.tsx, a global browser of all three tiers, not just this
+// country's own — `isMenuOpen` drives a filled/ringed active state so it's
+// obvious the menu it opened is still open, the same active-state idiom
+// IntelRow's `expanded` prop already uses for a drill-down row.
+function SanctionBadge({
+  tier,
+  programs,
+  isMenuOpen,
+  onClick,
+}: {
+  tier: NonNullable<CurrentStatus['sanctionTier']>
+  programs?: string[]
+  isMenuOpen: boolean
+  onClick: () => void
+}) {
+  const style = SANCTION_TIER_STYLE[tier]
+  const title = [style.label, ...(programs ?? [])].join(' — ')
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className="grid h-[15px] w-[15px] shrink-0 place-items-center rounded-full border text-[9px] leading-none font-extrabold transition-shadow"
+      style={{
+        borderColor: style.color,
+        backgroundColor: isMenuOpen ? style.color : withAlpha(style.color, 0.2),
+        color: isMenuOpen ? '#0a0f1a' : style.color,
+        boxShadow: isMenuOpen ? `0 0 8px ${style.color}` : undefined,
+      }}
+    >
+      S
+    </button>
+  )
+}
+
+// The row itself: label line matching every other IntelRow's icon/label
+// layout (so CURRENT STATUS reads as part of the same list), but the
+// value/track area is replaced with a plain-language headline
+// ("AT WAR"/"NO ACTIVE CONFLICTS") plus a standalone sanctionTier badge
+// (never a chip — see SanctionBadge above). Collapsed by default —
+// direct feedback that a wall of jargon chips ("internationalized_internal"
+// etc.) was overwhelming at a glance; the headline is the "how much detail
+// does someone need before deciding whether to dig in" layer, and clicking
+// it expands the individual chips below, mirroring Military/Economy's own
+// collapsed-bar → clickable-drilldown shape (design doc §7) rather than
+// inventing a new interaction. Deliberately does NOT reuse
+// `expandedMetric`'s single-drilldown-at-a-time state the way Military/
+// Economy's citation drilldowns do — that mechanism replaces the whole
+// INTELLIGENCE SUMMARY section with a full breakdown table; this is a much
+// lighter "show a few more rows directly below," so it gets its own local
+// toggle that doesn't hide Military/Economy/Diplomacy/Technology while
+// open. "AT WAR" is used for every non-empty case regardless of
+// conflictType mix (interstate, civil war, or just a recent unconfirmed
+// detection) rather than picking a "worse" headline per type — UCDP itself
+// doesn't rank these against each other (see CONFLICT_TYPE_STYLE's own
+// comment), so this headline doesn't invent a ranking either; the count
+// suffix is what actually differentiates "AT WAR" from "AT WAR (5)".
+//
+// Also owns the sanction-menu open/close state (not lifted to
+// IntelligencePanel itself — nothing else needs to know this menu is open)
+// and closes it on an outside click, Escape, or a country selection inside
+// the menu.
+function CurrentStatusRow({ status, countryId }: { status: CurrentStatus; countryId: string }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const hasConflicts = status.conflicts.length > 0
+
+  useEffect(() => {
+    if (!isMenuOpen) return
+    function handlePointerDown(e: PointerEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setIsMenuOpen(false)
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMenuOpen])
+
+  return (
+    <div className="py-[5px]">
+      <div ref={containerRef} className="relative flex items-center gap-2">
+        <span className="grid w-[17px] place-items-center text-[#4d95ff]">
+          <Icon paths={ICONS.shield} />
+        </span>
+        <span className="flex-1 text-[9.5px] font-bold tracking-[0.1em] text-[#aebfdc]">CURRENT STATUS</span>
+        {hasConflicts ? (
+          <button
+            type="button"
+            onClick={() => setIsExpanded((open) => !open)}
+            className="flex items-center gap-1 text-[10px] font-bold tracking-[0.06em]"
+            style={{ color: '#ff9d5c' }}
+          >
+            AT WAR{status.conflicts.length > 1 ? ` (${status.conflicts.length})` : ''}
+            <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+              <Icon paths={ICONS.chevronDown} size={10} />
+            </span>
+          </button>
+        ) : (
+          <span className="text-[10px] font-semibold text-[#51648a]">NO ACTIVE CONFLICTS</span>
+        )}
+        {status.sanctionTier && (
+          <SanctionBadge
+            tier={status.sanctionTier}
+            programs={status.sanctionPrograms}
+            isMenuOpen={isMenuOpen}
+            onClick={() => setIsMenuOpen((open) => !open)}
+          />
+        )}
+        {isMenuOpen && <SanctionTierMenu onSelectCountry={() => setIsMenuOpen(false)} />}
+      </div>
+      {isExpanded && hasConflicts && (
+        <div className="mt-1.5 ml-[25px] flex flex-wrap gap-1.5">
+          {status.conflicts.map((entry, i) => (
+            // ConflictEntry has no stable id of its own (see
+            // data/currentStatus.ts) — index is safe here since this list
+            // is regenerated wholesale on every build, never reordered in
+            // place at runtime.
+            <ConflictChip key={i} entry={entry} countryName={status.name} countryId={countryId} index={i} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // `.feed-row` — left rail (marker + ringed glyph), then category / primary
 // / secondary lines. The reference fills these with news headlines; this
 // app has no news/event dataset at all, so they carry the relationship
@@ -645,6 +959,16 @@ export function IntelligencePanel() {
   const economyBarValue = economyScore?.value ?? undefined
   const hasEconomyBar = economyBarValue != null
 
+  // Third Intelligence Engine category wired into this panel — see
+  // data/currentStatus.ts's header comment. Not a bar value at all (see
+  // CurrentStatusRow above), so there's no equivalent barValue/hasBar pair
+  // — `currentStatus` being defined (a Country selection with a real
+  // record) is itself the "sourced" signal used below.
+  const currentStatus = currentStatusIntelValue(selected)
+  // ConflictChip needs the country's own topology id (to resolve/fallback
+  // party highlighting) — currentStatus itself carries only `name`, not id.
+  const currentStatusCountryId = selected?.entity.kind === 'country' ? selected.entity.data.id : undefined
+
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
   // (MILITARY, and as of the Economy build, ECONOMY too) collapses the
   // other four rows and drops down its component sources. Only a metric
@@ -742,6 +1066,13 @@ export function IntelligencePanel() {
                     />
                   )
                 }
+                if (metric.id === 'current-status') {
+                  return currentStatus && currentStatusCountryId ? (
+                    <CurrentStatusRow key={metric.id} status={currentStatus} countryId={currentStatusCountryId} />
+                  ) : (
+                    <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
+                  )
+                }
                 return <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
               })}
               {expandedMetric === 'military' && militaryScore ? (
@@ -775,9 +1106,13 @@ export function IntelligencePanel() {
                         })`
                       )
                     }
+                    if (currentStatus) {
+                      sourcedParts.push('Current Status (UCDP/OFAC)')
+                    }
                     const unsourcedLabels = INTEL_METRICS.filter((metric) => {
                       if (metric.id === 'military') return !militaryResolved
                       if (metric.id === 'economy') return !hasEconomyBar
+                      if (metric.id === 'current-status') return !currentStatus
                       return true
                     }).map((metric) => metric.label)
 

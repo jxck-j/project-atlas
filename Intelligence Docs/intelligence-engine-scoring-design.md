@@ -296,17 +296,86 @@ new confidence model — same flag as Economy above.
 the correct outcome rather than a gap to paper over. **Not yet revised** against the new confidence model
 — same flag as Economy/Technology above.
 
-### 3.5 Current Status — categorical, not a bar
+### 3.5 Current Status — categorical, not a bar (finalized, implemented)
 
-**Decided:** this is not a 0–100 score. Implemented as a status enum/chip, sourced from a simple public
-conflict/sanctions tracker (e.g. UCDP conflict data, OFAC/EU sanctions lists):
+**Decided and implemented** (`scripts/buildCurrentStatus.mjs` → `src/data/currentStatus.ts` — see
+`LOGBOOK.md`'s 2026-08-26 entry for the full build). This is not a 0–100 score, and never converges to one:
+it's two **independent** fields, each a real, sourced, categorical fact rather than a magnitude. The original
+sketch of this section (a single `CurrentStatus` enum: `'active_conflict' | 'sanctioned' | 'normal' |
+'disputed_territory'`) is superseded — it couldn't represent a country that is simultaneously sanctioned and
+in an active conflict (one enum slot, two true facts), which is part of why it was replaced before any code
+was written against it:
 
 ```ts
-type CurrentStatus = 'active_conflict' | 'sanctioned' | 'normal' | 'disputed_territory';
+type ConflictType =
+  | 'interstate'
+  | 'internal'
+  | 'internationalized_internal'
+  | 'extrasystemic'
+  | 'unclassified';
+
+interface ConflictEntry {
+  conflictType: ConflictType;
+  conflictName?: string;
+  snapshotDate: string;                        // which source release this reflects
+  source: 'ucdp-candidate' | 'ucdp-prio-annual';
+}
+
+type SanctionTier = 'red' | 'orange' | 'yellow' | null;
+
+interface CurrentStatus {
+  conflicts: ConflictEntry[];                   // 0, 1, or many — every entry renders as a chip
+  sanctionTier: SanctionTier;                   // null = no active OFAC country program, badge hidden
+  sanctionPrograms?: string[];                  // the actual OFAC program name(s), e.g. ['Cuba Sanctions']
+}
 ```
 
-Rendered as a status chip in the panel, not a filled bar — consistent with the rest of the panel's visual
-language but structurally distinct in the data model, since it's a state rather than a magnitude.
+**Sourcing.** `conflictType` (for anything other than `'unclassified'`) comes from the UCDP/PRIO Armed
+Conflict Dataset's own `type_of_conflict` classification — the only UCDP product that actually types a
+conflict. That dataset is annual, so the UCDP Candidate Events Dataset (monthly, ~1-month lag) fills the gap
+for a conflict active in the current year but not yet in any annual release; a conflict detected only that
+way is `'unclassified'`, with no manual override path — the honest state until UCDP itself classifies it. See
+`scripts/buildCurrentStatus.mjs`'s own header comment for the full country-code-based (Gleditsch-Ward, not
+name-string) matching logic, and the real edge cases the Candidate-vs-annual reconciliation had to handle
+(UCDP's own "not yet numbered" sentinel, avoiding double-counting a conflict already active in the annual
+data, restricting to state-based armed conflict and excluding non-state/one-sided-violence records the ACD
+doesn't classify at all).
+
+**`sanctionTier`/`sanctionPrograms` (revised 2026-08-24 from a single `sanctioned: boolean`) is a small
+hand-maintained seed, now three OFAC tiers instead of one:**
+
+- **RED — comprehensive embargo.** Sourced directly from each program's own OFAC regulatory text (Cuba's
+  CACR, Iran's ITSR, and the equivalent North Korea/Syria regulations). Fully verified, per-program, against
+  OFAC's own page for each: Cuba, Iran, North Korea, Syria.
+- **ORANGE — sectoral/hybrid.** Multiple overlapping sectoral+entity programs requiring general licenses for
+  large activity categories, not a blanket embargo: Russia, Belarus, Venezuela, Burma (Myanmar), Sudan,
+  Nicaragua.
+- **YELLOW — list-based only.** SDN/Consolidated List screening exposure only, no country-wide sectoral
+  program: Afghanistan, Central African Republic, Democratic Republic of the Congo, Ethiopia, Iraq, Lebanon,
+  Libya, Mali, Somalia, South Sudan, Yemen.
+- **`null`** — no active OFAC country program at all. This is a real, positive fact (same as `conflicts: []`)
+  and hides the badge entirely, rather than rendering an empty/zero state.
+
+**Confidence differs by tier, and this matters for how much this field should be trusted:** RED is fully
+verified against each program's own OFAC page. ORANGE and YELLOW are seeded from secondary-source
+characterization — cross-referenced across several independent sanctions-compliance sites, internally
+consistent with each other, but **not yet individually checked against each country's own OFAC program page**
+the way RED was, and their `sanctionPrograms` name text is a reasonable approximation of OFAC's naming
+convention rather than copied verbatim from each program's own page. Flagged in `BACKLOG.md`: verify every
+ORANGE/YELLOW tier assignment and program name against
+https://ofac.treasury.gov/sanctions-programs-and-country-information and each country's own program page
+before this ships as anything more than portfolio-demo-confidence data. Not a live pull either way — see
+`LOGBOOK.md` for why that isn't worth building yet, and `BACKLOG.md` for it as a standing candidate if the
+freshness bar ever tightens.
+
+**Rendering (implemented, `hud/IntelligencePanel.tsx`):** a chip row (one `ConflictChip` per `ConflictEntry`,
+colored/labeled by `conflictType`, citation in a tooltip) plus a separate standalone `SanctionBadge` — a
+compact "S" mark colored red/orange/yellow by `sanctionTier`, program name(s) in its tooltip, hidden entirely
+when `sanctionTier` is `null`. Deliberately not a chip variant, since sanction status isn't one-of-many the
+way conflicts are. A real sanction logo is expected to land in `Intelligence Docs/current-status/` and replace
+this placeholder badge later — see that folder's own README. `AnalyticsPanel.tsx` wiring (a ranked/filtered
+view, since there's no single number to sort Current Status by) is still an open follow-on — see `BACKLOG.md`'s
+"Intelligence Engine" entry.
 
 ---
 

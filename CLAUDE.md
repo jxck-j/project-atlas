@@ -60,6 +60,8 @@ npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + publ
                               # Census shapefile changes)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
 npm run build:military       # regenerate src/data/militaryScores.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
 ```
 
@@ -1169,6 +1171,79 @@ the current selection (`sourcedParts`/`unsourcedLabels`) rather than a Military-
 international dollars, not millions like SIPRI's Top-100 arms revenue — see `buildEconomy.mjs`'s own
 comment — but a per-capita figure is too small for `formatGdp`'s Million/Billion/Trillion tiers, which assume
 an aggregate country-level GDP the way `formatArea` already flags for a different reason).
+
+**2026-08-26: Current Status (`src/data/currentStatus.ts`, `scripts/buildCurrentStatus.mjs`) is the third
+Intelligence Engine category with real, sourced data, wired into `hud/IntelligencePanel.tsx`.** Unlike
+Military/Economy, it was never intended to converge on a 0-100 composite: it's two independent, categorical
+fields per country, `conflicts: ConflictEntry[]` (a real UCDP-sourced conflict record per entry —
+`conflictType`, an optional `conflictName`, `snapshotDate`, and `source`) and `sanctionTier: 'red' | 'orange' |
+'yellow' | null` (+ `sanctionPrograms`), per the locked design in `Intelligence Docs/intelligence-engine-
+scoring-design.md` §3.5. `conflictType` comes from the annual UCDP/PRIO Armed Conflict Dataset's own
+classification where available, falling back to `'unclassified'` for a conflict the monthly UCDP Candidate
+Events Dataset has caught in the current year but no annual release has typed yet — no manual override path,
+that's the honest state until UCDP itself classifies it. Countries are matched to conflicts by UCDP's own
+Gleditsch-Ward numeric country codes (`scripts/lib/gleditschWard.mjs` bridges these to this project's UN-193
+topology names), never by name-string matching. `sanctionTier` is a small hand-maintained seed, **revised
+2026-08-24 from a single `sanctioned: boolean` to three OFAC tiers** — RED (comprehensive embargo: Cuba, Iran,
+North Korea, Syria — fully verified against each program's own OFAC regulatory text), ORANGE (sectoral/hybrid:
+Russia, Belarus, Venezuela, Myanmar, Sudan, Nicaragua), YELLOW (list-based only, SDN/Consolidated List
+screening: Afghanistan, Central African Republic, DR Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia,
+South Sudan, Yemen) — `null` means no active OFAC country program. Only RED is fully verified per-program;
+ORANGE/YELLOW are secondary-source seeds flagged in `BACKLOG.md` for per-program verification before this ships
+as more than portfolio-demo-confidence data. Not a live pull either way — see `LOGBOOK.md`'s 2026-08-26 entry
+for why, and `BACKLOG.md` for it as a standing live-pull candidate if that ever needs to change. Every country
+gets an explicit `conflicts: []`/`sanctionTier: null` when neither applies — absence is a real, positive fact
+here, not a missing-data state, so it's never omitted the way an unscored Military/Economy component is.
+Rendering: `ConflictChip` (one per entry, colored/labeled by `conflictType`, citation in a tooltip) and
+`SanctionBadge` (a compact "S" mark colored by tier, program name(s) in its tooltip, hidden when `sanctionTier`
+is `null`) — deliberately not `IntelRow`'s bar treatment, since neither field is a magnitude.
+`Intelligence Docs/current-status/` is where a real sanction logo is expected to land and replace the
+placeholder S badge. `AnalyticsPanel.tsx` wiring is still an open follow-on — see `BACKLOG.md`.
+
+**`SanctionBadge` is clickable (direct request), opening `hud/SanctionTierMenu.tsx`** — a popover, global
+across all 193 countries rather than scoped to the selected country's own tier ("what if someone wants to see
+all sanctions"), listing all three tiers with every country in each as a clickable chip. Each tier also gets
+its own small "S" icon, clicking which toggles `hud/sanctionHighlightStore.ts`'s `highlightedTier` (one tier
+at a time, same "not a Set" reasoning `allianceHighlightStore.ts` already documents) — read by
+`layers/geoOverlays/SanctionHighlightLayer.tsx`, which mirrors `AllianceHighlightLayer.tsx` exactly except it
+needs no name/ISO3 join (`data/currentStatus.ts` is already keyed by the same numeric topology id
+`buildCountryEntries()` returns) and needs a *different* color per tier instead of one shared category-
+highlight color — `layers/geoOverlays/CategoryHighlightLayer.tsx`'s `CategoryHighlightGeometry` gained an
+optional `color` prop for this (defaults to the existing shared violet, so every other caller is unchanged).
+Clicking a country chip resolves + selects + flies the camera to it (same centroid-through-current-rotation
+technique `SearchBar.tsx`'s `selectEntry()` uses, since there's no click point on the globe to derive a
+direction from here) and closes the menu. The menu itself closes on an outside click (a `pointerdown` listener
+scoped to the badge+menu's own wrapping ref, so the badge's own click keeps sole control of its own toggle —
+not a race with the outside-click handler) or Escape.
+`scene/sanctionTierColors.ts` is the single source for the three tier colors (+ plain-English label) —
+deliberately NOT added to `scene/highlightColors.ts`'s closed 7-hue ROYGBIV set (see that file's own header
+comment); read by `SanctionBadge`/`SanctionTierMenu`, `SanctionHighlightLayer`, and `hud/LegendPanel.tsx`
+(which adds a legend row for whichever tier is currently highlighted, built fresh per-tier rather than reused
+from the fixed `HIGHLIGHT_COLORS` set the way every other legend row is).
+
+**Conflict chips got the same "reduce jargon, reduce clutter" pass sanctions did, plus their own
+click-to-highlight (direct feedback + follow-up request).** `CONFLICT_TYPE_STYLE`'s labels are now plain
+language (interstate → "INTERNATIONAL WAR", internal → "CIVIL WAR", internationalized_internal →
+"FOREIGN-BACKED CIVIL WAR", extrasystemic → "COLONIAL CONFLICT", unclassified → "RECENTLY DETECTED") —
+display-only; the underlying `ConflictType` values are unchanged. `CurrentStatusRow` no longer shows the chip
+row by default: it collapses to a headline ("AT WAR (6)" / "NO ACTIVE CONFLICTS", `isExpanded` local state,
+deliberately independent of `expandedMetric` — see that state's own doc comment for why a citation drilldown
+and this lighter expand aren't the same mechanism) and only reveals the chips on click, mirroring Military/
+Economy's own collapsed-bar-until-clicked shape rather than inventing a new one. `shortenConflictName()`
+differentiates same-type chips for one country (Myanmar's 5 "CIVIL WAR" entries used to be identical) by
+pulling the other party out of `ConflictEntry.conflictName` (already sourced, previously tooltip-only) —
+strips this country's own "Government of X" from a PRIO-shaped name or the leading "Country: " from a
+Candidate-shaped one, so a chip reads "CIVIL WAR — KNU." Clicking a chip highlights the resolved party/parties
+on the globe: `resolvePartyCountryIds()` reuses the same string-parsing idea one level further, splitting a
+PRIO-shaped name into every named side and resolving each piece against the real country list — a non-state
+side (a rebel group) never resolves and is skipped (correct: no geometry to highlight), and the viewed
+country's own id is the fallback whenever nothing else resolves, so a click never no-ops. New pieces mirror
+existing precedent exactly: `hud/conflictPartiesHighlightStore.ts` is `sanctionHighlightStore.ts`'s shape
+with an ad hoc id list instead of a fixed tier; `layers/geoOverlays/ConflictPartiesHighlightLayer.tsx` is
+`SanctionHighlightLayer.tsx`'s shape; the highlight is colored the same as the clicked chip. See `LOGBOOK.md`'s
+2026-08-26 entry for the full reasoning and the real multi-country case this was verified against (the UK's
+Yemen conflict entry, whose real `side_a` is "Government of United Kingdom, Government of United States of
+America" — clicking it highlights the UK, the US, AND Yemen).
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every

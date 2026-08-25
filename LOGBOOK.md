@@ -5,6 +5,200 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-26 — Current Status: plain-language conflict labels, collapsed-by-default, and click-to-highlight parties
+
+Fourth same-day pass (see the entries below). Direct feedback that the conflict chip wording — UCDP's own
+technical vocabulary, `internationalized_internal`, `extrasystemic`, etc. — read as confusing jargon to
+anyone outside conflict studies, and that a full row of chips for a heavily-conflicted country (Myanmar: 6)
+was overwhelming at a glance. Three changes, worked through together rather than shipped as separate passes,
+because the third only makes sense once the first two exist:
+
+**1. Plain-language labels, technical values unchanged.** `CONFLICT_TYPE_STYLE`'s `label` strings changed
+(interstate → "INTERNATIONAL WAR", internal → "CIVIL WAR", internationalized_internal → "FOREIGN-BACKED CIVIL
+WAR", extrasystemic → "COLONIAL CONFLICT", unclassified → "RECENTLY DETECTED") — but the underlying
+`ConflictType` values in `data/currentStatus.ts` are untouched. This is deliberately a display-only change:
+the raw UCDP terms are what a citation/source needs to stay accurate to, and what a future
+"technical detail" surface could still show; only the thing a general user reads at a glance needed
+translating.
+
+**2. Collapsed by default, expand on click — reusing an existing pattern instead of inventing one.** The
+explicit design goal (direct quote): "we want the user to access as much info as possible without being
+overwhelmed." Military and Economy already solve exactly this shape of problem — a single glance-able summary
+that expands into full detail only on demand (design doc §7's citation drill-down) — so Current Status now
+follows the same shape: a plain headline ("AT WAR (6)" / "NO ACTIVE CONFLICTS") replaces the always-visible
+chip wall, and clicking it reveals the chips. **Deliberately NOT wired into `expandedMetric`, the state
+Military/Economy's drilldowns share** — that mechanism hides every other status bar because a citation
+drilldown replaces the whole section with a full breakdown table; Current Status's expand is much lighter
+(a few extra rows in place), so it got its own local `isExpanded` state that coexists with Military/Economy
+being visible. "AT WAR" is used as the one headline for every non-empty case — deliberately not picking a
+harsher word for interstate vs. a softer one for "recently detected" — because CONFLICT_TYPE_STYLE's own
+existing comment already established that UCDP doesn't rank these types against each other, and inventing a
+severity-based headline would contradict that. The count suffix carries the "how much" nuance instead.
+
+**3. Same-type-chip differentiation, and click-to-highlight-parties — both solved by finally displaying
+`conflictName`, not by adding a new field.** Myanmar's 5 "CIVIL WAR" chips were indistinguishable — the
+data to tell them apart (`conflictName`, e.g. "Government of Myanmar (Burma) vs. KNU") already existed, it
+just wasn't shown, only tooltipped. `shortenConflictName()` extracts the OTHER side (strips this country's
+own "Government of X" from a PRIO-shaped name, or the leading "Country: " from a Candidate-shaped one) so a
+chip reads "CIVIL WAR — KNU" instead of repeating this country's own name back. Direct follow-up request
+(mid-implementation): clicking a chip should highlight the actual party/parties on the globe. This reuses the
+exact same parsing idea one level further — `resolvePartyCountryIds()` splits a PRIO-shaped name on
+' vs. '/', ' and resolves each piece (after stripping "Government of ") against the real country list,
+skipping anything that doesn't resolve (a rebel group like "KNU" has no country geometry to highlight, which
+is correct, not a bug) and falling back to the viewed country's own id whenever nothing else resolves (a pure
+civil war, or a Candidate-shaped name with no side_a/side_b structure at all) — so a click never silently
+does nothing. New pieces mirror existing precedent exactly: `hud/conflictPartiesHighlightStore.ts` is
+`sanctionHighlightStore.ts`'s shape with an ad hoc id list instead of a fixed tier; `layers/geoOverlays/
+ConflictPartiesHighlightLayer.tsx` is `SanctionHighlightLayer.tsx`'s shape; the highlight is colored the same
+as the clicked chip itself, so it visually traces back to what caused it. Verified live: Myanmar's "CIVIL WAR
+— KNU" chip highlights only Myanmar (correct — KNU isn't a country); the UK's "INTERNATIONAL WAR — Government
+of Yemen (North Yemen)" chip highlights the UK AND the US AND Yemen simultaneously (the real conflict
+`side_a` is "Government of United Kingdom, Government of United States of America" — a 3-state conflict, not
+a 2-state one, correctly resolved from the comma-joined side).
+
+**Known limitation, not fixed here:** `resolvePartyCountryIds`/`shortenConflictName` are string-matching
+heuristics against UCDP's own free-text `side_a`/`side_b`, not a structured party list — they're only as
+correct as UCDP's naming conventions are consistent, and a genuinely novel phrasing this project hasn't seen
+yet could fail to resolve a real state party (falling back to just this country, not crashing, but under-
+highlighting). Acceptable for now since every real case checked resolved correctly; worth revisiting if the
+data ever adds a country whose government name doesn't fit either shape.
+
+## 2026-08-26 — Current Status: sanction badge is now clickable, opening a global tier browser + globe highlight
+
+Third same-day pass on Current Status (see the two entries directly below). Direct request: make the
+sanction badge clickable and let it highlight sanctioned countries — with an explicit open design question
+attached ("I could have it highlight sanctions in the same tier, but what if someone wants to see all
+sanctions"). Resolved as: the badge opens a popover (`hud/SanctionTierMenu.tsx`) that's global across all 193
+countries, not scoped to the selected country's own tier — answering "what if someone wants to see all
+sanctions" by just always showing all three tiers, rather than picking one behavior over the other. Each
+tier's own small "S" icon inside the popover is what actually drives the globe highlight (one tier at a time),
+and every listed country is its own clickable chip that selects + flies the camera there.
+
+**New pieces, mirroring existing precedent rather than inventing new patterns:** `hud/sanctionHighlightStore.ts`
+is `hud/allianceHighlightStore.ts` with `SanctionTier` swapped in for alliance id — same single-value (not a
+Set) store, same toggle-clears-itself idiom. `layers/geoOverlays/SanctionHighlightLayer.tsx` is
+`AllianceHighlightLayer.tsx`'s structure, but simpler: `data/currentStatus.ts` is already keyed by the same
+numeric ISO topology id `buildCountryEntries()` returns, so there's no name→ISO3 join step to carry over.
+The one genuine wrinkle: every existing `CategoryHighlightLayer.tsx` consumer (six category layers +
+alliance highlight) shares one fixed violet color, but a sanction tier needs three *different* colors, so
+`CategoryHighlightGeometry` gained an optional `color` prop (defaulting to the existing shared violet — every
+prior caller is unchanged) rather than duplicating its border/fill merge logic a second time for one
+different color.
+
+**Color/label consolidation:** `IntelligencePanel.tsx`'s `SanctionBadge` already had its own local
+`SANCTION_TIER_STYLE` (color + background + label) from the earlier pass. Rather than let the menu and the
+globe layer each invent a second copy of the same three colors, they were pulled out into
+`scene/sanctionTierColors.ts` — a single source of truth for tier color + label, explicitly kept separate from
+`scene/highlightColors.ts`'s closed 7-hue ROYGBIV set (that file is explicit about being exactly 7 slots for
+selection/relationship state, not an extensible palette) — the same "small categorical palette living outside
+the closed set" precedent `IntelligencePanel.tsx`'s own `CONFLICT_TYPE_STYLE` already established. A tier's
+translucent chip/badge background is now derived from its one stored color via a small `withAlpha(hex, alpha)`
+helper rather than hand-typed as a second rgba string per tier that could drift from the border/text color if
+either one were ever tweaked alone.
+
+**Click-outside-to-close, without racing the trigger's own click:** the badge and its popover share one
+wrapping `ref`; the outside-click listener checks `containerRef.current.contains(event.target)` and only
+closes on a genuine miss. Without that check, clicking the badge to close an already-open menu would race
+against itself — a `pointerdown`-based outside-click handler fires before the button's own `click` handler,
+so treating the badge as "outside" would close the menu on pointerdown and then immediately reopen it on the
+subsequent click, which reads as the badge doing nothing at all when clicked closed.
+
+**Legend consistency:** `hud/LegendPanel.tsx` gained a fourth conditional entry, built fresh per the currently
+highlighted tier's own color (mirroring the panel's existing "build a HIGHLIGHT_COLORS-shaped object" pattern
+for its category-highlight and claims-overlay rows) rather than reused from the fixed set — since, unlike
+every other overlay this legend already explains, a sanction highlight's color genuinely varies by which tier
+is active, not a fixed swatch a fixed row could point at.
+
+## 2026-08-26 — Current Status: wired into IntelligencePanel.tsx, then sanctions split into three OFAC tiers
+
+Two follow-up passes on the entry directly below this one, same day.
+
+**Pass 1 — panel wiring.** `hud/IntelligencePanel.tsx` now reads `data/currentStatus.ts` for real: a
+`ConflictChip` per `ConflictEntry` (pill styling copied from `AllianceBadge`'s own precedent — "categorical
+membership, not a metric, doesn't reuse `IntelRow`'s scored-bar treatment" — colored/labeled by
+`conflictType`, full citation as a native tooltip rather than a click-to-drilldown, since there's no
+per-component breakdown here to justify that heavier design-doc-§7 mechanism), plus a standalone sanctioned
+indicator next to the CURRENT STATUS row label. A GeoEntity selection (no `CurrentStatus` record exists for
+those) falls back to the plain unsourced `IntelRow`, same convention Military/Economy already use. Verified
+live for a sanctioned+conflicted country (Syria), a sanctioned-only country (Cuba, North Korea), a clean
+country (Albania — "No active conflicts sourced.", counted as *sourced* in the footer summary, not lumped in
+with Diplomacy/Technology's real gap), and a GeoEntity (Taiwan — correct fallback).
+
+**Pass 2 — sanctions: boolean → three tiers.** Direct request: `sanctioned: boolean` +
+`sanctionSource?: 'OFAC-comprehensive'` replaced with `sanctionTier: 'red' | 'orange' | 'yellow' | null` +
+`sanctionPrograms?: string[]`, because a single "under comprehensive embargo or not" boolean was silently
+treating Russia/Belarus/Venezuela/Myanmar/Sudan/Nicaragua (extensive but non-comprehensive sanctions
+programs) and Afghanistan/CAR/DR Congo/Ethiopia/Iraq/Lebanon/Libya/Mali/Somalia/South Sudan/Yemen (SDN-list-only
+exposure) identically to a genuinely unsanctioned country — real, meaningfully different OFAC posture that a
+boolean has no room to express. `scripts/buildCurrentStatus.mjs`'s `SANCTION_TIERS` seed keeps RED
+(comprehensive embargo — Cuba/Iran/North Korea/Syria) at the same fully-verified-per-program confidence the
+old boolean had, but ORANGE and YELLOW are a *different, lower* confidence tier — secondary-source
+characterization, internally cross-referenced but not individually checked against each country's own OFAC
+program page — and that gap is called out explicitly in three places (this script's header comment, the
+generated `BACKLOG.md` gap report, and the design doc) rather than silently presented at RED's confidence
+level. `IntelligencePanel.tsx`'s sanctioned icon+"SANCTIONED" text became `SanctionBadge`, a compact "S" mark
+recolored per tier (red/orange/yellow) with the tier's plain-English description + real OFAC program name(s)
+in its tooltip — the previous `ICONS.sanctioned` no-entry glyph became dead code once the badge stopped being
+icon-based, and was deleted rather than left unreferenced. `Intelligence Docs/current-status/README.md` was
+updated to describe swapping onto a real logo from this S-badge baseline rather than from the icon-glyph
+baseline it originally described. Verified live: Russia (orange), Cuba (red), Yemen (yellow) each render a
+visually distinct badge color, correctly separate from the conflict-chip color palette below them.
+
+## 2026-08-26 — Current Status: a third Intelligence Engine category, but categorical, not a score
+
+`scripts/buildCurrentStatus.mjs` (`npm run build:current-status`) implements design doc §3.5, producing
+`src/data/currentStatus.ts`. Data-generation only — no UI wiring (see `BACKLOG.md`'s "Intelligence Engine"
+entry for that as an explicit follow-on).
+
+**The data model is not a 0-100 bar, and was never trending toward one.** Military and Economy both reduce a
+handful of sourced components down to a single composite number via normalization + weighting; Current Status
+doesn't, because neither of its two facts is a magnitude. `sanctioned` is a boolean — a country either is or
+isn't under an OFAC comprehensive embargo, there's no "70% sanctioned." `conflicts` is an array of real,
+individually-dated, individually-sourced records, not an aggregate — collapsing "Myanmar has 4 separate active
+internal conflicts against 4 different rebel groups" into one number would destroy exactly the information a
+user of this panel would want (which conflicts, since when, how classified), for no benefit. The design doc's
+very first draft of this section did once sketch a single `CurrentStatus` enum
+(`'active_conflict' | 'sanctioned' | 'normal' | 'disputed_territory'`) — that draft couldn't even represent a
+sanctioned country with an active conflict (two true facts, one enum slot), which is part of why it was
+replaced with two independent fields before any code was written against it.
+
+**Why `sanctioned` is a hand-maintained static seed, not a live OFAC pull.** OFAC's comprehensive-embargo
+program list (Cuba, Iran, North Korea, Syria) changes on the order of "once every few years, as a geopolitical
+event," not a cadence that benefits from automation the way UCDP's monthly conflict releases do. Building a
+live pull would mean scraping or reverse-engineering OFAC's Sanctions List Search / SDN infrastructure (no
+public no-auth API for program-level classification was found in a first check) for a dataset with 4 entries
+that essentially never change — the SIPRI-TIV-style reverse-engineering effort `buildMilitary.mjs` put into
+its own gated source only pays off because that source updates constantly and the composite depends on
+catching every update. Logged in `BACKLOG.md` as a live-pull candidate specifically *if* this project's
+sanction-status freshness bar ever gets tighter than "someone notices OFAC added a country and updates four
+lines," not before.
+
+**The UCDP-Candidate-vs-PRIO-annual split behind `unclassified`.** The annual UCDP/PRIO Armed Conflict Dataset
+(ACD) is the only UCDP product that actually classifies a conflict's `type_of_conflict`
+(interstate/internal/internationalized_internal/extrasystemic) — but it's annual, and the current release
+(v26.1) only covers through 2025. UCDP's Candidate Events Dataset fills exactly that gap: a monthly,
+~1-month-lag release of individual violent events, which by 2026-08 already covers Jan-Jul 2026 — months the
+annual dataset hasn't reached yet. Real 2026 Candidate data turned up a UCDP convention that wasn't obvious
+from the codebook alone: a not-yet-officially-numbered conflict's `conflict_dset_id` field is literally the
+string `"XXX<gwcode>"` (e.g. `"XXX482"` for an unnamed, unclassified conflict located via Gleditsch-Ward code
+482, Central African Republic) rather than a real number — UCDP's own placeholder for "this doesn't have a
+conflict id yet," found by inspecting actual rows rather than assumed. That, or a genuinely novel numeric id
+absent from the entire ACD history (found once in the real pull: Syria's "Suweida" conflict, id 16732), is
+what earns `conflictType: 'unclassified'` — there's no manual override path, matching the locked design's "the
+honest state until UCDP itself types it."
+
+The matching logic had to guard against a subtler failure mode than "is this id new": Candidate events cover
+all three UCDP violence types (state-based armed conflict, non-state conflict, one-sided violence against
+civilians), but ACD's `type_of_conflict` is only defined for the first — an early version of this check, before
+filtering to `type_of_violence === '1'`, treated Afghanistan's "Government of Afghanistan - Civilians"
+one-sided-violence record as an unclassified *armed conflict*, which it isn't a member of at all; it belongs to
+a different UCDP dataset this script doesn't touch. Separately, several Candidate-detected conflicts turned out
+to already be well-known, already-typed ACD conflicts just not yet flagged active in the v26.1 release (Iran's
+Kurdistan conflict, Syria's Islamic State conflict) — these get the real type looked up from ACD history and
+`source: 'ucdp-candidate'` (since their *current* activity is what Candidate is vouching for, not the annual
+release), but are skipped entirely if the ACD pass already emitted them as active, so a country never gets the
+same conflict as two separate chips.
+
 ## 2026-08-26 — Economy: GDP → log-min-max, inflation → gaussian (superseding the 2026-08-22 distance-percentile patch)
 
 Two independent patches to `scripts/buildEconomy.mjs`, requested together. Growth and unemployment unaffected

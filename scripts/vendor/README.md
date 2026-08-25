@@ -86,6 +86,37 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   if the local file is missing — delete the file under `military/` to force
   a refresh against whatever SIPRI is currently serving.
 
+## `ucdp/ucdp-prio-acd-261-csv.zip`, `ucdp/GEDEvent_v26_01_26_06.csv`, `ucdp/GEDEvent_v26_0_7.csv`
+
+- **Source:** the UCDP/PRIO Armed Conflict Dataset v26.1 (annual, 1946-2025) and two UCDP Candidate Events
+  Dataset releases (Jan-Jun 2026 combined, July 2026 individual) — all three direct, no-login downloads from
+  `ucdp.uu.se/downloads/`. The UCDP API (`ucdpapi.pcr.uu.se`) was checked first and requires a free but
+  manually-issued access token (email request to UCDP's API maintainer, not self-service) — these direct file
+  downloads need neither a token nor an account, so `scripts/buildCurrentStatus.mjs` uses them instead.
+- **Fetched:** 2026-08-23/24.
+- **License:** UCDP data is free to use for research/non-commercial purposes with attribution; see
+  `ucdp.uu.se/downloads/` for its terms.
+- **Used by:** `scripts/buildCurrentStatus.mjs` — the annual dataset is the only UCDP product that classifies
+  a conflict's `type_of_conflict`; the Candidate releases fill the gap for 2026 activity the annual release
+  hasn't caught up to yet. See that script's own header comment and `LOGBOOK.md`'s 2026-08-26 entry for the
+  full matching logic between the two.
+- **Not re-downloaded automatically, and goes stale on its own schedule:** the annual dataset updates roughly
+  yearly; the Candidate dataset updates monthly. Re-running the build script against a newer release means
+  bumping the version/URL constants at the top of `scripts/buildCurrentStatus.mjs` and deleting the
+  now-superseded vendored file(s) here to force a re-download — the script won't detect a newer release on
+  its own.
+
+## `gleditsch-ward/iisystem.dat`, `gleditsch-ward/microstatessystem.dat`
+
+- **Source:** Kristian Skrede Gleditsch's own site (`ksgleditsch.com/data/`) — the originating academic
+  maintainer of the Gleditsch-Ward (GW) state-system country code list UCDP's own datasets key every country
+  reference to, not a third-party mirror.
+- **Fetched:** 2026-08-23.
+- **License:** publicly posted for research use; no login or registration required.
+- **Used by:** `scripts/buildCurrentStatus.mjs`, via `scripts/lib/gleditschWard.mjs` — bridges UCDP's
+  `gwno_loc`/`country_id` numeric codes back to this project's UN-193 topology names. See that lib module's
+  own header comment for the source files' Windows-1252 encoding quirk and the alias table it required.
+
 ## `ne_50m_rivers_lake_centerlines.geojson`
 
 - **Source:** Natural Earth 1:50m Physical Vectors, "Rivers + lake

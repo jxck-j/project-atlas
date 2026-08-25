@@ -1,6 +1,8 @@
 import { useLayerEnabledMap } from '../layers'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { SANCTION_TIER_STYLE } from '../scene/sanctionTierColors'
 import { useHighlightedAllianceId } from './allianceHighlightStore'
+import { useHighlightedSanctionTier } from './sanctionHighlightStore'
 import { PANEL_SECTION_LABEL, PANEL_SURFACE } from './panelStyles'
 
 // v3.1: answers "why is Taiwan red." Always-on, not a toggle — mirrors
@@ -70,9 +72,24 @@ const CATEGORY_HIGHLIGHT_LAYER_IDS = [
 export function LegendPanel() {
   const enabledMap = useLayerEnabledMap()
   const highlightedAllianceId = useHighlightedAllianceId()
+  const highlightedSanctionTier = useHighlightedSanctionTier()
   const anyCategoryHighlightEnabled =
     CATEGORY_HIGHLIGHT_LAYER_IDS.some((id) => enabledMap[id]) ||
     (enabledMap['alliance-highlight'] && highlightedAllianceId != null)
+
+  // Sanction tiers get their own color per tier (unlike alliance/category
+  // highlights, which all share HIGHLIGHT_COLORS.categoryHighlight — see
+  // scene/sanctionTierColors.ts's own header comment for why), so this
+  // entry is built fresh from whichever tier is actually highlighted right
+  // now, rather than reused from the fixed HIGHLIGHT_COLORS set below.
+  const sanctionEntry =
+    enabledMap['sanction-highlight'] && highlightedSanctionTier
+      ? {
+          hex: SANCTION_TIER_STYLE[highlightedSanctionTier].color,
+          label: `${highlightedSanctionTier.toUpperCase()} SANCTIONS`,
+          description: SANCTION_TIER_STYLE[highlightedSanctionTier].label,
+        }
+      : null
 
   const entries = [
     HIGHLIGHT_COLORS.default,
@@ -81,6 +98,7 @@ export function LegendPanel() {
     ...(enabledMap['parent-territory-overlay'] ? [HIGHLIGHT_COLORS.territoryOverlay] : []),
     ...(enabledMap['claims-overlay'] ? [HIGHLIGHT_COLORS.claimsOverlay, HIGHLIGHT_COLORS.relatedCountry] : []),
     ...(anyCategoryHighlightEnabled ? [HIGHLIGHT_COLORS.categoryHighlight] : []),
+    ...(sanctionEntry ? [sanctionEntry] : []),
   ]
 
   return (

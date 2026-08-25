@@ -34,4 +34,7 @@ export const ICONS = {
   bookmark: ['M6 3h12v18l-6-4-6 4z'],
   chevronsLeft: ['M11 17l-5-5 5-5', 'M18 17l-5-5 5-5'],
   chevronsRight: ['M13 17l5-5-5-5', 'M6 17l5-5-5-5'],
+  fullscreenEnter: ['M4 9V4h5', 'M15 4h5v5', 'M20 15v5h-5', 'M9 20H4v-5'],
+  fullscreenExit: ['M9 4v5H4', 'M15 4v5h5', 'M4 15h5v5', 'M20 15h-5v5'],
+  chevronDown: ['M6 9l6 6 6-6'],
 } as const

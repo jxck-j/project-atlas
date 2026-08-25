@@ -17,6 +17,55 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.7.1 — Current Status: sanction badge and conflict chips are now interactive
+
+**Point release.** `IntelligencePanel.tsx`'s sanction "S" badge now opens `SanctionTierMenu.tsx`, a popover
+listing all three OFAC tiers and every sanctioned country in each (global, not scoped to the selected
+country) — direct request. Each tier has its own small icon that highlights every country in that tier on the
+globe (`sanctionHighlightStore.ts` + `layers/geoOverlays/SanctionHighlightLayer.tsx`, one tier at a time,
+mirroring the existing alliance-highlight pattern), and every listed country is a clickable chip that selects
+and flies the camera there. `layers/geoOverlays/CategoryHighlightLayer.tsx`'s shared highlight geometry gained
+an optional per-call color (previously always one fixed violet) to support three different tier colors.
+`scene/sanctionTierColors.ts` centralizes those colors (deliberately kept separate from
+`scene/highlightColors.ts`'s closed 7-hue set), and `hud/LegendPanel.tsx` now explains whichever tier is
+currently highlighted.
+
+Same release, conflict chips got the same "reduce jargon, reduce clutter" treatment sanctions did — direct
+feedback that UCDP's own conflict-type vocabulary read as confusing jargon, and that a full row of chips was
+overwhelming at a glance. Chip labels are now plain language ("CIVIL WAR" instead of "internal,"
+"INTERNATIONAL WAR" instead of "interstate," etc. — display-only, the underlying data is unchanged) and the
+row collapses to a plain headline ("AT WAR (6)" / "NO ACTIVE CONFLICTS") by default, expanding into the chips
+only on click — the same collapsed-until-clicked shape Military/Economy's citation drilldowns already use.
+Same-type chips for one country (Myanmar's 5 "CIVIL WAR" entries) now show which specific party each one is
+against ("CIVIL WAR — KNU"), and clicking a chip highlights that conflict's real party/parties on the globe
+(`hud/conflictPartiesHighlightStore.ts` + `layers/geoOverlays/ConflictPartiesHighlightLayer.tsx`) — correctly
+resolving a multi-state conflict to every state involved (verified against the UK's Yemen conflict entry,
+which highlights the UK, the US, and Yemen together) while skipping non-state actors (a rebel group has no
+country to highlight). See `LOGBOOK.md`'s 2026-08-26 entries for the full reasoning on both passes.
+`AnalyticsPanel.tsx` wiring remains an open follow-on.
+
+## v6.7.0 — Current Status: a third real, sourced Intelligence Engine category, wired into the panel
+
+**Major version — new data layer.** `scripts/buildCurrentStatus.mjs` (`npm run build:current-status`) sources
+real conflict and sanctions data for all 193 countries into `src/data/currentStatus.ts`, per
+`Intelligence Docs/intelligence-engine-scoring-design.md` §3.5, and `hud/IntelligencePanel.tsx` renders it for
+real. Unlike Military/Economy, this category was never meant to be a 0-100 bar: it's two independent,
+categorical fields — `conflicts` (a UCDP-sourced array, typed interstate/internal/
+internationalized_internal/extrasystemic where the annual UCDP/PRIO Armed Conflict Dataset has classified it,
+`unclassified` where only the monthly UCDP Candidate Events Dataset has caught it so far — a `ConflictChip`
+row, colored/labeled by `conflictType`, full citation on hover) and `sanctionTier: 'red' | 'orange' | 'yellow'
+| null` + `sanctionPrograms` (a standalone sanction badge) — three OFAC tiers, not a single `sanctioned`
+boolean, because a boolean couldn't distinguish "under a blanket embargo" (RED — Cuba, Iran, North Korea,
+Syria, fully verified per-program) from "extensively but not comprehensively sanctioned" (ORANGE —
+sectoral/hybrid programs: Russia, Belarus, Venezuela, Myanmar, Sudan, Nicaragua) from "screening-list
+exposure only" (YELLOW — SDN/Consolidated List: Afghanistan, Central African Republic, DR Congo, Ethiopia,
+Iraq, Lebanon, Libya, Mali, Somalia, South Sudan, Yemen), three real, different OFAC postures. Rendered as a
+compact "S" badge recolored per tier (a placeholder for a real sanction logo, pending — see
+`Intelligence Docs/current-status/`). Only RED is fully verified against each program's own OFAC page;
+ORANGE/YELLOW are secondary-source seeds flagged in `BACKLOG.md` for per-program verification. See
+`LOGBOOK.md`'s 2026-08-26 entries for the full sourcing/matching reasoning. `AnalyticsPanel.tsx` wiring
+remains an explicit follow-on — see `BACKLOG.md`.
+
 ## v6.6.3 — Economy: IMF WEO trial is now viewable live in the app
 
 **Point release.** The IMF WEO source trial (v6.6.2-era `scripts/buildEconomyWeo.mjs`) previously only produced
