@@ -2,8 +2,9 @@
 
 **Status:** Core scoring rules locked for v1 (Military — fully specified, multi-source;
 Economy — sourcing identified, formula pending revision against the new normalization/
-confidence model below). Technology/Diplomacy sourcing identified but weighting and
-confidence-model alignment deferred — not needed until those categories are scheduled.
+confidence model below; Technology — component list and weighting locked, normalization/
+confidence-model alignment deferred). Diplomacy sourcing identified but weighting and
+confidence-model alignment deferred — not needed until scheduled.
 **Owner:** J
 **Related backlog item:** "Intelligence Engine" (currently: empty chrome, no score field in data model)
 
@@ -252,28 +253,114 @@ normalization / coverage-floor confidence model below — Economy was designed u
 percentile-rank / weighted-sourceCoverage assumptions and needs the same reconciliation pass Military just
 went through before it's implementation-ready. Flagged, not resolved, here.
 
-### 3.3 Technology — sourceable, but must be a composite
+### 3.3 Technology — sourceable, locked component list (revised 2026-08-25)
 
-The Ukraine/China conundrum lives here. Ukraine's wartime drone/EW innovation and China's EV/robotics
-manufacturing lead are both real, but both are narrow, sector-concentrated signals — not evidence of
-aggregate tech capacity. A single-sector data point should never set this bar; it should feed one of
-several weighted inputs.
+**Status: component list finalized at 4 (2026-08-25); sourcing locked; weighting defaults
+to equal per Governing Principle 6 (no citable weighting framework found); normalization
+method and confidence-model alignment still deferred — see Section 9.**
 
-**Formula inputs:**
-- WIPO Global Innovation Index (composite: R&D spend, patent filings, high-tech exports, researcher
-  density) — this is the backbone metric
-- WIPO PCT patent filings by country — proxy for applied R&D activity
-- Stanford AI Index — country-level research paper counts, model counts, compute access
-- Optional sector-specific layer (semiconductor capacity, aerospace, etc.) if you want drill-down detail
-  later, but not as the headline score
+**Superseded design:** the original draft used WIPO GII as a backbone metric plus PCT
+filings and a general "AI Index" reference. Working through it found two problems:
+(1) PCT patent filings are already one of GII's own 78 indicators (Knowledge and
+technology outputs pillar, Knowledge Creation sub-pillar) — scoring both double-counts
+the same signal; (2) GII's Input sub-index includes an Institutions pillar (political
+stability, regulatory quality, business environment) that measures governance context,
+not technology capacity — using it as the backbone would smuggle non-technology signal
+into a Technology score. Both are resolved by dropping GII as the backbone entirely and
+building Technology from directly-sourced, single-purpose indicators instead — the same
+shift Military made from "single index" to "multi-source composite" when the index's real
+structure didn't hold up to scrutiny.
 
-**Explicitly excluded:** any single "country X just shipped Y" event as a direct score driver. Military
-tech specifically should pull from SIPRI's arms production data (3.1), not from this general index — keep
-"military tech" and "general tech" as separate questions even if the UI ends up showing one number.
+**Locked components (4, equal-weighted by default):**
 
-**Confidence:** medium — good composite indices exist, but coverage isn't universal (~130 countries for
-WIPO GII), so this bar will be unscored for a meaningful chunk of entities. **Not yet revised** against the
-new confidence model — same flag as Economy above.
+| # | Component | Source | Coverage | Zero classification |
+|---|---|---|---|---|
+| 1 | R&D expenditure, % GDP | World Bank WDI | ~190 countries | Coverage-gap-only |
+| 2 | Patent applications by residents, per capita | WIPO IP Statistics (sourced directly, not via GII) | ~190 countries | Coverage-gap-only |
+| 3 | High-tech exports, % of manufactured exports | World Bank WDI | ~150 countries | Coverage-gap-only |
+| 4 | ICT Development Index | ITU (relaunched 2023 methodology) | ~165 economies | Coverage-gap-only |
+
+**Note (component 1 vs. a rejected alternative):** total R&D expenditure ($) was
+considered and excluded — it's %GDP × GDP, so scoring both alongside GDP-correlated
+components would double-count economic scale as technology capability, the same
+size-vs-intensity problem the 5th-component candidates below were rejected for in
+several cases.
+
+### Investigated and not included (2026-08-25 pass)
+
+Nine candidates for a 5th component were checked against this project's sourcing bar
+(open bulk data, near-universal coverage, single-purpose over composite) and none
+cleared it cleanly. Documented here so this ground isn't re-covered without new
+information:
+
+- **WIPO GII (as backbone) + PCT filings** — dropped: PCT patent applications are
+  already one of GII's own 78 indicators (Knowledge and technology outputs pillar), so
+  scoring both double-counts; GII's Institutions pillar also measures governance, not
+  technology, which would smuggle non-technology signal into the score.
+- **Stanford AI Index — notable models produced, publications/citations, private
+  investment $, generative AI adoption %** — all rejected: first is concentrated in ~6
+  countries (would need a separate true-zero decision), the next three are scale/GDP-
+  correlated or measure consumer usage rather than production capacity.
+- **Stanford AI Index — AI researchers/developers per capita** — real, targeted metric,
+  but the underlying Zeki dataset only covers 21 countries. Too narrow to score as a
+  standard component.
+- **UNESCO/World Bank researchers per million (SP.POP.SCIE.RD.P6)** — 144 countries have
+  ever reported a value, but only ~95-100 have a data point from 2021 or later; UK's
+  freshest value is 2017, Australia's is 2010, Brazil's is 2014, most of Sub-Saharan
+  Africa has no entry. Recency-adjusted coverage too thin and too OECD/Europe-skewed.
+- **IMF AI Preparedness Index (AIPI)** — 174-country composite, but (1) the underlying
+  data is listed by IMF as "available upon request," not an open bulk dataset — breaks
+  the reproducible-pipeline requirement; (2) it's a 4-dimension composite with a legal/
+  regulatory pillar, same opacity/scope-creep issue as GII; (3) frozen at 2023 with no
+  confirmed annual refresh. Its own component institutions were checked individually
+  (see World Bank "Labor force with advanced education" and STEM-graduates entries
+  below) rather than using the index itself.
+- **Oxford Insights Government AI Readiness Index** — 195 countries, fully open, but
+  measures government policy/deployment readiness, not research or private-sector
+  technology capability — a different construct than this category is scoring.
+- **Stanford Global AI Vibrancy Tool** — most AI-specific of the composites, but only 36
+  countries; narrowest coverage of everything checked.
+- **MSCI tech-sector market cap weighting (equity markets)** — rejected on two grounds:
+  (1) salience/sentiment bias — stock prices move on hype cycles more than R&D output,
+  same problem that ruled out generative-AI adoption rate; (2) MSCI Information
+  Technology indexes cover only ~47 countries total, licensed/paywalled data (not open
+  bulk), and weights are dominated by a handful of mega-cap names rather than broad
+  national output.
+- **IMD World Digital Competitiveness Ranking** — 69 economies (narrower than ITU IDI
+  already locked), partly executive-survey/perception-based (not pure hard data), and
+  full data sits behind IMD's paid database — fails openness, coverage, and
+  hard-data-only bars simultaneously. Also conceptually redundant with what's already
+  locked (its Knowledge/Technology factors re-derive R&D and infrastructure signal).
+- **World Bank/ILOSTAT "Labor force with advanced education" (SL.TLF.ADVN.ZS)** — open,
+  broad coverage, but measures general higher-education attainment (any advanced
+  degree), not STEM-specific — a lawyer and an engineer count identically. A flat global
+  STEM-share percentage applied uniformly was considered and rejected: STEM's share of
+  degrees varies too much by country (~17.5% Brazil to ~43% Malaysia) for one constant
+  to be defensible, and mathematically a flat multiplier just rescales the existing
+  ranking without adding real STEM-specific information.
+- **UNESCO "Percentage of graduates from tertiary education graduating from STEM
+  programmes" (both sexes)** — CLOSEST CANDIDATE, not fully ruled out. Real per-country
+  STEM-specific data, but recent-year (2018-23) coverage is realistically ~120 countries
+  based on the underlying UIS sample size, and critically, China is not published in
+  this series at all — a serious gap for a Technology category, not just a thin one.
+  Worth revisiting if UNESCO improves China coverage or a reliable China estimate
+  becomes independently sourceable (e.g., a reconciled NSF/WEF figure with documented
+  methodology differences noted). FLAG FOR FUTURE RESEARCH — do not re-derive from
+  scratch; start here.
+
+**Excluded — backlogged, not scored:**
+
+| Item | Status |
+|---|---|
+| Advanced industry (semiconductor/aerospace/robotics/biotech capability) | No single named public dataset covers this combination. Each sub-sector would need independent sourcing (e.g. semiconductor fab capacity, aerospace export value, industrial robot installation counts) and a first pass suggests most candidates are subscription-gated or methodology-opaque — same shape of problem as Military's naval/ground-equipment and air-fleet backlog items (§3.1). Not investigated source-by-source yet. Backlogged 2026-08-25 — see BACKLOG.md. |
+
+**Weighting:** equal across the 4 locked components, per Governing Principle 6 — no
+citable framework was found to justify an unequal scheme (two illustrative weighted
+proposals were drafted and reviewed; neither had citable backing, and they didn't agree
+with each other on the split either).
+
+**Confidence:** not yet revised against the coverage-floor/confidence model — same flag
+as Economy/Diplomacy, deferred to Section 9.
 
 ### 3.4 Diplomacy — sourceable, but the hardest category
 
@@ -528,23 +615,30 @@ now the *most thoroughly designed and validated* category — 7 components, all 
 citable, normalization and weighting logic stress-tested against a reference simulation that caught two
 real bugs before launch — even though it's also the most complex. Complexity and confidence turned out to
 be independent axes here, not correlated. Diplomacy and Technology stay unscored/"coming" in the UI until
-their composite formulas, weights, and confidence-model alignment (Section 9, plus the open item in Section
-5) are worked through.
+their composite formulas and confidence-model alignment (Section 9, plus the open item in Section 5) — and,
+for Diplomacy specifically, its weighting — are worked through. Technology's weighting is already locked
+(§3.3); its normalization method and confidence-model alignment are what's still open.
 
-## 9. Deferred: Technology / Diplomacy weighting
+## 9. Deferred: Diplomacy weighting (Technology's weighting resolved — see §3.3)
 
-Not launch-blocking per Section 8. Sources are listed in 3.3/3.4; weights are not yet locked (Technology
-has an illustrative example: 0.5 WIPO GII / 0.3 PCT filings / 0.2 AI Index — sums to 1, per the Section 5
-constraint, but the individual values aren't confirmed). **Also now deferred alongside weighting:** whether
-these categories adopt Military's coverage-floor/true-zero mechanism (Section 5) or stay on the original
+Not launch-blocking per Section 8. **Technology's weighting and component count are both fully locked:** 4
+components (finalized 2026-08-25 — see §3.3), equal-weighted per Governing Principle 6 (no citable weighting
+framework was found, so this defaults to equal rather than staying unresolved), no further changes pending.
+**Diplomacy's weighting is still open** — sources are listed in
+3.4, but weights aren't yet locked. **Still deferred for both categories, regardless of weighting:** whether
+they adopt Military's coverage-floor/true-zero mechanism (Section 5) or stay on the original
 weighted-sourceCoverage formula, and whether they use log-min-max or percentile-rank normalization (Section
-4). Revisit all of this together when these categories are scheduled for implementation — no reason to
-decide it piecemeal now.
+4). Revisit all of this together when each category is scheduled for implementation — no reason to decide it
+piecemeal now.
 
 ## 10. Open questions (not decided here)
 
 - Technology sector drill-down (military-tech vs. general-tech vs. specific industries) — v1 or later?
   Doesn't block Military/Economy work either way.
+- Technology locked at 4 components 2026-08-25 (R&D%GDP, WIPO patents/capita, high-tech exports%, ITU IDI).
+  5th-component research trail closed for now — see §3.3 "Investigated and not included" for what was
+  checked and why, and the UNESCO STEM-graduate-share flag for the most promising unresolved candidate.
+  Advanced Industry still backlogged separately (see BACKLOG.md).
 - ~~Should Military's `'proxy'`-equivalent tier be introduced (see Section 5)?~~ Resolved 2026-08-20 — yes,
   see §3.1/§5. Still open: whether/how the UI actually renders `proxy` vs `measured` differently — deferred
   to IntelligencePanel UI implementation.

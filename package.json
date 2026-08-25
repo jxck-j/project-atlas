@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "6.7.1",
+  "version": "6.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,6 +17,7 @@
     "build:profiles": "tsx scripts/buildGovCapitalPopGdp.mjs",
     "build:military": "node scripts/buildMilitary.mjs",
     "build:economy": "node scripts/buildEconomy.mjs",
+    "build:technology": "node scripts/buildTechnology.mjs",
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",

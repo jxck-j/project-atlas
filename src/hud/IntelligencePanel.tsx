@@ -7,8 +7,10 @@ import { ALLIANCES } from '../data/allianceMemberships'
 import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
-import { CURRENT_STATUS, type ConflictEntry, type ConflictType, type CurrentStatus } from '../data/currentStatus'
+import { TECHNOLOGY_SCORES, type TechnologyScore } from '../data/technologyScores'
+import { CURRENT_STATUS, type ConflictEntry, type CurrentStatus } from '../data/currentStatus'
 import { SANCTION_TIER_STYLE, withAlpha } from '../scene/sanctionTierColors'
+import { CONFLICT_TYPE_STYLE } from '../scene/conflictTypeStyles'
 import { SanctionTierMenu } from './SanctionTierMenu'
 import { toggleConflictPartiesHighlight, useConflictPartiesHighlight } from './conflictPartiesHighlightStore'
 import { AllianceBadge } from './AllianceBadge'
@@ -145,6 +147,7 @@ function sourceLabel(url: string | undefined): string {
   if (url.includes('armstransfers.sipri.org')) return 'SIPRI Arms Transfers Database'
   if (url.includes('worldbank.org')) return 'World Bank (WDI)'
   if (url.includes('fas.org')) return 'FAS Nuclear Notebook'
+  if (url.includes('itu.int')) return 'ITU (ICT Development Index)'
   if (url.includes('factbook.json')) return 'CIA World Factbook'
   try {
     return new URL(url).hostname
@@ -361,6 +364,88 @@ function EconomyDrilldown({ score }: { score: EconomyScore }) {
   )
 }
 
+interface TechnologyDrilldownRow {
+  label: string
+  raw: number | null
+  format: (raw: number) => string
+  sourceUrl?: string
+  dateLabel?: string
+}
+
+// Same citation-drill-down shape as MilitaryDrilldown/EconomyDrilldown
+// (design doc §7), for Technology's 4 components. No annotations row — none
+// exist for Technology (all 4 components are coverage-gap-only, see
+// technologyScores.ts's own header comment). ICT Development Index's
+// dateLabel is fixed at 2022 (the 2024 edition's own reference year) rather
+// than reading a per-country year, since every country in that hand-
+// transcribed snapshot shares the same edition/reference year.
+function TechnologyDrilldown({ score }: { score: TechnologyScore }) {
+  const rows: TechnologyDrilldownRow[] = [
+    {
+      label: 'R&D Expenditure (% GDP)',
+      raw: score.components.rdExpenditurePctGdp.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.rdExpenditurePctGdp.sourceUrl,
+      dateLabel: score.components.rdExpenditurePctGdp.year?.toString(),
+    },
+    {
+      label: 'Patent Applications (per million, residents)',
+      raw: score.components.patentsPerMillion.raw,
+      format: (raw) => raw.toFixed(1),
+      sourceUrl: score.components.patentsPerMillion.sourceUrl,
+      dateLabel: score.components.patentsPerMillion.year?.toString(),
+    },
+    {
+      label: 'High-Tech Exports (% of manufactured)',
+      raw: score.components.highTechExportsPct.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.highTechExportsPct.sourceUrl,
+      dateLabel: score.components.highTechExportsPct.year?.toString(),
+    },
+    {
+      label: 'ICT Development Index',
+      raw: score.components.ictDevelopmentIndex.raw,
+      format: (raw) => raw.toFixed(1),
+      sourceUrl: score.components.ictDevelopmentIndex.sourceUrl,
+      dateLabel: score.components.ictDevelopmentIndex.year?.toString(),
+    },
+  ]
+
+  return (
+    <div className="pt-1">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 border-b border-[rgba(22,35,60,0.6)] py-2 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.label}</div>
+            {row.sourceUrl ? (
+              <a href={row.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
+                {sourceLabel(row.sourceUrl)}
+              </a>
+            ) : (
+              <div className="text-[10px] text-[#51648a]">No source</div>
+            )}
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.raw == null ? '—' : row.format(row.raw)}</div>
+            <div className="text-[10px] text-[#6d82a8]">{row.dateLabel ?? '—'}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Country-only, same convention as militaryIntelValue/economyIntelValue above
+// — TECHNOLOGY_SCORES is keyed by the same numeric ISO topology id. No
+// GeoEntity has a Technology score either.
+function technologyIntelValue(selected: SelectedEntity | null) {
+  if (selected?.entity.kind !== 'country') return undefined
+  return TECHNOLOGY_SCORES[selected.entity.data.id]
+}
+
 // Country-only, same convention as militaryIntelValue/economyIntelValue above
 // — CURRENT_STATUS is keyed by the same numeric ISO topology id. No
 // GeoEntity has a Current Status record either (see data/currentStatus.ts's
@@ -379,20 +464,9 @@ function currentStatusIntelValue(selected: SelectedEntity | null): CurrentStatus
 // ordering (roughly: a state-vs-state war reads as more severe than an
 // unconfirmed internal skirmish) drives the color, not any real UCDP
 // ranking — UCDP itself doesn't rank these types against each other.
-//
-// Labels are plain-language, not UCDP's own technical vocabulary
-// ("internationalized_internal", "extrasystemic") — direct feedback that
-// the raw terms read as confusing jargon to anyone outside conflict
-// studies. The underlying `ConflictType` values themselves are unchanged
-// (they're what's actually sourced from UCDP and what a future citation
-// needs to stay accurate to), only this display-layer label changed.
-const CONFLICT_TYPE_STYLE: Record<ConflictType, { label: string; color: string; background: string }> = {
-  interstate: { label: 'INTERNATIONAL WAR', color: '#ff6b63', background: 'rgba(255,74,66,0.16)' },
-  internationalized_internal: { label: 'FOREIGN-BACKED CIVIL WAR', color: '#ff9d5c', background: 'rgba(255,138,61,0.16)' },
-  internal: { label: 'CIVIL WAR', color: '#e0a340', background: 'rgba(224,163,64,0.16)' },
-  extrasystemic: { label: 'COLONIAL CONFLICT', color: '#c084fc', background: 'rgba(192,132,252,0.16)' },
-  unclassified: { label: 'RECENTLY DETECTED', color: '#8aa0c6', background: 'rgba(109,130,168,0.16)' },
-}
+// Labels/colors live in scene/conflictTypeStyles.ts, shared with
+// AnalyticsPanel.tsx's CURRENT STATUS view — see that module's own header
+// comment.
 
 // Differentiates same-type chips for one country (direct feedback: Myanmar
 // shows 5 separate "CIVIL WAR" chips with nothing to tell them apart) by
@@ -960,6 +1034,14 @@ export function IntelligencePanel() {
   const hasEconomyBar = economyBarValue != null
 
   // Third Intelligence Engine category wired into this panel — see
+  // data/technologyScores.ts's header comment. Same shape as
+  // economyBarValue/hasEconomyBar above (no confirmed/notApplicable concept
+  // here either).
+  const technologyScore = technologyIntelValue(selected)
+  const technologyBarValue = technologyScore?.value ?? undefined
+  const hasTechnologyBar = technologyBarValue != null
+
+  // Fourth Intelligence Engine category wired into this panel — see
   // data/currentStatus.ts's header comment. Not a bar value at all (see
   // CurrentStatusRow above), so there's no equivalent barValue/hasBar pair
   // — `currentStatus` being defined (a Country selection with a real
@@ -970,13 +1052,12 @@ export function IntelligencePanel() {
   const currentStatusCountryId = selected?.entity.kind === 'country' ? selected.entity.data.id : undefined
 
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
-  // (MILITARY, and as of the Economy build, ECONOMY too) collapses the
-  // other four rows and drops down its component sources. Only a metric
-  // with a real score record to drill into is ever clickable — the
-  // remaining two (Diplomacy/Technology/Current Status minus whichever of
-  // these two is wired) have no sources yet, so they stay plain, inert
-  // rows. Resets whenever the selection changes so a drill-down never
-  // carries over onto a newly selected entity.
+  // (MILITARY, ECONOMY, and as of the Technology build, TECHNOLOGY too)
+  // collapses the other rows and drops down its component sources. Only a
+  // metric with a real score record to drill into is ever clickable —
+  // Diplomacy still has no sources yet, so it stays a plain, inert row.
+  // Resets whenever the selection changes so a drill-down never carries
+  // over onto a newly selected entity.
   const [expandedMetric, setExpandedMetric] = useState<IntelMetricId | null>(null)
   useEffect(() => {
     setExpandedMetric(null)
@@ -1066,6 +1147,23 @@ export function IntelligencePanel() {
                     />
                   )
                 }
+                if (metric.id === 'technology') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={technologyBarValue}
+                      confidence={technologyScore?.confidence}
+                      expanded={expandedMetric === 'technology'}
+                      onClick={
+                        technologyScore
+                          ? () => setExpandedMetric((current) => (current === 'technology' ? null : 'technology'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
                 if (metric.id === 'current-status') {
                   return currentStatus && currentStatusCountryId ? (
                     <CurrentStatusRow key={metric.id} status={currentStatus} countryId={currentStatusCountryId} />
@@ -1079,6 +1177,8 @@ export function IntelligencePanel() {
                 <MilitaryDrilldown score={militaryScore} />
               ) : expandedMetric === 'economy' && economyScore ? (
                 <EconomyDrilldown score={economyScore} />
+              ) : expandedMetric === 'technology' && technologyScore ? (
+                <TechnologyDrilldown score={technologyScore} />
               ) : (
                 <>
                   {(() => {
@@ -1106,12 +1206,22 @@ export function IntelligencePanel() {
                         })`
                       )
                     }
+                    if (hasTechnologyBar) {
+                      sourcedParts.push(
+                        `Technology (World Bank WDI/ITU${
+                          technologyScore!.confidence === 'proxy'
+                            ? `, ${technologyScore!.coveragePresent}/${technologyScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
                     if (currentStatus) {
                       sourcedParts.push('Current Status (UCDP/OFAC)')
                     }
                     const unsourcedLabels = INTEL_METRICS.filter((metric) => {
                       if (metric.id === 'military') return !militaryResolved
                       if (metric.id === 'economy') return !hasEconomyBar
+                      if (metric.id === 'technology') return !hasTechnologyBar
                       if (metric.id === 'current-status') return !currentStatus
                       return true
                     }).map((metric) => metric.label)

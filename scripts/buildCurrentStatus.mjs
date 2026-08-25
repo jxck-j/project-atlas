@@ -40,10 +40,24 @@
 //    honest state until UCDP itself types it. Also direct CSV download, no
 //    login.
 //
-// Countries are matched to conflicts via UCDP's OWN country-code field
-// (Gleditsch-Ward numeric codes — `gwno_loc` in the ACD, `country_id` in
-// Candidate/GED), never by name-string matching — see
-// scripts/lib/gleditschWard.mjs for the code bridge this requires and why.
+// Countries are matched to conflicts primarily via UCDP's OWN country-code
+// field (Gleditsch-Ward numeric codes — `gwno_loc` in the ACD, `country_id`
+// in Candidate/GED), never by name-string matching — see scripts/lib/
+// gleditschWard.mjs for the code bridge this requires and why. For Candidate/
+// GED specifically, `country_id` is where a violent EVENT happened, not who
+// fought it — a state whose entire involvement is off its own soil (an
+// airstrike campaign, say) never has an event location on its own territory,
+// so location-only matching would silently drop it from its own record even
+// though UCDP's own side_a/side_b fields name it as a combatant. To catch
+// that, loadCandidateConflicts() ALSO resolves every named side_a/side_b
+// government against the UN-193 list (name-string matching, the one
+// deliberate exception to the rule above — there's no GW-code field for
+// "every side of this event," only for "where it happened") and attaches the
+// conflict to the union of event-location countries and resolved party
+// countries. See that function's own comment for the real case (2025 US/
+// Israel strikes on Iran) this was caught against, and LOGBOOK.md for the
+// full trail. The ACD (annual) pass doesn't need this: its own `gwno_loc`
+// already lists every named side's territory, not just one event's location.
 //
 // ---------------------------------------------------------------------------
 // WHICH CONFLICTS COUNT AS "CURRENT" (ACD side):
@@ -79,7 +93,9 @@
 // across its non-ACD products and was likewise not found in the ACD set in
 // every real case checked).
 //
-// For each distinct (candidate conflict identifier, country) pair:
+// For each distinct candidate conflict identifier (grouped across ALL its
+// event rows, regardless of location — see above for why location isn't part
+// of the group key):
 //   - If the identifier parses as a plain positive integer AND that integer
 //     is a real ACD `conflict_id` (present in ANY year of the full ACD
 //     history, not just MAX_YEAR): this conflict already has a real UCDP
@@ -328,6 +344,45 @@ function resolveGwCode(code, gwNameMap, context) {
   return country
 }
 
+// Splits a Candidate/GED side_a or side_b cell ("Government of Israel,
+// Government of United States of America") into its individual named
+// parties, and resolves each to a UN-193 Country where possible — used by
+// loadCandidateConflicts below to attach a conflict to every state actually
+// fighting it, not just the country where a given violent event happened to
+// occur (see that function's own comment for why country_id/gwno_loc alone
+// under-attributes a conflict like an airstrike campaign to the state
+// actually conducting it). A non-state side (a rebel group name) never
+// resolves and is silently skipped — correct, it isn't a country. Mirrors
+// hud/IntelligencePanel.tsx's resolvePartyCountryIds(), which does the same
+// parsing at render time for click-to-highlight — duplicated rather than
+// imported, since this is a plain Node build script and that's a React/TS
+// module, but kept deliberately in lockstep: the country a user can
+// highlight by clicking a chip should be the same country this script
+// attached the underlying data to.
+function resolvePartyCountryName(rawName) {
+  const stripped = rawName.startsWith('Government of ') ? rawName.slice('Government of '.length) : rawName
+  const direct = CANONICAL_NAME_LOOKUP.get(normalizeName(stripped))
+  if (direct) return direct
+  // Historical/Gleditsch-Ward-style government names UCDP's own side_a/
+  // side_b text uses ("Yemen (North Yemen)", "Myanmar (Burma)", "Russia
+  // (Soviet Union)") aren't literal matches for this project's canonical
+  // UN-193 name, but always start with it.
+  for (const c of allCountries) {
+    if (stripped.startsWith(`${c.name} (`)) return c
+  }
+  return null
+}
+
+function resolvePartyCountries(sideText) {
+  if (!sideText) return []
+  return sideText
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map(resolvePartyCountryName)
+    .filter((c) => c != null)
+}
+
 // ---------------------------------------------------------------------------
 // UCDP/PRIO Armed Conflict Dataset (annual)
 // ---------------------------------------------------------------------------
@@ -407,65 +462,101 @@ async function loadCandidateConflicts(gwNameMap, knownConflicts, activeConflictI
   const stateBased = allRows.filter((r) => r[idx.type_of_violence] === '1')
   console.log(`UCDP Candidate v${CANDIDATE_VERSION}: ${allRows.length} events, ${stateBased.length} state-based.`)
 
-  // Group by (candidate conflict identifier, country) so multiple event rows
-  // for the same ongoing conflict produce one chip, not one per event.
-  const groups = new Map()
+  // Group by candidate conflict identifier ALONE (not identifier+country —
+  // see below for why), collecting every distinct event LOCATION seen for
+  // that conflict plus one representative row (side_a/side_b/conflict_name
+  // are consistent across a conflict's own event rows, so any one row is
+  // enough for those fields).
+  const conflictGroups = new Map()
   for (const r of stateBased) {
     const dsetId = r[idx.conflict_dset_id]
-    const key = `${dsetId !== '' ? dsetId : `new:${r[idx.conflict_new_id]}`}::${r[idx.country_id]}`
-    if (!groups.has(key)) groups.set(key, r)
+    const identifier = dsetId !== '' ? dsetId : `new:${r[idx.conflict_new_id]}`
+    let group = conflictGroups.get(identifier)
+    if (!group) {
+      group = { representativeRow: r, locationCodes: new Set() }
+      conflictGroups.set(identifier, group)
+    }
+    group.locationCodes.add(Number(r[idx.country_id]))
   }
 
   const entriesByCountryId = new Map()
   let upgraded = 0
   let unclassified = 0
   let skippedAsDuplicate = 0
+  let attributedByParty = 0
 
-  for (const row of groups.values()) {
-    const countryCode = Number(row[idx.country_id])
-    const country = resolveGwCode(countryCode, gwNameMap, `Candidate conflict "${row[idx.conflict_name]}"`)
-    if (!country) continue
-
-    // UCDP's own conflict_name is literally the "XXX<gwcode>" placeholder
-    // (see header comment) when no real name has been assigned yet either —
-    // that's not a human-readable name, so it's dropped rather than shown.
-    const conflictName = /^XXX\d+$/.test(row[idx.conflict_name]) ? undefined : row[idx.conflict_name]
-
+  for (const [identifier, { representativeRow: row, locationCodes }] of conflictGroups) {
     const dsetId = row[idx.conflict_dset_id]
     const newId = row[idx.conflict_new_id]
     const candidateId = /^\d+$/.test(dsetId) ? Number(dsetId) : /^\d+$/.test(newId) ? Number(newId) : null
     const known = candidateId != null ? knownConflicts.get(candidateId) : undefined
 
-    if (known) {
-      if (activeConflictIds.has(candidateId)) {
-        skippedAsDuplicate++
-        continue // already emitted by the ACD pass — don't double-chip it
-      }
-      upgraded++
+    if (known && activeConflictIds.has(candidateId)) {
+      skippedAsDuplicate++
+      continue // already emitted by the ACD pass — don't double-chip it
+    }
+
+    // Attach to every country genuinely involved: each event LOCATION (the
+    // country_id/gwno_loc UCDP itself records), UNION every named side_a/
+    // side_b government that resolves to a real Country — not location
+    // alone. UCDP's Candidate/GED `country_id` is where a violent event
+    // physically happened, not who's fighting it: a state conducting an
+    // entirely off-its-own-soil campaign (e.g. the 2025 US/Israel strikes
+    // on Iranian targets, identifier "new:16905" below) never appears as
+    // any event's location, so location-only matching silently dropped it
+    // from that state's own record even though UCDP's own side_b field
+    // names it as a combatant — see LOGBOOK.md's entry on this for the real
+    // case (Iran vs. Israel+US) this was caught against. The ACD (annual)
+    // pass above doesn't have this gap — its own `gwno_loc` field already
+    // lists every named side's territory, not just one event's location
+    // (confirmed against conflict_id 16099, the UK/US vs. Yemen row: gwno_
+    // loc = "2, 200, 678", i.e. USA+UK+Yemen — all three, not just Yemen).
+    const targets = new Map()
+    for (const code of locationCodes) {
+      const country = resolveGwCode(code, gwNameMap, `Candidate conflict "${row[idx.conflict_name]}"`)
+      if (country) targets.set(country.id, country)
+    }
+    const locationOnlyCount = targets.size
+    for (const country of [...resolvePartyCountries(row[idx.side_a]), ...resolvePartyCountries(row[idx.side_b])]) {
+      targets.set(country.id, country)
+    }
+    if (targets.size > locationOnlyCount) attributedByParty++
+    if (targets.size === 0) {
+      logGap(
+        `Candidate conflict "${row[idx.conflict_name]}" (${identifier})`,
+        'Neither the event location(s) nor any named side_a/side_b party resolved to a UN-193 Country.'
+      )
+      continue
+    }
+
+    // UCDP's own conflict_name is literally the "XXX<gwcode>" placeholder
+    // (see header comment) when no real name has been assigned yet either —
+    // that's not a human-readable name, so it's dropped rather than shown.
+    const conflictName = /^XXX\d+$/.test(row[idx.conflict_name]) ? undefined : row[idx.conflict_name]
+    const entry = {
+      conflictType: known ? known.conflictType : 'unclassified',
+      conflictName,
+      snapshotDate: `UCDP Candidate v${CANDIDATE_VERSION}`,
+      source: 'ucdp-candidate',
+    }
+    if (known) upgraded++
+    else unclassified++
+
+    // Same entry object shared across every target country — fine, this
+    // only ever gets read back out and re-stringified per country
+    // (countryToTs below), never mutated.
+    for (const country of targets.values()) {
       const list = entriesByCountryId.get(country.id) ?? []
-      list.push({
-        conflictType: known.conflictType,
-        conflictName,
-        snapshotDate: `UCDP Candidate v${CANDIDATE_VERSION}`,
-        source: 'ucdp-candidate',
-      })
-      entriesByCountryId.set(country.id, list)
-    } else {
-      unclassified++
-      const list = entriesByCountryId.get(country.id) ?? []
-      list.push({
-        conflictType: 'unclassified',
-        conflictName,
-        snapshotDate: `UCDP Candidate v${CANDIDATE_VERSION}`,
-        source: 'ucdp-candidate',
-      })
+      list.push(entry)
       entriesByCountryId.set(country.id, list)
     }
   }
 
   console.log(
-    `  ${groups.size} distinct candidate conflicts: ${upgraded} upgraded (known type, not yet in an active ACD row), ` +
-      `${unclassified} unclassified, ${skippedAsDuplicate} skipped as already-active-ACD duplicates.`
+    `  ${conflictGroups.size} distinct candidate conflicts: ${upgraded} upgraded (known type, not yet in an active ` +
+      `ACD row), ${unclassified} unclassified, ${skippedAsDuplicate} skipped as already-active-ACD duplicates, ` +
+      `${attributedByParty} attached to at least one country via a named side_a/side_b party beyond its event ` +
+      `location(s).`
   )
 
   return entriesByCountryId

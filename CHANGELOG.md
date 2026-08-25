@@ -17,6 +17,73 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.8.0 — Technology: the fourth real, sourced Intelligence Engine category
+
+**New major version, Intelligence Engine.** Technology joins Military/Economy/Current Status with a real
+0-100 composite score for all 193 countries — R&D expenditure (% GDP), patent applications by residents (per
+million population), and high-tech exports (% of manufactured exports), all World Bank WDI, plus the ITU ICT
+Development Index (`scripts/buildTechnology.mjs`, `npm run build:technology`, per the locked design in
+`Intelligence Docs/intelligence-engine-scoring-design.md` §3.3, finalized 2026-08-25 at 4 equal-weighted
+components after a 5th/6th-component investigation found real coverage gaps in every candidate checked). All
+4 components are percentile-rank normalized and averaged; a country needs at least 3 of 4 present to get a
+score at all. The ICT Development Index has no live ITU API to source from — it's a hand-transcribed snapshot
+of ITU's own published 2024 edition, deterministically parsed from a sourced wikitable rather than eyeballed,
+the same "cited, hand-maintained, not a live pull" precedent Military's FAS-sourced nuclear warhead counts and
+Current Status's OFAC sanction tiers already established. `hud/IntelligencePanel.tsx`'s TECHNOLOGY status bar
+is now real and clickable into a 4-component citation drill-down, and `hud/AnalyticsPanel.tsx`'s TECHNOLOGY
+thumbnail ranks all 193 countries with sortable per-component columns — both mirror Economy's own wiring
+exactly. Only Diplomacy still renders "Awaiting data feed" on both surfaces. See `CLAUDE.md`'s Geopolitical
+data architecture section and `LOGBOOK.md`'s 2026-08-25/26 entries for the full sourcing trail.
+
+## v6.7.4 — AnalyticsPanel: clicking a country's conflict count now reveals its conflicts, not the country
+
+**Point release.** `hud/AnalyticsPanel.tsx`'s CURRENT STATUS list: clicking the CONFLICTS cell now expands
+that row in place to show each conflict as a small pill (type + name, colored via `scene/
+conflictTypeStyles.ts`), without selecting the country — clicking anywhere else on the row, including the
+SANCTION cell, still selects the country as before. Discussed with the user first: the alternative was
+selecting the country and opening `IntelligencePanel` with its conflicts pre-expanded, but staying in the
+193-row list won out, since that's what "not the country" was actually asking for. `CurrentStatusListRow`'s
+outer element changed from a `<button>` to a `<div role="button" tabIndex={0}>` (a `<button>` can't contain
+another interactive `<button>`) with the CONFLICTS cell as a real nested `<button>` that stops its click from
+also selecting the country; keyboard behavior (Enter/Space selects the country) is unchanged. See `CLAUDE.md`'s
+v6.7.4 entry for the full reasoning.
+
+## v6.7.3 — Current Status: fixed a country being dropped from its own conflict record when it fought off its own soil
+
+**Point release — data fix.** `scripts/buildCurrentStatus.mjs` matched Candidate/GED conflicts to countries by
+`country_id` alone — where a violent event physically happened, not who fought it. That silently dropped a
+state from its own `CURRENT_STATUS` record whenever every recorded event for a conflict it's a named party to
+happened to land outside its own territory: the US never got a chip for "Iran - Israel, United States of
+America" despite being named `side_b` on every one of that conflict's 23 rows, because no event in the dataset
+was geolocated on US soil (reported directly, comparing against the "US/UK vs. Yemen" conflict, which — being
+sourced from the ACD annual dataset instead — already listed the US correctly, since `gwno_loc` there encodes
+every named side's territory, not just one event's location). Fixed by also resolving each Candidate row's
+`side_a`/`side_b` government names against the UN-193 country list and attaching the conflict to the union of
+event-location countries and resolved participants, regrouping candidate rows by conflict identifier alone
+(rather than identifier+location) to do this without producing duplicate chips for a conflict active across
+several locations. Real, verified deltas: the US and Israel each gained a conflict entry they were a named
+party to but never received; two smaller cases (Rwanda, Myanmar) similarly. Purely additive — no country's
+existing entries were removed or changed. See `LOGBOOK.md`'s 2026-08-26 entry for the full diagnosis,
+including why the separately-reported "India-Pakistan looks outdated" question is not a bug: UCDP's own annual
+product only covers through 2025, and there's no mechanism (by design) to mark an episode ended before UCDP's
+own next release does.
+
+## v6.7.2 — Current Status wired into AnalyticsPanel: filtered/sortable list, not a ranked score bar
+
+**Point release.** `hud/AnalyticsPanel.tsx`'s CURRENT STATUS thumbnail is clickable now, the last of the five
+Intelligence Engine metrics to get real UI treatment where real data exists. Unlike Military/Economy, it isn't
+a `BaseRankedRow`/`AnalyticsColumn`/`RankedListRow` ranking — Current Status has no single number to put in a
+SCORE bar (design doc §3.5) — so it's a filter-tabs-plus-sortable-list view instead: ALL / ACTIVE CONFLICT /
+SANCTIONED tabs (with live counts) above a list sortable by COUNTRY, CONFLICTS (a real, sortable count — the
+"no single number" gap only ever applied to a composite score, not to "how many conflicts"), or SANCTION
+(sorted by tier severity, RED > ORANGE > YELLOW > none). Each row shows one colored dot per distinct
+`conflictType` present plus the total count, and the same red/orange/yellow "S" badge
+`hud/IntelligencePanel.tsx` renders, minus that badge's click-to-open-menu behavior — a row here already
+selects the country on click, so a second click meaning on the same badge would be ambiguous. `CONFLICT_TYPE_
+STYLE` moved out of `IntelligencePanel.tsx` into a new `scene/conflictTypeStyles.ts` (mirroring `scene/
+sanctionTierColors.ts`) so both surfaces color a conflict type identically instead of risking two hardcoded
+copies drifting apart. See `CLAUDE.md`'s and `BACKLOG.md`'s Intelligence Engine entries for the full picture.
+
 ## v6.7.1 — Current Status: sanction badge and conflict chips are now interactive
 
 **Point release.** `IntelligencePanel.tsx`'s sanction "S" badge now opens `SanctionTierMenu.tsx`, a popover

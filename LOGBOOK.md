@@ -5,6 +5,172 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-25/26 — Technology wired in: build script, live-data research, and full UI treatment
+
+Follow-on to the same-day design-doc finalization (4 locked components — see the earlier 2026-08-25 entries).
+"Wire technology in" meant three things: source real data for the 4 locked components, generate
+`src/data/technologyScores.ts` the same way Military/Economy do, and wire both `IntelligencePanel.tsx` and
+`AnalyticsPanel.tsx` — the full Economy playbook, not just the data layer.
+
+**Verified all 3 World Bank WDI indicators live before writing any script code**, rather than trusting
+remembered indicator mnemonics: `GB.XPD.RSDV.GD.ZS` (R&D % GDP), `IP.PAT.RESD` (patent applications,
+residents — WIPO-sourced, re-hosted through WDI), `TX.VAL.TECH.MF.ZS` (high-tech exports %), and
+`SP.POP.TOTL` (population, for the per-capita denominator) all fetched real, current data for a spot-check
+country before being trusted in the build script.
+
+**ICT Development Index was the hard part — no live ITU API exists.** `datahub.itu.int` returns a 403 to an
+unauthenticated fetch; ITU's own DataHub "about" page describes query/download tooling but nothing that looks
+like an open bulk REST endpoint, the same "available upon request" pattern that already ruled out the IMF AI
+Preparedness Index as a Technology candidate earlier the same day. Two options: backlog the component (but
+it's one of only 4 locked components, and the design doc explicitly names it — dropping it would contradict
+work finished hours earlier) or hand-transcribe it from a real, cited, published source the same way
+`buildMilitary.mjs`'s FAS Nuclear Notebook warhead counts and `currentStatus.ts`'s OFAC sanction-tier seed
+already do. Went with transcription, but specifically avoided the failure mode that makes hand-transcription
+risky at scale (silently wrong numbers across a large table): a first pass through `WebFetch` against
+`en.wikipedia.org/wiki/ICT_Development_Index` came back as an LLM-summarized table that was visibly
+untrustworthy — same-page IDI values NOT in a coherent order (Finland's 98.1 listed after several countries
+with lower scores), which is exactly the kind of transposition risk a summarization pass over a ~170-row
+table can introduce silently. Switched to fetching the RAW WIKITEXT directly (`action=raw` via `curl`, not
+WebFetch) and parsing it with a deterministic regex against MediaWiki's own `{{val|N|fmt=gaps}}` template
+syntax — 172 of 173 data rows matched cleanly on the first pass (the one miss was Palestine's row, which uses
+a different template shape for its country-code cell — not a GeoEntity concern here since Technology is
+country-only, so it was left out rather than special-cased). This is the same standard `buildMilitary.mjs`
+already set for hand-transcribed data (cited, extracted carefully, not eyeballed) applied to a case where the
+extraction step itself needed to be deterministic rather than routed through a second model pass.
+
+**India is absent from the source table entirely — confirmed as a real gap, not a parsing bug**, by grepping
+the raw wikitext for every matched country code in alphabetical order and finding the sequence jump straight
+from Indonesia (IDN) to Ireland (IRL) with no `IND` row anywhere in between. Logged to `BACKLOG.md` like any
+other coverage gap rather than guessed at or silently back-filled.
+
+**Real, measured live-fetch coverage across all 193 countries came in noticeably lower than the design doc's
+original per-component estimates** for the two indicators the doc had guessed at most casually: R&D
+expenditure 145 (doc estimated ~190), patents per million 148 (doc used the same ~190 estimate as its
+patent-count-only version), high-tech exports 175 (doc estimated ~150 — this one came in HIGHER), ICT
+Development Index 170 (doc estimated ~165 — close). Confidence breakdown: 124 measured / 27 proxy / 42
+unavailable. Treated the doc's numbers as a pre-build guess, not a target to hit — the real fetch is the
+authoritative number now, recorded in `CLAUDE.md` rather than silently left mismatched against the design
+doc's own table.
+
+**Confidence coverage floor scaled from Economy's own 5-component precedent (≥3 of 5) down to Technology's 4
+components (≥3 of 4)** — same "you need a floor, not just any single component" reasoning Economy's
+Monaco/Liechtenstein case established, applied proportionally rather than re-derived from scratch.
+Normalization: percentile rank for all 4 components uniformly (reusing Economy's already-user-confirmed
+average/fractional tie convention rather than re-asking) — none of Technology's 4 components have the
+GDP-scale outlier skew that made Economy's GDP component alone switch to log-min-max, so there was no reason
+for any component here to diverge from the simpler method.
+
+**UI wiring was a direct mirror of Economy's, not a new pattern:** `technologyIntelValue()`/
+`TechnologyDrilldown` in `IntelligencePanel.tsx`, `TECHNOLOGY_COLUMNS`/`buildTechnologyRows()` in
+`AnalyticsPanel.tsx`, `sourceLabel()` gained one more branch (`itu.int`), `METRIC_AVAILABLE.technology`
+flipped to `true`. Verified live in the browser (not just typecheck/lint/vitest): Germany's TECHNOLOGY bar
+renders 84.2 with a working 4-row citation drill-down, and the Analytics TECHNOLOGY ranking correctly surfaces
+South Korea/Singapore/United States at the top — a plausible real ranking, not a smoke-test artifact. No
+Taiwan score, unlike Economy — Technology has no IMF WEO (or any non-WDI) fallback, so Taiwan is simply absent
+here the same way it's absent from Military.
+
+## 2026-08-26 — AnalyticsPanel: conflict counter gets its own click, discussed before implementing
+
+Direct request: clicking a country's conflict count in the CURRENT STATUS list should reveal the conflicts,
+not select the country — clicking anywhere else on the row should still select the country as usual. Talked
+through the destination before writing any code (the request said "pull up the conflicts, not the country,"
+which is ambiguous between two real designs):
+
+1. **Expand inline, in the list itself, with no country selection at all.** Keeps the user's place in a
+   193-row ranked list.
+2. **Select the country and open `IntelligencePanel` with its CURRENT STATUS row pre-expanded**, instead of
+   its default collapsed headline. Reuses existing UI, but navigates away from the list — which seemed to
+   contradict "not the country" in the request.
+
+User picked option 1. Implemented as: `CurrentStatusListRow`'s outer element changed from a single `<button>`
+(the whole row) to a `<div role="button" tabIndex={0} onClick={onSelect} onKeyDown={...}>`, since a `<button>`
+can't contain another interactive `<button>` and the CONFLICTS cell needed to become one — Enter/Space on the
+row still selects the country, matching what the removed real `<button>` did. The CONFLICTS cell's nested
+`<button>` calls `e.stopPropagation()` so its click never bubbles into the row's `onSelect`. Expanding renders
+each `ConflictEntry` as a small pill (type label + name, `CONFLICT_TYPE_STYLE`-colored) — deliberately not
+`IntelligencePanel.tsx`'s full `ConflictChip`: no click-to-highlight (the globe isn't visible behind this
+full-screen view) and no `shortenConflictName()` treatment (that function stays where it is — one caller
+doesn't justify promoting it to a shared module, especially since the reason it exists — trimming a name for a
+chip that also does globe highlighting — doesn't apply here). Expand state is local `useState` per row rather
+than lifted into `AnalyticsPanel`, so re-sorting the list can't detach an expanded row from the wrong country
+(rows are keyed by `row.id`) and multiple rows can be expanded independently — nothing in the request asked
+for accordion-style exclusivity, so this didn't add it.
+
+## 2026-08-26 — Current Status: a country fighting off its own soil was silently dropped from its own conflict list
+
+Direct user report while reviewing the freshly-wired `AnalyticsPanel.tsx` CURRENT STATUS view: the US was
+missing a chip for its own reported role in the 2025 Iran strikes, and asked why the India-Pakistan entry
+looked "outdated" when the underlying data clearly existed. Two different questions, two different answers —
+one was a real bug, the other wasn't.
+
+**India-Pakistan: not a bug, an inherent lag in the source, working as designed.** Inspected the vendored
+UCDP/PRIO ACD v26.1 zip directly: conflict_id 218 (`Government of India vs. Government of Pakistan`) has a
+2025 row with `ep_end='0'` — UCDP's own "not confirmed ended" signal — and the dataset's `MAX_YEAR` is 2025 (an
+annual product for year Y publishes the following year; 2026's edition doesn't exist yet). The Jan-Jul 2026
+Candidate/GED files show no new India-Pakistan state-based event in that window, which is a real (if
+informal) signal of 2026 de-escalation — but UCDP's own methodology only marks an episode formally ended after
+a confirmed full quiet YEAR in a subsequent annual release, and this script has "no manual override path, per
+the locked design: unclassified is the honest state until UCDP itself types it" (see the design doc §3.5 and
+this script's own header comment) — the same discipline extends to NOT manually flipping `ep_end` early
+either. The entry is accurate to UCDP's most recent official classification; it just can't be fresher than
+that classification is.
+
+**USA-Iran: a real bug, now fixed.** Verified directly against the vendored Candidate/GED CSVs (via the
+project's own `parseCsv`, not an ad hoc parser — see below for why that distinction mattered): the "Iran -
+Israel, United States of America" conflict (`conflict_new_id` 16905) has `side_b = "Government of Israel,
+Government of United States of America"` on every one of its 23 rows — the US is explicitly named as a
+combatant — but `country_id` (Iran, Iraq, Jordan, Kuwait, Israel, Bahrain, Lebanon, Oman, Saudi Arabia, Syria,
+UAE across the various rows) never once resolves to the US, because UCDP's Candidate/GED `country_id` is where
+a violent EVENT happened, not who's fighting it — no event in this dataset was geolocated on US soil. The
+build script only ever matched candidates by that location code, so the US's own `CURRENT_STATUS` record never
+got this entry, even though UCDP's own data names it as a party. (The ACD/annual side doesn't have this gap —
+confirmed against conflict_id 16099, `Government of United Kingdom, Government of United States of America vs.
+Government of Yemen (North Yemen)`: `gwno_loc = "2, 200, 678"`, i.e. USA+UK+Yemen all three, not just Yemen —
+the annual product's location field already encodes every named side's territory.)
+
+**Fix:** `buildCurrentStatus.mjs`'s Candidate/GED pass now also resolves each row's `side_a`/`side_b` text
+against the UN-193 country list (`resolvePartyCountryName`/`resolvePartyCountries` — the same "Government of
+X" stripping and "`X (OldName)`" historical-alias prefix match `hud/IntelligencePanel.tsx`'s
+`resolvePartyCountryIds()` already does at render time for click-to-highlight, duplicated rather than shared
+since one's a React/TS module and the other's a plain Node script) and attaches the conflict to the union of
+event-location countries and resolved participant countries, not location alone. A non-state side (a rebel
+group name) never resolves and is silently skipped — same "no geometry, no highlight" correctness the render-
+time version already relies on.
+
+**Had to restructure the grouping to avoid a duplication bug of my own making.** The original candidate-row
+grouping keyed by `(conflict identifier, country)` — deliberately, so the same conflict active in multiple
+locations produced one chip per location. But this identifier ("Iran vs. Israel+US") already had ~10 separate
+per-location groups (Iran, Iraq, Jordan, Kuwait, Israel, Bahrain, Lebanon, Oman, Saudi Arabia, Syria, UAE all
+independently keyed) sharing one `side_a`/`side_b` pair — naively adding participant-resolution inside that
+per-location loop would have attached ~10 near-identical duplicate entries to the US (one per location group),
+turning "AT WAR" into "AT WAR (10)" for a single real conflict. Fixed by regrouping candidate rows by
+CONFLICT IDENTIFIER ALONE first (collecting the full *set* of locations seen, plus one representative row for
+side_a/side_b/conflict_name — verified those are consistent across a conflict's own rows before relying on
+that, e.g. this exact identifier: one distinct `[side_a, side_b]` pair across all 23 rows in both files), then
+emitting exactly one entry per conflict, attached once to the union of every resolved location + participant
+country. Verified against a `--sample` dry run before running the full build: 5 of 121 distinct candidate
+conflicts in the 15-country sample gained at least one country via participant-parsing beyond their event
+location(s) — a small, plausible number, not an explosion.
+
+**Real, verified deltas in the regenerated `src/data/currentStatus.ts`** (full diff reviewed by hand, not just
+trusted): United States of America gained the Iran/Israel/US entry (the reported case); Israel gained
+"Israel: Islamic State" (`side_a = "Government of Israel"` on a row geolocated in Turkey — Israel's own
+government is a named party in a conflict that, before this fix, never appeared on Israel's own record at
+all); Rwanda gained "DR Congo (Zaire) - Rwanda" (`side_b = "Government of Rwanda"` on a row located in DR
+Congo); Myanmar gained "Bangladesh - Myanmar (Burma)" similarly. No country's list shrank — this is strictly
+additive (a set union can only grow), and re-running the diff confirmed no other country's entries changed
+content, only array order in a few cases (an artifact of the regrouping's different iteration order — chips
+aren't order-sensitive, so this is cosmetic).
+
+**One real mistake caught mid-investigation, worth logging so it isn't repeated:** my first pass at inspecting
+the raw CSVs used a quick hand-rolled comma-split parser instead of the project's own `scripts/lib/csv.mjs`
+`parseCsv` — it mishandled a quoted field earlier in one row, shifting every subsequent column left by one,
+which made the "Israel: Islamic State" row's `country_id` look blank when it's actually `"640"` (Turkey) once
+parsed correctly. Nearly filed that as a second bug (attribution via a blank/unresolvable location) before
+re-checking with the real parser. Lesson: verify against the project's own parsing code, not a scratch
+reimplementation, before drawing conclusions from raw vendor data — a subtly wrong ad hoc parser produces
+plausible-looking but wrong answers, which is worse than an obvious failure.
+
 ## 2026-08-26 — Current Status: plain-language conflict labels, collapsed-by-default, and click-to-highlight parties
 
 Fourth same-day pass (see the entries below). Direct feedback that the conflict chip wording — UCDP's own
@@ -252,6 +418,65 @@ target). Across the full 194-entity dataset: average composite delta -1.24, 78 e
 (-17.6), and Thailand (-17.5), all countries whose inflation sits well outside the gaussian's effective range
 around 2%. Confidence tiers unaffected (still 187 measured / 3 proxy / 4 unavailable) — both changes are
 normalization-only, not coverage-only.
+
+## 2026-08-25 — Technology category: component list locked, GII-backbone design superseded
+
+Same process Military went through: draft, find the real problems in it by actually reading the source
+structure, redesign around directly-sourced single-purpose indicators instead of a bundled index.
+
+**Why the original GII-backbone design didn't hold up.** The draft in `Intelligence Docs/intelligence-engine-
+scoring-design.md` §3.3 used WIPO's Global Innovation Index as the backbone metric, plus PCT patent filings
+and a general "AI Index" reference as separate inputs. Reading GII's own indicator list surfaced two real
+problems, not stylistic ones: PCT patent filings are already one of GII's own 78 indicators (Knowledge and
+technology outputs pillar, Knowledge Creation sub-pillar) — scoring GII and PCT filings as separate components
+double-counts the same underlying signal. And GII's Input sub-index includes an Institutions pillar (political
+stability, regulatory quality, business environment) — real content, but governance context, not technology
+capacity; using GII as-is would smuggle non-technology signal into a category that's supposed to measure
+technology specifically. Both problems trace back to the same root cause: GII is a bundled composite designed
+for its own purpose (overall innovation ranking), and borrowing it as a backbone inherits its internal
+structure whether or not that structure matches this project's category boundaries.
+
+**Resolution: drop GII as the backbone, build from 6 directly-sourced components instead** — R&D expenditure
+(% GDP, World Bank WDI), patent applications by residents per capita (WIPO IP Statistics, sourced directly,
+not via GII), high-tech exports (% of manufactured exports, World Bank WDI), the ITU ICT Development Index
+(relaunched 2023 methodology), researchers per million (UNESCO Institute for Statistics), and AI researchers/
+developers per capita (Stanford AI Index, 2026 edition). Two components needed their own rejected-alternative
+notes: total R&D expenditure in dollars (not %GDP) was considered and dropped for component #1, since it's
+%GDP × GDP and would double-count economic scale as technology capability; and for the AI Index component,
+notable-AI-models-produced (too concentrated, ~6 countries, needs its own true-zero call), publications/
+citations volume, and private AI investment ($) were all considered and rejected as scale-correlated with GDP/
+population — the same size-vs-intensity artifact as the R&D-dollars rejection — before landing on researchers/
+developers per capita as the one that actually measures capacity rather than scale or attention.
+
+**Weighting: equal by default, per Governing Principle 6 — not a default taken lightly.** Two illustrative
+weighted schemes were hand-drafted and reviewed before falling back to equal weighting; neither had citable
+backing, and — worth noting as the actual reason this wasn't a close call — they didn't even agree with each
+other on the split. Without a citable framework and without so much as informal convergence between two
+independent attempts, Principle 6's default (equal weighting) is the honest answer, not a placeholder pending
+a better one.
+
+**Advanced Industry (semiconductor/aerospace/robotics/biotech capability) backlogged, not scored or excluded
+on principle.** No single named public dataset covers this sub-sector combination as one composite; a first
+pass suggests most candidates are subscription-gated or methodology-opaque, the same shape of blocker
+Military's naval/ground-equipment and air-fleet backlog items (§3.1) already hit. Not investigated
+source-by-source yet — that's the actual next step, logged in `BACKLOG.md`'s new "Intelligence Engine —
+Technology sourcing" section rather than guessed at now.
+
+**What's still open, deferred to Section 9/10 rather than decided here:** normalization method (log-min-max vs.
+percentile-rank) and whether Technology adopts Military's coverage-floor/true-zero confidence mechanism —
+neither resolved by locking the component list and weighting default. Diplomacy's weighting is now the only
+still-fully-open weighting question in Section 9; Technology's is resolved.
+
+## 2026-08-25 (cont.) — Technology finalized at 4 locked components
+
+Technology finalized at 4 locked components (R&D%GDP, WIPO patents/capita, high-tech exports%, ITU ICT
+Development Index), equal-weighted. Nine candidate 5th components investigated and documented in the design
+doc rather than silently dropped: GII/PCT (double-count), four AI Index metrics (concentration/scale bias),
+AIPI (closed data + composite opacity), Oxford Insights (wrong construct), Global AI Vibrancy (36-country
+ceiling), MSCI tech-sector weighting (salience bias + 47-country ceiling + paywalled), IMD WDCR (69 countries
++ survey data + paywalled), labor force with advanced education (not STEM-specific, flat-percentage fix
+rejected as mathematically inert), and UNESCO STEM-graduate share (closest fit — ~120 countries, missing
+China — flagged for future research rather than closed).
 
 ## 2026-08-22 — Economy: inflation scored as distance from a 2% target, not "lower is always better"
 
