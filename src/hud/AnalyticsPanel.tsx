@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Vector3 } from 'three'
 import { useTopNavTab } from './navStore'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
@@ -15,6 +15,7 @@ import { CONFLICT_TYPE_STYLE } from '../scene/conflictTypeStyles'
 import { SANCTION_TIER_STYLE, withAlpha } from '../scene/sanctionTierColors'
 import { resolveEntity } from '../entities/EntityResolver'
 import { closeInspector, selectEntity, useSelection } from './selectionStore'
+import { setAnalyticsStepHandler } from './analyticsStepStore'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
@@ -240,22 +241,36 @@ function RankedListRow<TRow extends BaseRankedRow>({
   rank,
   columns,
   isSelected,
+  isHighlighted,
   onSelect,
+  rowRef,
 }: {
   row: TRow
   rank: number
   columns: AnalyticsColumn<TRow>[]
   isSelected: boolean
+  // Lookup-jump target flash — see RankingLookupBar's own comment. Distinct
+  // from `isSelected` (which never changes from a lookup jump, only from an
+  // actual row click/map selection) and rendered as an outer glow rather
+  // than a background tint so it stays visible even when it also happens to
+  // land on the already-selected row.
+  isHighlighted?: boolean
   onSelect: () => void
+  // Registers this row's DOM node so a lookup jump can scrollIntoView() it —
+  // see AnalyticsPanel's `rowRefs` map. Optional only because TypeScript
+  // requires it (every real caller passes one); there's no case where
+  // omitting it is intentional.
+  rowRef?: (el: HTMLButtonElement | null) => void
 }) {
   const color = row.value !== undefined ? intelValueColor(row.value) : '#51648a'
   return (
     <button
+      ref={rowRef}
       type="button"
       onClick={onSelect}
       className={`flex w-full items-center gap-3 rounded px-3 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)] ${
         isSelected ? 'bg-[rgba(63,139,255,0.12)]' : ''
-      }`}
+      } ${isHighlighted ? 'shadow-[0_0_0_2px_rgba(77,149,255,0.9),0_0_20px_rgba(77,149,255,0.5)]' : ''}`}
     >
       <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#51648a]">{rank}</span>
       <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#dce8fb]">
@@ -628,12 +643,16 @@ function CurrentStatusListRow({
   row,
   rank,
   isSelected,
+  isHighlighted,
   onSelect,
+  rowRef,
 }: {
   row: CurrentStatusRankedRow
   rank: number
   isSelected: boolean
+  isHighlighted?: boolean
   onSelect: () => void
+  rowRef?: (el: HTMLDivElement | null) => void
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const hasConflicts = row.conflicts.length > 0
@@ -653,13 +672,14 @@ function CurrentStatusListRow({
   return (
     <div>
       <div
+        ref={rowRef}
         role="button"
         tabIndex={0}
         onClick={onSelect}
         onKeyDown={handleRowKeyDown}
         className={`flex w-full cursor-pointer items-center gap-3 rounded px-3 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)] ${
           isSelected ? 'bg-[rgba(63,139,255,0.12)]' : ''
-        }`}
+        } ${isHighlighted ? 'shadow-[0_0_0_2px_rgba(77,149,255,0.9),0_0_20px_rgba(77,149,255,0.5)]' : ''}`}
       >
         <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#51648a]">{rank}</span>
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#dce8fb]">{row.name}</span>
@@ -706,6 +726,135 @@ function CurrentStatusListRow({
   )
 }
 
+// ---------------------------------------------------------------------------
+// Ranking lookup — jump to a country's row within whichever list is
+// currently open, without selecting it. Deliberately NOT SearchBar.tsx's
+// selectEntry() — that calls selectEntity(), which opens IntelligencePanel
+// on top of this full-screen view; direct request was for the opposite:
+// stay on this ranking and just scroll to the row. Scoped to whichever rows
+// are actually ON SCREEN for the active metric (AnalyticsPanel passes in
+// the current, filter-aware row list — see `activeLookupRows`) rather than
+// the full 193-country registry, so e.g. searching a non-sanctioned country
+// while CURRENT STATUS's SANCTIONED filter is active correctly reports
+// "not in this list" instead of jumping to a row that isn't rendered.
+// ---------------------------------------------------------------------------
+const LOOKUP_MAX_RESULTS = 8
+// How long a jumped-to row's glow stays visible before self-clearing.
+const LOOKUP_HIGHLIGHT_MS = 2200
+
+interface LookupRow {
+  id: string
+  name: string
+}
+
+// Same three-tier ranking (exact, then starts-with, then contains) as
+// SearchBar.tsx's `matches` — kept as a separate, smaller copy rather than
+// a shared helper, since SearchBar's version ranks a `SearchEntry` union
+// (country/GeoEntity/city/...) and this only ever ranks the plain
+// {id, name} pairs a ranked list already has.
+function rankLookupMatches(rows: LookupRow[], query: string): LookupRow[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return []
+  const exact: LookupRow[] = []
+  const starts: LookupRow[] = []
+  const includes: LookupRow[] = []
+  for (const row of rows) {
+    const name = row.name.toLowerCase()
+    if (name === q) exact.push(row)
+    else if (name.startsWith(q)) starts.push(row)
+    else if (name.includes(q)) includes.push(row)
+  }
+  return [...exact, ...starts, ...includes].slice(0, LOOKUP_MAX_RESULTS)
+}
+
+// Self-contained, like SearchBar.tsx — owns its own `query` state rather
+// than lifting it to AnalyticsPanel, since nothing outside this component
+// needs to read it. AnalyticsPanel remounts this (via a `key={activeMetric.id}`
+// on the call site) whenever the active metric changes, so a query typed
+// while looking at one ranking never silently carries over into the next.
+function RankingLookupBar({
+  rows,
+  onJumpTo,
+  onStep,
+}: {
+  rows: LookupRow[]
+  onJumpTo: (id: string) => void
+  // ArrowUp/ArrowDown while focused here step to the previous/next row in
+  // the ranking's current order — the keyboard counterpart to the up/down
+  // buttons AnalyticsPanel renders next to this bar. Not scoped to `matches`
+  // (unlike a typical autocomplete's arrow-through-suggestions) — it steps
+  // the WHOLE visible ranking regardless of what's typed, since the point is
+  // browsing without needing a query at all.
+  onStep: (direction: 1 | -1) => void
+}) {
+  const [query, setQuery] = useState('')
+  const matches = useMemo(() => rankLookupMatches(rows, query), [rows, query])
+  const notFound = query.trim().length > 0 && matches.length === 0
+
+  function jump(row: LookupRow) {
+    onJumpTo(row.id)
+    setQuery('')
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    const top = matches[0]
+    if (top) jump(top)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      onStep(1)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      onStep(-1)
+    }
+  }
+
+  return (
+    <div className="relative w-[170px] shrink-0 sm:w-[210px]">
+      <div className="flex h-8 items-center gap-2 rounded-full border border-[#1c2c4b] bg-[rgba(15,23,40,0.9)] px-3">
+        <span className="shrink-0 text-[#5a729a]">
+          <Icon paths={ICONS.search} size={12} />
+        </span>
+        <form onSubmit={handleSubmit} className="min-w-0 flex-1">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Jump to country..."
+            aria-label="Jump to country in this ranking"
+            className="w-full bg-transparent text-[11.5px] text-[#dce8fb] outline-none placeholder:text-[#51648a]"
+          />
+        </form>
+      </div>
+
+      {matches.length > 0 && (
+        <ul className="absolute top-full right-0 z-50 mt-2 max-h-72 w-[240px] overflow-y-auto rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.97)] shadow-[0_10px_34px_rgba(0,0,0,0.55)] backdrop-blur-[12px]">
+          {matches.map((row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                onClick={() => jump(row)}
+                className="block w-full truncate px-3 py-2 text-left text-[11.5px] text-[#dce8fb] hover:bg-[rgba(63,139,255,0.14)]"
+              >
+                {row.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {notFound && (
+        <div className="absolute top-full right-0 z-50 mt-2 w-[240px] rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.97)] px-3 py-2 text-[10px] tracking-[0.1em] text-[#ff4a42] backdrop-blur-[12px]">
+          NOT IN THIS LIST
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DEFAULT_SORT: SortState = { key: 'score', direction: 'desc' }
 const CURRENT_STATUS_DEFAULT_SORT: SortState = { key: 'conflicts', direction: 'desc' }
 
@@ -733,15 +882,66 @@ export function AnalyticsPanel() {
   const [sort, setSort] = useState(DEFAULT_SORT)
   const [currentStatusFilter, setCurrentStatusFilter] = useState<CurrentStatusFilter>('all')
 
+  // Ranking lookup — see RankingLookupBar's own comment. `rowRefs` maps a
+  // country id to its currently-rendered row DOM node so a jump can
+  // scrollIntoView() it; populated/cleared by each row's own `rowRef`
+  // callback as it mounts/unmounts (switching metrics or CURRENT STATUS
+  // filters naturally clears out whichever ids are no longer rendered).
+  // `lookupHighlightId` drives the brief glow flash and self-clears after
+  // LOOKUP_HIGHLIGHT_MS so it reads as "found it," not a permanent marker.
+  const rowRefs = useRef(new Map<string, HTMLElement>())
+  const [lookupHighlightId, setLookupHighlightId] = useState<string | null>(null)
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Publishes `jumpToOffset` (defined below, after the `!isOpen` early
+  // return, so it can't be referenced directly from a hook up here — see
+  // KeyboardController.ts's identical `onCommandRef` pattern for the same
+  // "ref updated during render, hook registers a stable wrapper once"
+  // shape) to analyticsStepStore.ts, so InputManager.tsx can route
+  // ArrowUp/ArrowDown here while the ANALYTICS tab is active instead of to
+  // the map's own arrow-key navigation — direct report: arrows stayed
+  // "locked to the map" even while looking at Analytics, since that global
+  // handler never knew which tab was actually showing. Registered once
+  // (AnalyticsPanel is always mounted, per App.tsx) rather than tied to
+  // `isOpen`/`activeMetric` — the wrapper always delegates to whatever
+  // `jumpToOffset` most recently was, which already no-ops correctly when
+  // no ranking is open (see that function's own `ids.length === 0` guard).
+  const jumpToOffsetRef = useRef<((direction: 1 | -1) => void) | null>(null)
+  useEffect(() => {
+    setAnalyticsStepHandler((direction) => jumpToOffsetRef.current?.(direction))
+    return () => setAnalyticsStepHandler(null)
+  }, [])
+
+  function jumpToRow(id: string) {
+    const el = rowRefs.current.get(id)
+    if (!el) return
+    // Instant, not smooth — a jump can cross the full 193-row list in one
+    // call (rank 1 to rank 190+), and animating that distance is both slow
+    // and, worse, gave the in-progress scroll a window to visibly desync
+    // from the highlight-flash state update firing the same tick. Landing
+    // immediately plus the glow flash below reads as "found it" just as
+    // clearly without either problem.
+    el.scrollIntoView({ behavior: 'auto', block: 'center' })
+    setLookupHighlightId(id)
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current)
+    highlightTimeoutRef.current = setTimeout(() => setLookupHighlightId(null), LOOKUP_HIGHLIGHT_MS)
+  }
+
   // Resets whenever the active metric changes — including back to the
   // thumbnail grid (`metric` -> null) and into a newly opened ranking — so a
   // sort (or, for CURRENT STATUS, a filter tab) chosen while looking at one
   // metric never silently carries over and surprises the next one.
   // CURRENT STATUS defaults to sorting by CONFLICTS, not SCORE — it has no
-  // score column at all (see the CURRENT STATUS section above).
+  // score column at all (see the CURRENT STATUS section above). Also drops
+  // any in-flight lookup highlight/timeout — a flash from the previous
+  // ranking has no row to land on in the new one.
   useEffect(() => {
     setSort(metric === 'current-status' ? CURRENT_STATUS_DEFAULT_SORT : DEFAULT_SORT)
     setCurrentStatusFilter('all')
+    setLookupHighlightId(null)
+    return () => {
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current)
+    }
   }, [metric])
 
   // On the transition INTO this tab (not on every render while it stays
@@ -784,6 +984,8 @@ export function AnalyticsPanel() {
   // render of this panel — it's already gated on `isOpen` above, so it never
   // runs at all while Analytics isn't the active tab.
   const militaryRows = buildMilitaryRows()
+  const economyRows = buildEconomyRows()
+  const technologyRows = buildTechnologyRows()
   const currentStatusRows = buildCurrentStatusRows()
   const currentStatusCounts: Record<CurrentStatusFilter, number> = {
     all: currentStatusRows.length,
@@ -802,6 +1004,82 @@ export function AnalyticsPanel() {
 
   const activeMetric = INTEL_METRICS.find((m) => m.id === metric)
 
+  // Sorted (and, for CURRENT STATUS, filtered) once here rather than inline
+  // in each render branch below — needed in two places now that arrow-step
+  // navigation exists: the render itself, AND `activeLookupRows`/
+  // `jumpToOffset` below, which both need the exact ON-SCREEN order to make
+  // "next/previous row" mean anything. Computing it twice (once for
+  // rendering, once for stepping) would risk the two silently drifting
+  // apart if a sort/filter rule ever changed in only one place.
+  const sortedMilitaryRows = [...militaryRows].sort((a, b) => compareRows(a, b, sort.key, sort.direction, MILITARY_COLUMNS))
+  const sortedEconomyRows = [...economyRows].sort((a, b) => compareRows(a, b, sort.key, sort.direction, ECONOMY_COLUMNS))
+  const sortedTechnologyRows = [...technologyRows].sort((a, b) => compareRows(a, b, sort.key, sort.direction, TECHNOLOGY_COLUMNS))
+  const sortedCurrentStatusRows = [...currentStatusRows]
+    .filter((row) => matchesCurrentStatusFilter(row, currentStatusFilter))
+    .sort((a, b) => compareCurrentStatusRows(a, b, sort))
+
+  // What RankingLookupBar searches, jumpToRow can land on, and jumpToOffset
+  // steps through — the same rows actually rendered below for the active
+  // metric, in the same order, not the full 193-country registry (see
+  // RankingLookupBar's own comment for why: CURRENT STATUS's filter tabs
+  // mean a filtered-out country genuinely has no row on screen to jump to).
+  // Mirrors the render ternary's own branching below, military as the
+  // fallback for the same reason (the only other id that can reach this
+  // point is 'military' itself, since 'diplomacy' has no thumbnail to click
+  // into).
+  const activeLookupRows: LookupRow[] = !activeMetric
+    ? []
+    : activeMetric.id === 'economy'
+      ? sortedEconomyRows
+      : activeMetric.id === 'technology'
+        ? sortedTechnologyRows
+        : activeMetric.id === 'current-status'
+          ? sortedCurrentStatusRows
+          : sortedMilitaryRows
+
+  // Steps the highlight/scroll target to the next (+1) or previous (-1) row
+  // in `activeLookupRows`' current on-screen order — "switch between
+  // countries" without retyping a search each time, direct request
+  // alongside the sticky lookup bar. Wraps around at either end. Starting
+  // point when nothing's highlighted yet: +1 lands on the first row (top of
+  // whatever's currently sorted first), -1 on the last — either direction
+  // always lands somewhere real rather than silently no-op-ing on a fresh
+  // ranking view.
+  //
+  // Reference point is `lookupHighlightId` (a prior search jump) FIRST, but
+  // falls back to `selected?.id` — direct follow-up: stepping used to only
+  // pick up from a search jump, so arrowing after simply clicking a row did
+  // nothing (`lookupHighlightId` stays null on a plain row click). Now a
+  // click seeds the starting point too.
+  //
+  // Always closes IntelligencePanel (`closeInspector()`, a harmless no-op if
+  // it wasn't open) rather than following along with a `selectCountryRow`
+  // call — direct correction of an earlier version of this feature that DID
+  // keep an open panel in sync as you stepped: reported directly that
+  // arrow/step navigation should close the panel instead, and the panel
+  // should only ever open from an explicit row click. `selected` itself
+  // (and therefore which row still reads as the blue "selected" tint, and
+  // which country the globe/status-bar summary shows) is deliberately left
+  // untouched here — only the panel's open/closed state changes, the same
+  // "closeInspector doesn't clear the selection" split `dismiss`'s Escape
+  // handling already relies on elsewhere (see selectionStore.ts).
+  function jumpToOffset(direction: 1 | -1) {
+    const ids = activeLookupRows.map((row) => row.id)
+    if (ids.length === 0) return
+    const referenceId = lookupHighlightId ?? selected?.id ?? null
+    const currentIndex = referenceId ? ids.indexOf(referenceId) : -1
+    const nextIndex = currentIndex === -1 ? (direction === 1 ? 0 : ids.length - 1) : (currentIndex + direction + ids.length) % ids.length
+    const nextId = ids[nextIndex]
+    jumpToRow(nextId)
+    closeInspector()
+  }
+  // Keeps analyticsStepStore's registered wrapper pointed at THIS render's
+  // jumpToOffset (fresh `sort`/`currentStatusFilter`/`lookupHighlightId`/
+  // `selected`) — a plain ref mutation during render, not inside an effect,
+  // matching KeyboardController.ts's own `onCommandRef.current = onCommand`
+  // for the identical reason (see this file's earlier registration effect).
+  jumpToOffsetRef.current = jumpToOffset
+
   return (
     <div className="pointer-events-auto fixed inset-x-0 top-14 bottom-0 z-20 overflow-y-auto bg-[#04070a]">
       {!activeMetric ? (
@@ -818,7 +1096,13 @@ export function AnalyticsPanel() {
         </div>
       ) : (
         <div className="mx-auto w-full max-w-6xl px-6 py-8">
-          <div className="mb-4 flex items-center gap-3 border-b border-[#16233c] pb-4">
+          {/* `sticky top-0` (direct request — the lookup bar used to
+              scroll away with the list, forcing a scroll back to the top
+              just to search again) needs its own opaque background, since
+              rows now scroll UNDER it rather than past it; `z-10` keeps it
+              above those rows (which have no z-index of their own) without
+              needing to touch anything else's stacking. */}
+          <div className="sticky top-0 z-10 mb-4 flex items-center gap-3 border-b border-[#16233c] bg-[#04070a] pb-4">
             <button
               type="button"
               onClick={() => setMetric(null)}
@@ -831,31 +1115,64 @@ export function AnalyticsPanel() {
               <Icon paths={activeMetric.icon} size={16} />
               {activeMetric.label}
             </span>
-            <span className="ml-auto text-[9.5px] tracking-[0.16em] text-[#51648a]">
-              193 COUNTRIES ·{' '}
-              {activeMetric.id === 'economy'
-                ? 'WORLD BANK WDI SOURCED'
-                : activeMetric.id === 'technology'
-                  ? 'WORLD BANK WDI / ITU SOURCED'
-                  : activeMetric.id === 'current-status'
-                    ? 'UCDP / OFAC SOURCED'
-                    : 'SIPRI / WORLD BANK / FAS SOURCED'}
-            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <RankingLookupBar key={activeMetric.id} rows={activeLookupRows} onJumpTo={jumpToRow} onStep={jumpToOffset} />
+              {/* Up/down step buttons — "switch between countries" without
+                  retyping a search each time, alongside the lookup bar's
+                  own ArrowUp/ArrowDown handling (same jumpToOffset call
+                  either way; these exist for anyone who'd rather click than
+                  use the keyboard). */}
+              <div className="flex flex-col overflow-hidden rounded border border-[#1c2c4b]">
+                <button
+                  type="button"
+                  onClick={() => jumpToOffset(-1)}
+                  aria-label="Previous country in this ranking"
+                  title="Previous country in this ranking"
+                  className="grid h-4 w-6 place-items-center text-[#5a729a] transition-colors hover:bg-[rgba(63,139,255,0.14)] hover:text-[#8aa0c6]"
+                >
+                  <span className="rotate-180">
+                    <Icon paths={ICONS.chevronDown} size={9} />
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => jumpToOffset(1)}
+                  aria-label="Next country in this ranking"
+                  title="Next country in this ranking"
+                  className="grid h-4 w-6 place-items-center border-t border-[#1c2c4b] text-[#5a729a] transition-colors hover:bg-[rgba(63,139,255,0.14)] hover:text-[#8aa0c6]"
+                >
+                  <Icon paths={ICONS.chevronDown} size={9} />
+                </button>
+              </div>
+              <span className="hidden text-[9.5px] tracking-[0.16em] text-[#51648a] md:inline">
+                193 COUNTRIES ·{' '}
+                {activeMetric.id === 'economy'
+                  ? 'WORLD BANK WDI SOURCED'
+                  : activeMetric.id === 'technology'
+                    ? 'WORLD BANK WDI / ITU SOURCED'
+                    : activeMetric.id === 'current-status'
+                      ? 'UCDP / OFAC SOURCED'
+                      : 'SIPRI / WORLD BANK / FAS SOURCED'}
+              </span>
+            </div>
           </div>
           {activeMetric.id === 'economy' ? (
             <>
               <ColumnHeaderRow columns={ECONOMY_COLUMNS} sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
               <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-                {[...buildEconomyRows()]
-                  .sort((a, b) => compareRows(a, b, sort.key, sort.direction, ECONOMY_COLUMNS))
-                  .map((row, index) => (
+                {sortedEconomyRows.map((row, index) => (
                     <RankedListRow
                       key={row.id}
                       row={row}
                       rank={index + 1}
                       columns={ECONOMY_COLUMNS}
                       isSelected={selected?.id === row.id}
+                      isHighlighted={lookupHighlightId === row.id}
                       onSelect={() => selectCountryRow(row.id)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(row.id, el)
+                        else rowRefs.current.delete(row.id)
+                      }}
                     />
                   ))}
               </div>
@@ -864,16 +1181,19 @@ export function AnalyticsPanel() {
             <>
               <ColumnHeaderRow columns={TECHNOLOGY_COLUMNS} sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
               <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-                {[...buildTechnologyRows()]
-                  .sort((a, b) => compareRows(a, b, sort.key, sort.direction, TECHNOLOGY_COLUMNS))
-                  .map((row, index) => (
+                {sortedTechnologyRows.map((row, index) => (
                     <RankedListRow
                       key={row.id}
                       row={row}
                       rank={index + 1}
                       columns={TECHNOLOGY_COLUMNS}
                       isSelected={selected?.id === row.id}
+                      isHighlighted={lookupHighlightId === row.id}
                       onSelect={() => selectCountryRow(row.id)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(row.id, el)
+                        else rowRefs.current.delete(row.id)
+                      }}
                     />
                   ))}
               </div>
@@ -883,16 +1203,18 @@ export function AnalyticsPanel() {
               <CurrentStatusFilterTabs filter={currentStatusFilter} counts={currentStatusCounts} onChange={setCurrentStatusFilter} />
               <CurrentStatusHeaderRow sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
               <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-                {[...currentStatusRows]
-                  .filter((row) => matchesCurrentStatusFilter(row, currentStatusFilter))
-                  .sort((a, b) => compareCurrentStatusRows(a, b, sort))
-                  .map((row, index) => (
+                {sortedCurrentStatusRows.map((row, index) => (
                     <CurrentStatusListRow
                       key={row.id}
                       row={row}
                       rank={index + 1}
                       isSelected={selected?.id === row.id}
+                      isHighlighted={lookupHighlightId === row.id}
                       onSelect={() => selectCountryRow(row.id)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(row.id, el)
+                        else rowRefs.current.delete(row.id)
+                      }}
                     />
                   ))}
               </div>
@@ -901,16 +1223,19 @@ export function AnalyticsPanel() {
             <>
               <ColumnHeaderRow columns={MILITARY_COLUMNS} sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
               <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
-                {[...militaryRows]
-                  .sort((a, b) => compareRows(a, b, sort.key, sort.direction, MILITARY_COLUMNS))
-                  .map((row, index) => (
+                {sortedMilitaryRows.map((row, index) => (
                     <RankedListRow
                       key={row.id}
                       row={row}
                       rank={index + 1}
                       columns={MILITARY_COLUMNS}
                       isSelected={selected?.id === row.id}
+                      isHighlighted={lookupHighlightId === row.id}
                       onSelect={() => selectCountryRow(row.id)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(row.id, el)
+                        else rowRefs.current.delete(row.id)
+                      }}
                     />
                   ))}
               </div>

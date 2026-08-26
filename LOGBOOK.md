@@ -5,6 +5,124 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-26 (cont.) — AnalyticsPanel ranking lookup: build, a smooth-scroll bug, then sticky + step navigation
+
+Direct request: a search box in `AnalyticsPanel.tsx` that jumps to a country's row within whichever ranking is
+open, without selecting it (selecting opens `IntelligencePanel`, covering the full-screen ranked-list view —
+the opposite of "stay here, just show me the row"). Built as `RankingLookupBar`, a smaller sibling of
+`SearchBar.tsx`'s own three-tier exact/starts-with/contains matching, feeding a `jumpToRow(id)` in
+`AnalyticsPanel` that looks up the row's DOM node (via a `rowRefs` map populated by each row's own `rowRef`
+callback) and calls `scrollIntoView()` on it plus a timed highlight flash.
+
+**First version used `behavior: 'smooth'` and broke visibly on a long jump.** Verified directly in the browser,
+not just suspected: searching "Luxembourg" (rank 129 in the Military ranking) and clicking the match produced
+a screenshot immediately after the click showing a fully blank panel — no rows, scrollbar thumb near the
+bottom — that only resolved into the correct, expected state (Luxembourg's row, centered, highlighted) after
+roughly a second or two of real wall-clock time. Diagnosed by direct measurement rather than guessing:
+`el.scrollIntoView()`'s target container reported `scrollTop: 0` in a JS check taken ~100ms after the click,
+then still `0` at ~1.5s, then the SAME container was visibly correctly scrolled a few hundred ms later in a
+follow-up screenshot — the animation was real and eventually completed correctly, but the immediate post-click
+frame was genuinely blank on-screen, not just an artifact of how fast the automation tool was polling.
+
+**Root cause, best understanding:** `jumpToRow` calls `scrollIntoView({behavior:'smooth', ...})` and
+`setLookupHighlightId(id)` in the same synchronous handler as `RankingLookupBar`'s own `setQuery('')` — both
+land in the same React commit, re-rendering all 193 rows. Every row's `rowRef` prop is a fresh inline closure
+each render (`(el) => { ... }`), so React unregisters and re-registers each row's ref on every re-render — not
+a remount of the actual DOM node, but enough re-render churn landing in the same frame as an in-flight smooth-
+scroll animation to produce a visibly broken paint. Didn't chase the precise mechanism further once a clean
+fix was available: switched to `behavior: 'auto'` (instant). This removes the failure mode outright (nothing
+for a mid-flight re-render to desync from) and is arguably better UX anyway for a jump that can span the full
+list — instant placement plus the glow flash reads as "found it" at least as clearly as an animated scroll
+would have, without the multi-second animation on a long jump.
+
+**Also real, not a bug:** `activeLookupRows` is scoped to whatever's actually rendered for the active
+metric/filter, not the full 193-country registry — confirmed live that searching "India" while CURRENT
+STATUS's SANCTIONED filter tab is active correctly shows "NOT IN THIS LIST" (India isn't sanctioned, so its
+row genuinely isn't on screen to jump to), and that a match still IN the filtered view (e.g. "Sudan") jumps
+and highlights correctly. Confirmed the highlight auto-clears via its 2200ms timeout, and that a plain click
+elsewhere on a row (not through the lookup bar) still selects the country and opens `IntelligencePanel`
+exactly as before — the new mechanism is additive, not a change to existing row-click behavior.
+
+**Same-session follow-up (direct request): sticky header + up/down step-through-the-ranking.** Two asks:
+scrolling the list shouldn't scroll the lookup bar away, and there should be a way to move between countries
+without retyping a search. First one was a straightforward `position: sticky` + opaque background on the
+header row. Second needed the render order itself, not just the row set — `jumpToOffset(direction)` steps
+`lookupHighlightId` to its neighbor in `activeLookupRows`' current on-screen order, which meant hoisting the
+per-metric `.sort()` calls (previously computed inline inside each render branch's JSX) into four
+`sorted*Rows` variables computed once, shared by both the render branches and the lookup/step logic — so
+"next row" can't silently mean something different from what's actually rendered next.
+
+**Testing lesson: screenshots taken immediately after an action in this automated browser tool sometimes
+showed stale state that didn't match reality.** A rapid two-click stepping test (click "Next," screenshot)
+appeared to show the highlight not advancing between clicks — looked like a bug at first. Cross-checked with
+direct JS (`getComputedStyle(...).boxShadow`, `container.scrollTop`) instead of trusting the screenshot's
+timing, and the real explanation was mundane: enough real wall-clock time had elapsed between separate tool
+calls (each involves its own round trip) that the 2200ms highlight timeout had already fired between clicks,
+so each click correctly started fresh from "nothing highlighted" rather than continuing from the previous one
+— not a bug, just two clicks spaced further apart in real time than they looked. Confirmed the actual stepping
+logic was correct by firing 3 clicks back-to-back inside a single script (50ms apart, no tool round-trip
+between them): US → Russia → China, exactly as expected. Separately, one screenshot mid-session came back
+showing the whole panel blank while TopNav still rendered — traced to an unrelated `zoom` tool call that had
+just timed out with "the renderer may be frozen or unresponsive," not anything in the app; confirmed via a
+direct DOM query (`document.querySelectorAll(...).length` still returning 203 buttons) that the page was
+fully intact and just stuck on a stale paint. Lesson carried forward: when an automated screenshot shows
+something that looks like a real product bug, check the DOM/computed styles directly before concluding it's
+the app's fault — the automation layer has its own timing and rendering quirks that can look identical to a
+real bug at a glance.
+
+**Same-day follow-up: arrow-stepping only worked after a search jump, not after a plain row click.** Direct
+report: "once you click on a country, arrow functionality should work as well." Root cause was narrow —
+`jumpToOffset`'s reference point was `lookupHighlightId` alone, which only `jumpToRow` (the search-jump path)
+ever sets; clicking a row calls `selectCountryRow` instead, so `lookupHighlightId` stayed `null` and every
+subsequent arrow press treated it as "nothing selected yet," restarting from the top or bottom instead of
+continuing from the clicked country. Fix: `referenceId = lookupHighlightId ?? selected?.id ?? null`. Also
+decided (not explicitly asked, but followed from the click case existing at all): since a row click opens
+`IntelligencePanel`, stepping from there should keep that panel in sync as you arrow, or the highlighted row
+and the open panel would silently disagree about which country you're looking at. Gated behind `if (selected)`
+so the ORIGINAL explicit requirement — a pure search jump never opens the panel — stays intact; only stepping
+that started from an already-open panel now updates it. Verified both paths live: click US → arrow to Russia
+→ panel heading updates to "RUSSIA" → arrow back to "UNITED STATES OF AMERICA"; separately, with nothing
+selected, stepping still produces no `<h2>` anywhere in the DOM.
+
+**Same-day follow-up: keyboard arrows stayed locked to the map regardless of tab.** Direct report: "the arrows
+on the keyboard aren't working. the arrow functionality is still locked to the map even though i'm looking at
+analytics." Root cause: `input/KeyboardController.ts`'s single global `window` keydown listener resolves
+arrow keys into `select-north`/`select-south`/`select-east`/`select-west` commands unconditionally, and
+`InputManager.tsx` always forwarded them straight to `SelectionController.ts`'s `selectDirection()` — which
+drives the globe's own entity highlight/camera-flight — with no awareness of which top-nav tab was actually
+on screen. My earlier ArrowUp/ArrowDown wiring only worked because it lived on `RankingLookupBar`'s own
+`<input>` element: `isTypingInField()` (already existing, pre-dating this feature) makes the global listener
+bail out whenever `document.activeElement` is a text input, which happened to suppress the map's handler
+*only* while that specific search box had focus. Pressing arrows anywhere else on the Analytics page — the
+far more natural thing to do while just browsing a ranking — still went straight to the hidden map.
+
+Fix respects this codebase's documented "KeyboardController owns the ONE window listener" constraint (see
+that file's own header comment) rather than adding a second one: `hud/analyticsStepStore.ts` is a new plain
+zustand-vanilla publisher (`scene/globeRotation.ts`'s exact pattern) that `AnalyticsPanel.tsx` points at its
+current `jumpToOffset` via a ref-updated-during-render + mount-once-effect combo (mirrors
+`KeyboardController.ts`'s own `onCommandRef` idiom, since `jumpToOffset` is defined after the component's
+`!isOpen` early return and can't be referenced directly from a hook positioned before it).
+`InputManager.tsx` reads `useTopNavTab()` and branches each `select-*` command by tab instead of routing them
+unconditionally. Verified live via a real dispatched `KeyboardEvent` at `window` (not React's synthetic input
+handler) with focus deliberately left on `<body>`, confirming the actual reported scenario: two rapid
+ArrowDown presses on the ANALYTICS/MILITARY ranking correctly stepped US → Russia with no panel opening, and
+switching back to MAP and pressing ArrowDown again correctly drove the globe's own selection (status bar read
+"SELECTED GABON") — the fix discriminates by tab rather than accidentally disabling map navigation everywhere.
+
+**Same-day correction: arrow/step navigation should CLOSE the panel, not follow along with it.** The previous
+entry above shipped `jumpToOffset` calling `selectCountryRow(nextId)` whenever a panel was already open, on the
+reasoning that a visible panel silently drifting out of sync with the highlighted row would read as broken.
+Direct feedback reversed that call: "arrow functionality should close the intelligence panel. it should only
+open when a country is explicitly clicked." Changed the one line — `if (selected) selectCountryRow(nextId)` →
+`closeInspector()` (unconditional; a no-op via `hud/selectionStore.ts` if nothing was open) — and left
+`selected` itself untouched, so the row that was actually clicked keeps its own blue tint independent of
+wherever stepping has since moved the glow highlight. Caught while verifying that checking `document.querySelector('h2')?.textContent`
+doesn't actually prove a panel is open or closed: `IntelligencePanel`'s `<h2>` stays mounted in the DOM (just
+translated off-screen via a `translate-x-full` class) for as long as `selected` is non-null, regardless of
+`inspectorOpen` — switched to reading that class directly, which is what actually reflects the panel's
+open/closed state. Verified: click China → panel shows `translate-x-0`/"CHINA" → Previous step button →
+`translate-x-full` (closed).
+
 ## 2026-08-25/26 — Technology wired in: build script, live-data research, and full UI treatment
 
 Follow-on to the same-day design-doc finalization (4 locked components — see the earlier 2026-08-25 entries).

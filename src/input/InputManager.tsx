@@ -27,25 +27,41 @@ import { focusOnSelection, resetCamera } from './CameraController'
 import { clearSelection, closeInspector, openInspector, useSelection } from '../hud/selectionStore'
 import { toggleHudPanel } from '../hud/hudPanelStore'
 import { toggleAmbientRotation } from '../hud/settingsStore'
+import { useTopNavTab } from '../hud/navStore'
+import { getAnalyticsStepHandler } from '../hud/analyticsStepStore'
 import type { ActionCommand } from './types'
 
 export function InputManager() {
   const { selected, inspectorOpen } = useSelection()
   const { selectDirection, cycleCategory } = useEntityNavigation()
+  const activeTab = useTopNavTab()
 
   useKeyboardController((command: ActionCommand) => {
     switch (command) {
+      // Arrow keys are dual-purpose, routed by which top-nav tab is
+      // actually showing — direct report: arrows stayed "locked to the
+      // map" (silently moving the hidden globe's selection) even while
+      // looking at Analytics, since selectDirection() used to fire
+      // unconditionally regardless of tab. While ANALYTICS is active,
+      // ArrowUp/ArrowDown step through the open ranking instead (see
+      // hud/analyticsStepStore.ts/AnalyticsPanel.tsx's jumpToOffset) —
+      // ArrowLeft/ArrowRight have no ranking meaning, so they no-op there.
+      // On any OTHER non-map tab (intelligence/news/database, none of which
+      // have a real view yet), all four just no-op — there's nothing
+      // on-screen for them to affect either way.
       case 'select-north':
-        selectDirection('north')
+        if (activeTab === 'analytics') getAnalyticsStepHandler()?.(-1)
+        else if (activeTab === 'map') selectDirection('north')
         break
       case 'select-south':
-        selectDirection('south')
+        if (activeTab === 'analytics') getAnalyticsStepHandler()?.(1)
+        else if (activeTab === 'map') selectDirection('south')
         break
       case 'select-east':
-        selectDirection('east')
+        if (activeTab === 'map') selectDirection('east')
         break
       case 'select-west':
-        selectDirection('west')
+        if (activeTab === 'map') selectDirection('west')
         break
       case 'cycle-category-forward':
         cycleCategory(true)

@@ -17,6 +17,32 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.8.1 — AnalyticsPanel: a sticky lookup bar that jumps to (and steps through) a ranking
+
+**Point release.** Every ranking/list view in `hud/AnalyticsPanel.tsx` (MILITARY, ECONOMY, TECHNOLOGY,
+CURRENT STATUS) now has a "Jump to country..." search box in its header. Selecting a match scrolls that
+country's row into view and flashes a brief glow highlight — it deliberately does **not** select the country
+or open `IntelligencePanel`, direct request. Scoped to whichever rows are actually on screen: searching for a
+country CURRENT STATUS's active filter tab (ALL / ACTIVE CONFLICT / SANCTIONED) has excluded correctly reports
+"NOT IN THIS LIST" instead of jumping to a row that isn't rendered. The jump itself is instant, not animated —
+an earlier smooth-scroll version produced a visibly broken blank frame on long jumps (verified in the browser)
+and was replaced once diagnosed.
+
+The header (breadcrumb, lookup bar, up/down step buttons, source label) is now `position: sticky` — direct
+follow-up request: scrolling deep into a 193-row list used to scroll the lookup bar away too, forcing a scroll
+back to the top just to search again. Two new up/down chevron buttons next to the search box (plus
+ArrowUp/ArrowDown while the search box is focused) step to the previous/next row in the ranking's current sort
+order from wherever the last jump — or, as of a same-day follow-up, the last row you clicked — landed,
+wrapping around at either end. Stepping always closes `IntelligencePanel` if it's open (direct correction of an
+earlier version of this that kept an open panel in sync as you stepped) — the panel now only ever opens from an
+explicit row click, never from arrow/step navigation.
+
+Fixed: ArrowUp/ArrowDown on the keyboard (not just the on-screen chevron buttons) previously stayed "locked to
+the map" even while viewing a ranking — the map's own arrow-key entity navigation fired regardless of which
+top-nav tab was actually showing. `input/InputManager.tsx` now routes the four arrow commands by the active
+tab: MAP behaves exactly as before, ANALYTICS steps the open ranking instead (ArrowLeft/Right no-op there),
+and any other tab no-ops all four. See `CLAUDE.md`'s `RankingLookupBar` entry for the full mechanism.
+
 ## v6.8.0 — Technology: the fourth real, sourced Intelligence Engine category
 
 **New major version, Intelligence Engine.** Technology joins Military/Economy/Current Status with a real

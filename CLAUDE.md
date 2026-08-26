@@ -701,11 +701,30 @@ selection concept.
 - `InputManager.tsx` — mounted once from `App.tsx` (outside the Canvas,
   like every other HUD component), renders nothing. The one file that knows
   the full mapping from one-shot command to system: arrows →
-  `SelectionController`, R/Space → `CameraController`'s wrappers,
+  `SelectionController` OR `hud/analyticsStepStore.ts` (tab-dependent — see
+  below), R/Space → `CameraController`'s wrappers,
   Enter/Escape/I → `openInspector`/`closeInspector`/`clearSelection`
   (Escape is two-stage: closes the panel first if open, only clears the
   selection on a second press once it's already closed), L/`/` →
   `toggleHudPanel('layers' | 'search')`.
+
+  **Arrow routing is tab-aware (v6.8.1 follow-up fix)** — direct report:
+  arrows stayed "locked to the map" (silently driving `SelectionController`'s
+  entity navigation on a globe hidden behind whatever tab was actually
+  showing) regardless of which top-nav tab was active. `InputManager` now
+  reads `useTopNavTab()` and branches the four `select-*` commands: on
+  `'map'`, unchanged — `selectDirection(...)`. On `'analytics'`,
+  ArrowUp/ArrowDown call `getAnalyticsStepHandler()?.(-1 | 1)`
+  (`hud/analyticsStepStore.ts` — a plain, non-reactive publisher
+  `hud/AnalyticsPanel.tsx` points at its current `jumpToOffset`, same
+  "cross-component value, read imperatively, not React state"
+  pattern `scene/globeRotation.ts` already established) instead, stepping
+  the open ranking; ArrowLeft/ArrowRight no-op there (no ranking-list
+  meaning for "left"/"right"). On any other tab (intelligence/news/database
+  — none of which have a real view yet), all four no-op. Only the four
+  arrow commands are tab-gated — R/Space/WASDQE/Tab/Enter/Escape/L/`/`
+  are unchanged and still always target the map/inspector regardless of
+  tab, since only the arrow behavior was reported as wrong.
 
 **Why WASDQE camera nudging lives in `scene/CameraControls.tsx`'s hook tree
 but the keyboard listener itself lives in `InputManager.tsx`, outside the
@@ -1358,6 +1377,105 @@ gained an `itu.int` branch, and `METRIC_AVAILABLE.technology` flipped to `true`.
 Taiwan — has a Technology score: unlike Economy, which sources Taiwan from IMF WEO specifically because WDI
 excludes it, Technology draws no non-WDI fallback for any country, so Taiwan is simply absent here the same
 way it's absent from Military. See `LOGBOOK.md`'s 2026-08-25/26 entries for the full sourcing trail.
+
+**`AnalyticsPanel.tsx`'s `RankingLookupBar` (v6.8.1)** is a jump-to-country search scoped to whichever
+ranking/list is currently open — direct request, and deliberately **not** `SearchBar.tsx`'s `selectEntry()`
+reused: that calls `selectEntity()`, which opens `IntelligencePanel` on top of this full-screen view, which is
+the opposite of what was asked for ("go to the country within the ranking, not pull up an intelligence
+panel"). Instead it scrolls the matching row into view (`el.scrollIntoView({ behavior: 'auto', block: 'center'
+})`, INSTANT rather than smooth — see below) and flashes a glow highlight (a manual box-shadow ring, not
+Tailwind's `ring-*` utility, so it can't get clipped by the list's own rounded-corner container) that
+self-clears after `LOOKUP_HIGHLIGHT_MS` (2200ms) via a `setTimeout` cleared/reset on every new jump and on
+unmount. Never touches `selected` or calls `selectEntity()` — clicking elsewhere on a row is still the only
+way this view selects a country, unchanged.
+
+Scoped to what's actually rendered, IN ITS ACTUAL ON-SCREEN ORDER, not the full 193-country registry:
+`sortedMilitaryRows`/`sortedEconomyRows`/`sortedTechnologyRows`/`sortedCurrentStatusRows` are each computed
+once (sorted by the shared `sort` state, and — for CURRENT STATUS only — filtered by `currentStatusFilter`
+first) before the render ternary, and both the render branches below AND `activeLookupRows` read from the
+same four arrays rather than each re-sorting its own copy. `activeLookupRows` then mirrors the render
+ternary's own branching (economy/technology/current-status/military-as-fallback) to pick whichever one is
+active. Two things depend on this being the exact rendered order, not just "the right rows": search still only
+cares about matching by name (order-independent), but "NOT IN THIS LIST" for a CURRENT STATUS country the
+active filter tab has excluded, and — added alongside the sticky header below — arrow-step navigation, both
+depend on it. Sorting all four unconditionally on every render (rather than only the active one) is
+intentional, matching this file's existing "not memoized, cheap enough" position on `buildMilitaryRows()` et
+al. — the 3 inactive sorts are wasted work but harmless, and keeping one code path rather than conditionally
+sorting only the active metric was judged not worth the complexity for a 193-row array.
+
+**Why instant, not smooth, scroll:** the first implementation used `behavior: 'smooth'`, and a jump spanning
+most of the 193-row list (e.g. rank 1 to rank 129) produced a visibly broken transient frame — verified in the
+browser, not just inferred — where the panel briefly rendered as fully blank mid-animation, most likely from
+the in-progress smooth-scroll interacting with the same-tick `setLookupHighlightId` state update (which
+re-renders every row, and every row's `rowRef` callback prop is a fresh closure each render — see below).
+Switching to `behavior: 'auto'` removed the failure mode entirely (no animation to desync) and lands
+immediately, which reads just as clearly as "found it" once paired with the glow flash.
+
+Each row (`RankedListRow` and `CurrentStatusListRow`) gained two new optional props: `rowRef` (registers the
+row's own DOM node into `AnalyticsPanel`'s `rowRefs` map, a plain `Map<string, HTMLElement>` keyed by country
+id — populated/cleared automatically as rows mount/unmount, so switching metrics or CURRENT STATUS filters
+naturally drops whichever ids are no longer rendered) and `isHighlighted` (drives the glow class, independent
+of `isSelected` — a row can be both selected-blue-tinted and lookup-highlighted at once without either style
+overriding the other, since one is a background tint and the other an outer box-shadow). `rowRef` is passed
+as a fresh inline arrow function per row per render (`(el) => { if (el) rowRefs.current.set(...) else
+rowRefs.current.delete(...) }`), matching this file's existing convention for row-level callbacks
+(`onSelect={() => selectCountryRow(row.id)}`) rather than memoizing — harmless churn (React re-registers the
+same DOM node on every re-render), not a correctness issue, and not worth the complexity of a per-row memoized
+callback map for 193 rows.
+
+`RankingLookupBar` remounts (via `key={activeMetric.id}` at its call site) whenever the active metric changes,
+so its own local `query` state resets for free rather than needing an explicit effect — the same pattern this
+component already leans on for `sort`/`currentStatusFilter` via the existing `[metric]` effect (which also now
+clears `lookupHighlightId` and any pending highlight timeout on that same transition). Ranking logic
+(`rankLookupMatches`, exact/starts-with/contains) is a smaller, separate copy of `SearchBar.tsx`'s three-tier
+match ranking — not shared, since `SearchBar`'s version ranks a `SearchEntry` union (country/GeoEntity/city/
+US-city-boundary/...) with far more shape than this needs (`{id, name}` pairs already sitting on every ranked
+row).
+
+**Sticky header + up/down ranking step (same v6.8.1, direct follow-up request).** The header row (breadcrumb,
+lookup bar, step buttons, source label) is now `sticky top-0` inside the panel's own `overflow-y-auto`
+container, with its own opaque `bg-[#04070a]` (matching the panel background) and `z-10` — without an opaque
+background, rows scrolling underneath would show through the now-stationary header instead of passing behind
+it. Reported directly: scrolling deep into a 193-row list used to scroll the lookup bar away too, forcing a
+scroll back to the top just to search again.
+
+Two small chevron buttons next to the search box (and ArrowUp/ArrowDown while the search input itself is
+focused — `RankingLookupBar`'s new `onStep` prop, wired through to the same handler) step the highlighted/
+scrolled-to row to the previous or next one in `activeLookupRows`' current on-screen order — "switch between
+countries" without retyping a search each time. `jumpToOffset(direction)` in `AnalyticsPanel` finds the
+reference row's index in that order and calls the existing `jumpToRow` on the neighboring id, wrapping at
+either end; if there's no reference row yet, stepping down lands on the first row and stepping up on the last,
+rather than silently no-op-ing. Deliberately steps through the WHOLE ranking regardless of the search box's
+current text — not `matches`-scoped arrow-through-suggestions the way a typical autocomplete works — since the
+point was browsing the ranking itself, not narrowing a query.
+
+**The reference row is `lookupHighlightId` first, falling back to `selected?.id`** (same-day follow-up, direct
+request: "once you click on a country, arrow functionality should work as well"). Originally
+`jumpToOffset` only read `lookupHighlightId`, so stepping did nothing useful after simply clicking a row — a
+plain click calls `selectCountryRow`, not `jumpToRow`, so it never touched `lookupHighlightId`. Falling back to
+`selected?.id` means arrowing after a click continues from wherever you clicked.
+
+**`jumpToOffset` always calls `closeInspector()`, never `selectCountryRow()`** (a same-day CORRECTION of the
+paragraph above's own first version, which had `jumpToOffset` call `selectCountryRow(nextId)` whenever
+`selected` was already non-null, keeping an open panel in sync as you stepped — direct feedback reversed this:
+"arrow functionality should close the intelligence panel. it should only open when a country is explicitly
+clicked"). `closeInspector()` is a harmless no-op if the panel wasn't open (`hud/selectionStore.ts` just sets
+`inspectorOpen: false`, same as `dismiss`'s first-stage Escape handling). Deliberately leaves `selected` itself
+untouched — only the panel's open/closed state changes, so whichever row was actually clicked keeps its blue
+"selected" row tint (and the globe/status-bar summary keeps showing that country) independent of wherever the
+glow-highlighted step cursor currently is; only an explicit row click (`onSelect` → `selectCountryRow`) ever
+opens the panel now.
+
+Verified live in the browser, via `translate-x-0`/`translate-x-full` on `IntelligencePanel`'s own wrapping
+`<div>` (its actual open/closed CSS state — `<h2>`'s mere presence in the DOM isn't a reliable signal, since
+the element stays mounted, just slid off-screen, whenever `selected` is non-null but `inspectorOpen` is
+`false`): clicked China (`translate-x-0`, heading "CHINA") → pressed the Previous step button →
+`translate-x-full` (panel closed), china's row still separately reflecting whichever step it landed on. Also
+verified via direct DOM/JS inspection, not just screenshots, for the ORIGINAL jump-and-step mechanics —
+screenshots taken immediately after a click in this automated environment occasionally lagged behind the real
+DOM state (a tool-level timing artifact, confirmed by reading `scrollTop`/computed `box-shadow` directly rather
+than trusting a screenshot's timing). Three rapid step-clicks correctly advanced one rank at a time (US →
+Russia → China); ArrowUp with nothing highlighted correctly wrapped to the bottom of the list.
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every

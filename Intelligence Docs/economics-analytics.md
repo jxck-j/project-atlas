@@ -13,9 +13,9 @@ Economy actually works today.
 the *current* logic; LOGBOOK explains *why it changed*, with real numbers, including two methods that were
 tried and rejected (see §3.4).
 
-This is a per-category series — see `military-analytics.md` for the same treatment of Military. Diplomacy,
-Technology, and Current Status will each get their own `X-analytics.md` once they're built, following this
-same structure.
+This is a per-category series — see `military-analytics.md`, `technology-analytics.md`, and
+`current-status-analytics.md` for the same treatment of Military, Technology, and Current Status. Diplomacy
+will get its own `diplomacy-analytics.md` once it's built.
 
 ---
 

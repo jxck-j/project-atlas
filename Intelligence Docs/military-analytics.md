@@ -11,9 +11,9 @@ before trusting anything below.
 **Full change history / real-output reasoning trail:** `LOGBOOK.md` (search "Military") — this doc explains
 the *current* logic; LOGBOOK explains *why it changed*, with real numbers.
 
-This is the first of a per-category series — see `economics-analytics.md` for the same treatment of Economy.
-Diplomacy, Technology, and Current Status will each get their own `X-analytics.md` once they're built,
-following this same structure.
+This is the first of a per-category series — see `economics-analytics.md`, `technology-analytics.md`, and
+`current-status-analytics.md` for the same treatment of Economy, Technology, and Current Status. Diplomacy
+will get its own `diplomacy-analytics.md` once it's built.
 
 ---
 
