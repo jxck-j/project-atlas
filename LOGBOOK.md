@@ -5,6 +5,93 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-26 (cont.) — Taiwan recognized across the Intelligence Engine: real sourcing, generalized lookups
+
+Direct request: "I want Taiwan to be recognized as a country. It should still show as claimed by China... I
+need Taiwan in all of these analytics." Asked three clarifying questions before writing any code, since this
+touches a genuinely load-bearing architectural boundary (Country vs. GeoEntity) this project has documented
+extensively: (1) full merge into the 193-country registry vs. keep Taiwan a GeoEntity and extend Analytics to
+include it — chose the latter, since Taiwan's `claimedBy: China` relationship only exists as a GeoEntity field
+at all (Country has no claims fields), so merging it would have required redesigning the claims-rendering
+system for a Country-claims-Country case that exists nowhere else in the app; (2) source real Military/
+Technology data for Taiwan now, not just wire up what already existed (Economy) — chosen, real research
+follows below; (3) relabel Taiwan's display wherever shown, not just its ranking presence — chosen.
+
+**Military: found Taiwan directly in SIPRI's own already-vendored data, no new source needed.** Rather than
+assume SIPRI excludes Taiwan the way WDI/ITU do, checked the actual local xlsx files
+(`scripts/vendor/military/sipri-milex.xlsx`, `sipri-top100.xlsx`) directly with a one-off script — and Taiwan
+IS there: a real "Taiwan" row in the Milex "Current US$" and "Share of GDP" sheets, and NCSIST (Taiwan's state
+defense R&D institute) at rank 50 in the 2024 Top 100. Cross-checked the "Share of GDP" sheet's unit
+convention against a known reference (USA's own row, 0.0329 in 2023 ≈ WDI's independently-sourced ~3.4%)
+before trusting a ×100 conversion — confirmed it stores a fraction, not a percentage. Personnel (170,000,
+2025) came from CIA Factbook directly, fetched live at `east-n-southeast-asia/tw.json` — same fallback path
+every other country already uses once WDI comes back empty, not a new mechanism. Caught and fixed a real bug
+before shipping: `finalizeCountry`'s generic `pctGdp.sourceUrl` construction always built a World Bank URL
+(`.../country/undefined/indicator/...`, since Taiwan has no `alpha3`) even though the value itself came from
+SIPRI — needed an explicit `r.id === 'taiwan'` branch, caught by actually reading the generated sample output
+rather than assuming the generic path was fine.
+
+**Technology: real, primary-source data for 2 of 4 components; the other 2 investigated and left as genuine
+gaps, not approximated.** R&D%GDP (4.0%, 2023) traces to Taiwan's National Science and Technology Council,
+via its republication by Taiwan's own Overseas Community Affairs Council (citing MOEA/CNA) since NSTC's
+original release wasn't directly fetchable — a real, dated, government-attributed figure, just one hop
+removed from the primary source rather than zero hops. Patents-per-million (837.0) combined TIPO's (Taiwan's
+IP office) own 2024 "domestic invention patent applications" figure (19,586 — specifically the RESIDENT-filer
+count, not the 72,742 total including foreign filers, matching WDI's own resident-only definition) with IMF
+WEO population (23,400,220, 2024, verified via the same `COUNTRY_UPDATE_DATE`-derived actual-vs-projected
+technique `buildEconomy.mjs`'s existing Taiwan handling already established). High-tech-exports% was
+investigated seriously, not skipped: WITS (the platform WDI's own indicator is built from) has a Taiwan
+profile page, but it's JS-rendered client-side (confirmed via a direct fetch attempt returning only
+"Loading..." placeholder markup, no real data) — computing the ratio independently from raw UN Comtrade trade
+codes was considered and rejected, since replicating WITS's exact product classification well enough to stay
+comparable to the other 175 countries' real WDI figures is a real methodological undertaking, not a quick
+lookup, and getting it subtly wrong would produce a number that LOOKS authoritative but isn't. Left as a
+logged gap instead. The ICT Development Index gap was already confirmed when Technology was originally built
+(Taiwan isn't in ITU's own IDI table at all) — reconfirmed here, not re-investigated.
+
+**Current Status needed no new sourcing at all** — UCDP's armed-conflict threshold (25+ battle-related
+deaths/year) genuinely hasn't been crossed by current China-Taiwan tension, and Taiwan carries no active OFAC
+program, so `conflicts: []`/`sanctionTier: null` are real, honest facts pushed directly (not derived from the
+193-country-topology-keyed `prioEntries`/`candidateEntries` maps, which Taiwan isn't part of).
+
+**Found and corrected a stale claim in this project's own documentation while implementing.** CLAUDE.md's
+"Data quirks" section asserted `COUNTRY_PROFILES` already had a Taiwan entry, "kept as the worked example" for
+why `CapitalMarker` gates on entity kind rather than a name lookup. A direct `grep` for "Taiwan" in
+`src/data/countryProfiles.ts` came back completely empty — no such entry existed, anywhere, under any
+spelling. The doc's claim had gone stale at some point without anyone catching it (the entry may have existed
+once and been removed in an unrelated cleanup, or the doc was aspirational and never actually implemented —
+not determined, and not important to this task). Rather than silently work around the discrepancy, added the
+real entry now (needed anyway, for `CountryDetails` to have GOVERNMENT/CAPITAL data to render) and corrected
+the doc's claim to say so explicitly, including that it had been wrong. General lesson, consistent with this
+project's memory guidance on verifying claims before trusting them: a doc comment naming a specific file
+entry is a claim about state at the time it was written, not a fact — checked directly rather than assumed,
+and the same discipline applies to this codebase's own docs, not just external sources.
+
+**UI wiring generalized the lookup, not special-cased it — except OVERVIEW, which genuinely needed a branch.**
+`IntelligencePanel.tsx`'s four score-lookup helpers dropped their `kind !== 'country'` guard entirely and now
+key by `selected.id` directly, since that's the same denormalized id for a Country OR Taiwan — one change
+resolves both, and (bonus, not the point) automatically extends to any future GeoEntity that gains real score
+data, no further code change needed. `AnalyticsPanel.tsx`'s four row-builders similarly generalized via one
+shared `getRankableCountries()` helper. The one place that couldn't be a generalization: OVERVIEW's
+Country-vs-GeoEntity rendering choice is a real, structural difference (GOVERNMENT/CAPITAL layout vs. ENTITY
+TYPE/STRATEGIC SIGNIFICANCE layout) that no generic id-keyed lookup can paper over — that got an explicit,
+narrow `selected.entity.data.id === 'taiwan'` check at exactly one call site, deliberately not generalized
+into "any GeoEntity can render like a Country," matching this project's own documented CapitalMarker/v2.3.0
+lesson about not letting a kind-check gap reappear.
+
+**Verified end to end in the browser**, not just per-component: search tag reads COUNTRY; OVERVIEW shows real
+GOVERNMENT (Semi-Presidential Republic)/CAPITAL (Taipei)/POPULATION (23.4 Million)/GDP ($801 Billion);
+MILITARY (52.5) and ECONOMY (81.8) bars render with real values; TECHNOLOGY correctly shows no bar but a real,
+clickable 2-real/2-gap drill-down; CURRENT STATUS reads "NO ACTIVE CONFLICTS"; RELATIONSHIPS still shows
+"CLAIMANT — People's Republic of China" with the globe itself still rendering China's claim highlight,
+confirming the claims-rendering system needed zero changes since Taiwan never stopped being a GeoEntity
+underneath. Confirmed Taiwan's real ranked position in all 4 AnalyticsPanel rankings (Military #18/194,
+Economy #4/194) with header counts honestly reading 194 throughout, and confirmed `npm run
+build:geo-entity-economics`'s own gap report no longer lists Taiwan as "deliberately deferred" after moving it
+to a "resolved outside this script" bucket in that script's report generator (it still can't be WDI-queried —
+no WDI code exists for it, and removing it from that script's skip set would make the "in scope but no WDI
+code mapping" check throw — so the fix was to correct the REPORTING, not the skip behavior).
+
 ## 2026-08-26 (cont.) — AnalyticsPanel ranking lookup: build, a smooth-scroll bug, then sticky + step navigation
 
 Direct request: a search box in `AnalyticsPanel.tsx` that jumps to a country's row within whichever ranking is

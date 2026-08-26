@@ -1232,6 +1232,23 @@ export const COUNTRY_PROFILES: Record<string, CountryProfile> = {
     capitalLng: 36.3,
     factbookSnapshot: { source: 'factbook.json', snapshotDate: "2026-01" },
   },
+  // Deliberately hand-added exception — Taiwan is not one of the 193 UN
+  // member states scripts/buildGovCapitalPopGdp.mjs iterates over, so it's
+  // outside this file's own "re-run the build script" instruction above.
+  // Added alongside real Military/Economy/Technology sourcing for Taiwan
+  // (see CLAUDE.md's Intelligence Engine section) so
+  // hud/IntelligencePanel.tsx's OVERVIEW section can render Taiwan with the
+  // same GOVERNMENT/CAPITAL layout a Country gets — direct request ("Taiwan
+  // should be recognized as a country... it should still show as claimed by
+  // China"). Sourced the same way every other entry here is: CIA World
+  // Factbook (factbook.json), same 2026-01 snapshot.
+  Taiwan: {
+    government: "Semi-Presidential Republic",
+    capital: "Taipei",
+    capitalLat: 25.03,
+    capitalLng: 121.52,
+    factbookSnapshot: { source: 'factbook.json', snapshotDate: "2026-01" },
+  },
   Tajikistan: {
     government: "Presidential Republic",
     capital: "Dushanbe",

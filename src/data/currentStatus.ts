@@ -12,7 +12,11 @@
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under (String(feature.id) from
 // countries-un193.json) — same convention as src/data/militaryScores.ts /
-// src/data/economyScores.ts.
+// src/data/economyScores.ts — EXCEPT Taiwan, keyed by its GeoEntity
+// registry id ('taiwan') instead, the same exception those two already
+// established. Taiwan's own conflicts/sanctionTier are both real, honest
+// empties (no UCDP-recorded armed conflict, no active OFAC program) rather
+// than sourcing gaps — see this script's own TAIWAN comment.
 //
 // Re-run the build script (rather than hand-editing this file) to refresh.
 
@@ -1253,6 +1257,11 @@ export const CURRENT_STATUS: Record<string, CurrentStatus> = {
   },
   "716": {
     name: "Zimbabwe",
+    conflicts: [],
+    sanctionTier: null,
+  },
+  "taiwan": {
+    name: "Taiwan",
     conflicts: [],
     sanctionTier: null,
   },

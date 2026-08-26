@@ -301,8 +301,66 @@ async function buildCountryScore(country) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// TAIWAN (added alongside a direct request to also recognize Taiwan across
+// the Intelligence Engine's analytics — see CLAUDE.md). WDI structurally
+// excludes Taiwan for all 3 of its components here (same reason it's
+// excluded from every other WDI-sourced field in this app), and ITU's own
+// IDI table doesn't cover Taiwan either (confirmed directly — see IDI_2024's
+// own header comment; the raw wikitext's row sequence jumps straight past
+// where Taiwan would sort). Only 2 of the 4 components have a real,
+// citable, methodology-matched alternative source:
+//   - rdExpenditurePctGdp: Taiwan's National Science and Technology Council
+//     (NSTC) publishes this figure directly; the precise decimal here is as
+//     republished by Taiwan's Overseas Community Affairs Council (citing
+//     the Ministry of Economic Affairs/Central News Agency, 2025-08-30)
+//     since NSTC's own original Chinese-language release wasn't directly
+//     fetchable — still a real, dated, government-attributed figure, not a
+//     compiled/aggregator estimate.
+//   - patentApplicationsResident: Taiwan's own IP office (TIPO) publishes
+//     resident vs. non-resident filing counts directly in its annual
+//     statistics report — the same kind of primary-national-office figure
+//     WDI's IP.PAT.RESD is itself built from for every other country, just
+//     read straight from the source instead of via WDI's WIPO mirror
+//     (which excludes Taiwan). "Domestic invention patent applications,
+//     2024" is the resident-filer figure — matches WDI's own resident-only
+//     definition, not the "72,742 total including foreign filers" headline.
+// highTechExportsPct and the ICT Development Index have NO equivalent
+// direct/authoritative source found that matches the underlying
+// methodology (UN Comtrade/WITS's own product classification for the
+// former; ITU doesn't publish Taiwan data at all for the latter) — left as
+// genuine, logged gaps rather than approximated. Population (for the
+// patents-per-million denominator) is IMF WEO's indicator LP, 2024 — the
+// SAME figure src/data/registry/geoEntities.ts's Taiwan record now carries,
+// not a second independently-fetched number.
+// ---------------------------------------------------------------------------
+function buildTaiwanRecord() {
+  logGap('Taiwan', 'High-tech exports (% of manufactured exports)', 'No WDI entry (structural exclusion) and no directly comparable WITS/Comtrade-methodology figure found — left unscored.')
+  logGap('Taiwan', 'ICT Development Index', 'No ITU IDI 2024 entry for Taiwan — not published/not an ITU member — left unscored.')
+  return {
+    id: 'taiwan',
+    name: 'Taiwan',
+    alpha3: 'TWN',
+    raw: {
+      rdExpenditurePctGdp: { value: 4.0, year: 2023 },
+      patentApplicationsResident: { value: 19586, year: 2024 },
+      population: { value: 23_400_220, year: 2024 },
+      highTechExportsPct: { value: undefined, year: undefined },
+    },
+  }
+}
+
+// Population itself (IMF WEO indicator LP) isn't a rendered component of
+// its own — it's only the denominator baked into patentsPerMillion's raw
+// value — so it has no separate sourceUrl to carry; see this section's own
+// header comment for that citation.
+const TAIWAN_RD_SOURCE_URL = 'https://www.ocac.gov.tw/OCAC/Eng/Pages/Detail.aspx?nodeid=329&pid=78934030'
+const TAIWAN_PATENTS_SOURCE_URL = 'https://www.tipo.gov.tw/en/cp-896-1001221-28301-2.html'
+
 console.log(`Building Technology scores for ${countries.length} ${isSample ? 'sample' : ''} countries...`)
 const built = await mapWithConcurrency(countries, 8, buildCountryScore)
+built.push(buildTaiwanRecord())
+console.log('Added Taiwan (NSTC/OCAC-sourced R&D%, TIPO-sourced patents — see TAIWAN header comment; high-tech exports% and ICT IDI left as genuine gaps).')
 
 // Patents per million population — computed here (not per-country in
 // buildCountryScore) so it can be normalized with the same
@@ -347,13 +405,17 @@ function finalizeCountry(r) {
       raw: r.raw.rdExpenditurePctGdp.value ?? null,
       normalized: rdPct,
       year: r.raw.rdExpenditurePctGdp.year,
-      sourceUrl: wbUrl(r.alpha3, RD_EXPENDITURE_INDICATOR),
+      // Taiwan's figure is NSTC/OCAC-sourced, not WDI (which has no Taiwan
+      // entry) — see this script's TAIWAN header comment.
+      sourceUrl: r.id === 'taiwan' ? TAIWAN_RD_SOURCE_URL : wbUrl(r.alpha3, RD_EXPENDITURE_INDICATOR),
     },
     patentsPerMillion: {
       raw: patentsPerM,
       normalized: patentsPct,
       year: r.raw.patentApplicationsResident.year,
-      sourceUrl: wbUrl(r.alpha3, PATENT_APPLICATIONS_RESIDENT_INDICATOR),
+      // Taiwan's figure is TIPO-sourced directly, not WDI's WIPO mirror
+      // (which has no Taiwan entry) — see this script's TAIWAN header comment.
+      sourceUrl: r.id === 'taiwan' ? TAIWAN_PATENTS_SOURCE_URL : wbUrl(r.alpha3, PATENT_APPLICATIONS_RESIDENT_INDICATOR),
     },
     highTechExportsPct: {
       raw: r.raw.highTechExportsPct.value ?? null,
@@ -469,16 +531,18 @@ const header = `// Technology category scores for the Intelligence Engine, gener
 //
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under — same convention as
-// src/data/militaryScores.ts / src/data/economyScores.ts. No GeoEntity
-// (including Taiwan, unlike Economy) has a Technology score — Technology
-// draws no IMF WEO fallback the way Economy does for Taiwan specifically;
-// this category is 100% World Bank WDI + hand-transcribed ITU IDI, and
-// neither source covers Taiwan, so it's simply absent here like every other
-// WDI-only dataset in this codebase (e.g. Military).
+// src/data/militaryScores.ts / src/data/economyScores.ts — EXCEPT Taiwan,
+// keyed by its GeoEntity registry id ('taiwan') instead, the same exception
+// Economy/Military already established. R&D%GDP and patents-per-million are
+// real, sourced directly (NSTC/OCAC and TIPO respectively, not WDI, which
+// has no Taiwan entry); high-tech exports% and the ICT Development Index
+// are genuine, logged gaps — no directly comparable, methodology-matched
+// alternative source was found for either. See this script's own TAIWAN
+// header comment for the full sourcing/gap reasoning.
 //
 // Re-run the build script to refresh the 3 WDI-sourced components (does NOT
-// refresh IDI_2024 — that's a hand-maintained snapshot, update it by hand
-// against ITU's next published edition).
+// refresh IDI_2024 or Taiwan's hand-sourced figures — all hand-maintained
+// snapshots, updated by hand against each source's next real publication).
 
 export type TechnologyConfidence = 'measured' | 'proxy' | 'unavailable'
 

@@ -52,6 +52,24 @@ function wdiProvenance(wdiName: string, wdiCode: string, populationYear?: number
   }
 }
 
+// Taiwan's sibling of wdiProvenance above — WDI structurally excludes
+// Taiwan (same reason scripts/buildEconomy.mjs's own Taiwan one-off and
+// scripts/buildGeoEntityEconomics.mjs's header comment both give), so its
+// population/gdpUsd come from IMF WEO instead, the same source
+// economyScores.ts's own Taiwan entry already uses for gdpNominal — this
+// reuses that EXACT figure rather than re-deriving a second one, so the two
+// never drift apart.
+function imfWeoProvenance(populationYear: number, gdpYear: number) {
+  return {
+    confidence: 'confirmed' as const,
+    source:
+      `IMF World Economic Outlook — population: ${populationYear} (indicator LP), GDP: ${gdpYear} ` +
+      '(indicator NGDPD, same figure src/data/economyScores.ts\'s Taiwan entry uses). WDI structurally ' +
+      'excludes Taiwan, same reason this app\'s other Taiwan-specific sourcing does. Relationship data ' +
+      '(parent/administration/claims) remains a simplified, hand-curated entry — see this file\'s header comment.',
+  }
+}
+
 // world-atlas's source topology (and therefore this app's Country Registry
 // ids, and `selected.id` whenever a country is selected) keys countries by
 // their raw ISO 3166-1 NUMERIC code, not the alpha-3 code ("840", not
@@ -174,12 +192,18 @@ function dependency(
 //    political significance, alongside sovereign states.
 // ---------------------------------------------------------------------------
 
-// No population/gdpUsd here — WDI structurally excludes Taiwan (China's WDI
-// figures already claim to represent "one China"), so this needs IMF World
-// Economic Outlook sourcing ("Taiwan Province of China") instead of the WDI
-// pass scripts/buildGeoEntityEconomics.mjs ran for every other entity in
-// this file. Deliberately deferred, not a batch-fill oversight — see that
-// script's SKIP_DEFERRED_SOURCING.
+// population/gdpUsd resolved (no longer deferred) alongside real
+// Military/Economy/Technology sourcing for Taiwan — direct request ("Taiwan
+// should be recognized as a country... it should still show as claimed by
+// China"), which needed these two fields real so hud/IntelligencePanel.tsx
+// could render Taiwan's OVERVIEW section the same way a Country's renders.
+// WDI structurally excludes Taiwan (China's WDI figures already claim to
+// represent "one China"), so — same reasoning scripts/buildEconomy.mjs's own
+// Taiwan one-off already established for gdpNominal — these come from IMF
+// WEO instead of the WDI pass scripts/buildGeoEntityEconomics.mjs ran for
+// every other entity in this file. gdpUsd reuses the EXACT same figure
+// src/data/economyScores.ts's Taiwan entry already has (indicator NGDPD),
+// not a second independently-fetched number, so the two can't drift apart.
 register({
   id: 'taiwan',
   name: 'Taiwan',
@@ -188,7 +212,15 @@ register({
   administeredBy: [toUnregistered('Government of the Republic of China (Taiwan)', { since: '1949' })],
   claimedBy: [toCountry('CHN', "People's Republic of China")],
   claims: [],
-  provenance: SIMPLIFIED_PROVENANCE,
+  // Population: IMF WEO, indicator LP, 2024 (most recent actual year — see
+  // buildEconomy.mjs's buildTaiwanScore for the same vintage-year technique).
+  population: 23_400_220,
+  populationYear: 2024,
+  // GDP: IMF WEO, indicator NGDPD, 2024 — same raw figure as
+  // economyScores.ts's ECONOMY_SCORES.taiwan.components.gdpNominal.raw.
+  gdpUsd: 801_495_464_000,
+  gdpYear: 2024,
+  provenance: imfWeoProvenance(2024, 2024),
 })
 
 register({

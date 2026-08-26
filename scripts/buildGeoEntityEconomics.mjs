@@ -72,17 +72,29 @@ const SKIP_UNINHABITED = new Set([
 ])
 
 // Each needs a deliberate, individual sourcing decision instead of a batch
-// WDI fill:
-//   - taiwan: WDI structurally excludes it (see header comment) — needs IMF
-//     World Economic Outlook sourcing instead, done separately, not here.
+// WDI fill. All 3 stay in this skip set regardless of resolution status —
+// this script is WDI-only and has no ENTITY_ID_TO_WDI_CODE mapping for any
+// of them (removing one without also adding a real WDI code would make the
+// "in scope but no WDI code mapping" check below throw) — but taiwan's own
+// status changed underneath it:
 //   - western-sahara: contested administration (Morocco / Polisario Front)
 //     means "population of Western Sahara" isn't a single unambiguous WDI
 //     query the way a normal dependency's is — needs a human call on
-//     whether/how to represent that, not a silent WDI number.
+//     whether/how to represent that, not a silent WDI number. STILL
+//     UNRESOLVED.
 //   - crimea: contested annexation (Russia since 2014, unrecognized by most
 //     of the world) means the same problem as Western Sahara — which
 //     country's WDI reporting (if either) should stand in for "Crimea" is a
-//     judgment call, not a lookup.
+//     judgment call, not a lookup. STILL UNRESOLVED.
+//   - taiwan: WDI structurally excludes it (see header comment), so this
+//     script still can't source it directly — but the IMF World Economic
+//     Outlook sourcing this comment used to point at as "not done here" IS
+//     now done, by hand, directly in geoEntities.ts's own Taiwan entry
+//     (alongside real Military/Economy/Technology sourcing for Taiwan — see
+//     CLAUDE.md's Intelligence Engine section). RESOLVED 2026-08-26 — kept
+//     in this set only because this script has no WDI code for it, not
+//     because it's still an open gap; see writeBacklogReport's own comment
+//     for why its report line reflects that.
 const SKIP_DEFERRED_SOURCING = new Set(['taiwan', 'western-sahara', 'crimea'])
 
 // GeoEntity id -> World Bank/WDI 3-letter code. Not derivable from the id
@@ -302,10 +314,12 @@ function writeBacklogReport() {
   )
   lines.push('')
 
-  lines.push(`- **Deliberately deferred this pass, needs its own sourcing decision:**`)
+  lines.push(`- **Resolved outside this script, still WDI-skipped (no WDI code exists for either):**`)
   lines.push(
-    `  - **[taiwan]:** World Bank WDI structurally excludes Taiwan (China's WDI figures already claim to represent "one China") — needs IMF World Economic Outlook sourcing ("Taiwan Province of China") instead, not done here.`
+    `  - **[taiwan]:** World Bank WDI structurally excludes Taiwan (China's WDI figures already claim to represent "one China"). RESOLVED 2026-08-26 — population/gdpUsd are now sourced directly, by hand, from IMF World Economic Outlook in geoEntities.ts's own Taiwan entry (see CLAUDE.md's Intelligence Engine section), not by this script.`
   )
+  lines.push('')
+  lines.push(`- **Deliberately deferred this pass, needs its own sourcing decision:**`)
   lines.push(
     `  - **[western-sahara]:** Administration is contested (Morocco west of the berm, the Polisario Front/SADR east of it) — no single WDI query is an uncontroversial answer to "population of Western Sahara."`
   )

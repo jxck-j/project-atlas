@@ -19,7 +19,14 @@
 //
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under (String(feature.id) from
-// countries-un193.json) — same convention as src/data/countryEconomics.ts.
+// countries-un193.json) — same convention as src/data/countryEconomics.ts —
+// EXCEPT Taiwan, keyed by its GeoEntity registry id ('taiwan') instead, the
+// same exception src/data/economyScores.ts already established. Unlike
+// Economy's Taiwan one-off, Military's own primary sources (SIPRI Milex,
+// SIPRI Top 100) include Taiwan directly — only personnel needed a
+// different path (CIA Factbook, the same fallback every other country
+// already uses once WDI comes up empty for personnel specifically). See
+// this script's own TAIWAN header comment for the full sourcing.
 //
 // Re-run the build script (rather than hand-editing this file) to refresh.
 
@@ -3378,6 +3385,23 @@ export const MILITARY_SCORES: Record<string, MilitaryScore> = {
       personnel: { raw: 51000, normalized: 67.5733936274358, year: 2020, sourceUrl: "https://api.worldbank.org/v2/country/ZWE/indicator/MS.MIL.TOTL.P1" },
       nuclearWarheads: { raw: 0, normalized: 0, sourceUrl: "https://fas.org/initiative/status-world-nuclear-forces/", sourceDate: "2026-01" },
       industrialBaseRevenueUsdM: { raw: 0, normalized: 0, year: 2024, sourceUrl: "https://www.sipri.org/sites/default/files/SIPRI-Top-100-2002-2024%20%282%29.xlsx" },
+    },
+    annotations: {
+      armsImportTiv: { raw: null, sourceUrl: "https://armstransfers.sipri.org/ArmsTransfer/ImportExportTop" },
+    },
+  },
+  "taiwan": {
+    name: "Taiwan",
+    value: 52.5,
+    confidence: "measured",
+    coveragePresent: 3,
+    coverageTotal: 3,
+    components: {
+      expenditureUsd: { raw: 18187.723316285766, normalized: 64.21973617296253, year: 2025, sourceUrl: "https://www.sipri.org/sites/default/files/SIPRI-Milex-data-1949-2025_v1.2.xlsx" },
+      pctGdp: { raw: 2.098535636731983, normalized: 54.945798296772786, year: 2025, sourceUrl: "https://www.sipri.org/sites/default/files/SIPRI-Milex-data-1949-2025_v1.2.xlsx" },
+      personnel: { raw: 170000, normalized: 77.10196646368709, sourceUrl: "https://raw.githubusercontent.com/factbook/factbook.json/master" },
+      nuclearWarheads: { raw: 0, normalized: 0, sourceUrl: "https://fas.org/initiative/status-world-nuclear-forces/", sourceDate: "2026-01" },
+      industrialBaseRevenueUsdM: { raw: 3110, normalized: 54.55956005863498, year: 2024, sourceUrl: "https://www.sipri.org/sites/default/files/SIPRI-Top-100-2002-2024%20%282%29.xlsx" },
     },
     annotations: {
       armsImportTiv: { raw: null, sourceUrl: "https://armstransfers.sipri.org/ArmsTransfer/ImportExportTop" },

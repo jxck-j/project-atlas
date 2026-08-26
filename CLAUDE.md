@@ -1140,10 +1140,10 @@ is commonly documented as reporting GDP in billions, but the live API's raw obse
 whole current US$ — Taiwan's 2024 figure came back as `801495464000`, not `801.495464`; an initial `× 1e9`
 conversion produced a $801-sextillion GDP before being caught and removed). Taiwan is keyed by its GeoEntity
 registry id (`'taiwan'`) rather than a numeric ISO topology id — the one exception to this file's "keyed by
-numeric id" convention, called out in both the file header and the `ECONOMY_SCORES` type comment. No UI
-wiring was added for GeoEntity Economy selection — Taiwan's score exists in the generated data (and factors
-into every other country's percentile ranking) but isn't yet surfaced anywhere a GeoEntity selection is made,
-the same pre-existing "no score for GeoEntities" gap Military already has.
+numeric id" convention, called out in both the file header and the `ECONOMY_SCORES` type comment. **UI wiring
+for this score, and real Military/Technology/Current Status data for Taiwan too, landed later — see this
+file's "Taiwan recognized across the Intelligence Engine" entry further down** — this paragraph describes only
+the original data-generation work.
 
 **2026-08-22: inflation switched from inverted-percentile to DISTANCE FROM A 2% TARGET** — `INFLATION_TARGET_PCT
 = 2.0` (Federal Reserve and Bank of England both state 2% as their explicit longer-run target). Fixed a real
@@ -1373,10 +1373,12 @@ real, measured numbers rather than a pre-build guess. 124 countries land on `'me
 on `'unavailable'`. `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` wiring mirrors Economy's exactly:
 `technologyIntelValue()`/`TechnologyDrilldown` alongside `economyIntelValue()`/`EconomyDrilldown`,
 `TECHNOLOGY_COLUMNS`/`buildTechnologyRows()` alongside `ECONOMY_COLUMNS`/`buildEconomyRows()`, `sourceLabel()`
-gained an `itu.int` branch, and `METRIC_AVAILABLE.technology` flipped to `true`. No GeoEntity — including
-Taiwan — has a Technology score: unlike Economy, which sources Taiwan from IMF WEO specifically because WDI
-excludes it, Technology draws no non-WDI fallback for any country, so Taiwan is simply absent here the same
-way it's absent from Military. See `LOGBOOK.md`'s 2026-08-25/26 entries for the full sourcing trail.
+gained an `itu.int` branch, and `METRIC_AVAILABLE.technology` flipped to `true`. **At original launch, no
+GeoEntity had a Technology score — this paragraph originally said Taiwan was "simply absent here the same way
+it's absent from Military," which stopped being true once real Military AND Technology data were added for
+Taiwan later (2 of 4 components — see this file's "Taiwan recognized across the Intelligence Engine" entry
+further down for the full sourcing and why the other 2 stayed genuine gaps).** See `LOGBOOK.md`'s 2026-08-25/26
+entries for the original Technology sourcing trail.
 
 **`AnalyticsPanel.tsx`'s `RankingLookupBar` (v6.8.1)** is a jump-to-country search scoped to whichever
 ranking/list is currently open — direct request, and deliberately **not** `SearchBar.tsx`'s `selectEntry()`
@@ -1476,6 +1478,113 @@ screenshots taken immediately after a click in this automated environment occasi
 DOM state (a tool-level timing artifact, confirmed by reading `scrollTop`/computed `box-shadow` directly rather
 than trusting a screenshot's timing). Three rapid step-clicks correctly advanced one rank at a time (US →
 Russia → China); ArrowUp with nothing highlighted correctly wrapped to the bottom of the list.
+
+**Taiwan recognized across the Intelligence Engine (v6.9.0, 2026-08-26).** Direct request: "I want Taiwan to
+be recognized as a country. It should still show as claimed by China... I need Taiwan in all of these
+analytics." Two explicit, deliberate scope decisions were made before touching any code (asked directly, not
+assumed): Taiwan stays a GeoEntity architecturally — NOT merged into the 193-country `CountryRegistry`/
+topology — since that's what makes `claimedBy: China` work at all (`Country` has no claims fields; see
+`data/registry/geoEntities.ts`'s own header comment on why); and its displayed label DOES change wherever
+shown (search tag, `IntelligencePanel` layout), not just its presence in rankings.
+
+**Data — real sourcing added for Taiwan in all 4 categories, not just UI wiring for what already existed:**
+- **Military** (`scripts/buildMilitary.mjs`'s `buildTaiwanScore()`) — all 5 components real. Unlike Economy's
+  Taiwan one-off, which needed IMF WEO because WDI excludes Taiwan, Military's own primary sources include
+  Taiwan DIRECTLY: verified by reading the already-vendored SIPRI xlsx files themselves (not assumed) — a real
+  "Taiwan" row exists in Milex's "Current US$" and "Share of GDP" sheets, and in the Top 100 sheet (NCSIST,
+  rank 50 in 2024). `findYearSeriesForLiteralName()` bypasses the `matchCountryName`/`NAME_LOOKUP` machinery
+  entirely (built only from the 193-country topology) and matches the raw source row by literal name instead.
+  Personnel alone needed a different path — CIA Factbook directly (170,000 active duty, 2025), the same
+  fallback every OTHER country already uses once WDI comes up empty for personnel specifically, not a new
+  source. One real bug caught and fixed before this shipped: `finalizeCountry`'s generic `pctGdp.sourceUrl`
+  construction unconditionally built a World Bank URL (`.../country/undefined/indicator/...`, since Taiwan has
+  no `alpha3`) even though Taiwan's %GDP came from SIPRI — needed an explicit `r.id === 'taiwan'` branch.
+- **Technology** (`scripts/buildTechnology.mjs`'s `buildTaiwanRecord()`) — 2 of 4 components real: R&D
+  expenditure (4.0%, 2023 — Taiwan's National Science and Technology Council figure, as republished by
+  Taiwan's Overseas Community Affairs Council citing MOEA/CNA, since NSTC's own original release wasn't
+  directly fetchable) and patents-per-million (837.0 — TIPO's own 2024 "domestic invention patent
+  applications" figure, 19,586, divided by IMF WEO population; TIPO is Taiwan's own IP office, the same kind
+  of primary national-office source WDI's own IP.PAT.RESD is itself built from for every other country, just
+  read directly since WDI's WIPO mirror excludes Taiwan). High-tech-exports% and the ICT Development Index
+  were investigated and left as GENUINE, LOGGED GAPS — WITS/UN Comtrade has no directly queryable
+  pre-computed figure matching WDI's own product classification (its web UI is JS-rendered, not fetchable, and
+  computing the ratio independently from raw trade codes risked producing something that LOOKED authoritative
+  but wasn't methodology-matched to the other 175 countries' real WDI figures), and ITU's IDI table simply
+  doesn't cover Taiwan (already confirmed when Technology was first built — see this file's Technology entry
+  above). Coverage floor means Taiwan's Technology composite is `null`/`'unavailable'` (2 of 4 present, floor
+  is 3 of 4) even though 2 real, sourced values exist and are visible in the drill-down/ranked-list columns —
+  the same honest "real components, no composite" outcome any other low-coverage country already gets.
+- **Current Status** (`scripts/buildCurrentStatus.mjs`) — `conflicts: []`, `sanctionTier: null`, both real,
+  positive facts (UCDP's armed-conflict threshold — 25+ battle-related deaths/year — hasn't been crossed by
+  current China-Taiwan tension; no active OFAC program), not sourcing gaps. Pushed directly rather than derived
+  from `prioEntries`/`candidateEntries` (both keyed by the 193-country topology, which Taiwan isn't part of).
+- **Economy** already had a real score (`buildEconomy.mjs`'s pre-existing Taiwan one-off, IMF WEO-sourced) —
+  this release is what actually surfaces it in the UI for the first time; see this file's Economy Taiwan
+  paragraph above, corrected to point here.
+- **`data/registry/geoEntities.ts`'s Taiwan entry** gained real `population`/`gdpUsd` (23,400,220 / 2024;
+  $801,495,464,000 / 2024, IMF WEO — the LATTER figure reused verbatim from `economyScores.ts`'s own Taiwan
+  entry, not re-fetched, so the two can't drift apart) via a new `imfWeoProvenance()` helper alongside the
+  existing `wdiProvenance()` — resolving a gap that file's own header comment had explicitly flagged as
+  deliberately deferred ("needs IMF World Economic Outlook sourcing... not done here") since v6.1.0.
+- **`data/countryProfiles.ts` gained a hand-added Taiwan entry** (Semi-Presidential Republic, Taipei — CIA
+  Factbook, same 2026-01 snapshot every other entry uses) specifically so `CountryDetails` has real
+  GOVERNMENT/CAPITAL data to render for it (see the OVERVIEW section below, and this file's own "Data quirks"
+  correction on this same entry's history).
+
+**UI — score lookups generalized rather than Taiwan-special-cased, one narrow exception where display genuinely
+needed a different layout:**
+- `IntelligencePanel.tsx`'s four `xIntelValue()` helpers (`militaryIntelValue`/`economyIntelValue`/
+  `technologyIntelValue`/`currentStatusIntelValue`) dropped their `selected.entity.kind !== 'country'` guard
+  entirely, now keying every lookup by `selected.id` directly (`MILITARY_SCORES[selected.id]`, etc.) — since
+  `selected.id` is the SAME denormalized id whether the selection is a Country (numeric) or Taiwan (`'taiwan'`),
+  this one change resolves both, AND is forward-compatible for free: any FUTURE GeoEntity that gains real score
+  data would resolve here automatically with no further code change. `currentStatusCountryId` (feeds
+  `ConflictChip`) generalized the same way.
+- **OVERVIEW is the one place that needed an actual Taiwan-specific branch, not a generalization** — a
+  GeoEntity's `ENTITY TYPE`/`STRATEGIC SIGNIFICANCE` layout (`GeoEntityDetails`) doesn't fit "recognized as a
+  country" the way a plain data lookup does; a `Country`'s `GOVERNMENT`/`CAPITAL`/`POPULATION`/`GDP` layout
+  does. `taiwanAsCountryLike(entity: GeoEntity): Country` shapes a `Country`-compatible object from Taiwan's
+  own GeoEntity record (population/gdpUsd/populationYear/gdpYear share identical field names on both
+  interfaces already) plus its new `countryProfiles.ts` entry, so `CountryDetails` itself needed zero changes
+  and can't silently regress for real countries — it just receives an object shaped like one. No
+  `areaKm2`/`areaYear` (GeoEntity carries no area field at all) — `CountryDetails`'s own `area && (...)` guard
+  already omits that row cleanly, the same way it omits POPULATION/GDP for a country with a genuine gap.
+  Dispatched by an explicit `selected.entity.data.id === 'taiwan'` check at the ONE call site — deliberately
+  NOT a general "render any GeoEntity like a Country" mechanism; every other GeoEntity is completely unaffected,
+  and this is the "check kind/id explicitly, don't paper over it with a name lookup" lesson this file's own
+  CapitalMarker/v2.3.0 history already established, applied in the opposite direction on purpose.
+- `hud/SearchBar.tsx`'s result tag reads `COUNTRY` for Taiwan specifically (an explicit `entry.id === 'taiwan'`
+  check at the render site, not a `kind`/`type` change) — every other `'geopolitical-entity'`-typed result
+  (Kosovo, Palestine, ...) still reads `GEOPOLITICAL`, unchanged; this wasn't a request to relabel that whole
+  classification, only Taiwan.
+- `hud/AnalyticsPanel.tsx`'s four `buildXRows()` functions now iterate `getRankableCountries()`
+  (`[...getCountries(), getEntity('taiwan')]`) instead of `getCountries()` directly — Taiwan's row flows
+  through the exact same sort/filter/column/highlight/step-navigation machinery every real country's does,
+  with zero Taiwan-specific branching anywhere in that machinery itself. `centroidById` (needed so clicking
+  Taiwan's row can compute a real world-space `direction` for `selectEntity`/camera flight) gained a Taiwan
+  entry derived from `useGeoEntityFeatures()` + `entities/entityGeometryIds.ts`'s `ENTITY_GEOMETRY_IDS`
+  (geometry id `'158'` → entity id `'taiwan'`) — the exact same technique `input/SelectionController.ts`'s own
+  candidate list already uses for GeoEntity centroids, not a new pattern. The header's "193 COUNTRIES ·
+  SOURCE" caption is no longer a hardcoded literal — `{activeLookupRows.length} COUNTRIES` — so it honestly
+  reads 194 rather than silently undercounting once the ranked list itself had more rows than the caption
+  claimed.
+
+**Verified live in the browser end to end**, not just per-file: searched "Taiwan" → tag read COUNTRY → selected
+it → OVERVIEW showed real GOVERNMENT/CAPITAL/POPULATION/GDP, MILITARY 52.5 and ECONOMY 81.8 bars, TECHNOLOGY
+correctly showing no bar (2/4 coverage, below floor) but a real, clickable drill-down (R&D 4.00%/2023,
+patents 837.0/2024, the other two rows "—"), CURRENT STATUS "NO ACTIVE CONFLICTS", and RELATIONSHIPS still
+showing "CLAIMANT — People's Republic of China" exactly as before, with the globe itself still rendering
+China's claim highlight (confirming the claims-rendering system needed zero changes). Confirmed Taiwan appears
+at its real ranked position in all 4 AnalyticsPanel rankings (Military rank 18/194, Economy rank 4/194,
+Current Status correctly showing "—"/"—" for conflicts/sanction) with header counts reading 194 throughout.
+
+**Same-day follow-up: `hud/CommandBar.tsx`'s bottom status bar** — direct request. COUNTRIES now reads
+`features.length + 1` (194) rather than the bare 193-country topology count, since Taiwan is recognized as a
+country across the Intelligence Engine even though it still renders via the GeoEntity topology, not this one.
+ENTITIES was relabeled TERRITORIES — that one segment's label text only (still `entityFeatures.length`,
+unchanged, still literally the rendered GeoEntity count including Taiwan's own geometry); nothing else in the
+app that refers to GeoEntities/territories elsewhere (search tags, `GEO_ENTITY_TYPE_LABEL`, the Layer Engine's
+category names, ...) was touched.
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
 is how `Conflict.participants`, `Relationship.parties`, and every
@@ -1788,11 +1897,18 @@ needs to change — they're already generic over `SearchEntry`/
   republic/monarchy category because they were mid-transition when
   written). `IntelligencePanel.tsx`'s CountryDetails "No profile data
   available" fallback is now effectively unreachable through normal
-  selection (every UN member has an entry) but stays in place —
-  `COUNTRY_PROFILES` still has one deliberate non-UN entry, Taiwan, kept
-  as the worked example in this file's "GeoEntity geometry" section of why
-  `CapitalMarker` gates on `selected.entity.kind === 'country'` rather
-  than a name-only lookup.
+  selection (every UN member has an entry) but stays in place.
+  **`COUNTRY_PROFILES` has one deliberate non-UN entry, Taiwan** — added
+  2026-08-26 alongside "Taiwan recognized across the Intelligence Engine"
+  (see this file's own entry further down) so `CountryDetails` has real
+  GOVERNMENT/CAPITAL data to render for it. An EARLIER version of this
+  paragraph claimed this entry already existed, as a "worked example" of
+  why `CapitalMarker` gates on `selected.entity.kind === 'country'` rather
+  than a name-only lookup — that claim turned out to be stale/inaccurate
+  when actually checked (no Taiwan entry existed in the file at all before
+  2026-08-26); `CapitalMarker`'s own kind-based gate is real and unaffected,
+  but wasn't actually being exercised by a live Taiwan profile entry the
+  way this doc used to imply.
 
 ## Code style
 

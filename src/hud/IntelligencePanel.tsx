@@ -258,22 +258,26 @@ function MilitaryDrilldown({ score }: { score: MilitaryScore }) {
   )
 }
 
-// Country-only: MILITARY_SCORES is keyed by the numeric ISO topology id
-// (see that file's header comment), the same id Country records are
-// registered under — see scene/useCountryFeatures.ts. No GeoEntity has a
-// military score; a GeoEntity selection falls through to the same
-// undefined-value empty state every other metric already renders.
+// Keyed by `selected.id` directly rather than gating on
+// `selected.entity.kind === 'country'` — MILITARY_SCORES is keyed by the
+// numeric ISO topology id for every Country, EXCEPT Taiwan (a GeoEntity),
+// keyed by its GeoEntity registry id ('taiwan') instead — the same
+// exception Economy/Technology/Current Status all use. `selected.id` is the
+// SAME denormalized id either way (see hud/selectionStore.ts's
+// SelectedEntity doc comment), so this one lookup already resolves both
+// cases correctly with no kind check needed: a country resolves by its
+// numeric id, Taiwan resolves by 'taiwan', and any OTHER GeoEntity (which
+// has no score entry at all) naturally falls through to `undefined` — the
+// same empty state a still-unscored country already gets. Forward-
+// compatible for free: a future GeoEntity that gains real score data would
+// resolve here automatically, no code change needed.
 function militaryIntelValue(selected: SelectedEntity | null) {
-  if (selected?.entity.kind !== 'country') return undefined
-  return MILITARY_SCORES[selected.entity.data.id]
+  return selected ? MILITARY_SCORES[selected.id] : undefined
 }
 
-// Country-only, same convention as militaryIntelValue above — ECONOMY_SCORES
-// is keyed by the same numeric ISO topology id. No GeoEntity has an Economy
-// score either.
+// Same convention as militaryIntelValue above.
 function economyIntelValue(selected: SelectedEntity | null) {
-  if (selected?.entity.kind !== 'country') return undefined
-  return ECONOMY_SCORES[selected.entity.data.id]
+  return selected ? ECONOMY_SCORES[selected.id] : undefined
 }
 
 interface EconomyDrilldownRow {
@@ -438,23 +442,16 @@ function TechnologyDrilldown({ score }: { score: TechnologyScore }) {
   )
 }
 
-// Country-only, same convention as militaryIntelValue/economyIntelValue above
-// — TECHNOLOGY_SCORES is keyed by the same numeric ISO topology id. No
-// GeoEntity has a Technology score either.
+// Same convention as militaryIntelValue/economyIntelValue above.
 function technologyIntelValue(selected: SelectedEntity | null) {
-  if (selected?.entity.kind !== 'country') return undefined
-  return TECHNOLOGY_SCORES[selected.entity.data.id]
+  return selected ? TECHNOLOGY_SCORES[selected.id] : undefined
 }
 
-// Country-only, same convention as militaryIntelValue/economyIntelValue above
-// — CURRENT_STATUS is keyed by the same numeric ISO topology id. No
-// GeoEntity has a Current Status record either (see data/currentStatus.ts's
-// header comment) — `undefined` here is what tells the render below to fall
-// back to the plain unsourced IntelRow, the same way a GeoEntity selection
-// already falls back for Military/Economy.
+// Same convention as militaryIntelValue/economyIntelValue above —
+// `undefined` here (a GeoEntity other than Taiwan, or nothing selected) is
+// what tells the render below to fall back to the plain unsourced IntelRow.
 function currentStatusIntelValue(selected: SelectedEntity | null): CurrentStatus | undefined {
-  if (selected?.entity.kind !== 'country') return undefined
-  return CURRENT_STATUS[selected.entity.data.id]
+  return selected ? CURRENT_STATUS[selected.id] : undefined
 }
 
 // Current Status is categorical, not a magnitude (design doc §3.5) — a
@@ -990,6 +987,41 @@ function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
   )
 }
 
+// Deliberately narrow, NOT a general "render any GeoEntity like a Country"
+// mechanism — direct request specifically for Taiwan ("Taiwan should be
+// recognized as a country... it should still show as claimed by China").
+// Taiwan stays a GeoEntity architecturally (its claim relationship only
+// exists as a GeoEntity field — see data/registry/geoEntities.ts's own
+// header comment on why claimedBy/administeredBy live there, not on
+// Country); this only changes what OVERVIEW renders for it, by explicit id
+// check at the one call site below — nowhere else in this codebase (search
+// tags aside — see hud/SearchBar.tsx) treats Taiwan differently from any
+// other GeoEntity. Shapes a `Country`-compatible object from Taiwan's own
+// GeoEntity record (population/gdpUsd/populationYear/gdpYear share the
+// exact same field names on both interfaces already) plus its hand-added
+// data/countryProfiles.ts entry (government/capital), so CountryDetails
+// itself needs no changes and can't silently regress for real countries —
+// it just receives an object shaped like one. No `areaKm2`/`areaYear` —
+// GeoEntity carries no area field at all, so CountryDetails's own
+// `area && (...)` guard already omits that row cleanly, the same way it
+// omits POPULATION/GDP for any country with a genuine sourcing gap. This
+// is exactly the "check kind, not just look up by name" lesson
+// CLAUDE.md's CapitalMarker/v2.3.0 history warns about, applied in the
+// opposite direction on purpose: the check here is an explicit id
+// comparison, not a name lookup standing in for one.
+function taiwanAsCountryLike(entity: GeoEntity): Country {
+  return {
+    id: entity.id,
+    name: entity.name,
+    aliases: entity.aliases,
+    status: 'partially-recognized',
+    population: entity.population,
+    populationYear: entity.populationYear,
+    gdpUsd: entity.gdpUsd,
+    gdpYear: entity.gdpYear,
+  }
+}
+
 export function IntelligencePanel() {
   const { selected, inspectorOpen } = useSelection()
   // v3.2.0: selection and "is the panel actually showing" are now two
@@ -1047,9 +1079,13 @@ export function IntelligencePanel() {
   // — `currentStatus` being defined (a Country selection with a real
   // record) is itself the "sourced" signal used below.
   const currentStatus = currentStatusIntelValue(selected)
-  // ConflictChip needs the country's own topology id (to resolve/fallback
+  // ConflictChip needs the selected entity's own id (to resolve/fallback
   // party highlighting) — currentStatus itself carries only `name`, not id.
-  const currentStatusCountryId = selected?.entity.kind === 'country' ? selected.entity.data.id : undefined
+  // `selected.id` directly (not kind-gated) so Taiwan resolves here too —
+  // its own `conflicts` is always empty, so no ConflictChip ever actually
+  // renders for it, but CurrentStatusRow still needs a truthy id to render
+  // at all rather than falling back to the plain unsourced IntelRow.
+  const currentStatusCountryId = selected?.id
 
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
   // (MILITARY, ECONOMY, and as of the Technology build, TECHNOLOGY too)
@@ -1093,6 +1129,8 @@ export function IntelligencePanel() {
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>OVERVIEW</div>
               {selected.entity.kind === 'country' ? (
                 <CountryDetails country={selected.entity.data} />
+              ) : selected.entity.data.id === 'taiwan' ? (
+                <CountryDetails country={taiwanAsCountryLike(selected.entity.data)} />
               ) : (
                 <GeoEntityDetails entity={selected.entity.data} />
               )}

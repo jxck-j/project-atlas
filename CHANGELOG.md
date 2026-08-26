@@ -17,6 +17,35 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.9.0 — Taiwan recognized as a country across the Intelligence Engine
+
+**New major version.** Direct request: "I want Taiwan to be recognized as a country... it should still show
+as claimed by China... I need Taiwan in all of these analytics." Taiwan stays a GeoEntity architecturally (its
+`claimedBy: China` relationship only exists as a GeoEntity field, and nothing about the Country/GeoEntity split
+or the claims-rendering system changed), but now participates in every Intelligence Engine surface a Country
+does: `hud/IntelligencePanel.tsx`'s MILITARY/ECONOMY/TECHNOLOGY/CURRENT STATUS status bars and citation
+drill-downs, `hud/AnalyticsPanel.tsx`'s ranked lists (now 194 countries, not 193), and its OVERVIEW section now
+renders the same GOVERNMENT/CAPITAL/POPULATION/GDP layout a Country gets instead of a GeoEntity's ENTITY
+TYPE/STRATEGIC SIGNIFICANCE one. Search results tag it COUNTRY instead of GEOPOLITICAL (Kosovo/Palestine and
+every other entity of that type are unchanged).
+
+Real, sourced Taiwan data was added to all 4 Intelligence Engine categories, not just wired to existing data:
+**Military** — all 5 components real (SIPRI's own Milex/Top 100 databases include Taiwan directly; personnel
+via CIA Factbook, the same fallback every country uses once WDI comes up empty). **Technology** — 2 of 4
+components real (R&D%GDP via Taiwan's National Science and Technology Council; patents-per-capita via TIPO,
+Taiwan's own IP office); high-tech-exports% and the ICT Development Index are genuine, logged gaps — no
+directly comparable source was found for either, so they're left unscored rather than approximated (the same
+"never fabricate" discipline this project has followed throughout). **Current Status** — real, honest empties
+(no UCDP-recorded armed conflict, no active OFAC program). **Economy** already had a real score (added earlier
+for the ranking's own use); this release is what actually surfaces it.
+
+The bottom status bar's `hud/CommandBar.tsx` follows suit: COUNTRIES now reads 194 (the real 193-country
+topology count, +1 for Taiwan), and ENTITIES was relabeled TERRITORIES — direct request, that segment only;
+nothing else in the app that refers to GeoEntities/territories elsewhere was renamed.
+
+See `CLAUDE.md`'s Geopolitical data architecture section for the full sourcing trail and `LOGBOOK.md` for the
+research process.
+
 ## v6.8.1 — AnalyticsPanel: a sticky lookup bar that jumps to (and steps through) a ranking
 
 **Point release.** Every ranking/list view in `hud/AnalyticsPanel.tsx` (MILITARY, ECONOMY, TECHNOLOGY,

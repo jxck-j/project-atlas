@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Vector3 } from 'three'
 import { useTopNavTab } from './navStore'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
+import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
+import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
-import { getCountries } from '../data'
+import { getCountries, getEntity } from '../data'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
 import { TECHNOLOGY_SCORES, type TechnologyScore } from '../data/technologyScores'
@@ -303,8 +305,24 @@ interface MilitaryRankedRow extends BaseRankedRow {
   components?: MilitaryScore['components']
 }
 
+// Taiwan participates in every Intelligence Engine ranking below (Military/
+// Economy/Technology/Current Status), the same as any UN-member country,
+// even though it isn't one — direct request ("Taiwan should be recognized
+// as a country... I need Taiwan in all of these analytics"). All 4 builders
+// below only ever read `.id`/`.name` off a "country" entry, which
+// `getEntity('taiwan')`'s GeoEntity record already has — reusing that
+// directly (rather than hardcoding a second copy of Taiwan's name here)
+// keeps this in sync with the GeoEntity registry's own record if it's ever
+// renamed. Falls back to just `getCountries()` if 'taiwan' somehow isn't
+// registered, which should never happen (data/registry/geoEntities.ts
+// registers it unconditionally at module load).
+function getRankableCountries(): { id: string; name: string }[] {
+  const taiwan = getEntity('taiwan')
+  return taiwan ? [...getCountries(), taiwan] : getCountries()
+}
+
 function buildMilitaryRows(): MilitaryRankedRow[] {
-  return getCountries().map((country) => {
+  return getRankableCountries().map((country) => {
     const score = MILITARY_SCORES[country.id]
     const notApplicable = score?.confirmed === true
     return {
@@ -362,7 +380,7 @@ interface EconomyRankedRow extends BaseRankedRow {
 }
 
 function buildEconomyRows(): EconomyRankedRow[] {
-  return getCountries().map((country) => {
+  return getRankableCountries().map((country) => {
     const score = ECONOMY_SCORES[country.id]
     return {
       id: country.id,
@@ -424,7 +442,7 @@ interface TechnologyRankedRow extends BaseRankedRow {
 }
 
 function buildTechnologyRows(): TechnologyRankedRow[] {
-  return getCountries().map((country) => {
+  return getRankableCountries().map((country) => {
     const score = TECHNOLOGY_SCORES[country.id]
     return {
       id: country.id,
@@ -486,7 +504,7 @@ interface CurrentStatusRankedRow {
 }
 
 function buildCurrentStatusRows(): CurrentStatusRankedRow[] {
-  return getCountries().map((country) => {
+  return getRankableCountries().map((country) => {
     const status = CURRENT_STATUS[country.id]
     return {
       id: country.id,
@@ -878,6 +896,7 @@ export function AnalyticsPanel() {
   const isOpen = useTopNavTab() === 'analytics'
   const { selected } = useSelection()
   const features = useCountryFeatures()
+  const geoEntityFeatures = useGeoEntityFeatures()
   const [metric, setMetric] = useState<IntelMetricId | null>(null)
   const [sort, setSort] = useState(DEFAULT_SORT)
   const [currentStatusFilter, setCurrentStatusFilter] = useState<CurrentStatusFilter>('all')
@@ -971,8 +990,22 @@ export function AnalyticsPanel() {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (id) map.set(id, geometryToCentroid(f.geometry))
     }
+    // Taiwan — a GeoEntity, not a Country, so it has no entry in `features`
+    // above — needs its centroid derived from its own rendered geometry the
+    // same way input/SelectionController.ts's candidate list already does:
+    // find the GeoEntity feature whose geometry id maps to entity id
+    // 'taiwan' (ENTITY_GEOMETRY_IDS['158'] === 'taiwan' — see
+    // entities/entityGeometryIds.ts) and key its centroid by 'taiwan'
+    // directly, so selectCountryRow('taiwan') below resolves it.
+    for (const f of geoEntityFeatures) {
+      const geometryId = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      if (geometryId && ENTITY_GEOMETRY_IDS[geometryId] === 'taiwan') {
+        map.set('taiwan', geometryToCentroid(f.geometry))
+        break
+      }
+    }
     return map
-  }, [features])
+  }, [features, geoEntityFeatures])
 
   if (!isOpen) return null
 
@@ -1145,7 +1178,12 @@ export function AnalyticsPanel() {
                 </button>
               </div>
               <span className="hidden text-[9.5px] tracking-[0.16em] text-[#51648a] md:inline">
-                193 COUNTRIES ·{' '}
+                {/* Dynamic, not hardcoded "193" — activeLookupRows already
+                    includes Taiwan (see getRankableCountries), so this
+                    honestly reads 194 rather than silently undercounting
+                    once the ranked list itself has more rows than the
+                    caption claims. */}
+                {activeLookupRows.length} COUNTRIES ·{' '}
                 {activeMetric.id === 'economy'
                   ? 'WORLD BANK WDI SOURCED'
                   : activeMetric.id === 'technology'

@@ -584,6 +584,112 @@ async function loadArmsImportTivMap() {
 }
 
 // ---------------------------------------------------------------------------
+// TAIWAN (added alongside a direct request to also recognize Taiwan across
+// the Intelligence Engine's analytics — see CLAUDE.md). Unlike Economy's
+// Taiwan one-off, which needed a wholly different source (IMF WEO) because
+// WDI structurally excludes it, Military's own primary sources — SIPRI's
+// Milex and Top 100 databases — include Taiwan DIRECTLY: verified by
+// reading the vendored xlsx files themselves (scripts/vendor/military/) and
+// confirming a real "Taiwan" row exists in the "Current US$", "Share of
+// GDP", and Top 100 sheets, the exact same files every other country's
+// figures already come from. Only personnel needs a different path (WDI's
+// MS.MIL.TOTL.P1 has no Taiwan entry, same structural exclusion as
+// everywhere else in this project) — CIA Factbook directly, the same
+// fallback source (not a different one) every other country already falls
+// back to once WDI comes up empty for personnel specifically.
+// ---------------------------------------------------------------------------
+const TAIWAN_FACTBOOK_PATH = 'east-n-southeast-asia/tw.json'
+
+// Bypasses matchCountryName/NAME_LOOKUP entirely (built only from the
+// 193-country topology, which doesn't include Taiwan) — matches the raw
+// source row by its literal name instead. Same year-column-scanning logic
+// as loadExpenditureMap's per-row loop, generalized to any sheet/name pair
+// so it covers both the "Current US$" and "Share of GDP" sheets without
+// duplicating the scan logic twice.
+function findYearSeriesForLiteralName(xlsxPath, sheetName, literalName) {
+  const wb = readWorkbook(xlsxPath)
+  const ws = wb.Sheets[sheetName]
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null })
+  const header = rows[5]
+  const yearCols = header
+    .map((year, idx) => ({ year, idx }))
+    .filter(({ year }) => typeof year === 'number' && year <= 2025 && year >= MILEX_LOOKBACK_START_YEAR)
+    .sort((a, b) => b.year - a.year)
+  const row = rows.slice(6).find((r) => r && r[0] === literalName)
+  if (!row) return null
+  for (const { year, idx } of yearCols) {
+    if (typeof row[idx] === 'number') return { value: row[idx], year }
+  }
+  return null
+}
+
+async function buildTaiwanScore() {
+  const expenditure = findYearSeriesForLiteralName(MILEX_XLSX, 'Current US$', 'Taiwan')
+  // SIPRI's own "Share of GDP" sheet stores a fraction (0.021 = 2.1%), not
+  // already a percentage — verified directly against the USA's own row in
+  // the same sheet (0.0329 in 2023, matching WDI's independently-sourced
+  // ~3.4% for the USA in a nearby year) before trusting the ×100 conversion.
+  const pctGdpRaw = findYearSeriesForLiteralName(MILEX_XLSX, 'Share of GDP', 'Taiwan')
+  const pctGdp = pctGdpRaw ? { value: pctGdpRaw.value * 100, year: pctGdpRaw.year } : { value: undefined, year: undefined }
+
+  // Industrial base: NCSIST (Taiwan's state defense R&D institute) appears
+  // in SIPRI's own Top 100 (2024, rank 50) — same file, same "Arms revenues
+  // (<year>)" column every other country's figure is summed from.
+  const wbTop100 = readWorkbook(TOP100_XLSX)
+  const wsTop100 = wbTop100.Sheets[String(TOP100_YEAR)]
+  const rowsTop100 = XLSX.utils.sheet_to_json(wsTop100, { header: 1, raw: true, defval: null })
+  const headerTop100 = rowsTop100[3]
+  const countryIdxTop100 = headerTop100.indexOf('Country (d)')
+  const revenueIdxTop100 = headerTop100.findIndex((h) => typeof h === 'string' && h.startsWith(`Arms revenues (${TOP100_YEAR})`))
+  let industrialBase = 0
+  for (const row of rowsTop100.slice(4)) {
+    if (row && row[countryIdxTop100] === 'Taiwan' && typeof row[revenueIdxTop100] === 'number') industrialBase += row[revenueIdxTop100]
+  }
+
+  // Personnel: CIA World Factbook directly (WDI has no Taiwan entry at all,
+  // same structural exclusion as everywhere else) — the same fallback
+  // source (not a different one) resolvePersonnel already uses once WDI
+  // comes back empty for any other country.
+  let personnel = { value: undefined, year: undefined }
+  try {
+    const doc = await fetchJsonRetry(`${FACTBOOK_RAW_BASE}/${TAIWAN_FACTBOOK_PATH}`)
+    const text = doc['Military and Security']?.['Military and security service personnel strengths']?.text
+    const value = text ? parsePersonnelFigure(text) : null
+    if (value != null) personnel = { value, year: undefined, source: 'CIA Factbook archive', factbookText: text }
+    else logGap('Taiwan', 'personnel', `factbook.json personnel text unparseable/absent ("${text}") — left unscored.`)
+  } catch (err) {
+    logGap('Taiwan', 'personnel', `factbook.json fetch failed (${err.message}) — left unscored.`)
+  }
+
+  if (expenditure == null) logGap('Taiwan', 'expenditure', 'Not present in SIPRI Milex xlsx — left unscored.')
+  if (pctGdp.value == null) logGap('Taiwan', '%GDP', 'Not present in SIPRI Milex "Share of GDP" sheet — left unscored.')
+
+  return {
+    id: 'taiwan',
+    name: 'Taiwan',
+    alpha3: undefined,
+    coveragePresent: [expenditure?.value, pctGdp.value, personnel.value].filter((v) => v != null).length,
+    coverageTotal: 3,
+    raw: {
+      expenditure,
+      pctGdp,
+      personnel,
+      industrialBase,
+      // True-zero — Taiwan is not among FAS's 9 nuclear-armed states (same
+      // default every other non-nuclear country already gets).
+      nuclearWarheads: 0,
+    },
+    // Arms-import TIV not independently researched for Taiwan — left as a
+    // genuine, logged gap rather than guessed; it's a non-scoring
+    // annotation only (see COVERAGE-FLOOR / CONFIDENCE REVISION #2 above),
+    // so this has no effect on Taiwan's actual composite score.
+    annotations: {
+      armsImportTiv: { raw: null, year: undefined, sourceUrl: 'https://armstransfers.sipri.org/ArmsTransfer/ImportExportTop' },
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Component 2: Defense spending, % GDP — World Bank WDI, same
 // range-query + explicit-year pattern as buildGovCapitalPopGdp.mjs.
 // ---------------------------------------------------------------------------
@@ -768,6 +874,9 @@ async function buildCountryScore(country) {
 
 const built = await mapWithConcurrency(countries, 8, buildCountryScore)
 
+built.push(await buildTaiwanScore())
+console.log('Added Taiwan (SIPRI Milex/Top 100-sourced directly, personnel via CIA Factbook — see TAIWAN header comment).')
+
 // The no-standing-military overrides are already fully resolved; only the
 // rest need cross-country normalization before a composite exists.
 const pending = built.filter((r) => !r.confirmed)
@@ -798,7 +907,10 @@ function finalizeCountry(r) {
       raw: r.raw.pctGdp.value ?? null,
       normalized: pctGdpNorm,
       year: r.raw.pctGdp.year,
-      sourceUrl: `${WORLD_BANK_BASE}/${r.alpha3}/indicator/${PCT_GDP_INDICATOR}`,
+      // Taiwan's %GDP comes from SIPRI's own "Share of GDP" sheet, not
+      // World Bank WDI (which has no Taiwan entry at all) — see this
+      // script's TAIWAN header comment.
+      sourceUrl: r.id === 'taiwan' ? MILEX_URL : `${WORLD_BANK_BASE}/${r.alpha3}/indicator/${PCT_GDP_INDICATOR}`,
     },
     personnel: {
       raw: r.raw.personnel.value ?? null,
@@ -942,7 +1054,14 @@ const header = `// Military category scores for the Intelligence Engine, generat
 //
 // Keyed by the SAME numeric ISO topology id scene/useCountryFeatures.ts
 // registers Country records under (String(feature.id) from
-// countries-un193.json) — same convention as src/data/countryEconomics.ts.
+// countries-un193.json) — same convention as src/data/countryEconomics.ts —
+// EXCEPT Taiwan, keyed by its GeoEntity registry id ('taiwan') instead, the
+// same exception src/data/economyScores.ts already established. Unlike
+// Economy's Taiwan one-off, Military's own primary sources (SIPRI Milex,
+// SIPRI Top 100) include Taiwan directly — only personnel needed a
+// different path (CIA Factbook, the same fallback every other country
+// already uses once WDI comes up empty for personnel specifically). See
+// this script's own TAIWAN header comment for the full sourcing.
 //
 // Re-run the build script (rather than hand-editing this file) to refresh.
 
