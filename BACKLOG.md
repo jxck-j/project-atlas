@@ -165,6 +165,22 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 - None this run — every referenced Gleditsch-Ward code resolved to a UN-193 Country.
 
+**TODO: full correctness/currency audit of every `conflicts[]` entry** — this hasn't had the same
+per-entry verification pass `sanctionTier`'s RED tier got, and it should before this data is relied on
+for anything beyond portfolio-demo confidence. UCDP/PRIO ACD v26.1 (the annual, fully-typed release) only
+covers full-year 2025 and earlier by its own publication cadence; every conflict active in 2026 is sourced
+from UCDP Candidate v26.0.7 instead, which per its own version string covers Jan–Jul 2026 only — anything
+that started, escalated, de-escalated, or ended in August 2026 (this build's own run month) isn't reflected
+yet and won't be until UCDP publishes a newer Candidate extract or the ACD v27 annual release lands. A
+`conflictType: 'unclassified'` entry is the honest placeholder for exactly that gap ("Candidate caught it,
+no annual release has typed it yet") — expected to firm up, and in some cases be corrected or dropped,
+once UCDP's own next release ships, not something to guess at now. Before trusting this data as current:
+re-run `npm run build:current-status` against whatever UCDP has published most recently, and spot-check a
+sample of `conflicts[]` entries (both `ConflictEntry.conflictType`/`conflictName` and which countries a
+conflict is attached to — see this file's own `side_a`/`side_b` name-resolution comment above) against
+UCDP's own public conflict encyclopedia at ucdp.uu.se to confirm nothing currently active is missing and
+nothing resolved is still showing as ongoing.
+
 <!-- END buildCurrentStatus.mjs gap report -->
 
 ## Data sourcing (`buildEconomy.mjs`)
