@@ -29,18 +29,20 @@ const UP_AXIS = new Vector3(0, 1, 0)
 
 // MILITARY (data/militaryScores.ts), ECONOMY (data/economyScores.ts), and
 // TECHNOLOGY (data/technologyScores.ts) have real 0-100 composite scores for
-// all 193 countries; CURRENT STATUS (data/currentStatus.ts) has real,
+// all 194 countries; CURRENT STATUS (data/currentStatus.ts) has real,
 // sourced data too but — per design doc §3.5 — never converges to a single
 // number, so its view below is a filtered/sortable list, not the
 // BaseRankedRow/AnalyticsColumn/RankedListRow machinery Military/Economy/
-// Technology share. DIPLOMACY still renders the exact same "Awaiting data
-// feed" wording IntelligencePanel.tsx already uses for it, rather than
-// fabricating a ranking with nothing behind it. Flip an entry here to `true`
-// once a real dataset exists for it.
+// Technology share. All 4 are real/available as of Diplomacy's removal
+// (2026-08-26 — see intelMetrics.ts's own comment) — this record stays in
+// place, not deleted, as the extensibility point for a possible FUTURE 5th
+// category: `MetricThumbnail`'s "Awaiting data feed" placeholder path below
+// still renders correctly for any entry flipped back to `false`, so a new
+// category slots in the same way Technology/Current Status originally did,
+// without reintroducing this mechanism from scratch.
 const METRIC_AVAILABLE: Record<IntelMetricId, boolean> = {
   military: true,
   economy: true,
-  diplomacy: false,
   technology: true,
   'current-status': true,
 }
@@ -1053,13 +1055,14 @@ export function AnalyticsPanel() {
 
   // What RankingLookupBar searches, jumpToRow can land on, and jumpToOffset
   // steps through — the same rows actually rendered below for the active
-  // metric, in the same order, not the full 193-country registry (see
+  // metric, in the same order, not the full 194-country registry (see
   // RankingLookupBar's own comment for why: CURRENT STATUS's filter tabs
   // mean a filtered-out country genuinely has no row on screen to jump to).
   // Mirrors the render ternary's own branching below, military as the
-  // fallback for the same reason (the only other id that can reach this
-  // point is 'military' itself, since 'diplomacy' has no thumbnail to click
-  // into).
+  // fallback for any `activeMetric.id` that isn't one of the other three
+  // (there's no such id reachable today — all 4 IntelMetricId values have
+  // their own explicit branch — but the fallback stays rather than adding a
+  // 4th `=== 'military'` check that would just duplicate the last branch).
   const activeLookupRows: LookupRow[] = !activeMetric
     ? []
     : activeMetric.id === 'economy'

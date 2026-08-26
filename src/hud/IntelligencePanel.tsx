@@ -44,16 +44,14 @@ function DataRow({ label, value }: { label: string; value: string }) {
 // the value text beside it, so a country's number and its bar always read
 // as the same color.
 //
-// `value` is optional: as of v6.3.1 it's real for MILITARY (see
-// militaryIntelValue below, sourced from data/militaryScores.ts), joined by
-// ECONOMY (economyIntelValue, data/economyScores.ts) once that category was
-// built. Still never passed for DIPLOMACY/TECHNOLOGY/CURRENT STATUS —
-// nothing in data/types.ts carries a 0-100 score for those yet
-// (Country.population and .gdpUsd are populated — see
-// data/countryEconomics.ts — but neither is a rating), and the Conflict
-// type's own doc comment is explicit that this project does not fabricate
-// assessments without an editorial process behind them. Those three still
-// render the empty state: flat track, em-dash value. `confidence === 'proxy'`
+// `value` is optional: real for MILITARY/ECONOMY/TECHNOLOGY (see
+// militaryIntelValue/economyIntelValue/technologyIntelValue below, each
+// sourced from its own src/data/*Scores.ts). CURRENT STATUS never passes
+// one at all — design doc §3.5 is explicit it never converges to a single
+// number (see CurrentStatusRow below instead). A fifth category (Diplomacy)
+// existed as an "Awaiting data feed" placeholder through 2026-08-26 and was
+// then dropped entirely, not just left unsourced — see intelMetrics.ts's
+// own comment. `confidence === 'proxy'`
 // tags the label — see
 // Intelligence Docs/intelligence-engine-scoring-design.md §6's "UI should
 // visually flag this is a proxy metric, not a direct measurement" — so a
@@ -660,7 +658,7 @@ function SanctionBadge({
 // Economy's citation drilldowns do — that mechanism replaces the whole
 // INTELLIGENCE SUMMARY section with a full breakdown table; this is a much
 // lighter "show a few more rows directly below," so it gets its own local
-// toggle that doesn't hide Military/Economy/Diplomacy/Technology while
+// toggle that doesn't hide Military/Economy/Technology while
 // open. "AT WAR" is used for every non-empty case regardless of
 // conflictType mix (interstate, civil war, or just a recent unconfirmed
 // detection) rather than picking a "worse" headline per type — UCDP itself
@@ -1088,10 +1086,10 @@ export function IntelligencePanel() {
   const currentStatusCountryId = selected?.id
 
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
-  // (MILITARY, ECONOMY, and as of the Technology build, TECHNOLOGY too)
-  // collapses the other rows and drops down its component sources. Only a
-  // metric with a real score record to drill into is ever clickable —
-  // Diplomacy still has no sources yet, so it stays a plain, inert row.
+  // (MILITARY, ECONOMY, TECHNOLOGY) collapses the other rows and drops down
+  // its component sources. Only a metric with a real score record for the
+  // current selection is ever clickable — a GeoEntity selection with no
+  // score (any GeoEntity other than Taiwan) still gets a plain, inert row.
   // Resets whenever the selection changes so a drill-down never carries
   // over onto a newly selected entity.
   const [expandedMetric, setExpandedMetric] = useState<IntelMetricId | null>(null)

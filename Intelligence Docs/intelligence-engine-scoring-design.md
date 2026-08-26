@@ -3,8 +3,11 @@
 **Status:** Core scoring rules locked for v1 (Military — fully specified, multi-source;
 Economy — sourcing identified, formula pending revision against the new normalization/
 confidence model below; Technology — component list and weighting locked, normalization/
-confidence-model alignment deferred). Diplomacy sourcing identified but weighting and
-confidence-model alignment deferred — not needed until scheduled.
+confidence-model alignment deferred; Current Status — finalized and implemented, see §3.5).
+**Diplomacy was DROPPED 2026-08-26** — direct decision, not a deferral. §3.4 below is kept as
+historical record of the sourcing that was identified before the drop; see this section's own
+note at its top and CLAUDE.md/LOGBOOK.md for the removal itself. There are 4 Intelligence
+Engine categories now, not 5.
 **Owner:** J
 **Related backlog item:** "Intelligence Engine" (currently: empty chrome, no score field in data model)
 
@@ -359,10 +362,22 @@ citable framework was found to justify an unequal scheme (two illustrative weigh
 proposals were drafted and reviewed; neither had citable backing, and they didn't agree
 with each other on the split either).
 
-**Confidence:** not yet revised against the coverage-floor/confidence model — same flag
-as Economy/Diplomacy, deferred to Section 9.
+**Confidence:** this note predates Technology's real implementation, which DOES have a coverage floor (≥3 of 4
+components present — see §3.3's own locked-components section above); kept here only as historical record of
+what was still open when this paragraph was written. Diplomacy, which this line originally listed alongside
+Economy, was dropped entirely (§3.4) rather than ever having this question resolved for it.
 
-### 3.4 Diplomacy — sourceable, but the hardest category
+### 3.4 Diplomacy — DROPPED 2026-08-26, kept below as historical record only
+
+**This category was never built and is not coming back on this design.** Direct decision ("I'm thinking we
+drop diplomacy and keep the other metrics") — not a deferral the way Technology's 5th-component search was,
+and not a demotion-to-annotation the way Military's arms-import TIV was. The sourcing below was identified but
+never locked (weighting and confidence-model alignment were flagged as deferred, and never got picked back
+up), and it never shipped as anything but a permanent "Awaiting data feed" placeholder in the app — see
+CLAUDE.md's "Diplomacy dropped" entry and LOGBOOK.md for the removal itself
+(`hud/intelMetrics.ts`'s `IntelMetricId` union/`INTEL_METRICS` no longer include it at all). This section is
+kept, unmodified below this note, purely as a record of what was investigated — not as an open item. If
+Diplomacy is ever revisited, treat this as a starting point to re-evaluate, not a locked spec to resume from.
 
 **Formula inputs (institutional, not personality-driven):**
 - Size/reach of diplomatic mission network (embassy/consulate count)
@@ -494,13 +509,14 @@ military power reads identically to the gap between #50 and #51, which understat
 top-tier power actually is. This was a deliberate reversal, made and validated against real illustrative
 data (a 15-country reference simulation) before being locked — not an oversight. Percentile rank remains a
 reasonable choice in the abstract; log-min-max was chosen because it better represents genuine magnitude
-differences in military capability specifically, which matters more here than in a category like Diplomacy
-where relative ranking probably matters more than absolute magnitude.
+differences in military capability specifically, which matters more here than in a category like the
+now-dropped Diplomacy (§3.4) would have needed, where relative ranking probably would have mattered more than
+absolute magnitude.
 
-**Open item:** Economy, Technology, and Diplomacy (Section 3.2–3.4) still assume percentile rank per the
-original design. Whether they should switch to log-min-max too, stay on percentile rank, or use different
-methods per category (magnitude-sensitive domains vs. rank-sensitive domains) is undecided — revisit when
-each category is actually scheduled, not now.
+**Open item, Economy specifically (Technology resolved per-component in §3.3; Diplomacy dropped, §3.4):**
+Economy's own components (Section 3.2) mix percentile rank and log-min-max already (see that section's real
+implementation) — this "open item" note predates that and is kept only as the historical record of the
+question, not an active undecided item anymore.
 
 ---
 
@@ -510,7 +526,9 @@ Military uses a different, more granular mechanism than the general model below 
 confidence mechanism" at the end of this section for exactly how it maps back onto the shared
 `ScoreConfidence` enum in Section 6.
 
-**General model, still valid for Economy/Technology/Diplomacy until each is individually revisited:**
+**General model** — Economy's real implementation has since diverged from this in places (see §3.2's own
+coverage-floor/log-min-max notes); Technology's confidence model is its own §3.3-locked version; Diplomacy
+never reached implementation at all and was dropped (§3.4). Kept below as the original reference design:
 
 For **composite categories** (multiple weighted sub-metrics):
 
@@ -561,9 +579,11 @@ Rather than force-fitting Military into the general model, Military gets its own
 and the general model remains as-is for categories that haven't gone through the same design depth yet.
 **Whether Military's coverage-floor + true-zero/coverage-gap mechanism should become the new standard for
 all future composite categories (replacing the weighted-sourceCoverage formula entirely) is an open
-question — deliberately not resolved here.** Decide it when Diplomacy or Technology is actually scheduled,
-with real sourcing work behind it, the same way Military's mechanism emerged from real sourcing work rather
-than being designed in the abstract.
+question — deliberately not resolved here.** Technology went through its own real sourcing work instead and
+landed on its own coverage floor (§3.3) without formally adopting this question's answer either way; Diplomacy
+was dropped before ever reaching that point (§3.4). Decide this question the next time a NEW composite
+category is actually scheduled, with real sourcing work behind it, the same way Military's mechanism emerged
+from real sourcing work rather than being designed in the abstract.
 
 ## 6. Data model change
 
@@ -614,22 +634,21 @@ Intelligence Engine. The launch-scope decision itself still stands, but for a di
 now the *most thoroughly designed and validated* category — 7 components, all independently sourced and
 citable, normalization and weighting logic stress-tested against a reference simulation that caught two
 real bugs before launch — even though it's also the most complex. Complexity and confidence turned out to
-be independent axes here, not correlated. Diplomacy and Technology stay unscored/"coming" in the UI until
-their composite formulas and confidence-model alignment (Section 9, plus the open item in Section 5) — and,
-for Diplomacy specifically, its weighting — are worked through. Technology's weighting is already locked
-(§3.3); its normalization method and confidence-model alignment are what's still open.
+be independent axes here, not correlated. At the time this section was written, Diplomacy and Technology
+stayed unscored/"coming" in the UI pending their composite formulas and confidence-model alignment (Section 9,
+plus the open item in Section 5). **Both are now resolved, in opposite directions:** Technology shipped for
+real (§3.3, finalized and implemented); Diplomacy was DROPPED entirely (2026-08-26 — see §3.4's own note at
+its top) rather than ever having its weighting locked.
 
-## 9. Deferred: Diplomacy weighting (Technology's weighting resolved — see §3.3)
+## 9. Diplomacy weighting — MOOT (Diplomacy dropped; Technology's weighting resolved — see §3.3)
 
-Not launch-blocking per Section 8. **Technology's weighting and component count are both fully locked:** 4
+Not launch-blocking per Section 8, and now moot for a different reason than either category originally left
+open here. **Technology's weighting and component count are both fully locked:** 4
 components (finalized 2026-08-25 — see §3.3), equal-weighted per Governing Principle 6 (no citable weighting
 framework was found, so this defaults to equal rather than staying unresolved), no further changes pending.
-**Diplomacy's weighting is still open** — sources are listed in
-3.4, but weights aren't yet locked. **Still deferred for both categories, regardless of weighting:** whether
-they adopt Military's coverage-floor/true-zero mechanism (Section 5) or stay on the original
-weighted-sourceCoverage formula, and whether they use log-min-max or percentile-rank normalization (Section
-4). Revisit all of this together when each category is scheduled for implementation — no reason to decide it
-piecemeal now.
+**Diplomacy's weighting question is moot, not resolved** — the category itself was dropped 2026-08-26 (§3.4)
+before its weighting (or anything else about it) was ever locked. This section is kept as historical record
+of what was still open at the time, not an active open item.
 
 ## 10. Open questions (not decided here)
 
@@ -643,7 +662,9 @@ piecemeal now.
   see §3.1/§5. Still open: whether/how the UI actually renders `proxy` vs `measured` differently — deferred
   to IntelligencePanel UI implementation.
 - Should Military's confidence/normalization mechanism become the standard for all composite categories,
-  replacing the original weighted-threshold model? Deferred to whenever Diplomacy/Technology are scheduled.
+  replacing the original weighted-threshold model? Technology shipped without adopting it (§3.3); Diplomacy
+  was dropped before the question ever applied to it (§3.4). Still open for Economy specifically (see the
+  next bullet).
 - Economy's normalization/confidence model needs the same reconciliation pass Military just went through —
   not yet started.
 - ~~Should component #7 (arms import TIV) actually be "coverage-gap-only," or does it behave more like

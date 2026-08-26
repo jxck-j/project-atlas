@@ -17,6 +17,21 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.9.1 — Diplomacy dropped from the Intelligence Engine
+
+**Point release.** Diplomacy is removed entirely — not deferred, not backlogged — from `hud/IntelligencePanel.tsx`'s
+status bars and `hud/AnalyticsPanel.tsx`'s ranked-list thumbnails, direct decision ("I'm thinking we drop
+diplomacy and keep the other metrics"). It never had real, sourced data behind it and had shipped only as a
+permanent "Awaiting data feed" placeholder since launch. The remaining 4 categories (Military, Economy,
+Technology, Current Status) are unaffected and all have real data. Removed by deleting `'diplomacy'` from
+`hud/intelMetrics.ts`'s `IntelMetricId` union and its `INTEL_METRICS` entry — every other reference to it was
+already driven generically off that shared list, not hardcoded, so this was the whole functional change.
+`ICONS.diplomacy` stays (reused by the unrelated ALLIANCES sidebar icon), and the "Awaiting data feed"
+placeholder mechanism itself stays in place as the extensibility point for any possible future 5th category.
+`Intelligence Docs/intelligence-engine-scoring-design.md`'s §3.4 Diplomacy section is kept as historical
+record, explicitly marked dropped rather than deleted. See `CLAUDE.md`'s "Diplomacy dropped" entry for the
+full trail.
+
 ## v6.9.0 — Taiwan recognized as a country across the Intelligence Engine
 
 **New major version.** Direct request: "I want Taiwan to be recognized as a country... it should still show

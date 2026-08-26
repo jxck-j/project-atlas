@@ -842,12 +842,16 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   ECONOMY thumbnail/sortable ranked-list columns are all wired up, sharing
   the generic ranked-list machinery Military's own v6.5.3/v6.5.4 columns
   established (`BaseRankedRow`/`AnalyticsColumn`/`compareRows` — see
-  `CLAUDE.md`'s v6.6.0 entry). DIPLOMACY / TECHNOLOGY are still hardcoded
-  "Awaiting data feed" placeholders in both surfaces, for every entity,
-  country or GeoEntity alike. Deliberately left unfabricated — see
-  `README.md`'s "Notes for future work": fabricating country-level
-  assessments for a defense-context demo isn't something to do casually.
-  Diplomacy/Technology weights aren't locked yet — design doc §9.
+  `CLAUDE.md`'s v6.6.0 entry). TECHNOLOGY got the identical treatment later
+  the same day (`data/technologyScores.ts`, `scripts/buildTechnology.mjs` —
+  World Bank WDI + a hand-transcribed ITU IDI table): status bar, citation
+  drill-down, and `AnalyticsPanel.tsx` ranked-list columns, all real and
+  sourced, no placeholder left. DIPLOMACY was never built out the same way
+  (its weighting was never locked — design doc §9) and was **dropped
+  entirely (v6.9.1, 2026-08-26)** rather than shipped as a permanent
+  placeholder — direct decision, not a deferral. See `CLAUDE.md`'s
+  "Diplomacy dropped" entry and `LOGBOOK.md`'s 2026-08-26 entry for the
+  removal. There are 4 Intelligence Engine categories now, not 5.
   **CURRENT STATUS is a different shape of gap, as of `scripts/
   buildCurrentStatus.mjs`/`data/currentStatus.ts`:** real, sourced data
   exists (UCDP conflicts + a 3-tier OFAC sanction model, see design doc §3.5
@@ -865,19 +869,17 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   pass instead, per this entry's own prior note. `CONFLICT_TYPE_STYLE` moved
   out of `IntelligencePanel.tsx` into a new shared `scene/
   conflictTypeStyles.ts` (mirroring `scene/sanctionTierColors.ts`) so both
-  surfaces color a conflict type identically. All five Intelligence Engine
-  metrics now have real UI treatment wherever real data exists — see
-  `CLAUDE.md`'s v6.7.2 entry for the full breakdown.
+  surfaces color a conflict type identically. Every Intelligence Engine
+  metric that still exists (Military, Economy, Technology, Current Status —
+  Diplomacy was dropped, see above) now has real UI treatment wherever real
+  data exists — see `CLAUDE.md`'s v6.7.2 entry for the full breakdown.
   **Still open:** ORANGE/YELLOW sanction-tier assignments and program names
   are secondary-source seeds, not individually verified against each
   country's own OFAC program page — see this file's `buildCurrentStatus.mjs`
   gap-report section above for the specific verification TODO before this
   ships as more than portfolio-demo-confidence data. And a real sanction
   logo (`Intelligence Docs/current-status/`) hasn't landed yet — the S badge
-  is a placeholder until then. Whichever of Diplomacy/Technology gets real
-  *scored* data next still follows the Military/Economy
-  `buildXRows`/`X_COLUMNS`/`XDrilldown` pattern unchanged — that pattern was
-  never the right fit for Current Status specifically.
+  is a placeholder until then.
 - **Data Engine** — every dataset in `src/data/registry/` is hand-curated
   and static; there's no live-refresh mechanism, and every provenance note
   says as much (`confidence: 'estimated'`, "not a comprehensive or

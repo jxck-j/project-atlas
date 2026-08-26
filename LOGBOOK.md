@@ -5,6 +5,42 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-26 (cont.) — Diplomacy dropped from the Intelligence Engine
+
+Direct request: "I'm thinking we drop diplomacy and keep the other metrics. Let's remove from the intel
+panel, analytics, etc." Diplomacy had shipped as a fifth thumbnail/status-bar slot since v6.3.1 but never got
+real data behind it — the design doc's §3.4 identified sourcing candidates but its weighting was never
+locked (see the doc's own §9, "Diplomacy weighting"), so it had sat as a permanent "Awaiting data feed"
+placeholder for the entire time Military/Economy/Technology/Current Status each went from placeholder to
+real, sourced, cited data. Unlike Technology (which was actively being built out earlier this same session)
+or the once-considered 5th/6th Technology components (investigated and explicitly logged as rejected),
+Diplomacy wasn't a candidate under active consideration — it was just never finished, and the user chose to
+cut it rather than let it keep sitting unfinished.
+
+**Mechanically this was almost entirely a data-shape change, not a UI rewrite** — confirming exactly how
+thoroughly `hud/intelMetrics.ts`'s shared `INTEL_METRICS` list already drove both surfaces generically.
+Removed `'diplomacy'` from `IntelMetricId` and deleted its `INTEL_METRICS` entry; the only other touch
+points were `AnalyticsPanel.tsx`'s `METRIC_AVAILABLE` record (dropped its `diplomacy: false` line) and a
+handful of stale comments in `IntelligencePanel.tsx` that described the historical 5-category state. Ran
+`tsc -b --noEmit` after the deletion specifically to confirm nothing else in the codebase still referenced
+the string `'diplomacy'` as a literal (a genuine risk if some component had pattern-matched on
+`IntelMetricId` instead of mapping over `INTEL_METRICS`) — came back clean, confirming the generic-list
+discipline this file's own header comment already called for had actually held throughout.
+
+**Deliberately NOT removed:** `ICONS.diplomacy` (still used by the unrelated ALLIANCES sidebar icon —
+removing it would have been an unrelated regression) and the `METRIC_AVAILABLE`/`MetricThumbnail`
+"Awaiting data feed" placeholder mechanism itself, kept as the extensibility point for any hypothetical
+future 5th category rather than deleted along with Diplomacy's own entry — deleting working infrastructure
+that a real future category would need again wasn't part of the request.
+
+Verified live in the browser: selected Germany, confirmed exactly 4 rows in INTELLIGENCE SUMMARY (Military,
+Economy, Technology, Current Status — no Diplomacy row, no gap where it used to sit); navigated to Analytics,
+confirmed exactly 4 thumbnails in a clean grid with no disabled/placeholder tile left behind. `Intelligence
+Docs/intelligence-engine-scoring-design.md`'s §3.4 section was marked "DROPPED 2026-08-26" rather than
+deleted — kept as historical record of what was scoped and why it never shipped, matching this project's
+existing practice of keeping a documented trail for reversed/abandoned work rather than erasing it (see the
+Technology component investigation trail from earlier this same session for the same pattern).
+
 ## 2026-08-26 (cont.) — Taiwan recognized across the Intelligence Engine: real sourcing, generalized lookups
 
 Direct request: "I want Taiwan to be recognized as a country. It should still show as claimed by China... I
