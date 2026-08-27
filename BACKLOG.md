@@ -922,6 +922,20 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   ships as more than portfolio-demo-confidence data. And a real sanction
   logo (`Intelligence Docs/current-status/`) hasn't landed yet — the S badge
   is a placeholder until then.
+  **Also raised (2026-08-27): Current Status has no way to represent
+  "gray zone"/Cold-War-like tension short of an actual UCDP-typed
+  conflict** — e.g. Taiwan-China (median-line incursions, ADIZ pressure,
+  coercion below UCDP's 25-battle-deaths-in-a-year threshold), correctly
+  shows `conflicts: []` today, which is accurate to UCDP's own methodology
+  but reads as "nothing going on" for a relationship that clearly isn't
+  calm. `ConflictType` shouldn't be extended for this — that union is
+  meant to mirror UCDP's real classification 1:1, and "gray zone" isn't a
+  UCDP category. If this gets built, it's a separate field (parallel to
+  `sanctionTier`, not a conflict), and unlike UCDP's battle-death
+  threshold or OFAC's program list, "gray zone" has no bright-line,
+  widely-cited source to hand-seed from — the user wants to discuss the
+  framing with a geopolitical professional before this gets specced out
+  any further. Not started.
 - **Data Engine** — every dataset in `src/data/registry/` is hand-curated
   and static; there's no live-refresh mechanism, and every provenance note
   says as much (`confidence: 'estimated'`, "not a comprehensive or
