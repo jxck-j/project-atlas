@@ -5,6 +5,553 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-27 — AnalyticsPanel: true-zero ranking bug (Bahamas at rank 21 on NUCLEAR), UNMEASURED label
+
+Direct report: sorting Military's ranked list by NUCLEAR put the Bahamas at rank 21, well ahead of most
+actually-measured countries. Root cause traced to `militaryScores.ts`: `nuclearWarheads` and
+`industrialBaseRevenueUsdM` are "true-zero" components (per `buildMilitary.mjs`'s own header comment) — every
+country not on FAS's 9-nation nuclear-armed list or SIPRI's Top-100 arms-manufacturers list gets a raw value
+of exactly `0` by default, not because that specific country was individually confirmed nuke-free, just
+because it isn't on either list. The Bahamas has `confidence: 'unavailable'` (only 1 of 3 core Military
+components present) but its default `nuclearWarheads.raw = 0` was sorting like a real, confirmed zero, tying
+with ~180 other default-zero countries and landing at rank 21 via alphabetical tiebreak.
+
+**Fix**: `trueZeroSortValue()` in `AnalyticsPanel.tsx` treats a `raw === 0` as "no data" (sorts to the bottom,
+via the existing null-handling in `compareRows`) specifically when the row's overall `confidence ===
+'unavailable'`. A country with a real overall score keeps ranking normally on its own confirmed zero — this
+only changes sort order for a country whose zero is purely the shared, uninformative default. Applied to
+Military's `nuclear` and `industrialRev` columns' `getSortValue`. Verified against real data: the Bahamas now
+ranks 179/193 on NUCLEAR (was 21st); the 9 real nuclear states (US, Russia, China, UK, France, India,
+Pakistan, Israel, North Korea) are unaffected and still rank 1-9. Economy and Technology have no equivalent
+"shared default" component — every one of their raw values is either genuinely measured or a real `null`
+coverage gap — so neither needed a change; the existing null-based bottom-sort already handles them correctly.
+
+**Also added, same request**: a red **UNMEASURED** badge next to a row's name whenever `confidence ===
+'unavailable' && !notApplicable` — the same treatment the existing orange PROXY badge already gets, styled
+with this app's existing red `intelValueColor()` 0-score color. `notApplicable` (Military's "confirmed no
+standing military" rows) is excluded on purpose: that's a different, more specific fact already rendered as
+"N/A," not an unmeasured coverage gap. Lives in the shared `RankedListRow`/`BaseRankedRow` component, so
+Military, Economy, and Technology all get it automatically with no per-category code — confirmed by grep that
+none of the three categories' own row-building code needed to change.
+
+Verified `tsc -b --noEmit`/`oxlint`/`vitest` (96/96) all clean.
+
+## 2026-08-26 (cont.) — Religion re-sourced to ARDA World Religion Database, replacing UNSD-primary for religion only
+
+Direct spec, with an explicit worked example (Sudan) to verify against before shipping. Ethnicity's own chain
+(UNSD → Factbook) was explicitly out of scope and untouched — only `religions` moved to a new, independent
+3-tier chain: ARDA World Religion Database (thearda.com) → UNSD table 28 → CIA Factbook.
+
+**Investigated the real ARDA page structure before writing any parsing code**, rather than coding straight
+from the spec's description. Fetched Sudan's live profile page (`thearda.com/world-religion/national-
+profiles?u=211c`) and the full ~250-entry country/region `<select>` list (fetched once, with no `u` param at
+all, to build the name→code map — `ARDA_NAME_ALIASES` bridges 13 real mismatches, e.g. `Turkey` → `Turkey/
+Türkiye`, found the same way `UNSD_NAME_ALIASES` was: diffing ARDA's real list against this app's 193 names).
+Tested whether ARDA's own multi-nation comparison feature could batch several countries into one request
+(it can — but caps out at 4 countries per request before erroring "Maximum Number of Selected Nations/Regions
+Was Exceeded"); decided against relying on it anyway, since per-country fetching (194 individual requests,
+cached to `scripts/vendor/arda/profiles/`) is simpler, more robust, and matches this script's own existing
+per-country Factbook-fetch precedent, rather than depending on an undocumented UI feature with a hard,
+unposted limit.
+
+**Two real discrepancies surfaced between the spec's own text and the real page — stopped and asked before
+implementing, rather than guessing on either:**
+
+1. The spec said every candidate should compete purely by percentage (explicitly: "Catholics AND Protestants"
+   can both land in one country's top-4), but its own Sudan worked example put only 3 named religions in the
+   top-4 (Muslims/Catholics/Ethnic religionists) with Protestants (1.54%, real, verified against the live
+   page) routed to Other — even though 1.54% is larger than Agnostics (0.90%), which the example kept out of
+   Other. Confirmed with the user: strict global ranking by % is correct (Protestants DOES take Sudan's 4th
+   slot); the worked example's own ranking was an oversight in how it was written, not a hidden rule.
+2. The spec's own example list named "Agnostics/Atheists" as if they were top-level religions to use as-is.
+   On the real page they're indented children of a top-level "Non-Religious" row — and Sudan's "Non-Religious"
+   row itself has NO value ("---"), only its children do. Confirmed with the user: when a non-Christian
+   top-level row is blank but its children have real values, use the children as individual candidates
+   instead of discarding real, sourced data (this is the ONLY case a non-Christian religion's children are
+   ever used — a populated parent still always wins over its own children, e.g. Muslims' Sunni/Shia rows stay
+   discarded).
+
+**Verified the parser against real data before wiring it into the full pipeline** — built a standalone test
+script against the cached Sudan HTML and confirmed it reproduces exactly the user-confirmed expected output
+(top-4: Muslims 91.36%, Catholics 3.22%, Ethnic religionists 2.77%, Protestants 1.54%; Other: 1.34% from
+Agnostics/Orthodox/Atheists/unaffiliated Christians/Independents/Baha'is) before touching
+`buildCurrentStatus.mjs`'s real orchestration.
+
+**Real run: ARDA resolved religion for all 194/194 countries** (including Taiwan) — UNSD/Factbook's religion
+fallback tiers never fired once in the full run. This is dramatically better coverage than UNSD's own religion
+table (which the earlier 2026-08-26 UNSD-primary entry above shows had real gaps — Russia has zero rows,
+Germany's table was generic-bucket-dominated).
+
+**Caught and fixed a real accuracy regression this change would otherwise have caused**, before shipping:
+`resolveFactbookDemographics()` was already being called whenever a country's ETHNICITY needed Factbook (~81
+countries), and it unconditionally parsed/logged a gap for religion too, even when religion had already been
+resolved by UNSD and the Factbook result was simply discarded. This was mostly harmless before (rare overlap),
+but with ARDA now resolving religion for virtually every country, it would have logged a misleading "Religions
+... left unsourced" BACKLOG.md entry for all ~81 of those countries (Sudan, Eritrea, Saudi Arabia, North
+Korea, ... — confirmed these entries appeared in a first full run) despite their religion being fully,
+correctly ARDA-sourced. Fixed by threading an explicit `{needsEthnic, needsReligion}` flag into that function
+so it only parses/logs whichever field the caller still actually needs — demographics gap count dropped from
+42 to 36 after the fix, and zero remaining entries claim an ARDA-resolved country's religion is unsourced.
+
+**Caught and fixed a real rendering bug this change would otherwise have caused**, also before shipping:
+scanned all 194 countries' final religion totals and found 32 countries whose raw percentages sum well past
+100% — up to 144.26% (Tonga) — a real, verified characteristic of ARDA's own data ("double affiliation":
+South Korea's real Buddhist/Confucianist/folk-religion overlap sums to ~117%, several small Pacific nations
+with syncretic Christian denominations run even higher), not a parsing bug (independently confirmed against
+the live page for South Korea, after first suspecting a code mix-up). Ethnicity data never has this property
+(a census ethnicity/nationality question partitions the population), so `hud/SegmentedBar.tsx`'s
+`width: {pct}%` styling had never needed to handle a >100% total — for these 32 countries, the bar's
+`overflow-hidden` + `shrink-0` segments would have silently clipped the tail end of the bar off-screen
+entirely. Fixed by scaling rendered segment WIDTHS down proportionally whenever the true total exceeds 100%
+(`widthScale = 100 / totalPct`), while leaving the legend/tooltip text showing each segment's real, unscaled
+percentage — a normal (≤100%) country scales by exactly 1, unchanged.
+
+Verified `tsc -b`/`oxlint`/`vitest` clean after every step (parser addition, the Factbook gap-logging fix, and
+the SegmentedBar width fix). Real output spot-checked across the US, Germany, France, North Korea, Israel, and
+China — all show multiple Christian sub-denominations competing individually against other religions exactly
+as designed (e.g. the US: Catholics/Independents/unaffiliated Christians/Protestants all as separate,
+independently-ranked entries), and zero countries triggered the "Other Christian" remainder candidate in the
+real dataset (Christian sub-rows always summed to at least the parent total in practice, never short of it by
+more than rounding noise) — confirming that path is a correct, verified-present safeguard, not dead code.
+
+## 2026-08-26 (cont.) — Demographics: reject a UNSD result dominated by a generic/residual bucket, fall back to Factbook
+
+Direct report: Russia's religion coverage looked worse than before, and Poland's ethnicity showed ~99% as
+"Other" — both read as inaccurate. Investigated each independently rather than assuming one root cause.
+
+**Russia's religion turned out to be unrelated to the UNSD switch.** Checked the vendored UNSD religion
+table (`unsd-religion-tablecode28.zip`) directly — zero rows for Russia at all (the Russian census has never
+asked a religion question), so `religionsSnapshotDate` was already `"CIA Factbook 2026-01"` before and after
+the UNSD-primary switch. The 68%-"Unknown" bar is real: Factbook's own text is "Russian Orthodox 15-20%,
+Muslim 10-15%, other Christian 2% (2006 est.)," summing to only 32% by design (a 2006 estimate of practicing
+worshippers, with the note explicitly flagging a large uncounted non-practicing/non-believer population).
+There's no better source to switch to for this one — nothing to fix here; explained this distinction back to
+the user rather than silently declaring it handled.
+
+**Poland's ethnicity was a real, fixable bug.** Downloaded and inspected the raw UNSD ethnic CSV directly:
+Poland's 2021 census table has an explicit row named literally "Other" at value 36,349,302 of a 37,019,327
+total (98.19%) — the table only enumerates named minority nationalities by row, so the implicitly-Polish
+majority has no row of its own and lands in that residual bucket by construction. `resolveUnsdGroups()` was
+accepting this at face value (it adds to ~100%, so it passed every existing check) even though Factbook's
+Poland entry plainly states "Polish 96.9%, Silesian 1.1%, German 0.2%, Ukrainian 0.1%, other and unspecified
+1.7%" — a real, unambiguously better answer sitting one field away, unused, because UNSD had "resolved" and
+Factbook is only fetched for a field UNSD returned null for.
+
+**Scanned both full UNSD tables (not just the two reported countries) before writing a fix**, replicating
+`resolveUnsdGroups()`'s own dedup/Total-row logic in a throwaway script over the vendored CSVs, flagging every
+country whose resolved #1 group's name is an exact match against a generic/residual label set (`other`, `not
+stated`, `unknown`, `refused to respond`, `not specified`, ...). Found 5 real cases total: Poland (ethnic,
+98.19% "Other"), Costa Rica (ethnic, 94.10% "Other"), Colombia (ethnic, 87.58% "Other"), Bolivia (ethnic,
+58.25% "Unknown"), Germany (religion, 51.80% "Other"). Fetched each one's real factbook.json entry and
+confirmed Factbook names a real majority group in every case (Costa Rica "White or Mestizo 83.6%", Colombia
+"Mestizo and White 87.6%", Bolivia "Mestizo 68%", Germany "none 43.8%" as a real named non-response category
+distinct from its own separate "other 5.1%") — validating the fix against real data before committing to the
+threshold, not just the two originally-reported countries.
+
+**Fix**: `isDominatedByGenericBucket()` in `scripts/buildCurrentStatus.mjs` rejects a `resolveUnsdGroups()`
+result whose largest group name exact-matches a residual-label set at ≥50% share, logging the rejection to
+the demographics `BACKLOG.md` section and falling through to Factbook exactly like a missing Total row
+already does — no change needed to the fallback-triggering logic in `resolveDemographics()`, since it already
+treats any null field the same way regardless of why it's null. 50% is a deliberate, low, documented
+threshold — low enough to catch Germany's 51.80% (the smallest real case found), high enough to leave alone a
+country whose minor/immigrant groups are collectively substantial without genuinely dominating. Confirmed via
+a full rebuild: Poland/Costa Rica/Colombia/Bolivia/Germany all now resolve the affected field from Factbook
+with the real named majority visible; Russia's religion is confirmed unchanged (still Factbook, still 32%
+reported) since there was never a UNSD result to reject. `tsc -b`/`oxlint`/`vitest` all clean after the
+change.
+
+## 2026-08-26 (cont.) — CLAUDE.md: trimmed the Geopolitical data architecture section, added a "check LOGBOOK.md first" pointer
+
+`CLAUDE.md` had grown to ~164,000 chars, over half of it (~88,456 chars) in "Geopolitical data architecture" —
+written as a dated, version-by-version changelog ("v6.6.0: Economy joined...", "v6.8.0: Technology...")
+duplicating history this file already owns. Rewrote that section to describe current state only: what data
+exists per category (Military, Economy, Technology, Current Status, Demographics) and where it lives, the
+key architectural facts a future session needs before touching the code (the `Country` population/gdpUsd
+auto-merge exception and why `GeoEntity`'s isn't auto-merged the same way, coverage-floor mechanics per
+category, the Taiwan sourcing/generalization approach, the Diplomacy removal), and live gotchas (ICT
+Development Index has no API and needs hand-updating against ITU's next edition; US ethnicity has no
+Hispanic/Latino breakdown under either source). Dropped the "vX.Y.Z did this, then vX.Y.Z+1 changed that"
+narration entirely — where a past decision's reasoning still matters, the new text points at this file's own
+dated entries instead of re-telling them, the same pattern the Military scoring subsection already used for
+`Intelligence Docs/intelligence-engine-scoring-design.md`. Result: section down to ~29,800 chars (target was
+25-30K), file total 163,999 → 105,372 chars. No other section of `CLAUDE.md` was touched.
+
+Also added a new "Before revising a decided area" section right after "## Commands" — a standing pointer that
+several categories in that section (Economy, Current Status, Technology, Demographics) have already had a
+decision revised post-launch (coverage floors added, weighting switched, sourcing changed), so a future
+session should check this file's own entries for that area before changing behavior there, rather than
+re-litigating or silently reversing a settled call. This doc-only structural change didn't touch any code, so
+no `CHANGELOG.md`/version bump.
+
+## 2026-08-26 (cont.) — Demographics (ethnicity + religion) added
+
+Direct request: a Demographics sub-section under Current Status, rendering ethnicity and religion as segmented
+bars, sourced from the CIA Factbook (same frozen-snapshot source `buildMilitary.mjs`'s personnel fallback
+already uses). Scope was fully specified up front (data shape, top-4-plus-other transform, `SegmentedBar`
+component contract, placement, omit-when-absent behavior) — no design questions needed, just implementation.
+
+**Parsing Factbook's free text was the real work.** `scripts/buildCurrentStatus.mjs` already had the
+alpha3 -> GEC -> factbook.json-path resolution chain from `buildMilitary.mjs`'s personnel fallback to copy.
+The actual "Ethnic groups"/"Religions" text fields are written for a human, not structured data, and real
+samples pulled before writing the parser (Germany, US, India, France, Nigeria, Vatican, San Marino, Japan,
+Saudi Arabia) showed the range of shapes that needed handling: clean "Name pct%, Name pct%, ..." lists (most
+countries); asides with their own inner commas ("other 1.2% (includes Filipino, Brazilian, ...)"); no
+percentages at all (Vatican City, San Marino, France's ethnic text); and percentages nested inside a
+parenthetical aside instead of a top-level clause (Saudi Arabia's religion text: "Muslim (official; citizens
+are 85-90% Sunni and 10-12% Shia), other (includes ...)"). `parseFactbookPctList()` handles this with a
+paren-depth-aware comma splitter (`splitTopLevelCommas`) for the first case and a name+percentage regex
+(`SEGMENT_NAME_PCT_RE`) that simply doesn't match the third and fourth cases — verified by hand against all 9
+sample countries before running against the full 194 (see the script's own DEMOGRAPHICS header comment for
+the worked examples).
+
+**Real bug caught before shipping, not after:** running `--sample` against the full pipeline (not just the
+9 hand-picked samples) surfaced Taiwan's ethnicity text parsing wrong — "Han Chinese (including Holo, who
+compose approximately 70% of Taiwan's population, Hakka, and other groups originating in mainland China) more
+than 95%, indigenous Malayo-Polynesian peoples 2.3%" came back as `{ name: "Han Chinese (including Holo, who
+compose approximately", pct: 70 }`. The regex's first-match-wins scan found the parenthetical's own unrelated
+"70%" (Holo's share of Han Chinese) and misattributed it to "Han Chinese" itself, instead of the real,
+top-level "more than 95%" that comes after the closing paren. Fixed by stripping every segment's own
+parenthetical content (`stripParentheticals`) before running the name+percentage match, plus trimming a
+trailing qualifier word ("more than", "approximately", ...) that would otherwise get glued onto the captured
+name — re-verified against Taiwan (now `{ name: "Han Chinese", pct: 95 }`, correct) and re-ran the existing 9
+sample cases to confirm none regressed. The lesson: a "looks right" parser against hand-picked samples still
+needs a real full-dataset run before trusting it — the 9 samples chosen up front happened not to include any
+case where a percentage was nested this deep inside an unrelated parenthetical aside.
+
+Full run: 167/194 countries got real ethnicity data, 185/194 got religion data; every gap (no field at all, or
+a field with nothing parseable) logged to its own new `BACKLOG.md` section
+(`buildCurrentStatus.mjs demographics gap report`, separate from the pre-existing GW-code gap report) rather
+than guessed — same "log it, don't guess" discipline every other sourcing gap in this project already follows.
+
+Grouping (top 4 + "Other") was deliberately kept OUT of the build script — `hud/demographicsGrouping.ts`'s
+`groupTopFourPlusOther()` does it at render time instead, mirroring the "raw facts in the data file,
+presentation shaping downstream" split this codebase already uses for population/gdpUsd (build-time formatted
+strings were rejected there specifically because a threshold-crossing correction would otherwise force a full
+rebuild instead of a one-line formatter change — the same argument applies here). `hud/SegmentedBar.tsx`'s
+color palette (`hud/demographicColors.ts`) reuses 5 of `scene/highlightColors.ts`'s existing hex values
+directly rather than picking new ones from scratch — that file documents itself as a closed 7-hue set for a
+different, unrelated concept (globe selection highlighting), so this reuses the values without treating it as
+an 8th slot, the same "own small palette file, not a shared closed set" pattern `scene/sanctionTierColors.ts`/
+`scene/conflictTypeStyles.ts` already established.
+
+**Mid-turn follow-up request, before the first implementation was even finished:** "I want it populated in the
+analytics tab as well... a religions tab and an ethnicity tab. default/main sort is alphabetical order for the
+countries. The other ways the countries can be sorted will be a column for each ethnic/religious group." This
+came in while `scripts/buildCurrentStatus.mjs`'s data-generation half was already underway — folded into the
+same pass rather than treated as a separate task, since it's the same data feeding a second UI surface.
+Deliberately did NOT add `'ethnicity'`/`'religion'` to `hud/intelMetrics.ts`'s shared `IntelMetricId` type —
+that union is read by `IntelligencePanel.tsx`'s own status-bar loop too, and neither field is a bar there (the
+`SegmentedBar` section is a separate, non-`IntelRow` addition); adding them there would have forced two new
+placeholder rows into a panel that was never asked to show them. `AnalyticsPanel.tsx` gets its own
+file-scoped `AnalyticsMetricId`/`ALL_METRICS` instead. `DemographicHeaderRow`/`DemographicListRow` are new,
+bespoke components (not `BaseRankedRow`/`AnalyticsColumn`/`RankedListRow`) for the same reason CURRENT STATUS
+already has its own — no SCORE bar to anchor that machinery's shape, and here there's additionally no natural
+default ranking axis at all (each country's biggest group has a different name), which is exactly why the
+request specified alphabetical-by-country as the default rather than leaving it to be inferred.
+
+Verification: `tsc -b --noEmit`, `oxlint`, and `npm test` (96 tests) all clean; `npm run build` succeeds.
+`node scripts/buildCurrentStatus.mjs --sample` was run twice (before and after the Taiwan parsing fix) before
+the full run. Not verified in the browser this pass — browser extension wasn't connected this session, and
+per the user's standing preference (see `MEMORY.md`), the dev server was started at `localhost:5173` and left
+running for the user to check directly rather than attempting a headless workaround.
+
+## 2026-08-26 (cont.) — Demographics: synthesized "Unknown" segment for genuine source gaps
+
+Direct request, specifically about Malta's religion bar: "for instances like malta's religious makeup where
+the rest is unknown put unknown for the rest to get the full 100% makeup. it's not falsifying info because it
+really is not known." Distinguishes this from the earlier session's parsing-bug fixes — Malta's ~10% shortfall
+(Factbook's text is literally "Roman Catholic (official) more than 90%" with nothing else) isn't a bug to fix,
+it's a real limit of what the source reports; the request is to represent that limit honestly on the bar
+instead of leaving it visually incomplete with no explanation.
+
+Implemented in `hud/demographicsGrouping.ts`'s `groupTopFourPlusOther()` — source-agnostic and render-time,
+same reasoning every other piece of this transform already uses. After computing the normal top-4 + "Other"
+segments, if the source's OWN reported figures sum to less than 100% by more than a 1-point threshold (below
+that, it reads as ordinary rounding drift — Taiwan's own figures sum to ~97.3%, Greece's to ~101% — not a real
+reporting gap worth a visible sliver on every single bar), append a synthesized `{ name: 'Unknown', pct:
+100 - reportedSum }` segment. Deliberately kept SEPARATE from "Other," not merged into it, even though both
+end up excluded from the top-4 ranking pool the same way — they mean different things: "Other" is real, named
+minor groups the source reported but chose not to break out individually; "Unknown" is population the source's
+figures don't account for at all. Collapsing them into one bucket would blur that distinction on the exact
+bar (Malta's) the request was about.
+
+**Caught a real regression before it shipped, by testing against the empty-array case, not just the
+non-empty ones the fix was written for:** `hud/AnalyticsPanel.tsx`'s `buildDemographicRows()` already calls
+`groupTopFourPlusOther(pickGroups(status) ?? [])` — a country with NO ethnicGroups/religions data at all
+(`undefined` in the data file) gets coerced to `[]` before the call. Before adding a guard, `[]` produced
+`reportedSum = 0`, `unknownPct = 100`, and a synthesized `Unknown 100%` segment — which would have shown
+"GROUP 1: Unknown — 100.0%" in the Analytics ranked list for every country with literally no source data,
+mislabeling total silence as "we measured 100% unknown," a different and stronger claim than the truth. Fixed
+with an explicit `groups.length === 0` early return, unchanged from the function's pre-"Unknown" behavior —
+"no data reported" and "some data reported, with a real gap" are different facts, and only the second one is
+what this feature was asked to represent. Verified directly against real data before and after the guard
+(Malta's `ethnicGroups`, genuinely `undefined`/unparseable, correctly stays `[]`; Malta's `religions`,
+`[{Roman Catholic, 90}]`, correctly produces `[Roman Catholic 90%, Unknown 10%]`) — the kind of check that's
+easy to skip when a fix looks obviously right for the case that prompted it.
+
+Colored with a new `DEMOGRAPHIC_UNKNOWN_COLOR` (`hud/demographicColors.ts`) — reuses `#51648a`, this app's
+own pre-existing "no data" muted tone (`IntelRow`/`AnalyticsPanel`'s coverage-gap em-dashes already use it),
+rather than cycling "Unknown" into the same 5-slot named-group palette by index, which risked landing on the
+exact hue of a real category elsewhere in the same bar and reading as "another real group" instead of "a data
+gap." `hud/SegmentedBar.tsx` gives it a short fixed tooltip ("not reported by the source data") since, unlike
+"Other," there's no real breakdown to list. `hud/AnalyticsPanel.tsx`'s demographic ranked-list columns grew a
+6th UNKNOWN column (`GROUP_POSITION_KEYS`/`LABELS` extended) so the two surfaces — the bar and the ranked
+list — stay consistent; leaving the ranked list at 5 columns would have silently truncated the exact segment
+the bar now shows.
+
+Spot-checked real output: Malta religions -> Roman Catholic 90.0%, Unknown 10.0%. Russia religions (the
+"practicing worshipers only" case from the earlier entry) -> Russian Orthodox 17.5%, Muslim 12.5%, other
+Christian 2.0%, Unknown 68.0%. Iceland religions -> ... Roman Catholic 3.8%, Other 7.4%, Unknown 3.8%. Cameroon
+ethnicGroups -> ... Other 24.9%, Unknown 9.9%. `tsc -b --noEmit`, `oxlint`, `npm test` (96 tests), and `npm run
+build` all clean. No `src/data/currentStatus.ts` regeneration needed — this is entirely a render-time change,
+the same "raw facts in the data file, presentation shaping downstream" split the rest of this feature already
+established. Not checked in the browser this pass either — extension still not connected; dev server left
+running.
+
+## 2026-08-26 (cont.) — Demographics: six more real Factbook parsing bugs, found by spot-checking
+
+Direct report, in the browser: "greece and turkey have incomplete bars." Investigated by pulling both
+countries' raw factbook.json text directly rather than guessing at the cause — found the real root cause
+immediately: Factbook expresses an uncertain group's share as a RANGE ("Greek Orthodox 81-90%", "Turkish
+70-75%"), and `parseFactbookPctList`'s regex required a single value directly against "%", so a range never
+matched anything at all — the whole clause silently vanished, and in both countries it happened to be the
+SINGLE LARGEST group. Fixed with a second regex tried first (`SEGMENT_NAME_PCT_RANGE_RE`), storing the
+midpoint of the range as the point estimate — the simplest defensible number, and Factbook itself offers
+nothing more precise.
+
+**Didn't stop at "the two reported countries are fixed."** Wrote a standalone script summing every stored
+group's pct per country/field and flagging anything well under 100% — a real, mechanical way to find every
+OTHER country with the same class of problem, rather than trusting that Greece/Turkey were the only two. That
+scan surfaced real problems in Cameroon, Iceland, Portugal, Sweden, DR Congo (both fields), and Andorra —
+six more countries, each a genuinely distinct root cause, found by fetching each country's actual raw
+factbook.json text before touching the parser again:
+
+- **DR Congo ethnicGroups produced a WRONG single value, not just a missing one** — the worst class of bug,
+  since a plausible-looking but incorrect number is more dangerous than an honest gap. Its raw text is a
+  narrative sentence, not a list ("more than 200 African ethnic groups... the four largest groups - Mongo,
+  Luba, Kongo (all Bantu), and the Mangbetu-Azande (Hamitic) - make up about 45% of the population") — the
+  regex's first-match-wins scan still found "45%" and captured "the Mangbetu-Azande - make up about" as if it
+  were that one group's own name and share, when the real meaning is "these FOUR groups combined are ~45%."
+  Fixed with a "does the match consume (nearly) the entire segment" check — a real single-group clause never
+  has substantial prose left over after its own percentage; DR Congo's now correctly returns an empty result
+  (a real, honest gap) instead of a fabricated-looking data point.
+- **DR Congo religions had a real Factbook data typo**: "Christian 93/1%" — a "." rendered as "/". Confirmed
+  this reading, not guessed: the same clause's own parenthetical breakdown ("Roman Catholic 29.9%, Protestant
+  26.7%, other Christian 36.5%") sums to exactly 93.1. Fixed with a narrowly-scoped substitution
+  (`normalizeSlashDecimals`) matching only digit-slash-digit immediately before a "%", so it can never touch a
+  real "/"-separated compound name like Nigeria's "Kanuri/Beriberi."
+- **Andorra's dominant ~90% Christian group was missing its own "%" sign entirely** — "Christian
+  (predominantly Roman Catholic) 89.5, other 8.8%, unaffiliated 1.7%" (every other entry in the field has a
+  "%", this one doesn't). Added a last-resort fallback regex, tried only when nothing else matches: a bare
+  "<name> <number>" with NOTHING else in the segment.
+- **Cameroon and Iceland both have a missing COMMA between two adjacent list items** ("...Protestant 27.1%
+  other Christian 6.1%...", "...Church of Iceland (official) 58.6% Roman Catholic 3.8%..."). The FIRST version
+  of the "consumes to the end" fix (written for the DR Congo case above) made this WORSE, not better — a
+  single-match regex with leftover trailing text now rejected the ENTIRE malformed segment, silently dropping
+  BOTH items instead of just the second one the old code already dropped. Caught this before shipping by
+  testing the fix against a bank of every previously-known real case, not just the one it was written for.
+  Fixed by restructuring the matcher into a loop (`matchRepeatedPctClauses`) that keeps matching
+  "<name> <pct>%" from wherever the previous match left off, accepting everything found IF the true remainder
+  (after the loop can't match anymore) is trivial — recovers a whole run of comma-less items (Cameroon,
+  Iceland) while still correctly rejecting DR Congo's narrative sentence, where the "remainder" after the
+  loop's one lucky match is real unrelated prose, not another list item.
+- **Portugal's ethnicity text uses a SEMICOLON as a sentence boundary, not a list separator**: "Portuguese
+  95%; citizens from Portugal's former colonies in Africa, Asia (Han Chinese), and South America (Brazilian)
+  and other foreign born 5%" — with only commas treated as top-level separators, the semicolon fused the
+  clean "Portuguese 95%" together with a long, genuinely run-on descriptive clause, and the combined mess
+  failed to parse at all (0% of Portugal's population captured). Fixed by splitting on semicolons the same
+  paren-depth-aware way commas already are (`splitTopLevelSeparators`, renamed from `splitTopLevelCommas`) —
+  recovers "Portuguese 95%" cleanly; the remainder is imperfectly split ("South America and other foreign
+  born" ends up as one merged label for the trailing "5%"), an accepted, disclosed imprecision rather than
+  hand-parsing Factbook's own ambiguous run-on prose further.
+- **Sweden's ethnicity text is wrapped in a literal, stray `<p>...</p>` HTML tag** sitting directly in the
+  .text field itself (not an HTML ENTITY like `&lt;` — an actual unescaped tag character sequence) — the
+  regex's leading `<p>` broke the very first match, dropping "Swedish 79.6%" (the majority group) entirely.
+  Same root data quirk explains an EARLIER-logged Eswatini gap ("<p>predominantly Swazi...</p>") that looked
+  unrelated at the time — that one has no percentages either way so the tag was never why it stayed
+  unparseable, but it's the same underlying quirk, confirmed only once this investigation went looking for it
+  specifically. Fixed with `stripHtmlTags()` (any `<tag>`/`</tag>` with a real closing `>`, so it can never
+  touch a lone decoded "<" sitting next to a number, like China's "Hindu < 0.1%" — that has no ">" anywhere
+  near it) — applied to the whole text before any parsing.
+
+**Verified the fix set as a whole, not just each case individually** — a standalone test file ran all 16
+known real cases (the original 9 plus these 6, plus the still-genuinely-unresolvable Saudi Arabia case)
+through the final parser together before touching the real build script again, specifically to catch the
+Cameroon/Iceland regression the DR Congo-only version of the "consumes to end" check introduced. Re-ran the
+low-sum scanner afterward with a stricter 97% threshold to check for any remaining moderate gaps, not just
+severe ones — found three more (Cameroon ethnicGroups, Malta religions, Armenia religions/ethnicGroups) and
+checked each against its own real raw Factbook text before deciding whether they were bugs or genuine source
+limitations. All three are genuine: Malta's text is literally "Roman Catholic (official) more than 90%" with
+nothing else; Armenia's ends with an explicit "less than 1%: Catholic, no religion, Evangelical, ..." listing
+many small groups with NO individual figures given at all; Cameroon has a genuinely ambiguous comma INSIDE a
+compound group name ("Beti/Bassa, Mbam 13.1%") that has no clean deterministic split — all three are honest
+reflections of what Factbook itself does and doesn't report, not parser bugs, and were left as-is rather than
+"fixed" by guessing at numbers Factbook never gave.
+
+Full run after all six fixes: ethnicity resolved for 167/194 countries (89 UNSD, 78 Factbook — DR Congo moved
+from a false single-entry to a correctly-empty gap, a net-neutral count change that's a real quality
+improvement, not a regression), religion for 186/194 (98 UNSD, 88 Factbook — Cameroon and Iceland recovered
+real data they'd been silently missing). `tsc -b --noEmit`, `oxlint`, `npm test` (96 tests), and `npm run
+build` all re-verified clean. Not checked in the browser this pass either — extension still not connected;
+dev server left running.
+
+## 2026-08-26 (cont.) — Demographics re-sourced to UNSD-primary/Factbook-fallback
+
+Direct, fully-specified instruction: "UNSD (Demographic Statistics Database... primary source wherever it has
+data, Factbook fallback for the rest," with real transform/rendering details (Area="Total"/Sex="Both Sexes"
+filtering, most-recent-Total-row year selection, exclude Not Stated/Unknown/Refused to Respond from ranking,
+fold a literal "Other" the same way) already worked out. One premise in the message didn't match this
+codebase, though, and needed correcting before proceeding: it referred to "replacing the earlier US-only
+Census Bureau override" and "the Census Bureau override from the earlier spec" — no such override exists or
+ever existed here. The earlier US numbers came straight from Factbook's own free text (which happens to cite
+2020 Census data, with Factbook's own note flagging the Hispanic-not-separately-listed gap), not a hand-built
+exception. Flagged this directly before starting rather than silently building around a premise that didn't
+hold, or silently pretending to "remove" code that was never there.
+
+**Researched UNSD's actual data access before writing anything** — no documented bulk API, but driving the
+real UNdata UI (data.un.org/Data.aspx?d=POP&f=tableCode:26, tableCode:28 for religion) and capturing its
+"Export" button's request found a real, unauthenticated, CORS-open zipped-CSV endpoint
+(`data.un.org/Handlers/DownloadHandler.ashx?DataMartId=POP&Format=csv&DataFilter=tableCode:N`) — confirmed
+working via a direct `curl` before committing to it as the ingestion path. Same "found a legitimate direct
+path around a gated/undocumented UI" precedent as `buildMilitary.mjs`'s SIPRI TIV reverse-engineering.
+
+**Real structure, learned by actually downloading and inspecting both tables before writing the parser, not
+assumed from the spec alone:**
+- Both exports bundle a SECOND "footnoteSeqID,Footnote" glossary table after the real data, in the same CSV
+  file — a naive `cut -d','`-style extraction (tried first, to get a quick country-name diff) picked up
+  numeric footnote IDs as if they were country names, which is what first revealed this; the real fix uses
+  this project's own `parseCsv` (quote/comma-aware) and slices the array before the `footnoteSeqID` header
+  row.
+- Table 26 (ethnicity) covers 113 countries/territories, table 28 (religion) 117 — matches the "~113" the
+  request's own premise named, confirming that number came from real prior knowledge, not a guess.
+- UNSD's own "Country or Area" names don't match this app's UN-193 topology names for every country: diffed
+  UNSD's real country list against the app's real 193 names (not guessed) — 30 (table 26) / 24 (table 28)
+  names didn't match directly. Of those, the real UN-member aliases needed were exactly 11 (Bolivia, Brunei,
+  Iran, Laos, Micronesia, South Korea, Moldova, Russia, UK, Venezuela, Vietnam — UNSD uses long-form
+  institutional names like "Bolivia (Plurinational State of)" or a different spelling like "Viet Nam"); the
+  rest were non-UN territories (American Samoa, Bermuda, Guam, Puerto Rico, Åland Islands, Hong Kong SAR,
+  Macao SAR, ...), correctly left unmapped since they have no Country record to attach to.
+- A country/year can have MULTIPLE Record Types reporting different values for the same group — a real,
+  non-hypothetical case: Fiji 2007 has both a de facto and de jure census; Malaysia 2010 has two rows both
+  labeled "Census - de jure - complete tabulation" with different values (an apparent UNSD export
+  inconsistency, not something resolvable from the data alone). Resolved deterministically (de jure preferred
+  over de facto over anything else; ties within the same record type keep whichever was encountered first)
+  and always logged as a demographics gap when values genuinely conflict — checked after the full run that
+  Malaysia's actual entry doesn't hit this: its most-recent-year-with-a-Total-row turned out to be 2020, not
+  2010, so the 2010 conflict is present in the raw table but never reached by the resolution logic. Confirmed
+  by checking the regenerated output and BACKLOG.md directly, not assumed.
+- Several countries have real UNSD rows with NO row literally labeled "Total" for any year — Argentina 2022
+  only asked two supplementary African-descent/Indigenous yes/no questions (its "Not Stated" row is ~44M,
+  essentially the whole population, confirming these aren't a real ethnic breakdown at all); Bangladesh 2022
+  only lists indigenous/tribal groups summing to a small fraction of its population; Uruguay's 2011 rows
+  happen to sum to very close to its real population (~3.5M) but were never published with an explicit Total
+  row. Per the request's own literal instruction ("totalValue is the row where... = 'Total'"), none of these
+  are treated as usable — no total row means no UNSD data for that country/field, falling through to
+  Factbook, rather than inferring a total by summing components (which would risk silently including
+  overlapping or non-exhaustive categories in some other country this wasn't checked against).
+
+**The "exclude non-substantive categories from ranking" rule was implemented as a shared, source-agnostic
+change to `hud/demographicsGrouping.ts`'s `groupTopFourPlusOther()`, not duplicated per-source in the build
+script.** The request's own two bullets ("UNSD: exclude Not Stated/Unknown/Refused to Respond... fold into
+Other" and "Factbook fallback: pull any literal 'Other' entry into the aggregate... not eligible for a top-4
+slot") are the same underlying rule — certain group names are never top-4-eligible regardless of size — just
+stated once per source. Implementing it once, at render time, for BOTH sources avoids duplicating the same
+logic in two places that could drift apart, and is also a real, disclosed behavior CHANGE for Factbook: before
+this, Germany's Factbook "other/stateless/unspecified" (8.3%) was allowed to occupy a real top-4 slot on its
+own merit; after this change, only an EXACT (case-insensitive, full-name) match on "other" folds — a compound
+label like Germany's is NOT a literal "Other" and still ranks normally, so Germany's own displayed bar is
+unaffected by this change; a country whose Factbook or UNSD data has an exact "Other" entry would see it move
+out of a top-4 slot into the aggregate for the first time.
+
+**Verified the US Hispanic/Latino question directly, as the request asked, rather than assuming an
+answer:** ran the actual UNSD pipeline and confirmed the US resolves ethnicity from UNSD (`"UNSD 2020"`).
+Checked its real component rows: White, Black or African American, Asian, American Indian and Alaska Native,
+Native Hawaiian and Other Pacific Islander, Some other race, Two or more races — the exact same US Census
+Bureau RACE question categories Factbook's own text already summarized (cross-checked the percentages
+directly: White 61.63% UNSD vs 61.6% Factbook, Black or African American 12.40% vs 12.4% — matching within
+rounding, confirming both really do trace back to the same 2020 Census). **No separate Hispanic/Latino
+ethnicity category exists in UNSD's US data either** — UNSD's table is sourced from the Census Bureau's race
+question specifically, not the separate Hispanic-origin question, so the structural gap the request asked
+about persists unchanged under UNSD. Per the request's own stated contingency ("if UNSD's US entry has the
+same gap, the Census Bureau override... still needs to apply"), and given no such override exists yet (see
+the correction above), a real hand-built Hispanic/Latino override for the US (layering ACS table B03002-style
+data on top of the UNSD race breakdown) is a genuine, scoped follow-on — flagged in BACKLOG.md rather than
+built speculatively without being asked.
+
+Real output spot-checked beyond the US: Canada's UNSD ethnicity table has ~250 real named ancestry groups (a
+"pick your own ancestry" census question, not a fixed race list); China's has 56 real named ethnic groups
+(vs. Factbook's 2-bucket "Han Chinese/ethnic minorities" summary); Brazil's UNSD religion table has 26 real
+denominations from its actual 2010 census (vs. Factbook's 8-bucket summary) — confirming UNSD's real value
+here isn't just "a second source," it's meaningfully more granular, real census detail than Factbook's own
+free-text summaries provide for most countries.
+
+Full run: ethnicity resolved for 168/194 countries (89 UNSD, 78 Factbook — up from 167/194 all-Factbook before
+this change, a real net coverage gain), religion for 186/194 (98 UNSD, 87 Factbook — same total as before, now
+with much richer underlying data for the 98 UNSD-sourced countries). `tsc -b --noEmit`, `oxlint`, `npm test`
+(96 tests), and `npm run build` all re-verified clean after the change; no frontend code referenced the now-
+removed single `demographicsSnapshotDate` field (confirmed by grep before assuming it was safe to remove).
+Not verified in the browser this pass either — browser extension still wasn't connected this session; dev
+server left running at `localhost:5173`.
+
+## 2026-08-26 (cont.) — Demographics: HTML entities weren't being decoded
+
+Found while pulling demographics numbers for a spot-check (US, Mexico, China, Brazil, Canada, UK) right after
+the Demographics feature above shipped: China's religion list showed `"Hindu &lt;"` / `"Jewish &lt;"` and
+Brazil's showed `"Umbanda and Candombl&eacute;"` instead of "Candomblé" — real HTML entities from
+factbook.json's own text, left un-decoded by `parseFactbookPctList()`. Root cause: `&lt;` and `&nbsp;` aren't
+whitespace or a real `<` character to the parser, so they didn't get cleaned up as either the way a decoded
+`<`/space would (see the Taiwan qualifier-trimming logic from the original entry below) — they just sat in
+the captured name as literal `&`, `l`, `t`, `;` characters.
+
+Fixed with `decodeHtmlEntities()` — the standard ~96-entry HTML4/Latin-1 named-entity table (the same one
+every browser ships) plus numeric entity decoding (`&#NNN;`/`&#xHH;`), applied to `ethnicText`/`religionText`
+right after extraction, BEFORE `parseFactbookPctList` runs (decoding only for display, after parsing, would
+have been too late — the un-decoded entity was already breaking the parse). `TRAILING_QUALIFIER_RE` gained
+`<`/`>`/`~` to its trim set, so a decoded "Hindu < 0.1%" cleans up to name "Hindu" the same way "more than
+95%" already cleaned up to "Han Chinese" in the original entry. Checked the ALREADY-GENERATED dataset for
+every entity that actually occurs (`grep -oE '&[a-zA-Z#0-9]+;' src/data/currentStatus.ts`) before writing the
+table, rather than guessing what to support — real set was just `&lt;` (2×), `&nbsp;` (3×), `&eacute;` (1×),
+though the table covers the full standard set since a future re-run could hit others.
+
+Noticed a second, unrelated gap in the same pass while re-reading Brazil's raw religion text: "Indigenous
+religions .06%" was being silently dropped (`SEGMENT_NAME_PCT_RE` required at least one digit before the
+decimal point, so a leading-dot decimal like ".06" matched nothing). Fixed in the same edit — the regex's
+percentage alternation now also accepts `\.\d+`. Re-verified both fixes against the exact real Factbook text
+for China/Brazil/Kenya (not just paraphrased test cases) before re-running the full build.
+
+Re-ran `scripts/buildCurrentStatus.mjs` in full (all 194 countries) after the fix: same top-line sourcing
+counts as before (167/194 ethnicity, 185/194 religion — the fix corrects NAMES, not which countries have any
+data), zero `&...;` sequences left anywhere in the regenerated `src/data/currentStatus.ts`
+(`grep -oE '&[a-zA-Z#0-9]+;'` came back empty), Brazil's religion list now has 9 groups instead of 8. `tsc -b
+--noEmit`, `oxlint`, `npm test` (96 tests), and `npm run build` all re-verified clean after the fix.
+
+## 2026-08-26 (cont.) — INTELLIGENCE top-nav tab dropped
+
+Came up while explaining what the still-unwired top-nav tabs (INTELLIGENCE, DATABASE) were for — user's
+response: "I think the intelligence tab can be dropped." Before touching code, checked whether it was
+actually redundant rather than assuming: the Intelligence Engine (Military/Economy/Technology/Current
+Status) already renders through `hud/IntelligencePanel.tsx` (per-entity, opened from a map/search selection)
+and `hud/AnalyticsPanel.tsx` (cross-country rankings, behind the already-wired ANALYTICS tab). A hypothetical
+INTELLIGENCE tab view would have had nothing left to show that isn't already covered by one of those two, so
+this reads as a clean removal, not a scope cut of planned work — unlike Diplomacy (this same day, above),
+which was dropped mid-flight after shipping as a placeholder; INTELLIGENCE never had a view built at all.
+
+Mechanically trivial once confirmed: dropped `'intelligence'` from `hud/navStore.ts`'s `TopNavTab` union and
+its `TABS` entry in `hud/TopNav.tsx`; `input/InputManager.tsx`'s tab-aware arrow routing (added in v6.8.1)
+needed no logic change at all, since it only ever explicitly checked `activeTab === 'analytics'` /
+`activeTab === 'map'` and already fell through to no-op for anything else — only the comment describing which
+tabs fall into that "else" branch needed updating. `tsc -b --noEmit` and `oxlint` both came back clean after
+the union member removal, confirming nothing else in the codebase still matched on the literal string
+`'intelligence'` as a `TopNavTab` value (the many *other* uses of the word — `IntelligencePanel.tsx`,
+`intelMetrics.ts`, "Intelligence Engine" throughout the docs — are an unrelated, much larger piece of the app
+and were correctly left untouched; had to grep carefully to keep the two apart rather than pattern-matching
+on the bare word "intelligence"). NEWS and DATABASE are unaffected and still render as inert, disabled tabs —
+this covers this file's earlier v6.5.2 entry.
+
+Not verified in the browser this pass (user's standing preference is to check UI changes themselves rather
+than a headless-browser round-trip) — `tsc -b`/`oxlint` confirm the tab strip still type-checks and lints
+clean with one fewer entry, but the actual rendered tab-strip layout hasn't been screenshotted.
+
 ## 2026-08-26 (cont.) — Diplomacy dropped from the Intelligence Engine
 
 Direct request: "I'm thinking we drop diplomacy and keep the other metrics. Let's remove from the intel

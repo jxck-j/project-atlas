@@ -117,6 +117,42 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   `gwno_loc`/`country_id` numeric codes back to this project's UN-193 topology names. See that lib module's
   own header comment for the source files' Windows-1252 encoding quirk and the alias table it required.
 
+## `unsd/unsd-ethnic-tablecode26.zip`, `unsd/unsd-religion-tablecode28.zip`
+
+- **Source:** the UN Statistics Division's Demographic Statistics Database (`data.un.org`/UNdata), tableCode 26
+  ("Population by national and/or ethnic group...") and tableCode 28 ("Population by religion..."). No
+  documented bulk API exists, but UNdata's own "Export" button hits a real, unauthenticated, CORS-open
+  zipped-CSV endpoint (`UNSD_DOWNLOAD_BASE` in `scripts/buildCurrentStatus.mjs`) — the same "found a legitimate
+  direct path around a gated/undocumented UI" precedent as the SIPRI TIV endpoint above.
+- **Fetched:** 2026-08-26.
+- **License:** UN Statistics Division data is freely available for public use with attribution; see
+  `data.un.org` for its terms.
+- **Used by:** `scripts/buildCurrentStatus.mjs` — ethnicity's primary source, and religion's fallback for any
+  country ARDA has no profile for (see the `arda/` entry below for religion's own primary source). See that
+  script's own DEMOGRAPHICS header comment and `LOGBOOK.md` for the full ingestion/quality-gate logic.
+- **Not re-downloaded automatically:** delete the zip under `unsd/` to force a re-fetch against whatever UNSD
+  is currently serving.
+
+## `arda/_country-list.html`, `arda/profiles/*.html`
+
+- **Source:** ARDA (`thearda.com/world-religion/national-profiles`) — Brill's World Religion Database, an
+  academic compilation (not a national census), scraped per-country from each profile page's own "Religious
+  Adherents" table (`arda/profiles/{code}.html`, one per ARDA country/region code) plus the full country/region
+  `<select>` list (`_country-list.html`, fetched once with no `u` query param, used to build the name→code
+  map).
+- **Fetched:** 2026-08-27, WRD edition 2025 (the edition year shown in each page's own table heading, not a
+  fetch date — see `religionsSnapshotDate` in `src/data/currentStatus.ts`).
+- **License:** ARDA publishes these profiles for public research/reference use; see thearda.com's own terms.
+- **Used by:** `scripts/buildCurrentStatus.mjs` — religion's primary source (194/194 countries resolved in the
+  real run), ahead of UNSD/Factbook. See that script's own DEMOGRAPHICS header comment for the category-
+  granularity rules (Christianity expanded into sub-denominations, every other religion top-level-only) and
+  `LOGBOOK.md`'s 2026-08-27 entries for the real cases (Sudan, South Korea) this was verified against,
+  including a real "double affiliation" data characteristic (totals legitimately exceeding 100% for ~30
+  countries) that `hud/SegmentedBar.tsx` has to render around.
+- **Not re-downloaded automatically, and goes stale on its own schedule:** ARDA republishes a new WRD edition
+  roughly annually. Delete `arda/_country-list.html` and/or specific files under `arda/profiles/` to force a
+  re-fetch against whatever ARDA is currently serving.
+
 ## `ne_50m_rivers_lake_centerlines.geojson`
 
 - **Source:** Natural Earth 1:50m Physical Vectors, "Rivers + lake

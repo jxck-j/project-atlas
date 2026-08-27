@@ -22,6 +22,7 @@ import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
 import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
+import { SegmentedBar } from './SegmentedBar'
 
 // `.cp-row` — label left, value right-aligned on the same baseline, rather
 // than the stacked label-over-value the pre-restyle panel used. The
@@ -1291,6 +1292,36 @@ export function IntelligencePanel() {
                 </>
               )}
             </div>
+
+            {/* Demographics — CIA World Factbook ethnicity/religion
+                breakdowns (src/data/currentStatus.ts's ethnicGroups/
+                religions, see that file's own header comment). Informational
+                only, no scoring implications — a separate section from
+                INTELLIGENCE SUMMARY above rather than a 5th IntelRow, since
+                neither field converges to a single scored value the way
+                Military/Economy/Technology do. Gated on the SAME
+                `currentStatus` lookup that section already computes
+                (selected.id keyed, so this also "just works" for Taiwan) —
+                skipped entirely for a country with neither field, and never
+                shown at all for a GeoEntity, which has no CurrentStatus
+                record. */}
+            {currentStatus && (currentStatus.ethnicGroups || currentStatus.religions) && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-2`}>DEMOGRAPHICS</div>
+                {currentStatus.ethnicGroups && (
+                  <div className="mb-3">
+                    <div className="mb-1 text-[9.5px] font-bold tracking-[0.08em] text-[#6d82a8]">ETHNICITY</div>
+                    <SegmentedBar groups={currentStatus.ethnicGroups} />
+                  </div>
+                )}
+                {currentStatus.religions && (
+                  <div>
+                    <div className="mb-1 text-[9.5px] font-bold tracking-[0.08em] text-[#6d82a8]">RELIGION</div>
+                    <SegmentedBar groups={currentStatus.religions} />
+                  </div>
+                )}
+              </div>
+            )}
 
             {relationFeed.length > 0 && (
               <div className="border-b border-[#16233c] px-4 py-3">

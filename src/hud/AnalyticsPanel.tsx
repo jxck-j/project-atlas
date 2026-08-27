@@ -12,7 +12,8 @@ import { getCountries, getEntity } from '../data'
 import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
 import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
 import { TECHNOLOGY_SCORES, type TechnologyScore } from '../data/technologyScores'
-import { CURRENT_STATUS, type ConflictEntry, type CurrentStatus } from '../data/currentStatus'
+import { CURRENT_STATUS, type ConflictEntry, type CurrentStatus, type DemographicGroup } from '../data/currentStatus'
+import { groupTopFourPlusOther, type DemographicDisplaySegment } from './demographicsGrouping'
 import { CONFLICT_TYPE_STYLE } from '../scene/conflictTypeStyles'
 import { SANCTION_TIER_STYLE, withAlpha } from '../scene/sanctionTierColors'
 import { resolveEntity } from '../entities/EntityResolver'
@@ -46,6 +47,29 @@ const METRIC_AVAILABLE: Record<IntelMetricId, boolean> = {
   technology: true,
   'current-status': true,
 }
+
+// ETHNICITY/RELIGION (src/data/currentStatus.ts's ethnicGroups/religions,
+// CIA World Factbook-sourced) are two more thumbnails alongside the 4
+// Intelligence Engine ones above, but deliberately NOT added to
+// IntelMetricId/INTEL_METRICS (intelMetrics.ts) — that type is shared with
+// IntelligencePanel.tsx's INTELLIGENCE SUMMARY status-bar loop, and neither
+// field is a scored bar there (they get their own separate DEMOGRAPHICS
+// section instead — see IntelligencePanel.tsx). Adding them to INTEL_METRICS
+// would force IntelligencePanel to grow two new placeholder bar rows it
+// doesn't want. `AnalyticsMetricId`/`ALL_METRICS` extend the concept
+// locally, scoped to this file only.
+type DemographicMetricId = 'ethnicity' | 'religion'
+type AnalyticsMetricId = IntelMetricId | DemographicMetricId
+interface MetricDef {
+  id: AnalyticsMetricId
+  label: string
+  icon: readonly string[]
+}
+const DEMOGRAPHIC_METRICS: MetricDef[] = [
+  { id: 'ethnicity', label: 'ETHNICITY', icon: ICONS.user },
+  { id: 'religion', label: 'RELIGION', icon: ICONS.star },
+]
+const ALL_METRICS: MetricDef[] = [...INTEL_METRICS, ...DEMOGRAPHIC_METRICS]
 
 type SortDirection = 'asc' | 'desc'
 interface SortState {
@@ -161,11 +185,14 @@ function MetricThumbnail({
   countryCount,
   onSelect,
 }: {
-  metric: (typeof INTEL_METRICS)[number]
+  metric: MetricDef
   countryCount: number
   onSelect: () => void
 }) {
-  const available = METRIC_AVAILABLE[metric.id]
+  // ETHNICITY/RELIGION are always available (real Factbook data exists for
+  // most of the registry) — they aren't keyed in METRIC_AVAILABLE at all
+  // (see that Record's IntelMetricId key type), so check for them first.
+  const available = metric.id === 'ethnicity' || metric.id === 'religion' ? true : METRIC_AVAILABLE[metric.id]
   // CURRENT STATUS has no composite score to rank by (design doc §3.5) — its
   // thumbnail reads "tracked"/"VIEW STATUS" rather than "ranked"/"VIEW
   // RANKING" so it doesn't imply an ordering that doesn't exist.
@@ -280,6 +307,9 @@ function RankedListRow<TRow extends BaseRankedRow>({
       <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#dce8fb]">
         {row.name}
         {row.confidence === 'proxy' && <span className="ml-1.5 text-[10px] font-bold text-[#e0a340]">PROXY</span>}
+        {row.confidence === 'unavailable' && !row.notApplicable && (
+          <span className="ml-1.5 text-[10px] font-bold text-[#ef4444]">UNMEASURED</span>
+        )}
       </span>
       {columns.map((col) => (
         <span key={col.key} className={METRIC_COLUMN_CLASS}>
@@ -323,6 +353,31 @@ function getRankableCountries(): { id: string; name: string }[] {
   return taiwan ? [...getCountries(), taiwan] : getCountries()
 }
 
+// `nuclearWarheads`/`industrialBaseRevenueUsdM` are "true-zero" components
+// (see buildMilitary.mjs's own header comment) — every country NOT on FAS's
+// 9-nation nuclear list or SIPRI's Top-100 arms manufacturers list gets a
+// raw value of exactly 0 by default, not because that specific country was
+// individually confirmed to have none, just because it isn't on either
+// list. For a country with an overall 'measured'/'proxy' military score,
+// that default 0 is fine to rank normally alongside everyone else's real
+// numbers (it's one knowable fact among many others that ARE well-sourced
+// for that country). But for an 'unavailable'-confidence country — one that
+// doesn't have enough OTHER data to produce a real score at all (Bahamas:
+// 1 of 3 core components present) — that same default 0 is the only reason
+// it would appear in a nuclear/industrial-base ranking, and it isn't a
+// specific fact about that country's nuclear program the way a real
+// FAS-sourced entry is. Real bug this fixes: sorting by NUCLEAR put the
+// Bahamas (raw 0, confidence 'unavailable') at rank ~21, ahead of most
+// actually-measured countries, purely by alphabetical tiebreak among a pile
+// of default zeros. Sinks to the bottom (via compareRows' null handling)
+// instead, unless the raw value is genuinely nonzero (a real FAS/SIPRI
+// entry, which never coincides with 'unavailable' confidence in practice).
+function trueZeroSortValue(raw: number | null, confidence: BaseRankedRow['confidence']): number | null {
+  if (raw == null) return null
+  if (raw === 0 && confidence === 'unavailable') return null
+  return raw
+}
+
 function buildMilitaryRows(): MilitaryRankedRow[] {
   return getRankableCountries().map((country) => {
     const score = MILITARY_SCORES[country.id]
@@ -361,13 +416,13 @@ const MILITARY_COLUMNS: AnalyticsColumn<MilitaryRankedRow>[] = [
   {
     key: 'nuclear',
     label: 'NUCLEAR',
-    getSortValue: (row) => row.components?.nuclearWarheads.raw ?? null,
+    getSortValue: (row) => trueZeroSortValue(row.components?.nuclearWarheads.raw ?? null, row.confidence),
     format: (row) => (row.components ? formatComponent(row.components.nuclearWarheads.raw, (raw) => raw.toLocaleString('en-US')) : '—'),
   },
   {
     key: 'industrialRev',
     label: 'DEF. INDUSTRY',
-    getSortValue: (row) => row.components?.industrialBaseRevenueUsdM.raw ?? null,
+    getSortValue: (row) => trueZeroSortValue(row.components?.industrialBaseRevenueUsdM.raw ?? null, row.confidence),
     format: (row) =>
       row.components ? formatComponent(row.components.industrialBaseRevenueUsdM.raw, (raw) => formatGdp(raw * 1e6) ?? '—') : '—',
   },
@@ -747,6 +802,120 @@ function CurrentStatusListRow({
 }
 
 // ---------------------------------------------------------------------------
+// ETHNICITY / RELIGION — src/data/currentStatus.ts's ethnicGroups/religions.
+// No 0-100 composite (same reason CURRENT STATUS above has none) AND no
+// single natural "biggest number wins" column the way Military/Economy's
+// SCORE is either — each country's largest group has a different NAME, so
+// there's nothing to rank by default. Default sort is alphabetical by
+// country (direct request), with each of the 5 display-position columns
+// (GROUP 1-4, OTHER — see demographicsGrouping.ts's top-4-plus-other
+// transform, the same one SegmentedBar.tsx uses) independently sortable by
+// that position's percentage. Gets its own header/row (not
+// BaseRankedRow/AnalyticsColumn/RankedListRow) for the same reason CURRENT
+// STATUS does: no SCORE bar to anchor that machinery's shape.
+// ---------------------------------------------------------------------------
+
+interface DemographicRankedRow {
+  id: string
+  name: string
+  segments: DemographicDisplaySegment[]
+}
+
+function buildDemographicRows(pickGroups: (status: CurrentStatus | undefined) => DemographicGroup[] | undefined): DemographicRankedRow[] {
+  return getRankableCountries().map((country) => ({
+    id: country.id,
+    name: country.name,
+    segments: groupTopFourPlusOther(pickGroups(CURRENT_STATUS[country.id]) ?? []),
+  }))
+}
+
+const buildEthnicityRows = () => buildDemographicRows((status) => status?.ethnicGroups)
+const buildReligionRows = () => buildDemographicRows((status) => status?.religions)
+
+// One sort key per display position, GROUP 1 (index 0) through UNKNOWN
+// (index 5) — mirrors demographicsGrouping.ts's groupTopFourPlusOther,
+// which can emit up to 4 named groups + "Other" + a synthesized "Unknown"
+// remainder (the source's own figures not summing to 100%). A country with
+// fewer than 6 segments simply has no value at the missing positions (sorts
+// last, same convention as every other coverage gap in this file).
+const GROUP_POSITION_KEYS = ['group0', 'group1', 'group2', 'group3', 'group4', 'group5'] as const
+const GROUP_POSITION_LABELS = ['GROUP 1', 'GROUP 2', 'GROUP 3', 'GROUP 4', 'OTHER', 'UNKNOWN']
+
+function compareDemographicRows(a: DemographicRankedRow, b: DemographicRankedRow, sort: SortState): number {
+  if (sort.key === 'name') {
+    const cmp = a.name.localeCompare(b.name)
+    return sort.direction === 'asc' ? cmp : -cmp
+  }
+  const index = GROUP_POSITION_KEYS.indexOf(sort.key as (typeof GROUP_POSITION_KEYS)[number])
+  const av = index === -1 ? null : (a.segments[index]?.pct ?? null)
+  const bv = index === -1 ? null : (b.segments[index]?.pct ?? null)
+  if (av == null && bv == null) return a.name.localeCompare(b.name)
+  if (av == null) return 1
+  if (bv == null) return -1
+  return (sort.direction === 'asc' ? av - bv : bv - av) || a.name.localeCompare(b.name)
+}
+
+// Mirrors ColumnHeaderRow's widths/gaps but with no SCORE column and 5
+// (rather than up to 5 metric) columns wide enough to hold a "Name — NN.N%"
+// cell instead of ColumnHeaderRow's own narrower METRIC_COLUMN_CLASS.
+function DemographicHeaderRow({ sort, onSort }: { sort: SortState; onSort: (key: string) => void }) {
+  return (
+    <div className="mb-1 flex items-center gap-3 px-3">
+      <span className="w-8 shrink-0" />
+      <SortableHeader label="COUNTRY" sortKey="name" activeSort={sort} onSort={onSort} align="left" className="min-w-0 flex-1" />
+      {GROUP_POSITION_KEYS.map((key, i) => (
+        <SortableHeader
+          key={key}
+          label={GROUP_POSITION_LABELS[i]}
+          sortKey={key}
+          activeSort={sort}
+          onSort={onSort}
+          className="hidden shrink-0 lg:block lg:w-[150px]"
+        />
+      ))}
+    </div>
+  )
+}
+
+function DemographicListRow({
+  row,
+  rank,
+  isSelected,
+  isHighlighted,
+  onSelect,
+  rowRef,
+}: {
+  row: DemographicRankedRow
+  rank: number
+  isSelected: boolean
+  isHighlighted?: boolean
+  onSelect: () => void
+  rowRef?: (el: HTMLButtonElement | null) => void
+}) {
+  return (
+    <button
+      ref={rowRef}
+      type="button"
+      onClick={onSelect}
+      className={`flex w-full items-center gap-3 rounded px-3 py-2 text-left transition-colors hover:bg-[rgba(255,255,255,0.05)] ${
+        isSelected ? 'bg-[rgba(63,139,255,0.12)]' : ''
+      } ${isHighlighted ? 'shadow-[0_0_0_2px_rgba(77,149,255,0.9),0_0_20px_rgba(77,149,255,0.5)]' : ''}`}
+    >
+      <span className="w-8 shrink-0 text-right text-[11px] font-bold text-[#51648a]">{rank}</span>
+      <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#dce8fb]">{row.name}</span>
+      {[0, 1, 2, 3, 4, 5].map((i) => {
+        const segment = row.segments[i]
+        return (
+          <span key={i} className="hidden shrink-0 truncate text-right text-[11px] text-[#aebfdc] lg:block lg:w-[150px]">
+            {segment ? `${segment.name} — ${segment.pct.toFixed(1)}%` : '—'}
+          </span>
+        )
+      })}
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Ranking lookup — jump to a country's row within whichever list is
 // currently open, without selecting it. Deliberately NOT SearchBar.tsx's
 // selectEntry() — that calls selectEntity(), which opens IntelligencePanel
@@ -877,6 +1046,10 @@ function RankingLookupBar({
 
 const DEFAULT_SORT: SortState = { key: 'score', direction: 'desc' }
 const CURRENT_STATUS_DEFAULT_SORT: SortState = { key: 'conflicts', direction: 'desc' }
+// Direct request: default/main sort for ETHNICITY/RELIGION is alphabetical
+// by country, not by any group's percentage — unlike every other category
+// here, there's no single column that reads as "the" default ranking axis.
+const DEMOGRAPHIC_DEFAULT_SORT: SortState = { key: 'name', direction: 'asc' }
 
 function nextSort(current: SortState, key: string): SortState {
   return current.key === key
@@ -899,7 +1072,7 @@ export function AnalyticsPanel() {
   const { selected } = useSelection()
   const features = useCountryFeatures()
   const geoEntityFeatures = useGeoEntityFeatures()
-  const [metric, setMetric] = useState<IntelMetricId | null>(null)
+  const [metric, setMetric] = useState<AnalyticsMetricId | null>(null)
   const [sort, setSort] = useState(DEFAULT_SORT)
   const [currentStatusFilter, setCurrentStatusFilter] = useState<CurrentStatusFilter>('all')
 
@@ -957,7 +1130,13 @@ export function AnalyticsPanel() {
   // any in-flight lookup highlight/timeout — a flash from the previous
   // ranking has no row to land on in the new one.
   useEffect(() => {
-    setSort(metric === 'current-status' ? CURRENT_STATUS_DEFAULT_SORT : DEFAULT_SORT)
+    setSort(
+      metric === 'current-status'
+        ? CURRENT_STATUS_DEFAULT_SORT
+        : metric === 'ethnicity' || metric === 'religion'
+          ? DEMOGRAPHIC_DEFAULT_SORT
+          : DEFAULT_SORT
+    )
     setCurrentStatusFilter('all')
     setLookupHighlightId(null)
     return () => {
@@ -1022,6 +1201,8 @@ export function AnalyticsPanel() {
   const economyRows = buildEconomyRows()
   const technologyRows = buildTechnologyRows()
   const currentStatusRows = buildCurrentStatusRows()
+  const ethnicityRows = buildEthnicityRows()
+  const religionRows = buildReligionRows()
   const currentStatusCounts: Record<CurrentStatusFilter, number> = {
     all: currentStatusRows.length,
     conflict: currentStatusRows.filter((row) => row.conflicts.length > 0).length,
@@ -1037,7 +1218,7 @@ export function AnalyticsPanel() {
     selectEntity(resolved, direction)
   }
 
-  const activeMetric = INTEL_METRICS.find((m) => m.id === metric)
+  const activeMetric = ALL_METRICS.find((m) => m.id === metric)
 
   // Sorted (and, for CURRENT STATUS, filtered) once here rather than inline
   // in each render branch below — needed in two places now that arrow-step
@@ -1052,6 +1233,8 @@ export function AnalyticsPanel() {
   const sortedCurrentStatusRows = [...currentStatusRows]
     .filter((row) => matchesCurrentStatusFilter(row, currentStatusFilter))
     .sort((a, b) => compareCurrentStatusRows(a, b, sort))
+  const sortedEthnicityRows = [...ethnicityRows].sort((a, b) => compareDemographicRows(a, b, sort))
+  const sortedReligionRows = [...religionRows].sort((a, b) => compareDemographicRows(a, b, sort))
 
   // What RankingLookupBar searches, jumpToRow can land on, and jumpToOffset
   // steps through — the same rows actually rendered below for the active
@@ -1059,10 +1242,10 @@ export function AnalyticsPanel() {
   // RankingLookupBar's own comment for why: CURRENT STATUS's filter tabs
   // mean a filtered-out country genuinely has no row on screen to jump to).
   // Mirrors the render ternary's own branching below, military as the
-  // fallback for any `activeMetric.id` that isn't one of the other three
-  // (there's no such id reachable today — all 4 IntelMetricId values have
-  // their own explicit branch — but the fallback stays rather than adding a
-  // 4th `=== 'military'` check that would just duplicate the last branch).
+  // fallback for any `activeMetric.id` that isn't one of the other explicit
+  // branches (there's no such id reachable today — every ALL_METRICS value
+  // has its own explicit branch — but the fallback stays rather than adding
+  // a redundant final `=== 'military'` check that would just duplicate it).
   const activeLookupRows: LookupRow[] = !activeMetric
     ? []
     : activeMetric.id === 'economy'
@@ -1071,7 +1254,11 @@ export function AnalyticsPanel() {
         ? sortedTechnologyRows
         : activeMetric.id === 'current-status'
           ? sortedCurrentStatusRows
-          : sortedMilitaryRows
+          : activeMetric.id === 'ethnicity'
+            ? sortedEthnicityRows
+            : activeMetric.id === 'religion'
+              ? sortedReligionRows
+              : sortedMilitaryRows
 
   // Steps the highlight/scroll target to the next (+1) or previous (-1) row
   // in `activeLookupRows`' current on-screen order — "switch between
@@ -1124,8 +1311,8 @@ export function AnalyticsPanel() {
           <h1 className="mb-6 font-display text-[26px] font-bold tracking-[0.09em] text-white [text-shadow:0_0_24px_rgba(63,139,255,0.35)]">
             ANALYTICS
           </h1>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            {INTEL_METRICS.map((m) => (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {ALL_METRICS.map((m) => (
               <MetricThumbnail key={m.id} metric={m} countryCount={militaryRows.length} onSelect={() => setMetric(m.id)} />
             ))}
           </div>
@@ -1193,7 +1380,9 @@ export function AnalyticsPanel() {
                     ? 'WORLD BANK WDI / ITU SOURCED'
                     : activeMetric.id === 'current-status'
                       ? 'UCDP / OFAC SOURCED'
-                      : 'SIPRI / WORLD BANK / FAS SOURCED'}
+                      : activeMetric.id === 'ethnicity' || activeMetric.id === 'religion'
+                        ? 'CIA WORLD FACTBOOK SOURCED'
+                        : 'SIPRI / WORLD BANK / FAS SOURCED'}
               </span>
             </div>
           </div>
@@ -1246,6 +1435,26 @@ export function AnalyticsPanel() {
               <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
                 {sortedCurrentStatusRows.map((row, index) => (
                     <CurrentStatusListRow
+                      key={row.id}
+                      row={row}
+                      rank={index + 1}
+                      isSelected={selected?.id === row.id}
+                      isHighlighted={lookupHighlightId === row.id}
+                      onSelect={() => selectCountryRow(row.id)}
+                      rowRef={(el) => {
+                        if (el) rowRefs.current.set(row.id, el)
+                        else rowRefs.current.delete(row.id)
+                      }}
+                    />
+                  ))}
+              </div>
+            </>
+          ) : activeMetric.id === 'ethnicity' || activeMetric.id === 'religion' ? (
+            <>
+              <DemographicHeaderRow sort={sort} onSort={(key) => setSort((current) => nextSort(current, key))} />
+              <div className="rounded-lg border border-[#172440] bg-[rgba(7,11,20,0.6)] px-2 py-2">
+                {(activeMetric.id === 'ethnicity' ? sortedEthnicityRows : sortedReligionRows).map((row, index) => (
+                    <DemographicListRow
                       key={row.id}
                       row={row}
                       rank={index + 1}

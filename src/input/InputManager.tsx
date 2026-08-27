@@ -46,9 +46,9 @@ export function InputManager() {
       // ArrowUp/ArrowDown step through the open ranking instead (see
       // hud/analyticsStepStore.ts/AnalyticsPanel.tsx's jumpToOffset) —
       // ArrowLeft/ArrowRight have no ranking meaning, so they no-op there.
-      // On any OTHER non-map tab (intelligence/news/database, none of which
-      // have a real view yet), all four just no-op — there's nothing
-      // on-screen for them to affect either way.
+      // On any OTHER non-map tab (news/database, neither of which has a
+      // real view yet), all four just no-op — there's nothing on-screen
+      // for them to affect either way.
       case 'select-north':
         if (activeTab === 'analytics') getAnalyticsStepHandler()?.(-1)
         else if (activeTab === 'map') selectDirection('north')

@@ -17,6 +17,134 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.10.3 — AnalyticsPanel: fixed a true-zero ranking bug, added an UNMEASURED label
+
+**Bug fix, Intelligence Engine.** Reported directly: sorting Military's ranked list by NUCLEAR put the Bahamas
+at rank 21, ahead of most actually-measured countries. Cause: `nuclearWarheads`/`industrialBaseRevenueUsdM`
+default to raw `0` for every country not on FAS's 9-nation nuclear list or SIPRI's Top-100 arms manufacturers
+list — not because that specific country was confirmed to have none, just because it isn't on either list. For
+a country with a real overall score that default `0` is a fine fact to rank on, but the Bahamas has
+`confidence: 'unavailable'` (1 of 3 core components present) — its `0` isn't a specific fact about its nuclear
+program, just the shared default every unmeasured country gets. `trueZeroSortValue()` now sorts a `raw === 0`
+to the bottom (same as a real coverage gap) specifically when the row's overall confidence is `'unavailable'`;
+a country with a real score still ranks normally on its confirmed zero. Verified: the Bahamas now ranks
+179/193 on NUCLEAR; the 9 real nuclear states are unaffected. Economy/Technology have no equivalent
+shared-default component, so needed no change.
+
+Also added a red **UNMEASURED** badge next to a row's name whenever its overall confidence is `'unavailable'`
+(excluding Military's "confirmed no standing military" rows, a different, more specific fact already shown as
+N/A) — mirrors the existing orange PROXY badge, styled the same red `intelValueColor()` already uses for a
+0 score. Lives in the shared `RankedListRow` component, so it applies to Military, Economy, and Technology
+automatically with no per-category code.
+
+## v6.10.2 — Religion re-sourced to ARDA World Religion Database
+
+**Data sourcing change, Intelligence Engine.** `religions` now resolves through its own, independent 3-tier
+chain — ARDA (thearda.com) World Religion Database primary, UNSD table 28 fallback, CIA Factbook final
+fallback — replacing UNSD-primary for religion only; `ethnicGroups` is completely unaffected (still UNSD →
+Factbook). Real run: ARDA resolved religion for all 194/194 countries, dramatically better coverage than
+UNSD's own religion table (which has real gaps — e.g. Russia has never asked a religion question in its
+census).
+
+Christianity is expanded into its own indented sub-denomination rows (Catholics, Protestants, Orthodox,
+Independents, unaffiliated Christians, ...), each competing directly against every other religion's top-level
+row for the same top-4 display slots — verified against a real case (Sudan: Muslims 91.36%, Catholics 3.22%,
+Ethnic religionists 2.77%, and Protestants 1.54% all individually ranked, with Agnostics/Orthodox/Atheists/
+Baha'is folding into Other) before shipping. Every other religion uses its own single top-level row, with one
+documented fallback: if a top-level row has no value but its own children do (Sudan's blank "Non-Religious"
+row, whose "Agnostics"/"Atheists" children are real, measured values), the children are used instead of
+discarding real data.
+
+Two things this surfaced and fixed before shipping, not after: (1) `resolveFactbookDemographics()` was
+unconditionally logging a religion gap for any country whose ethnicity needed Factbook, which — now that ARDA
+covers virtually every country — would have produced ~81 misleading "Religions... left unsourced" BACKLOG.md
+entries for countries whose religion was actually fully sourced; fixed by only parsing/logging whichever
+field the caller still needs. (2) ARDA's own data has real "double affiliation" totals exceeding 100% for ~30
+countries (South Korea's real Buddhist/Confucianist/folk-religion overlap sums to ~117%, up to ~144% for a
+few small Pacific nations) — `hud/SegmentedBar.tsx` now scales rendered segment widths down proportionally
+above 100% so a bar's tail end can never silently clip off-screen; legend/tooltip text still shows each
+segment's real, unscaled percentage. See `LOGBOOK.md` for the full investigation, including two real
+discrepancies between the original spec's worked example and the live ARDA page that were confirmed with the
+user before implementing, rather than guessed.
+
+## v6.10.1 — Demographics: reject a UNSD result dominated by a generic/residual bucket
+
+**Bug fix, Intelligence Engine.** Reported directly: Poland's ethnicity showed ~98% as "Other," and Russia's
+religion looked worse than before. The two turned out to have different causes. Russia's religion has zero
+UNSD rows at all (the Russian census has never asked about religion) — it was already, and remains, sourced
+from Factbook's own admittedly incomplete 2006 estimate (see v6.10.0's note above); there was nothing to
+switch. Poland's ethnicity was a real bug: UNSD's 2021 census table only enumerates named minority
+nationalities by row, leaving the implicitly-Polish majority in a literal "Other" row at 98.19% — a real
+result that added to ~100% and passed every existing check, even though Factbook's own Poland entry names the
+real majority directly ("Polish 96.9%"). `scripts/buildCurrentStatus.mjs`'s `resolveUnsdGroups()` now rejects
+a result whose single largest group is an exact match against a generic/residual label set (`other`, `not
+stated`, `unknown`, `refused to respond`, `not specified`, `not applicable`, `not asked`, `not declared`) at
+≥50% share, falling through to Factbook exactly like a missing Total row already does. Found and fixed for 5
+real cases (verified against real Factbook data for each, not just the two reported): Poland/Costa
+Rica/Colombia/Bolivia (ethnicity) and Germany (religion) — every rejection logged to `BACKLOG.md`. See
+`LOGBOOK.md` for the full investigation.
+
+## v6.10.0 — Demographics (ethnicity + religion), UNSD-primary
+
+**New capability, Intelligence Engine.** Added `ethnicGroups`/`religions` to `src/data/currentStatus.ts`,
+sourced primarily from the UN Statistics Division's Demographic Statistics Database (real census counts,
+tableCode 26/28), with the CIA World Factbook as a fallback wherever UNSD has no usable data — resolved
+independently per country and per field, so a country can take ethnicity from one source and religion from
+the other. Real run: ethnicity resolved for 167/194 countries (89 from UNSD, 78 from Factbook — one country,
+DR Congo, correctly moved from a false single-entry to a genuine unresolved gap, see below), religion for
+186/194 (98 from UNSD, 88 from Factbook); every unresolved case, and every real UNSD data-quality conflict
+(duplicate rows across census record types), logged to `BACKLOG.md` rather than guessed. Informational only,
+no scoring implications — this doesn't affect Military/Economy/Technology/Current Status in any way.
+
+The Factbook fallback parser went through several real bug fixes after real-world spot-checking surfaced
+visibly incomplete bars: percentage RANGES ("Greek Orthodox 81-90%", "Turkish 70-75%" — Greece and Turkey were
+each missing their single largest group entirely), a missing decimal point rendered as a slash ("93/1%"), a
+missing "%" sign entirely, missing commas between list items (silently merging or dropping adjacent entries),
+a semicolon used as a sentence boundary, stray literal `<p>` HTML tags in the source text, and a narrative
+sentence that isn't a real list at all (correctly rejected as unparseable, not misread as a single, wrong data
+point). See `LOGBOOK.md` for the full trail — nine countries' bars were visibly wrong before these fixes and
+are now correct.
+
+Where the SOURCE data itself is genuinely incomplete rather than a parsing failure (Russia's religion figures
+are explicitly "practicing worshipers only" per Factbook's own note; Malta's religion text is literally "more
+than 90%" with nothing else) — `hud/demographicsGrouping.ts`'s `groupTopFourPlusOther()` now synthesizes an
+explicit "Unknown" segment for whatever the source doesn't account for (direct request: "it's not falsifying
+info because it really is not known"), so the bar visually completes to 100% instead of stopping short with no
+explanation. Kept as its own segment, distinct from "Other" — "Other" means real, named minor groups the
+source reported but didn't break out; "Unknown" means the source's own figures don't cover the remainder at
+all. Rendered in a dedicated neutral gray (this app's existing "no data" tone), never one of the 5 named-group
+colors, so it can't be mistaken for a real category. Only shown above a 1-point threshold, so ordinary rounding
+drift (a country's real figures summing to 97-101%) doesn't produce a sliver on every bar. A country with NO
+data at all for a field is unaffected — that's a different fact ("nothing reported") from "some data reported,
+with a real gap," and still renders nothing, per the pre-existing "skip the whole section" behavior.
+
+`hud/IntelligencePanel.tsx` gained a DEMOGRAPHICS section below INTELLIGENCE SUMMARY, rendering each list as a
+new `hud/SegmentedBar.tsx` — a single-row 100%-stacked bar (top 4 named groups + a synthesized "Other" bucket
+that also always absorbs a literal "Other"/"Not Stated"/"Unknown"/"Refused to Respond" entry regardless of its
+own size, plus the synthesized "Unknown" remainder above, `hud/demographicsGrouping.ts`) with a colored-dot
+legend; hovering/tapping "Other" shows a tooltip listing its real constituent groups. `hud/AnalyticsPanel.tsx`
+gained two more thumbnails, ETHNICITY and RELIGION, each a sortable 194-country list defaulting to
+alphabetical-by-country order, with GROUP 1-4/OTHER/UNKNOWN as independently sortable columns.
+
+Verified directly: US ethnicity resolves from UNSD (2020), confirming UNSD mirrors the same underlying Census
+data Factbook already used — but UNSD's US entry uses the identical Census race categories (no separate
+Hispanic/Latino breakdown), so that structural gap isn't resolved by the source switch. See `CLAUDE.md`'s
+Geopolitical data architecture section and `LOGBOOK.md` for the full sourcing/parsing trail, including two real
+parsing bugs caught and fixed along the way (a Factbook nested-parenthetical misattribution in Taiwan's
+ethnicity text, and un-decoded HTML entities corrupting a handful of group names).
+
+## v6.9.2 — INTELLIGENCE top-nav tab dropped
+
+**Point release.** Removed the inert INTELLIGENCE tab from `hud/TopNav.tsx`'s top-bar tab strip — direct
+decision, made while discussing what the still-unwired DATABASE/INTELLIGENCE tabs were for. It was judged
+redundant before it ever got a real view behind it: the Intelligence Engine already has two homes,
+`hud/IntelligencePanel.tsx` (per-entity drill-down) and `hud/AnalyticsPanel.tsx` (the cross-country rankings
+the wired ANALYTICS tab opens), so a third, dashboard-style destination for the same data would just
+duplicate them. Removed `'intelligence'` from `hud/navStore.ts`'s `TopNavTab` union and its `TABS` entry in
+`TopNav.tsx`; `input/InputManager.tsx` needed no logic change, only a stale comment update, since its
+tab-aware arrow routing already only branched on `'map'`/`'analytics'` explicitly and fell through to no-op
+for everything else. NEWS and DATABASE are unaffected and still render as inert, disabled tabs.
+
 ## v6.9.1 — Diplomacy dropped from the Intelligence Engine
 
 **Point release.** Diplomacy is removed entirely — not deferred, not backlogged — from `hud/IntelligencePanel.tsx`'s

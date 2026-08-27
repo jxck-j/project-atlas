@@ -34,16 +34,19 @@ function useFullscreen() {
 }
 
 // 'map' and, as of the Analytics view (hud/AnalyticsPanel.tsx), 'analytics'
-// have a view behind them. The remaining three are rendered inactive rather
+// have a view behind them. The remaining two are rendered inactive rather
 // than omitted (the layout reads as incomplete without them) and rather
 // than as working tabs (that would imply views this app doesn't have) — see
 // this session's note on affordances with nothing behind them. NEWS
 // (v6.5.1) replaced what used to be a LAYERS tab here — direct request,
 // since layer selection already lives on SideRail (every category row),
-// making a second, top-bar LAYERS destination redundant.
+// making a second, top-bar LAYERS destination redundant. INTELLIGENCE was
+// dropped entirely in v6.9.2 (direct decision) rather than kept as a fourth
+// inert placeholder — it would only ever have duplicated
+// IntelligencePanel.tsx/AnalyticsPanel.tsx, which already cover the
+// Intelligence Engine.
 const TABS: { id: TopNavTab; label: string; wired: boolean }[] = [
   { id: 'map', label: 'MAP', wired: true },
-  { id: 'intelligence', label: 'INTELLIGENCE', wired: false },
   { id: 'news', label: 'NEWS', wired: false },
   { id: 'analytics', label: 'ANALYTICS', wired: true },
   { id: 'database', label: 'DATABASE', wired: false },

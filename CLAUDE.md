@@ -81,6 +81,17 @@ exactly the functions tied to this project's documented bug history (the
 antimeridian-unwrapping earcut deviation). It does not cover component
 behavior — verify UI changes by actually driving the dev server.
 
+## Before revising a decided area
+
+LOGBOOK.md is the project's decision history — CLAUDE.md states current
+state, LOGBOOK.md states why it got that way. Several categories here
+(Economy, Current Status, Technology, Demographics) have had decisions
+revised after initial ship — coverage floors added, weighting switched,
+sourcing changed. Before changing behavior in an area with prior history,
+check LOGBOOK.md's entries for that area first, so a settled call doesn't
+get re-litigated or silently reversed without knowing it was already
+decided and why.
+
 ## Architecture
 
 Since v2.0, Atlas is organized around long-lived **engines** rather than a flat
@@ -720,11 +731,23 @@ selection concept.
   "cross-component value, read imperatively, not React state"
   pattern `scene/globeRotation.ts` already established) instead, stepping
   the open ranking; ArrowLeft/ArrowRight no-op there (no ranking-list
-  meaning for "left"/"right"). On any other tab (intelligence/news/database
-  — none of which have a real view yet), all four no-op. Only the four
+  meaning for "left"/"right"). On any other tab (news/database — neither
+  has a real view yet), all four no-op. Only the four
   arrow commands are tab-gated — R/Space/WASDQE/Tab/Enter/Escape/L/`/`
   are unchanged and still always target the map/inspector regardless of
   tab, since only the arrow behavior was reported as wrong.
+
+**v6.9.2: the INTELLIGENCE top-nav tab was dropped entirely** — direct decision, not left as a fourth
+"not available yet" placeholder alongside NEWS/DATABASE. It was judged redundant before ever getting a real
+view: the Intelligence Engine already has two homes, `hud/IntelligencePanel.tsx` (per-entity drill-down) and
+`hud/AnalyticsPanel.tsx` (the cross-country rankings the wired ANALYTICS tab opens), and a third,
+dashboard-style destination for the same data wasn't asked for. Removed by dropping `'intelligence'` from
+`hud/navStore.ts`'s `TopNavTab` union and its `TABS` entry in `hud/TopNav.tsx`; `input/InputManager.tsx`'s
+tab-aware arrow routing needed no logic change (it only ever branched on `'map'`/`'analytics'` explicitly and
+already fell through to no-op for everything else), just a comment update. NEWS and DATABASE are unaffected
+and still render as inert, disabled tabs. If a genuinely new view (e.g. a flat, searchable table over the
+country/GeoEntity registries) is ever built for the DATABASE tab, it's expected to follow this same pattern —
+flip `wired: true` in `TABS`, nothing else in `TopNav.tsx`/`InputManager.tsx` needs to change to accommodate it.
 
 **Why WASDQE camera nudging lives in `scene/CameraControls.tsx`'s hook tree
 but the keyboard listener itself lives in `InputManager.tsx`, outside the
@@ -848,8 +871,10 @@ toggle list.
 like `IntelligencePanel.tsx`'s own) — every other panel this size has no way to close itself short of
 re-clicking the toolbar icon that opened it; direct request. **v6.5.2** replaced `hud/TopNav.tsx`'s top-bar
 LAYERS tab (the tab-strip one, `navStore.ts`'s `TopNavTab` — a different, unrelated `'layers'` string from
-`HudPanel`'s) with NEWS, still inert like INTELLIGENCE/DATABASE — direct request, since `SideRail.tsx` already
-owns real layer selection, leaving that tab-strip destination pure duplication.
+`HudPanel`'s) with NEWS, still inert like INTELLIGENCE/DATABASE were at the time — direct request, since
+`SideRail.tsx` already owns real layer selection, leaving that tab-strip destination pure duplication.
+**v6.9.2 dropped the INTELLIGENCE tab entirely** — see this file's own "INTELLIGENCE tab dropped" entry
+further down; NEWS/DATABASE are unaffected and still inert placeholders.
 
 ### LOD Engine (`src/lod/`, v4.3)
 
@@ -929,850 +954,550 @@ LOD Engine's distance thresholds should ever need to force by themselves.
 
 ### Geopolitical data architecture (`src/data/`)
 
-Schema + query-layer foundation for future layers (v2.1 added the schema,
-v2.1.1 added the registry below). Deliberately separate from two things
-that already exist and might look similar at a glance:
+Schema + query-layer foundation for future layers. Deliberately separate from
+two things that already exist and might look similar at a glance:
 
 - `scene/countryGeometry.ts` — that's border/fill *geometry*, this is
-  attribute *facts* (population, claimants, participants, ...).
-- `data/countryProfiles.ts` — that's already-shipped, presentation-formatted
-  data for the IntelligencePanel (government type, capital name/coordinates,
-  factbook snapshot metadata). The `Country` type stores facts as plain,
-  unformatted values instead, because it's meant to be computed on (sorted,
-  filtered, thresholded) by future layers — formatting is a presentation
-  concern downstream of this.
+  attribute *facts* (population, claimants, participants, scores, ...).
+- `data/countryProfiles.ts` — already-shipped, presentation-formatted data for
+  the IntelligencePanel (government type, capital name/coordinates, factbook
+  snapshot metadata). The `Country` type stores facts as plain, unformatted
+  values instead, meant to be computed on (sorted, filtered, thresholded) by
+  layers — formatting is a presentation concern downstream of this.
 
-**As of `scripts/buildGovCapitalPopGdp.mjs` (2026-08-13), `population` and
-`gdpUsd` (+ their `populationYear`/`gdpYear` companions) *are* auto-merged
-into the `Country` registry** — `useCountryFeatures.ts` reads them off
-`data/countryEconomics.ts` (build-script output, World Bank-sourced) and
-registers them alongside each country's id/name. This is a narrow,
-deliberate exception to "the two datasets are not merged," not a reversal
-of it — see the reasoning below for why these two fields specifically were
-judged safe and the rest weren't. `IntelligencePanel.tsx` reads the raw
-numbers off `Country` and formats them at render time via
-`utils/formatScale.ts` (`formatPopulation`/`formatGdp` — the one place
-unit-scale logic lives), rather than reading a pre-formatted string; see
-`LOGBOOK.md`'s 2026-08-13 entry for why storing formatted strings at build
-time was rejected (a threshold-crossing correction, e.g. millions ->
-billions, would silently require a full rebuild instead of a one-line
-formatter change).
+**`population`/`gdpUsd` (+ `populationYear`/`gdpYear`) are auto-merged into the
+`Country` registry** — `scripts/buildGovCapitalPopGdp.mjs` writes
+`data/countryEconomics.ts` (World Bank-sourced), and `useCountryFeatures.ts`
+reads it alongside each country's id/name. This is a narrow, deliberate
+exception to "geometry facts and presentation data are separate," not a
+general merge policy. `IntelligencePanel.tsx` reads the raw numbers off
+`Country` and formats them at render time via `utils/formatScale.ts`
+(`formatPopulation`/`formatGdp`) rather than storing pre-formatted strings, so
+a threshold-crossing correction (millions → billions) is a formatter change,
+not a rebuild.
 
-**What stays manual-only, and why:** `government`/`governmentNote`
-(distinguishing a stable "Presidential Republic" from a transitional/
-contested government string — Chad, Gabon, Sudan, Libya, Yemen, Afghanistan,
-etc. — is a judgment call, not something a source API states cleanly) and
+**What stays manual-only, and why:** `government`/`governmentNote` (a stable
+"Presidential Republic" vs. a transitional/contested government string is a
+judgment call no source API states cleanly) and
 `capital`/`capitalLat`/`capitalLng` (a handful of countries have genuine
-multi-capital ambiguity — South Africa, Bolivia, ... — resolved by hand,
-logged in `BACKLOG.md` rather than guessed) all stay in
+multi-capital ambiguity, resolved by hand, logged in `BACKLOG.md`) stay in
 `countryProfiles.ts`, hand-curated, never auto-merged. `population`/`gdpUsd`
-were judged safe to auto-merge specifically because the source
-(World Bank API, date-range queried) is unambiguous per country, every gap
-is logged explicitly to `BACKLOG.md` rather than silently left blank or
-backfilled, and merging can't overwrite a hand-curated field — it only
-populates `Country`-only fields `countryProfiles.ts` never had in the first
-place. A future field being considered for the same treatment should meet
-that same bar: unambiguous source, gaps logged not guessed, no collision
-with a field that already requires human judgment.
+were judged safe to auto-merge specifically because the source is unambiguous
+per country, every gap is logged to `BACKLOG.md` rather than guessed, and
+merging only populates `Country`-only fields — it can never overwrite a
+hand-curated one. A future field being considered for the same treatment
+should meet that same bar.
 
-**Intelligence Engine scoring data (v6.3.0, `src/data/militaryScores.ts`) is a separate, NOT-yet-merged
-dataset** — don't confuse it with the `Country`/`countryProfiles.ts` auto-merge above.
-`scripts/buildMilitary.mjs` (`npm run build:military`) generates real, sourced Military scores for all 193
-countries (SIPRI expenditure/industrial-base xlsx, World Bank WDI, CIA Factbook, FAS Nuclear Notebook, and a
-reverse-engineered SIPRI arms-transfers endpoint — see that script's own header comment for the full sourcing
-trail). The full scoring design — locked components, zero-classification (true-zero vs. coverage-gap), the
-log-min-max normalization, the coverage-floor/confidence tiers, and two documented mid-flight revisions
-(arms-import dependency demoted to a non-scoring annotation; expenditure double-weighted as an explicit,
-on-the-record exception to this doc's own "weights need citable backing" discipline) — lives in
-`Intelligence Docs/intelligence-engine-scoring-design.md`, not duplicated here. `BACKLOG.md` tracks per-field
-sourcing gaps (regenerated by the build script itself) and the standing deviations from the original
-7-component design (air fleet backlogged — paywalled source, no free equivalent).
+### Intelligence Engine scoring data
 
-**v6.3.1/v6.3.2 wired this data into `hud/IntelligencePanel.tsx`'s MILITARY status bar** — the first of what
-was, at the time, five planned status bars (Military/Economy/Diplomacy/Technology/Current Status) to move off
-placeholder chrome, per the design doc's launch scope (§8: "ship Military and Economy first"). **Economy
-joined it in v6.6.0** (see below); **Current Status joined in v6.7.0, but not as a bar** — see its own section
-further down for why it gets a `ConflictChip`/`SanctionBadge` treatment instead of an `IntelRow`. **Technology
-joined in v6.8.0** (see its own section further down). **Diplomacy was dropped entirely in v6.9.1** (direct
-decision, not a deferral — see `hud/intelMetrics.ts`'s own comment and this file's own "Diplomacy dropped"
-entry further down) rather than shipping as a permanent fifth "Awaiting data feed" placeholder — all 4
-remaining categories (Military/Economy/Technology/Current Status) are real and sourced. `IntelRow`'s bar fill
-is a single
-solid color, not a gradient, computed once per row by
-`intelValueColor(value)` (interpolating red at 0 → amber at 50 → green at 100) and applied identically to
-the numeric value text beside it, so a country's number and its bar always read as the same color.
-`MILITARY_SCORES` is looked up by `Country.id` (the same numeric ISO topology id both this file and
-`countryEconomics.ts` key on — see that file's own comment) and only for `'country'` selections; no
-GeoEntity has a military score, so a GeoEntity selection falls through to the same empty state the other
-four metrics already render. A confirmed no-standing-military country (`MilitaryScore.confirmed`) renders
-`N/A` rather than a scored `0.0` — the composite is genuinely inapplicable there, not merely unmeasured, so
-it doesn't share the ordinary "no data" em-dash either.
+Four categories have real, sourced 0-100 (or categorical) data:
+**Military**, **Economy**, **Technology**, **Current Status**. This is a
+separate, NOT-yet-merged dataset from the `Country`/`countryProfiles.ts`
+auto-merge above — don't confuse the two. Diplomacy was designed but never
+shipped real data and was removed entirely (see its own subsection below).
+The full scoring-design rationale (locked components, zero-vs-coverage-gap
+classification, weighting decisions, and every revision's reasoning) lives in
+`Intelligence Docs/intelligence-engine-scoring-design.md` and `LOGBOOK.md` —
+**not duplicated here; check LOGBOOK.md before changing normalization,
+weighting, or coverage-floor logic in any of these categories, since most of
+them have already been revised at least once post-launch.**
 
-**Citation drill-down (v6.3.2, design doc §7 "status bars are clickable"):** the MILITARY row is a `<button>`
-whenever a `MilitaryScore` record exists for the selection (effectively always, for a country) — clicking it
-collapses the other four rows out of the panel and drops down all 5 scored components (expenditure, % of
-GDP, personnel, nuclear warheads, defense-industrial base revenue), each with a friendly source name linking
-to its real citation URL, its formatted value, and its snapshot year/date; a component with no data for that
-country still gets a row, showing "—", rather than being silently omitted. The sourced-but-not-scored
-arms-import (TIV) annotation renders last, visually subordinate and labeled "not scored." Clicking the row
-again (or selecting a different entity — the drill-down resets on `selected.id` change) collapses back to
-the normal (now 4-row, since Diplomacy's removal — was 5-row when this drill-down was first built) view.
-**ECONOMY got the identical treatment in v6.6.0** (`EconomyDrilldown`, its own 5
-components — see below) — the two categories' drill-downs share `IntelligencePanel.tsx`'s `sourceLabel()`
-helper (renamed from the Military-only `militarySourceLabel()` it started as, once Economy needed the exact
-same "World Bank (WDI)" branch that function already had) and the same `<button>`/collapse mechanics, just
-different row data. **TECHNOLOGY got the identical treatment in v6.8.0** (`TechnologyDrilldown`, its own 4
-components — see below), reusing the same `sourceLabel()` helper again (extended with an `itu.int` branch).
-Current Status never used this mechanism at all — its `ConflictChip`/`SanctionBadge` treatment (above) is a
-different, lighter interaction, not a missing drill-down.
+Shared UI shape across all four:
 
-**`hud/AnalyticsPanel.tsx` (v6.4.0)** is the first thing mounted from `hud/TopNav.tsx`'s previously-inert
-ANALYTICS tab (`navStore.ts`'s `TopNavTab` already reserved the id; `TABS` in `TopNav.tsx` just needed
-`wired: true`) — a full-screen dashboard, not another docked `LayerPanel`/`AlliancesPanel`-style rail panel,
-specifically so a 193-row ranked list has room to read. It shows one clickable thumbnail per
-`hud/intelMetrics.ts` metric (originally five, now four since Diplomacy's removal — see this file's own
-"Diplomacy dropped" entry further down; the same ids/labels/icons `IntelligencePanel.tsx`'s status bars use —
-pulled into that shared module, along with `utils/intelValueColor.ts`'s red→amber→green interpolation, so the
-two surfaces can't drift apart on what a score's color or a metric's icon means); clicking MILITARY's — at
-launch, the only one with real per-country data behind it — drills into every registered country ranked by
-`MILITARY_SCORES`, sorted by the score's real underlying value (not the displayed one, so a confirmed
-no-standing-military country's real, sourced 0 still ranks correctly below every actually-measured country,
-while an `'unavailable'`-confidence country's `null` value sorts last of all). ECONOMY joined it in v6.6.0
-(see below), TECHNOLOGY in v6.8.0 (see below). At the time, the remaining thumbnails (Diplomacy; Current
-Status until v6.7.2, see its own section) rendered the identical "Awaiting data feed — no assessment data
-currently sourced" copy `IntelligencePanel.tsx`
-already used for those metrics — same "don't fabricate a ranking with nothing sourced behind it" discipline,
-not a separate decision. Clicking a ranked-list row calls the same `selectEntity()` a map click or search
-result does (`IntelligencePanel.tsx` slides open on top of this view, at its own higher z-index) but
-deliberately does **not** call `flyToSelectedCountry()` — the globe is hidden behind this full-screen overlay
-while it's open, so a flight nobody can see would be pointless; `direction` is still computed correctly (same
-centroid-through-current-rotation technique `SearchBar.tsx`'s `selectEntry` uses) so `FOCUS CAMERA` in the
-now-open `IntelligencePanel` still works once the user switches back to the MAP tab. The ranked list stays
-open across a row click — confirmed as the preferred behavior over auto-closing back to the map, so a user
-can click through several countries' summaries without re-navigating the ranking each time.
+- **`hud/IntelligencePanel.tsx`**'s INTELLIGENCE SUMMARY renders one `IntelRow`
+  per scored category (Military/Economy/Technology as a 0-100 bar; Current
+  Status as `ConflictChip`/`SanctionBadge` chips instead of a bar, since
+  neither of its fields is a magnitude). `IntelRow`'s bar fill is a single
+  solid color per row, computed by `intelValueColor(value)` (red at 0 → amber
+  at 50 → green at 100), applied identically to the adjacent value text.
+  `hud/intelMetrics.ts` is the shared source for metric ids/labels/icons
+  (`INTEL_METRICS`) and `utils/intelValueColor.ts` for the color ramp, so
+  `IntelligencePanel.tsx` and `AnalyticsPanel.tsx` can't drift on either.
+- **Citation drill-down**: Military/Economy/Technology status-bar rows are
+  `<button>`s — clicking collapses the other rows and expands every scored
+  component (raw value, source name/URL, snapshot year/date; a missing
+  component still gets a row showing "—", never omitted). Clicking again (or
+  changing selection) collapses back. All three drilldowns share
+  `IntelligencePanel.tsx`'s `sourceLabel()` helper and the same
+  `<button>`/collapse mechanics; only the row data differs per category.
+  Current Status has no drilldown — its chip-expand interaction (below) is a
+  different, lighter mechanism.
+- **`hud/AnalyticsPanel.tsx`** is the full-screen dashboard mounted from
+  `hud/TopNav.tsx`'s ANALYTICS tab — one clickable thumbnail per metric,
+  drilling into a ranked/filtered list of every registered country (plus
+  Taiwan — see its own subsection). Military/Economy/Technology share generic
+  ranked-list machinery: `BaseRankedRow`/`AnalyticsColumn<TRow>`/
+  `compareRows`/`SortableHeader`/`ColumnHeaderRow`/`RankedListRow`, with
+  `MILITARY_COLUMNS`/`ECONOMY_COLUMNS`/`TECHNOLOGY_COLUMNS` and their own
+  `buildXRows()` functions as the only category-specific pieces (each
+  category's component shapes are genuinely different types). Sort state
+  (`{ key, direction }`) resets to `SCORE`/descending whenever the active
+  metric changes; every column header is click-to-sort, a coverage gap
+  (`raw === null`) always sorts last regardless of direction, and ties break
+  alphabetically. Clicking a row calls `selectEntity()` (same as a map click
+  or search result) but never `flyToSelectedCountry()` — the globe is hidden
+  behind this full-screen view, so `direction` is computed but the flight
+  itself waits until the user switches back to the MAP tab. The ranked list
+  stays open across a row click (does not auto-close). Current Status and
+  Demographics (below) use their own bespoke row/header components instead of
+  this shared machinery, since neither has a single SCORE number to rank by.
+- **`RankingLookupBar`** (in `AnalyticsPanel.tsx`) is a jump-to-country search
+  scoped to whichever ranking is open — deliberately not `SearchBar.tsx`'s
+  `selectEntry()`, since that would open `IntelligencePanel` on top of this
+  full-screen view. It scrolls the matching row into view
+  (`scrollIntoView({ behavior: 'auto', ... })` — instant, not smooth; a smooth
+  scroll combined with the same-tick highlight state update was found to
+  render a blank transient frame) and flashes a self-clearing glow highlight.
+  Chevron buttons (and ArrowUp/ArrowDown while the search box is focused) step
+  the highlighted row to its neighbor in the list's current on-screen order,
+  reading `lookupHighlightId` first and falling back to `selected?.id` so
+  stepping works right after a plain row click too. Stepping always calls
+  `closeInspector()` (never `selectCountryRow()`) — it moves the highlight
+  cursor without opening or re-syncing `IntelligencePanel`; only an explicit
+  row click opens the panel. The header (breadcrumb, lookup bar, step
+  buttons, source label) is `sticky top-0` with an opaque background so
+  scrolling rows pass behind it, not through it.
 
-**v6.5.3: the MILITARY ranked list shows all 5 scored components as columns, not just the composite bar** —
-direct request. `RankedRow` carries the selected country's `MilitaryScore.components` straight through
-(`buildMilitaryRows` — see below), and each row renders EXPENDITURE / % GDP / PERSONNEL / NUCLEAR / DEF.
-INDUSTRY alongside the existing SCORE bar, reusing the exact same `formatGdp`/`formatPopulation` formatting
-`IntelligencePanel.tsx`'s `MilitaryDrilldown` already uses for these same fields — a genuine coverage gap
-(`raw === null`) renders "—", never a fabricated value. Chose columns over an expand-per-row accordion (the
-pattern `MilitaryDrilldown` itself uses) specifically because a row here is already a click target for
-selecting the country — stacking a second, different click meaning onto the same row would be ambiguous,
-where a column is always visible and needs no extra interaction. The 5 metric columns are `xl:`-only
-(`hidden ... xl:block`) with a matching header row directly above the list using the identical column
-widths/gaps so the two never drift apart; below that breakpoint only rank/name/score show. The drill-down
-view's own container widened from `max-w-3xl` to `max-w-6xl` to fit.
+#### Military (`src/data/militaryScores.ts`, `scripts/buildMilitary.mjs`)
 
-**v6.5.4: every column header in that same ranked list is click-to-sort** — direct request. `buildMilitaryRows`
-(renamed from `buildMilitaryRanking`) returns the 193 rows unsorted; `AnalyticsPanel`'s own sort state
-(`{ key, direction }`, reset to the `SCORE`/descending default whenever the active metric changes) picks
-which case a comparator actually orders them by, recomputed fresh each render the same not-memoized way the
-rest of this row-building already is. Clicking the already-active header flips `asc`/`desc`; clicking a
-different one switches to it (descending for a metric — reads as "biggest first" on first click — ascending
-for COUNTRY, i.e. A→Z first). Re-sorting only ever reorders `RankedListRow`s — no row's `value`/`components`
-are touched by which column is driving the order, so a country's SCORE (or any other cell) never changes
-just because a different column is now sorted. A coverage gap on a metric column (`raw === null`) sorts last
-**regardless of direction** — otherwise ascending would turn "no data" into "the best" value — while the
-SCORE column itself has no such branch, since `scoreSortValue` already has no `null` case (an
-`'unavailable'`-confidence country resolves to `-1`, same as the original v6.4.0 ranking). Every tie (most
-visibly, the long run of countries at `nuclearWarheads: 0`) breaks alphabetically for a stable, predictable
-order. `SortableHeader` carries no `display` utility of its own in its base classes — see `LOGBOOK.md`'s
-v6.5.4 entry for the `hidden`+unconditional-`flex` conflict that would have caused if it had.
+`npm run build:military` generates scores for all 193 countries from SIPRI
+expenditure/industrial-base xlsx, World Bank WDI, CIA Factbook, FAS Nuclear
+Notebook, and a reverse-engineered SIPRI arms-transfers endpoint (see the
+script's header comment for the sourcing trail). 5 scored components:
+expenditure (double-weighted — an explicit, on-the-record exception to the
+design doc's "weights need citable backing" discipline), % of GDP, personnel,
+nuclear warheads, defense-industrial base revenue. Log-min-max normalized,
+with a coverage-floor/confidence-tier system and explicit true-zero-vs-
+coverage-gap classification (a confirmed no-standing-military country renders
+`N/A`, not a scored `0.0` — genuinely inapplicable, not merely unmeasured).
+Arms-import dependency (TIV) is sourced but demoted to a non-scoring
+annotation, shown last and visually subordinate in the drilldown. `BACKLOG.md`
+tracks per-field sourcing gaps (air fleet is backlogged — paywalled source, no
+free equivalent) and is regenerated by the build script itself.
+`MILITARY_SCORES` is keyed by `Country.id` (the numeric ISO topology id) and
+only applies to `'country'` selections — plus Taiwan (see below).
 
-**v6.6.0: Economy joined Military as a second real, sourced Intelligence Engine category** —
-`scripts/buildEconomy.mjs` (`npm run build:economy`, per `Intelligence Docs/buildEconomy-prompt.md`
-implementing the design doc's §3.2) generates `src/data/economyScores.ts`: 5 World Bank WDI components (GDP —
-nominal as of 2026-08-22, was PPP through v6.6.2, see below — GDP per capita PPP, 5yr-trailing real GDP
-growth, unemployment, inflation — the last two inverted, lower is better; originally equal-weighted, GDP
-double-weighted as of v6.6.2 — see below), **percentile-rank
-normalized** (average/fractional rank for ties — stopped
-and asked the user before writing this, per the build prompt's own "stop and ask before picking a
-tie-breaking convention" instruction — see `LOGBOOK.md`), a **deliberate divergence** from Military's
-log-min-max, not an inconsistency (GDP's outlier skew is exactly the problem percentile rank was originally
-adopted project-wide to solve — design doc §4). `EconomyScore` extends the design doc's illustrative flat
-`CategoryScore` the same way `MilitaryScore` already does — a real per-component `raw`/`normalized`/`year`/
-`sourceUrl` breakdown instead of a bare `sources: string[]` — needed for the identical citation drill-down
-(design doc §7) every category is meant to eventually get, not just Military.
+#### Economy (`src/data/economyScores.ts`, `scripts/buildEconomy.mjs`)
 
-**v6.6.1: added a coverage floor** — launched on the design doc's plain weighted-sourceCoverage model with no
-floor at all (any 1 of 5 components present still produced a value), which real output broke: Monaco and
-Liechtenstein (1 of 5 present — just GDP growth) outranked fully-measured economies because a single
-percentile stood in for the whole composite with nothing to average against. Now needs >= 3 of 5 present to
-score at all (`>= 0.8` measured / `=== 3` (as a component count) proxy / `<= 2` unavailable — `value` stays
-`null` below the floor rather than being computed then withheld) — this borrows Military's "you need a floor"
-idea, applied to Economy's own shape, not Military's actual coverage-floor MECHANISM (which also changes
-true-zero-vs-coverage-gap handling Economy doesn't have). Caught before shipping: the patch spec described the
-tiers as literal float comparisons (`sourceCoverage === 0.6` for the proxy case), but `3 * 0.2 === 0.6` is
-`false` in JavaScript floating point — implemented against the integer `coveragePresent` count instead
-(`=== 3`, exact) rather than the literal float form. See `LOGBOOK.md`'s v6.6.1 entry.
+`npm run build:economy` generates 5 World Bank WDI components: nominal GDP
+(log-min-max normalized, double-weighted), GDP per capita PPP (percentile
+rank), 5yr-trailing real GDP growth (percentile rank), unemployment
+(percentile rank, inverted), inflation (gaussian centered on a 2% target —
+`score = 100 * exp(-((inflation - 2.0)^2) / (2 * 1.0^2))`, σ = 1.0pp taken
+from the Bank of England's own tolerance band, not derived from sample
+spread — used directly, no percentile step). GDP per capita stays percentile
+rank rather than log-min-max, since log-min-max is only appropriate where raw
+magnitude itself is the point (aggregate economic size), not per-capita
+prosperity. `EconomyScore` carries a real per-component `raw`/`normalized`/
+`year`/`sourceUrl` breakdown, same shape as `MilitaryScore`, for the shared
+citation drilldown. Coverage floor requires ≥3 of 5 components present to
+score at all (below that, `value` stays `null`); `coveragePresent` (what the
+floor and confidence tiers key off) is computed from the undoubled component
+list even though GDP counts twice in the actual composite average, so a
+doubled component can't cross the floor on a technicality.
 
-**v6.6.2: GDP (PPP) double-weighted** — mirrors `buildMilitary.mjs`'s existing expenditure double-weight, for
-the matching reason. Real output showed large, mature economies (the US specifically) landing well below
-smaller, faster-growing ones despite GDP/GDP-per-capita being near-maxed: not a data bug, a structural one —
-the same absolute dollar increase is mechanically a much smaller percentage of a $29T base than a $50B one,
-so equal-weighting "size" against "growth rate" always penalizes size. `finalizeCountry` now averages over a
-separate `weightedNormalized` list (`gdpPpp`'s percentile counted twice) rather than `presentNormalized`
-directly, while `coveragePresent` — what the v6.6.1 coverage floor and confidence tiering actually key off —
-stays computed from the original, undoubled list; the two lists deliberately serve different jobs, so a
-double-counted `gdpPpp` never lets a country cross the coverage floor on a technicality. If `gdpPpp` itself is
-a country's missing component, both copies are filtered out of the average — never a partial/half-weight,
-identical to Military's own "neither copy counts" rule. Verified by hand against `debug/
-economy-component-breakdown.json` before trusting the full rebuild (recomputed the US's composite from its 5
-stored percentiles with `gdpPpp` doubled — matched exactly) and confirmed live in the Analytics ECONOMY
-ranking: China 80.4 → 83.6 (now #1), US 73.2 → 77.6 (was outside the top 10, now #7).
+**Taiwan is a one-off exception**: WDI structurally excludes Taiwan, so
+`buildEconomy.mjs`'s `buildTaiwanScore()` sources all 5 of its components from
+IMF WEO instead (the only IMF/WEO dependency left in this script), filtered to
+actual-year-only data (WEO includes forward projections; those are excluded).
+Taiwan is appended to the ranking pool before percentiles are computed, so it
+participates in the same 194-way ranking as every country, and is keyed by its
+GeoEntity registry id (`'taiwan'`) rather than a numeric topology id — the one
+exception to this file's numeric-id-keying convention.
 
-**2026-08-22: the "GDP size" component switched from PPP-adjusted to NOMINAL GDP** (direct request; field
-renamed `gdpPpp` → `gdpNominal` throughout `buildEconomy.mjs`, `economyScores.ts`, and both UI consumers) —
-`GDP_NOMINAL_INDICATOR` is now World Bank's `NY.GDP.MKTP.CD`, was `NY.GDP.MKTP.PP.CD`. GDP per capita stays
-PPP-adjusted, unaffected — only the aggregate "how big is this economy" metric changed. The double-weighting
-from v6.6.2 carried over unchanged, just applied to the new metric. This same change also **fully removed**
-the standalone IMF WEO trial (`scripts/buildEconomyWeo.mjs`, `hud/useEconomyScoresWeo.ts`, and the WDI/IMF WEO
-toggle UI in both `AnalyticsPanel.tsx` and `IntelligencePanel.tsx`, all added 2026-08-22 and reverted the same
-day once the trial's actual purpose — resolved — was to source Taiwan, not to re-source the whole category)
-— Economy is 100% World Bank WDI again, with one narrow, permanent exception:
+#### Technology (`src/data/technologyScores.ts`, `scripts/buildTechnology.mjs`)
 
-**Taiwan (2026-08-22, direct request, kept from the otherwise-removed trial)** — WDI structurally excludes
-Taiwan (see `scripts/buildGeoEntityEconomics.mjs`'s identical reasoning for the same country), so
-`buildEconomy.mjs` sources all 5 of Taiwan's components from IMF WEO as a one-off `buildTaiwanScore()`,
-appended to `built` before the percentile ranking runs (so Taiwan's real values participate in the same
-193-vs-1 ranking pool, not a segregated one) — the ONLY IMF/WEO dependency left in this script. Resolved to
-the same "most recent ACTUAL year only" standard the WDI components already meet by construction (WDI has no
-forward projections; a WEO series does, so those are explicitly filtered out via the same
-`COUNTRY_UPDATE_DATE`-derived vintage-year technique the removed trial used — see `LOGBOOK.md`'s 2026-08-22
-entry for the full trail, including a real unit-conversion bug caught along the way: IMF's `NGDPD` indicator
-is commonly documented as reporting GDP in billions, but the live API's raw observation values are already in
-whole current US$ — Taiwan's 2024 figure came back as `801495464000`, not `801.495464`; an initial `× 1e9`
-conversion produced a $801-sextillion GDP before being caught and removed). Taiwan is keyed by its GeoEntity
-registry id (`'taiwan'`) rather than a numeric ISO topology id — the one exception to this file's "keyed by
-numeric id" convention, called out in both the file header and the `ECONOMY_SCORES` type comment. **UI wiring
-for this score, and real Military/Technology/Current Status data for Taiwan too, landed later — see this
-file's "Taiwan recognized across the Intelligence Engine" entry further down** — this paragraph describes only
-the original data-generation work.
+`npm run build:technology` generates 4 equal-weighted, percentile-rank-
+normalized components: R&D expenditure (% GDP, WDI `GB.XPD.RSDV.GD.ZS`),
+patent applications by residents per million population (WDI's WIPO-sourced
+`IP.PAT.RESD` ÷ `SP.POP.TOTL`), high-tech exports (% of manufactured exports,
+WDI `TX.VAL.TECH.MF.ZS`), and the ITU ICT Development Index. Coverage floor
+needs ≥3 of 4 present to score. See the design doc's "Investigated and not
+included" subsection for the 9 other candidates that didn't clear this
+project's open-data/coverage/single-purpose bar.
 
-**2026-08-22: inflation switched from inverted-percentile to DISTANCE FROM A 2% TARGET** — `INFLATION_TARGET_PCT
-= 2.0` (Federal Reserve and Bank of England both state 2% as their explicit longer-run target). Fixed a real
-misrepresentation the old "lower is always better" method had: inflation near 0% (or negative, i.e.
-deflation) used to score as excellent, when deflation is its own economic hazard. **Superseded four days later
-by the gaussian method below** — this percentile-of-distance version, and the diff-preservation scaffolding
-built to review it (`rankInflationOld`, `_diffOnly`, `writeInflationScoringDiff()`), no longer exist in the
-script. See `LOGBOOK.md`'s 2026-08-22 and 2026-08-26 entries for the full history of both changes.
+**The ICT Development Index has no live API** (`datahub.itu.int` 403s an
+unauthenticated fetch; ITU's bulk-data access is request-only). `IDI_2024` in
+`buildTechnology.mjs` is a hand-transcribed snapshot (172 economies) of ITU's
+published 2024 edition, parsed deterministically from the sourced Wikipedia
+wikitable rather than eyeballed, to avoid transcription error. **Re-running
+the build script refreshes the 3 WDI-sourced components but NOT `IDI_2024`** —
+that needs a by-hand update against ITU's next published edition. India is
+genuinely absent from ITU's own table (confirmed by inspecting the raw
+wikitext, not a parsing gap) — a real, logged coverage gap, not a guess.
 
-**2026-08-26: GDP (size) → log-min-max; inflation → gaussian around 2%, no percentile step** — two independent
-patches, requested together. Growth and unemployment unaffected by either.
+#### Current Status (`src/data/currentStatus.ts`, `scripts/buildCurrentStatus.mjs`)
 
-GDP (nominal): switched from percentile rank to log-min-max (`buildLogMinMaxNormalizer`, identical
-epsilon/min/max derivation to `buildMilitary.mjs`'s own log-min-max normalizer). GDP per capita stays
-percentile rank — log-min-max only makes sense where raw magnitude itself carries weight (aggregate economic
-size/power), not for a per-capita prosperity comparison. Real motivation: China's GDP percentile was 100.00
-against the US's 99.47 under the old method — a gap that barely registered even with GDP double-weighted,
-despite the real ~$10.6T dollar difference. Post-patch: US 100.00, China 96.60 on the same component — real
-and directionally correct, though log compression keeps it from being a huge gap. GDP stays double-weighted
-in the composite, unchanged.
+Not a 0-100 composite — two independent, categorical fields per country:
+`conflicts: ConflictEntry[]` (UCDP-sourced — `conflictType`, optional
+`conflictName`, `snapshotDate`, `source`) and `sanctionTier: 'red' | 'orange'
+| 'yellow' | null` (+ `sanctionPrograms`). Every country gets an explicit
+`conflicts: []`/`sanctionTier: null` when neither applies — absence is a real,
+positive fact here, never omitted the way an unscored Military/Economy
+component is.
 
-Inflation: switched again, this time to a gaussian centered on the same 2% target —
-`score = 100 * exp(-((inflation - 2.0)^2) / (2 * 1.0^2))`, used directly, no percentile step at all. σ = 1.0pp
-is a fixed, real policy threshold (the Bank of England's own tolerance band — a governor's open letter is
-required if CPI moves more than 1pp from target), deliberately NOT derived from the sample's own spread,
-which would get distorted by hyperinflation outliers. Verified by hand against real output: Taiwan's
-2.180626% → 98.38, the US's 2.94953% → 63.71, both matching the script's own computed values exactly.
+**Conflicts**: `conflictType` comes from the annual UCDP/PRIO Armed Conflict
+Dataset's own classification where available, falling back to
+`'unclassified'` for a conflict the monthly UCDP Candidate Events Dataset has
+caught but no annual release has typed yet — no manual override path.
+Countries are matched primarily by UCDP's Gleditsch-Ward numeric codes
+(`scripts/lib/gleditschWard.mjs` bridges these to this project's UN-193
+topology names), **plus** a name-resolution pass that also attaches a
+Candidate/GED conflict to every named `side_a`/`side_b` government, not just
+the event's own geolocated `country_id` — needed because a remote participant
+(e.g. the US in a conflict physically located elsewhere) has no GW-coded
+territory link in that dataset the way the ACD's `gwno_loc` field provides.
 
-Both changes are normalization-only — missing raw values still produce a null score for the coverage floor in
-both cases, and confidence tiers were unaffected by either change. Real before/after on the US-vs-China case
-the GDP rationale was built around: under the last committed version (PPP GDP percentile + distance-percentile
-inflation) the US scored 77.6 and China 83.6; under this patch, US 79.5 and China 69.7 — the US now clearly
-leads, driven by both the GDP log-min-max widening and China's near-zero inflation (0.22%) scoring poorly
-under the gaussian (20.4) against the US's near-target 2.95% (63.7). See `LOGBOOK.md`'s 2026-08-26 entry for
-the full diff, including the dataset-wide movers.
+**Sanctions**: a small hand-maintained seed, three OFAC tiers — RED
+(comprehensive embargo: Cuba, Iran, North Korea, Syria — fully verified
+against each program's own regulatory text), ORANGE (sectoral/hybrid: Russia,
+Belarus, Venezuela, Myanmar, Sudan, Nicaragua), YELLOW (list-based only,
+SDN/Consolidated List screening: Afghanistan, Central African Republic, DR
+Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia, South Sudan, Yemen).
+Only RED is fully per-program verified; ORANGE/YELLOW are secondary-source
+seeds flagged in `BACKLOG.md` for verification. Not a live pull (see
+`LOGBOOK.md` for why, and `BACKLOG.md` for it as a standing live-pull
+candidate).
 
-Wiring it into `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` was a separate step from the build script itself
-(the build prompt's own explicit scope boundary: "rendering is a separate task"), and is what actually
-justified generalizing `AnalyticsPanel.tsx`'s ranked-list machinery rather than pasting a second near-copy of
-the Military version next to it: `BaseRankedRow`/`AnalyticsColumn<TRow>`/`compareRows`/`SortableHeader`/
-`ColumnHeaderRow`/`RankedListRow` are now generic over any category's row shape, and `MILITARY_COLUMNS`/
-`ECONOMY_COLUMNS` are the only genuinely category-specific pieces left (each category still gets its own
-`buildXRows` function, since the underlying `MilitaryScore`/`EconomyScore` component shapes are real,
-different types — nothing about extracting the shared machinery erased that). `IntelligencePanel.tsx`
-similarly generalized in smaller ways: `militarySourceLabel()` → `sourceLabel()` (Economy needed the exact
-same "World Bank (WDI)" URL-matching branch that function already had), `IntelRow`'s `confidence` prop
-widened from the Military-only `MilitaryConfidence` type to a local `ScoreConfidence` union both
-`MilitaryConfidence`/`EconomyConfidence` already structurally are, and the footer caption under
-INTELLIGENCE SUMMARY now composes a sentence from however many of Military/Economy are actually resolved for
-the current selection (`sourcedParts`/`unsourcedLabels`) rather than a Military-only hardcoded string.
-`utils/formatScale.ts` gained `formatGdpPerCapita` (World Bank's GDP indicators are already in whole current-
-international dollars, not millions like SIPRI's Top-100 arms revenue — see `buildEconomy.mjs`'s own
-comment — but a per-capita figure is too small for `formatGdp`'s Million/Billion/Trillion tiers, which assume
-an aggregate country-level GDP the way `formatArea` already flags for a different reason).
+**Rendering**: `ConflictChip` (one per entry, colored/labeled by
+`conflictType` via `scene/conflictTypeStyles.ts`, citation in a tooltip;
+labels are plain-language — "INTERNATIONAL WAR", "CIVIL WAR", "FOREIGN-BACKED
+CIVIL WAR", "COLONIAL CONFLICT", "RECENTLY DETECTED" — display-only, the
+underlying `ConflictType` values are unchanged) and `SanctionBadge` (a
+compact "S" mark colored by tier via `scene/sanctionTierColors.ts`, hidden
+when `sanctionTier` is `null`). `CurrentStatusRow` collapses to a headline
+("AT WAR (6)" / "NO ACTIVE CONFLICTS") and only reveals chips on click.
+`shortenConflictName()` differentiates same-type chips for one country by
+stripping this country's own name out of the raw `conflictName`. Clicking a
+chip highlights the resolved party/parties on the globe via
+`resolvePartyCountryIds()` (a non-state side like a rebel group is skipped;
+the viewed country is the fallback if nothing else resolves) — routed through
+`hud/conflictPartiesHighlightStore.ts` and
+`layers/geoOverlays/ConflictPartiesHighlightLayer.tsx`.
 
-**2026-08-26: Current Status (`src/data/currentStatus.ts`, `scripts/buildCurrentStatus.mjs`) is the third
-Intelligence Engine category with real, sourced data, wired into `hud/IntelligencePanel.tsx`.** Unlike
-Military/Economy, it was never intended to converge on a 0-100 composite: it's two independent, categorical
-fields per country, `conflicts: ConflictEntry[]` (a real UCDP-sourced conflict record per entry —
-`conflictType`, an optional `conflictName`, `snapshotDate`, and `source`) and `sanctionTier: 'red' | 'orange' |
-'yellow' | null` (+ `sanctionPrograms`), per the locked design in `Intelligence Docs/intelligence-engine-
-scoring-design.md` §3.5. `conflictType` comes from the annual UCDP/PRIO Armed Conflict Dataset's own
-classification where available, falling back to `'unclassified'` for a conflict the monthly UCDP Candidate
-Events Dataset has caught in the current year but no annual release has typed yet — no manual override path,
-that's the honest state until UCDP itself classifies it. Countries are matched to conflicts primarily by
-UCDP's own Gleditsch-Ward numeric country codes (`scripts/lib/gleditschWard.mjs` bridges these to this
-project's UN-193 topology names), not by name-string matching — **with one deliberate exception, added
-2026-08-26: `buildCurrentStatus.mjs` also resolves each Candidate/GED row's named `side_a`/`side_b`
-governments by name and attaches the conflict to those countries too, not just to `country_id` (the event's
-LOCATION, which is all UCDP's own GW-coded field gives for Candidate/GED — unlike the ACD's `gwno_loc`, which
-already lists every named side's territory).** See that script's own header comment and `LOGBOOK.md`'s
-2026-08-26 entry for the real case (the US absent from its own "Iran vs. Israel, United States of America"
-Candidate detection, since no event in that dataset was geolocated on US soil) this was caught against.
-`sanctionTier` is a small hand-maintained seed, **revised
-2026-08-24 from a single `sanctioned: boolean` to three OFAC tiers** — RED (comprehensive embargo: Cuba, Iran,
-North Korea, Syria — fully verified against each program's own OFAC regulatory text), ORANGE (sectoral/hybrid:
-Russia, Belarus, Venezuela, Myanmar, Sudan, Nicaragua), YELLOW (list-based only, SDN/Consolidated List
-screening: Afghanistan, Central African Republic, DR Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia,
-South Sudan, Yemen) — `null` means no active OFAC country program. Only RED is fully verified per-program;
-ORANGE/YELLOW are secondary-source seeds flagged in `BACKLOG.md` for per-program verification before this ships
-as more than portfolio-demo-confidence data. Not a live pull either way — see `LOGBOOK.md`'s 2026-08-26 entry
-for why, and `BACKLOG.md` for it as a standing live-pull candidate if that ever needs to change. Every country
-gets an explicit `conflicts: []`/`sanctionTier: null` when neither applies — absence is a real, positive fact
-here, not a missing-data state, so it's never omitted the way an unscored Military/Economy component is.
-Rendering: `ConflictChip` (one per entry, colored/labeled by `conflictType`, citation in a tooltip) and
-`SanctionBadge` (a compact "S" mark colored by tier, program name(s) in its tooltip, hidden when `sanctionTier`
-is `null`) — deliberately not `IntelRow`'s bar treatment, since neither field is a magnitude.
-`Intelligence Docs/current-status/` is where a real sanction logo is expected to land and replace the
-placeholder S badge. **`AnalyticsPanel.tsx` wiring landed later (below), once `IntelligencePanel.tsx`'s own
-Current Status treatment had stabilized.**
+`SanctionBadge` is clickable, opening `hud/SanctionTierMenu.tsx` — a global
+popover across all 193 countries listing every tier's members as clickable
+chips, plus a per-tier "S" icon that toggles
+`hud/sanctionHighlightStore.ts`'s `highlightedTier` (one tier at a time), read
+by `layers/geoOverlays/SanctionHighlightLayer.tsx`. Clicking a country chip
+resolves + selects + flies the camera to it and closes the menu (outside
+click or Escape also close it).
 
-**`SanctionBadge` is clickable (direct request), opening `hud/SanctionTierMenu.tsx`** — a popover, global
-across all 193 countries rather than scoped to the selected country's own tier ("what if someone wants to see
-all sanctions"), listing all three tiers with every country in each as a clickable chip. Each tier also gets
-its own small "S" icon, clicking which toggles `hud/sanctionHighlightStore.ts`'s `highlightedTier` (one tier
-at a time, same "not a Set" reasoning `allianceHighlightStore.ts` already documents) — read by
-`layers/geoOverlays/SanctionHighlightLayer.tsx`, which mirrors `AllianceHighlightLayer.tsx` exactly except it
-needs no name/ISO3 join (`data/currentStatus.ts` is already keyed by the same numeric topology id
-`buildCountryEntries()` returns) and needs a *different* color per tier instead of one shared category-
-highlight color — `layers/geoOverlays/CategoryHighlightLayer.tsx`'s `CategoryHighlightGeometry` gained an
-optional `color` prop for this (defaults to the existing shared violet, so every other caller is unchanged).
-Clicking a country chip resolves + selects + flies the camera to it (same centroid-through-current-rotation
-technique `SearchBar.tsx`'s `selectEntry()` uses, since there's no click point on the globe to derive a
-direction from here) and closes the menu. The menu itself closes on an outside click (a `pointerdown` listener
-scoped to the badge+menu's own wrapping ref, so the badge's own click keeps sole control of its own toggle —
-not a race with the outside-click handler) or Escape.
-`scene/sanctionTierColors.ts` is the single source for the three tier colors (+ plain-English label) —
-deliberately NOT added to `scene/highlightColors.ts`'s closed 7-hue ROYGBIV set (see that file's own header
-comment); read by `SanctionBadge`/`SanctionTierMenu`, `SanctionHighlightLayer`, and `hud/LegendPanel.tsx`
-(which adds a legend row for whichever tier is currently highlighted, built fresh per-tier rather than reused
-from the fixed `HIGHLIGHT_COLORS` set the way every other legend row is).
+**`AnalyticsPanel.tsx`** renders Current Status as its own filtered/sortable
+list, not the shared ranked-list machinery (no SCORE bar to rank by).
+`buildCurrentStatusRows()` maps every country to `{id, name, conflicts,
+sanctionTier}`; three filter tabs (ALL / ACTIVE CONFLICT / SANCTIONED, with
+live counts) sit above the list; `SortableHeader` drives order by COUNTRY,
+CONFLICTS (default — a real sortable integer), or SANCTION (by tier
+severity). Each row shows one colored dot per distinct `conflictType` plus
+the total count, and the same colored "S" badge — SANCTION is a plain,
+non-clickable cell here (a row-level click already selects the country, so a
+second click meaning on the same small badge would be ambiguous). **The
+CONFLICTS cell is the one exception** — it's its own click target (a nested
+`<button>` with `stopPropagation()`, since the row itself is a
+`<div role="button">` rather than a real `<button>` to allow the nesting) that
+expands each `ConflictEntry` as a small pill inline in the list, independent
+per-row `useState` (not lifted, so re-sorting can't detach an expansion from
+the wrong country).
 
-**Conflict chips got the same "reduce jargon, reduce clutter" pass sanctions did, plus their own
-click-to-highlight (direct feedback + follow-up request).** `CONFLICT_TYPE_STYLE`'s labels are now plain
-language (interstate → "INTERNATIONAL WAR", internal → "CIVIL WAR", internationalized_internal →
-"FOREIGN-BACKED CIVIL WAR", extrasystemic → "COLONIAL CONFLICT", unclassified → "RECENTLY DETECTED") —
-display-only; the underlying `ConflictType` values are unchanged. `CurrentStatusRow` no longer shows the chip
-row by default: it collapses to a headline ("AT WAR (6)" / "NO ACTIVE CONFLICTS", `isExpanded` local state,
-deliberately independent of `expandedMetric` — see that state's own doc comment for why a citation drilldown
-and this lighter expand aren't the same mechanism) and only reveals the chips on click, mirroring Military/
-Economy's own collapsed-bar-until-clicked shape rather than inventing a new one. `shortenConflictName()`
-differentiates same-type chips for one country (Myanmar's 5 "CIVIL WAR" entries used to be identical) by
-pulling the other party out of `ConflictEntry.conflictName` (already sourced, previously tooltip-only) —
-strips this country's own "Government of X" from a PRIO-shaped name or the leading "Country: " from a
-Candidate-shaped one, so a chip reads "CIVIL WAR — KNU." Clicking a chip highlights the resolved party/parties
-on the globe: `resolvePartyCountryIds()` reuses the same string-parsing idea one level further, splitting a
-PRIO-shaped name into every named side and resolving each piece against the real country list — a non-state
-side (a rebel group) never resolves and is skipped (correct: no geometry to highlight), and the viewed
-country's own id is the fallback whenever nothing else resolves, so a click never no-ops. New pieces mirror
-existing precedent exactly: `hud/conflictPartiesHighlightStore.ts` is `sanctionHighlightStore.ts`'s shape
-with an ad hoc id list instead of a fixed tier; `layers/geoOverlays/ConflictPartiesHighlightLayer.tsx` is
-`SanctionHighlightLayer.tsx`'s shape; the highlight is colored the same as the clicked chip. See `LOGBOOK.md`'s
-2026-08-26 entry for the full reasoning and the real multi-country case this was verified against (the UK's
-Yemen conflict entry, whose real `side_a` is "Government of United Kingdom, Government of United States of
-America" — clicking it highlights the UK, the US, AND Yemen).
+#### Demographics (ethnicity + religion)
 
-**`AnalyticsPanel.tsx` wiring (v6.7.2) is the last of the four Intelligence Engine surfaces Current Status
-needed** — the same "still hardcoded 'Awaiting data feed'" gap Diplomacy/Technology had at the time (see
-above), closed the way the design doc's §3.5 always said it would have to be: a filtered/sortable list, not the
-`BaseRankedRow`/`AnalyticsColumn`/`RankedListRow` machinery Military/Economy's ranked lists share, since
-Current Status has no single number to put in a SCORE bar. `buildCurrentStatusRows()` maps every registered
-country to `{ id, name, conflicts, sanctionTier }` (`CURRENT_STATUS[country.id]`, same numeric-topology-id
-keying every other Intelligence Engine dataset uses); three filter tabs (ALL / ACTIVE CONFLICT / SANCTIONED,
-with live counts) sit above the list instead of column headers driving what's *shown*, while `SortableHeader`
-(already generic over `sortKey`/`activeSort`/`onSort` — it never actually depended on `BaseRankedRow`) still
-drives what *order* the filtered rows render in: COUNTRY, CONFLICTS (default sort — the design doc's own "no
-single number to rank by" is true of SCORE specifically, not of "how many conflicts," which is a real,
-sortable integer), and SANCTION (sorted by tier severity, RED > ORANGE > YELLOW > none — a real ordering of
-*how much OFAC restricts a country*, not a magnitude comparison the way Military/Economy's SCORE column is).
-Each row shows one colored dot per distinct `conflictType` present plus the total count, and the same
-red/orange/yellow "S" badge `IntelligencePanel.tsx` renders — both colored via `scene/conflictTypeStyles.ts`/
-`scene/sanctionTierColors.ts` so a color can never drift between the two surfaces. The SANCTION badge is
-deliberately **not** clickable the way `IntelligencePanel.tsx`'s `SanctionBadge` is (no `SanctionTierMenu`
-popover) — a row here already selects the country on click, so a second, different click meaning on the same
-badge would be ambiguous, the same reasoning v6.5.3's Military metric columns being plain cells (not their own
-click target) already established. **The CONFLICTS cell is the one exception to that rule, added in v6.7.4 —
-see below.** `scene/conflictTypeStyles.ts` is a new small module — `CONFLICT_TYPE_STYLE`
-(label + color per `ConflictType`) moved out of `IntelligencePanel.tsx`, which now imports it, specifically so
-`AnalyticsPanel.tsx` could use the identical colors without a second hardcoded copy silently drifting from the
-first — same "one source of truth" reasoning `scene/sanctionTierColors.ts`/`scene/highlightColors.ts` already
-established for their own color sets. With this, four of the FIVE THEN-PLANNED Intelligence Engine metrics had
-real UI treatment where real data existed: Military, Economy, and (as of v6.8.0) Technology shared the
-ranked-list/bar/drill-down machinery, Current Status got its own filtered-list treatment, and only Diplomacy
-still rendered the honest "Awaiting data feed" placeholder — until it was dropped entirely in v6.9.1 rather
-than ever getting real UI treatment of its own (see this file's own "Diplomacy dropped" entry further down).
-Every Intelligence Engine metric that still exists now has real UI treatment.
+An informational-only extension of `currentStatus.ts`, **not** a scored
+Intelligence Engine category: `ethnicGroups`/`religions:
+{name: string; pct: number}[] | undefined`, each resolved **independently**
+per field, with its own `ethnicGroupsSnapshotDate`/`religionsSnapshotDate`
+recording which source and year resolved it. **The two fields go through
+completely different, independent priority chains — ethnicity's is
+unchanged from its original design, religion's was replaced entirely**:
 
-**v6.7.4: the CONFLICTS cell became its own click target, deliberately breaking the "a row here already
-selects the country on click" rule stated above** — direct request: clicking the conflict counter should
-reveal the conflicts themselves, not select the country, while clicking anywhere else on the row (including
-the SANCTION cell, unchanged) still selects the country as usual. This is the one CONFLICTS/SANCTION asymmetry
-in the row, and it's deliberate — SANCTION stayed a plain cell (see above) precisely because a second click
-meaning on the same small badge would be ambiguous, but CONFLICTS is a distinct, clearly-bounded cell with its
-own real content (multiple typed entries) worth revealing, which the "ambiguous second meaning" objection
-doesn't apply to the same way. Discussed with the user before implementing — two options were on the table:
-expand the conflicts inline in the list (chosen) vs. select the country and open `IntelligencePanel` with its
-CURRENT STATUS row pre-expanded; inline expand won because it keeps the user's place in a 193-row ranked list
-instead of navigating them away from it, matching "not the country" in the request literally. **Mechanically,
-this meant the row itself could no longer be a single `<button>`** — a `<button>` can't contain another
-interactive `<button>`, and the CONFLICTS cell needed to be one. `CurrentStatusListRow`'s outer element is now
-a `<div role="button" tabIndex={0} onClick={onSelect} onKeyDown={...}>` (Enter/Space still selects the country,
-matching what a real `<button>` would do) instead, with the CONFLICTS cell's own nested `<button>` calling
-`e.stopPropagation()` so its click never also fires the row's `onSelect`. Expanding shows each `ConflictEntry`
-as a small pill (type label + name, colored via `CONFLICT_TYPE_STYLE`) — deliberately lighter than
-`IntelligencePanel.tsx`'s `ConflictChip`: no per-entry click-to-highlight (the globe isn't visible behind this
-full-screen view) and no country-name-aware short label (`shortenConflictName()` stays local to
-`IntelligencePanel.tsx` — not worth promoting to a shared module for one caller that doesn't need the globe
-interaction the shortening exists to support in the first place). Expand state is local `useState` per row,
-not lifted to `AnalyticsPanel` — each row is keyed by `row.id` in the list, so re-sorting the list can't detach
-an open row's expansion from the wrong country, and multiple rows can be expanded independently (no
-accordion-style "only one open at a time," since nothing about this asked for that).
+- `ethnicGroups`: UN Statistics Division (UNSD) → CIA Factbook.
+- `religions`: ARDA World Religion Database → UNSD → CIA Factbook.
 
-**2026-08-25/26: Technology (`src/data/technologyScores.ts`, `scripts/buildTechnology.mjs`) is the fourth
-real, sourced Intelligence Engine category, wired into both `IntelligencePanel.tsx` and `AnalyticsPanel.tsx`
-in v6.8.0.** Per the design doc's §3.3, finalized 2026-08-25 at 4 locked, equal-weighted components after a
-5th/6th-component investigation (nine candidates checked, none cleared this project's open-data/coverage/
-single-purpose bar — see the design doc's own "Investigated and not included" subsection): R&D expenditure
-(% GDP, World Bank WDI `GB.XPD.RSDV.GD.ZS`), patent applications by residents per million population (World
-Bank's WIPO-sourced `IP.PAT.RESD` divided by `SP.POP.TOTL`, fetched independently rather than year-matched —
-see `patentsPerMillion`'s own comment in the build script), high-tech exports (% of manufactured exports,
-World Bank WDI `TX.VAL.TECH.MF.ZS`), and the ITU ICT Development Index. All 4 normalized via percentile rank
-(the same average/fractional-tie convention Economy's own percentile-ranked components use) and averaged with
-equal weight — no GDP-style outlier skew here the way Economy's own GDP component had, so unlike that one
-component, nothing in Technology needed log-min-max. Confidence uses a coverage floor scaled from Economy's
-own precedent down to 4 components (need ≥3 of 4 present to score at all: 4/4 `'measured'`, 3/4 `'proxy'`,
-≤2/4 `'unavailable'`).
+**Ethnicity — UN Statistics Division primary** (data.un.org/UNdata,
+tableCode 26), pulled via UNdata's unauthenticated CORS-open zipped-CSV
+export endpoint (`UNSD_DOWNLOAD_BASE` in `buildCurrentStatus.mjs`) — no
+documented bulk API exists, so this is a found direct path around a gated
+UI, the same pattern as `buildMilitary.mjs`'s SIPRI TIV endpoint. Filtered
+to Area="Total"/Sex="Both Sexes"; a country's most recent year with an
+explicit "Total" group row is used as the percentage denominator — a year
+with no Total row is treated as "UNSD has nothing," falling through to
+Factbook rather than inferring a total by summing components.
+`UNSD_NAME_ALIASES` bridges ~11 real name mismatches between UNSD and this
+app's UN-193 topology names.
 
-**The ICT Development Index component has no live API to pull from** — `datahub.itu.int` returns a 403 to an
-unauthenticated fetch, and ITU's own bulk-data access is effectively "request it," the same closed-data
-pattern that ruled out the IMF AI Preparedness Index as a Technology candidate in the design doc's
-investigation. `IDI_2024` in `buildTechnology.mjs` is a hand-transcribed snapshot of ITU's own published 2024
-edition (2022 reference-year data, the same relaunched-2023 methodology the design doc calls for) — 172
-economies, extracted with a deterministic regex parse of the sourced, ISO3-sorted wikitable at
-en.wikipedia.org/wiki/ICT_Development_Index (itself citing itu.int/itu-d/reports/statistics/IDI2024/)
-rather than eyeballed by hand or summarized through a lossy model pass, to avoid transcription error across
-172 rows. This is the same "hand-maintained, cited, real published values, not a live pull" precedent
-`buildMilitary.mjs`'s `NUCLEAR_WARHEADS` table (FAS Nuclear Notebook — no API either) and `currentStatus.ts`'s
-`sanctionTier` seed already established — re-running the build script refreshes the 3 WDI-sourced components
-but does **not** refresh `IDI_2024`; that needs a by-hand update against ITU's next published edition.
-India — genuinely absent from ITU's own 2024 table (not a parsing gap; confirmed by inspecting the raw
-wikitext directly, where the row sequence jumps straight from Indonesia to Ireland) — is exactly the kind of
-real coverage gap this component was expected to have per the design doc's own "~165 economies" estimate;
-logged to `BACKLOG.md` like any other gap, not guessed at.
+**A UNSD ethnicity result is also rejected — falling through to Factbook the
+same as "UNSD has nothing" — when its single largest group is a
+generic/residual label** (`isDominatedByGenericBucket()`: exact-match
+against `other`, `not stated`, `not specified`, `not applicable`, `not
+asked`, `not declared`, `unknown`, `refused to respond`, `refused to
+answer`, at ≥50% share). Real case this was built against: Poland's UNSD
+ethnic table codes 98.19% of the population as a literal "Other" row (the
+census schedule only enumerates named minority nationalities, so the
+implicitly-Polish majority has no row of its own), while Factbook plainly
+states "Polish 96.9%" — technically present UNSD data that adds to 100% is
+still less informative than a same-size Factbook figure when the largest
+slice has no real name. Same shape for Costa Rica/Colombia/Bolivia's
+ethnicity — every occurrence is logged to `BACKLOG.md`, never silently
+swapped. This is a real, deliberately low bar (50%) — a country whose
+minor/immigrant groups happen to collectively make up a modest "other"
+share, without dominating the result, is left on UNSD.
 
-Real, verified live-fetch coverage across all 193 countries (2026-08-25 run): R&D expenditure 145, patents
-per million 148, high-tech exports 175, ICT Development Index 170 — lower than the design doc's original
-rough per-component estimates (~190/~190/~150/~165) for the first two WDI indicators specifically, now the
-real, measured numbers rather than a pre-build guess. 124 countries land on `'measured'`, 27 on `'proxy'`, 42
-on `'unavailable'`. `IntelligencePanel.tsx`/`AnalyticsPanel.tsx` wiring mirrors Economy's exactly:
-`technologyIntelValue()`/`TechnologyDrilldown` alongside `economyIntelValue()`/`EconomyDrilldown`,
-`TECHNOLOGY_COLUMNS`/`buildTechnologyRows()` alongside `ECONOMY_COLUMNS`/`buildEconomyRows()`, `sourceLabel()`
-gained an `itu.int` branch, and `METRIC_AVAILABLE.technology` flipped to `true`. **At original launch, no
-GeoEntity had a Technology score — this paragraph originally said Taiwan was "simply absent here the same way
-it's absent from Military," which stopped being true once real Military AND Technology data were added for
-Taiwan later (2 of 4 components — see this file's "Taiwan recognized across the Intelligence Engine" entry
-further down for the full sourcing and why the other 2 stayed genuine gaps).** See `LOGBOOK.md`'s 2026-08-25/26
-entries for the original Technology sourcing trail.
+**Religion — ARDA (thearda.com) World Religion Database primary.** Switched
+from UNSD-primary because ARDA's own coverage is close to universal (real
+run: 194/194 countries) where UNSD's religion table has real gaps (Russia
+has zero rows — religion has never been a census question there) and the
+same generic-bucket problem ethnicity's quality gate exists for. Scraped
+from each country's own `thearda.com/world-religion/national-profiles?u=
+{code}c` page's "Religious Adherents" table (`ARDA_NAME_ALIASES` bridges
+~13 real name mismatches, e.g. `Turkey` → `Turkey/Türkiye`, `North Korea` →
+`Korea, (North) Democratic Republic of`) — never the page's separate,
+State-Department-sourced prose ("Religious demographics" section further
+down the same page), which has been observed to disagree with the table
+itself (Sudan's prose says "70 percent... Muslim," the table's own row says
+91.36%). Cited as `"World Religion Database (Brill), via ARDA {year}"`,
+dated by the WRD edition year in the table's own heading, not any
+country-specific census year — this is an academic compilation on its own
+publication timeline, not raw census data.
 
-**`AnalyticsPanel.tsx`'s `RankingLookupBar` (v6.8.1)** is a jump-to-country search scoped to whichever
-ranking/list is currently open — direct request, and deliberately **not** `SearchBar.tsx`'s `selectEntry()`
-reused: that calls `selectEntity()`, which opens `IntelligencePanel` on top of this full-screen view, which is
-the opposite of what was asked for ("go to the country within the ranking, not pull up an intelligence
-panel"). Instead it scrolls the matching row into view (`el.scrollIntoView({ behavior: 'auto', block: 'center'
-})`, INSTANT rather than smooth — see below) and flashes a glow highlight (a manual box-shadow ring, not
-Tailwind's `ring-*` utility, so it can't get clipped by the list's own rounded-corner container) that
-self-clears after `LOOKUP_HIGHLIGHT_MS` (2200ms) via a `setTimeout` cleared/reset on every new jump and on
-unmount. Never touches `selected` or calls `selectEntity()` — clicking elsewhere on a row is still the only
-way this view selects a country, unchanged.
+**Category granularity is asymmetric on purpose: every top-level religion is
+one candidate EXCEPT Christians**, which is expanded into its own indented
+sub-denomination rows (Catholics, Protestants, Orthodox, Independents,
+unaffiliated Christians, ...), each competing directly against every other
+religion's top-level row in the same ranking pool — confirmed against a
+real case (Sudan) before shipping: Muslims 91.36%, Catholics 3.22%, Ethnic
+religionists 2.77%, and Protestants 1.54% all compete on equal footing, so
+Sudan's real top-4 is Muslims/Catholics/Ethnic-religionists/Protestants,
+with everything else (Agnostics, Orthodox, Atheists, ...) folding into
+Other. A country with a fragmented Christian population can plausibly show
+multiple Christian sub-groups in one top-4 (Catholics AND Protestants) at
+once. A non-Christian religion's own sub-rows (Sunnis/Shias under Muslims)
+are read but discarded — real constituent detail with no display path here.
+**When a non-Christian top-level row has no value of its own but its
+children do** (Sudan's "Non-Religious" row is blank; its children
+"Agnostics"/"Atheists" are real, measured values) **the children are used as
+individual candidates instead of discarding real data** — confirmed with
+the user rather than assumed, since ARDA's real page structure didn't match
+what the original design brief's own example list implied. If Christians'
+sub-rows don't sum to the parent total by more than
+`CHRISTIAN_REMAINDER_THRESHOLD_PCT` (0.5 points — below that is ordinary
+independent-rounding noise across 5-6 separately-rounded figures), the
+shortfall becomes its own "Other Christian" candidate.
 
-Scoped to what's actually rendered, IN ITS ACTUAL ON-SCREEN ORDER, not the full 193-country registry:
-`sortedMilitaryRows`/`sortedEconomyRows`/`sortedTechnologyRows`/`sortedCurrentStatusRows` are each computed
-once (sorted by the shared `sort` state, and — for CURRENT STATUS only — filtered by `currentStatusFilter`
-first) before the render ternary, and both the render branches below AND `activeLookupRows` read from the
-same four arrays rather than each re-sorting its own copy. `activeLookupRows` then mirrors the render
-ternary's own branching (economy/technology/current-status/military-as-fallback) to pick whichever one is
-active. Two things depend on this being the exact rendered order, not just "the right rows": search still only
-cares about matching by name (order-independent), but "NOT IN THIS LIST" for a CURRENT STATUS country the
-active filter tab has excluded, and — added alongside the sticky header below — arrow-step navigation, both
-depend on it. Sorting all four unconditionally on every render (rather than only the active one) is
-intentional, matching this file's existing "not memoized, cheap enough" position on `buildMilitaryRows()` et
-al. — the 3 inactive sorts are wasted work but harmless, and keeping one code path rather than conditionally
-sorting only the active metric was judged not worth the complexity for a 193-row array.
+**A country's raw religion percentages can legitimately sum well past
+100%** — ARDA's own "double affiliation" data for ~30 real countries (South
+Korea's real, well-documented Buddhist/Confucianist/folk-religion overlap
+sums to ~117%; several small Pacific nations with syncretic Christian
+denominations run as high as ~144%) — verified against the live page, not a
+parsing bug. `hud/SegmentedBar.tsx` scales down rendered segment WIDTHS
+proportionally whenever the true total exceeds 100% (`widthScale = 100 /
+totalPct`), so segments can never overflow the bar's fixed-width,
+`overflow-hidden` track and get silently clipped — the legend/tooltip text
+still shows each segment's real, unscaled percentage, only the visual width
+is adjusted. A normal (≤100%) total scales by exactly 1, unchanged.
 
-**Why instant, not smooth, scroll:** the first implementation used `behavior: 'smooth'`, and a jump spanning
-most of the 193-row list (e.g. rank 1 to rank 129) produced a visibly broken transient frame — verified in the
-browser, not just inferred — where the panel briefly rendered as fully blank mid-animation, most likely from
-the in-progress smooth-scroll interacting with the same-tick `setLookupHighlightId` state update (which
-re-renders every row, and every row's `rowRef` callback prop is a fresh closure each render — see below).
-Switching to `behavior: 'auto'` removed the failure mode entirely (no animation to desync) and lands
-immediately, which reads just as clearly as "found it" once paired with the glow flash.
+**Fallback (both fields): CIA World Factbook** for whatever the chain above
+doesn't cover — for religion, this only fires for a country with neither an
+ARDA profile nor UNSD table 28 coverage. `parseFactbookPctList()` extracts
+comma-separated "<name> <pct>%" clauses, handling paren-depth-aware comma
+splitting for multi-item asides, stripping each segment's own parenthetical
+content before matching, decoding HTML entities before parsing, and
+accepting leading-dot decimals. `resolveFactbookDemographics()` only parses
+and gap-logs whichever field(s) the caller still actually needs (an explicit
+`{needsEthnic, needsReligion}` flag) — added specifically because, once ARDA
+resolves religion for nearly every country, calling this function only for
+a country's *ethnicity* gap would otherwise still unconditionally log a
+spurious "Religions... left unsourced" BACKLOG.md entry for a field that
+was never actually missing. A country/field with nothing parseable from any
+source in its chain gets `undefined`, logged to a marker-delimited
+`BACKLOG.md` section.
 
-Each row (`RankedListRow` and `CurrentStatusListRow`) gained two new optional props: `rowRef` (registers the
-row's own DOM node into `AnalyticsPanel`'s `rowRefs` map, a plain `Map<string, HTMLElement>` keyed by country
-id — populated/cleared automatically as rows mount/unmount, so switching metrics or CURRENT STATUS filters
-naturally drops whichever ids are no longer rendered) and `isHighlighted` (drives the glow class, independent
-of `isSelected` — a row can be both selected-blue-tinted and lookup-highlighted at once without either style
-overriding the other, since one is a background tint and the other an outer box-shadow). `rowRef` is passed
-as a fresh inline arrow function per row per render (`(el) => { if (el) rowRefs.current.set(...) else
-rowRefs.current.delete(...) }`), matching this file's existing convention for row-level callbacks
-(`onSelect={() => selectCountryRow(row.id)}`) rather than memoizing — harmless churn (React re-registers the
-same DOM node on every re-render), not a correctness issue, and not worth the complexity of a per-row memoized
-callback map for 193 rows.
+**Grouping is a render-time concern**, not done in the build script —
+`hud/demographicsGrouping.ts`'s `groupTopFourPlusOther()` sorts descending,
+excludes a fixed `NON_RANKABLE_NAMES` set (`other`, `not stated`, `unknown`,
+`refused to respond`, matched case-insensitively) from the top-4 pool
+regardless of size, and folds everything past position 4 plus every
+non-rankable group into a synthesized "Other" segment with a `breakdown` for
+`hud/SegmentedBar.tsx`'s tooltip. A **separate synthesized "Unknown" segment**
+(`{name: 'Unknown', pct: 100 - reportedSum}`) is appended whenever a
+country's reported figures fall short of 100% by more than a 1-point
+threshold (ordinary rounding drift below that) — kept distinct from "Other"
+on purpose: "Other" is real named groups the source chose not to break out,
+"Unknown" is population the source's figures don't cover at all. Guarded so a
+country with zero source data (`groups` empty) never synthesizes "Unknown
+100%" — it still renders as "—", and guarded the other direction too (a
+negative shortfall, i.e. a >100% total, never produces a negative-percentage
+segment — see the SegmentedBar width-scaling note above for how a >100%
+total is actually handled). Colored via a dedicated
+`DEMOGRAPHIC_UNKNOWN_COLOR`, not cycled into the 5-slot named-group palette.
+`hud/demographicColors.ts` reuses 5 of `scene/highlightColors.ts`'s existing
+hex values rather than inventing new ones.
 
-`RankingLookupBar` remounts (via `key={activeMetric.id}` at its call site) whenever the active metric changes,
-so its own local `query` state resets for free rather than needing an explicit effect — the same pattern this
-component already leans on for `sort`/`currentStatusFilter` via the existing `[metric]` effect (which also now
-clears `lookupHighlightId` and any pending highlight timeout on that same transition). Ranking logic
-(`rankLookupMatches`, exact/starts-with/contains) is a smaller, separate copy of `SearchBar.tsx`'s three-tier
-match ranking — not shared, since `SearchBar`'s version ranks a `SearchEntry` union (country/GeoEntity/city/
-US-city-boundary/...) with far more shape than this needs (`{id, name}` pairs already sitting on every ranked
-row).
+`IntelligencePanel.tsx` renders a DEMOGRAPHICS section (ETHNICITY/RELIGION,
+each its own `SegmentedBar`) below INTELLIGENCE SUMMARY, skipped entirely
+when a country has neither field. `AnalyticsPanel.tsx` has its own ETHNICITY
+and RELIGION thumbnails with bespoke `DemographicHeaderRow`/
+`DemographicListRow` components (not the shared ranked-list machinery — no
+natural single ranking axis, since each country's largest group has a
+different name); default sort is alphabetical by country, with GROUP 1-4 /
+OTHER / UNKNOWN as the other sortable columns.
 
-**Sticky header + up/down ranking step (same v6.8.1, direct follow-up request).** The header row (breadcrumb,
-lookup bar, step buttons, source label) is now `sticky top-0` inside the panel's own `overflow-y-auto`
-container, with its own opaque `bg-[#04070a]` (matching the panel background) and `z-10` — without an opaque
-background, rows scrolling underneath would show through the now-stationary header instead of passing behind
-it. Reported directly: scrolling deep into a 193-row list used to scroll the lookup bar away too, forcing a
-scroll back to the top just to search again.
+**Known gap: US ethnicity has no Hispanic/Latino breakdown.** Both UNSD and
+Factbook mirror the same US Census Bureau RACE categories (White, Black,
+Asian, ...), not a separate Hispanic/non-Hispanic ethnicity question — no
+Census Bureau override exists in this codebase. A real fix would need
+hand-sourced ACS table B03002 data layered on top; flagged in `BACKLOG.md`,
+not built speculatively.
 
-Two small chevron buttons next to the search box (and ArrowUp/ArrowDown while the search input itself is
-focused — `RankingLookupBar`'s new `onStep` prop, wired through to the same handler) step the highlighted/
-scrolled-to row to the previous or next one in `activeLookupRows`' current on-screen order — "switch between
-countries" without retyping a search each time. `jumpToOffset(direction)` in `AnalyticsPanel` finds the
-reference row's index in that order and calls the existing `jumpToRow` on the neighboring id, wrapping at
-either end; if there's no reference row yet, stepping down lands on the first row and stepping up on the last,
-rather than silently no-op-ing. Deliberately steps through the WHOLE ranking regardless of the search box's
-current text — not `matches`-scoped arrow-through-suggestions the way a typical autocomplete works — since the
-point was browsing the ranking itself, not narrowing a query.
+### Taiwan recognized as a country across the Intelligence Engine
 
-**The reference row is `lookupHighlightId` first, falling back to `selected?.id`** (same-day follow-up, direct
-request: "once you click on a country, arrow functionality should work as well"). Originally
-`jumpToOffset` only read `lookupHighlightId`, so stepping did nothing useful after simply clicking a row — a
-plain click calls `selectCountryRow`, not `jumpToRow`, so it never touched `lookupHighlightId`. Falling back to
-`selected?.id` means arrowing after a click continues from wherever you clicked.
+Taiwan is treated as a country everywhere the Intelligence Engine surfaces
+data, while staying a `GeoEntity` architecturally — **not** merged into the
+193-country `CountryRegistry`/topology, since only `GeoEntity` has claim
+fields (`claimedBy: China`), and `Country` doesn't. Real, sourced data exists
+per category:
 
-**`jumpToOffset` always calls `closeInspector()`, never `selectCountryRow()`** (a same-day CORRECTION of the
-paragraph above's own first version, which had `jumpToOffset` call `selectCountryRow(nextId)` whenever
-`selected` was already non-null, keeping an open panel in sync as you stepped — direct feedback reversed this:
-"arrow functionality should close the intelligence panel. it should only open when a country is explicitly
-clicked"). `closeInspector()` is a harmless no-op if the panel wasn't open (`hud/selectionStore.ts` just sets
-`inspectorOpen: false`, same as `dismiss`'s first-stage Escape handling). Deliberately leaves `selected` itself
-untouched — only the panel's open/closed state changes, so whichever row was actually clicked keeps its blue
-"selected" row tint (and the globe/status-bar summary keeps showing that country) independent of wherever the
-glow-highlighted step cursor currently is; only an explicit row click (`onSelect` → `selectCountryRow`) ever
-opens the panel now.
+- **Military**: all 5 components real — SIPRI's own sheets include a literal
+  "Taiwan" row for expenditure/%GDP/Top-100 revenue (matched by literal name
+  via `findYearSeriesForLiteralName()`, bypassing the topology-based name
+  matcher); personnel comes from CIA Factbook, the same fallback path every
+  other country already uses when WDI has no personnel figure.
+- **Economy**: real (IMF WEO one-off — see Economy above).
+- **Technology**: 2 of 4 components real (R&D expenditure from Taiwan's own
+  NSTC figure; patents-per-million from TIPO, Taiwan's IP office). High-tech
+  exports and the ICT Development Index are genuine, logged gaps — no
+  methodology-matched source exists for either. 2-of-4 coverage is below the
+  3-of-4 floor, so Taiwan's Technology composite is `null`/`'unavailable'`
+  even though both real components are visible in the drilldown/columns.
+- **Current Status**: `conflicts: []`, `sanctionTier: null` — both real
+  positive facts (UCDP's 25+ battle-death threshold hasn't been crossed;
+  no active OFAC program), pushed directly rather than derived from the
+  193-topology-keyed conflict datasets Taiwan isn't part of.
+- **`data/registry/geoEntities.ts`'s Taiwan entry** has real `population`/
+  `gdpUsd` (IMF WEO, the GDP figure reused verbatim from `economyScores.ts`'s
+  Taiwan entry so the two can't drift) via an `imfWeoProvenance()` helper.
+- **`data/countryProfiles.ts`** has a hand-added Taiwan entry (Semi-
+  Presidential Republic, Taipei) so `CountryDetails` has real GOVERNMENT/
+  CAPITAL data — see "Data quirks" below.
 
-Verified live in the browser, via `translate-x-0`/`translate-x-full` on `IntelligencePanel`'s own wrapping
-`<div>` (its actual open/closed CSS state — `<h2>`'s mere presence in the DOM isn't a reliable signal, since
-the element stays mounted, just slid off-screen, whenever `selected` is non-null but `inspectorOpen` is
-`false`): clicked China (`translate-x-0`, heading "CHINA") → pressed the Previous step button →
-`translate-x-full` (panel closed), china's row still separately reflecting whichever step it landed on. Also
-verified via direct DOM/JS inspection, not just screenshots, for the ORIGINAL jump-and-step mechanics —
-screenshots taken immediately after a click in this automated environment occasionally lagged behind the real
-DOM state (a tool-level timing artifact, confirmed by reading `scrollTop`/computed `box-shadow` directly rather
-than trusting a screenshot's timing). Three rapid step-clicks correctly advanced one rank at a time (US →
-Russia → China); ArrowUp with nothing highlighted correctly wrapped to the bottom of the list.
+**UI generalization, not special-casing, except where the layout genuinely
+differs:** `IntelligencePanel.tsx`'s `xIntelValue()` helpers key every lookup
+by `selected.id` directly (works for a numeric country id or `'taiwan'`
+identically — and is forward-compatible for any future GeoEntity that gains
+score data). The one deliberate exception is OVERVIEW: a GeoEntity's
+`ENTITY TYPE`/`STRATEGIC SIGNIFICANCE` layout doesn't fit "recognized as a
+country," so `taiwanAsCountryLike(entity): Country` shapes a
+`Country`-compatible object from Taiwan's GeoEntity + profile data and hands
+it to the unmodified `CountryDetails` component, dispatched by an explicit
+`selected.entity.data.id === 'taiwan'` check at one call site — every other
+GeoEntity is unaffected. `SearchBar.tsx` tags Taiwan `COUNTRY` via an explicit
+id check (every other geopolitical-entity result still reads `GEOPOLITICAL`).
+`AnalyticsPanel.tsx`'s ranked-row builders iterate `getRankableCountries()`
+(`[...getCountries(), getEntity('taiwan')]`) so Taiwan's row flows through the
+same sort/filter/column/highlight machinery as every real country, with a
+`centroidById` entry derived the same way `SelectionController.ts` already
+derives GeoEntity centroids. `hud/CommandBar.tsx`'s COUNTRIES count includes
+Taiwan (+1); its ENTITIES segment was relabeled TERRITORIES (label text only,
+still counts rendered GeoEntity geometry including Taiwan's).
 
-**Taiwan recognized across the Intelligence Engine (v6.9.0, 2026-08-26).** Direct request: "I want Taiwan to
-be recognized as a country. It should still show as claimed by China... I need Taiwan in all of these
-analytics." Two explicit, deliberate scope decisions were made before touching any code (asked directly, not
-assumed): Taiwan stays a GeoEntity architecturally — NOT merged into the 193-country `CountryRegistry`/
-topology — since that's what makes `claimedBy: China` work at all (`Country` has no claims fields; see
-`data/registry/geoEntities.ts`'s own header comment on why); and its displayed label DOES change wherever
-shown (search tag, `IntelligencePanel` layout), not just its presence in rankings.
+### Diplomacy — removed
 
-**Data — real sourcing added for Taiwan in all 4 categories, not just UI wiring for what already existed:**
-- **Military** (`scripts/buildMilitary.mjs`'s `buildTaiwanScore()`) — all 5 components real. Unlike Economy's
-  Taiwan one-off, which needed IMF WEO because WDI excludes Taiwan, Military's own primary sources include
-  Taiwan DIRECTLY: verified by reading the already-vendored SIPRI xlsx files themselves (not assumed) — a real
-  "Taiwan" row exists in Milex's "Current US$" and "Share of GDP" sheets, and in the Top 100 sheet (NCSIST,
-  rank 50 in 2024). `findYearSeriesForLiteralName()` bypasses the `matchCountryName`/`NAME_LOOKUP` machinery
-  entirely (built only from the 193-country topology) and matches the raw source row by literal name instead.
-  Personnel alone needed a different path — CIA Factbook directly (170,000 active duty, 2025), the same
-  fallback every OTHER country already uses once WDI comes up empty for personnel specifically, not a new
-  source. One real bug caught and fixed before this shipped: `finalizeCountry`'s generic `pctGdp.sourceUrl`
-  construction unconditionally built a World Bank URL (`.../country/undefined/indicator/...`, since Taiwan has
-  no `alpha3`) even though Taiwan's %GDP came from SIPRI — needed an explicit `r.id === 'taiwan'` branch.
-- **Technology** (`scripts/buildTechnology.mjs`'s `buildTaiwanRecord()`) — 2 of 4 components real: R&D
-  expenditure (4.0%, 2023 — Taiwan's National Science and Technology Council figure, as republished by
-  Taiwan's Overseas Community Affairs Council citing MOEA/CNA, since NSTC's own original release wasn't
-  directly fetchable) and patents-per-million (837.0 — TIPO's own 2024 "domestic invention patent
-  applications" figure, 19,586, divided by IMF WEO population; TIPO is Taiwan's own IP office, the same kind
-  of primary national-office source WDI's own IP.PAT.RESD is itself built from for every other country, just
-  read directly since WDI's WIPO mirror excludes Taiwan). High-tech-exports% and the ICT Development Index
-  were investigated and left as GENUINE, LOGGED GAPS — WITS/UN Comtrade has no directly queryable
-  pre-computed figure matching WDI's own product classification (its web UI is JS-rendered, not fetchable, and
-  computing the ratio independently from raw trade codes risked producing something that LOOKED authoritative
-  but wasn't methodology-matched to the other 175 countries' real WDI figures), and ITU's IDI table simply
-  doesn't cover Taiwan (already confirmed when Technology was first built — see this file's Technology entry
-  above). Coverage floor means Taiwan's Technology composite is `null`/`'unavailable'` (2 of 4 present, floor
-  is 3 of 4) even though 2 real, sourced values exist and are visible in the drill-down/ranked-list columns —
-  the same honest "real components, no composite" outcome any other low-coverage country already gets.
-- **Current Status** (`scripts/buildCurrentStatus.mjs`) — `conflicts: []`, `sanctionTier: null`, both real,
-  positive facts (UCDP's armed-conflict threshold — 25+ battle-related deaths/year — hasn't been crossed by
-  current China-Taiwan tension; no active OFAC program), not sourcing gaps. Pushed directly rather than derived
-  from `prioEntries`/`candidateEntries` (both keyed by the 193-country topology, which Taiwan isn't part of).
-- **Economy** already had a real score (`buildEconomy.mjs`'s pre-existing Taiwan one-off, IMF WEO-sourced) —
-  this release is what actually surfaces it in the UI for the first time; see this file's Economy Taiwan
-  paragraph above, corrected to point here.
-- **`data/registry/geoEntities.ts`'s Taiwan entry** gained real `population`/`gdpUsd` (23,400,220 / 2024;
-  $801,495,464,000 / 2024, IMF WEO — the LATTER figure reused verbatim from `economyScores.ts`'s own Taiwan
-  entry, not re-fetched, so the two can't drift apart) via a new `imfWeoProvenance()` helper alongside the
-  existing `wdiProvenance()` — resolving a gap that file's own header comment had explicitly flagged as
-  deliberately deferred ("needs IMF World Economic Outlook sourcing... not done here") since v6.1.0.
-- **`data/countryProfiles.ts` gained a hand-added Taiwan entry** (Semi-Presidential Republic, Taipei — CIA
-  Factbook, same 2026-01 snapshot every other entry uses) specifically so `CountryDetails` has real
-  GOVERNMENT/CAPITAL data to render for it (see the OVERVIEW section below, and this file's own "Data quirks"
-  correction on this same entry's history).
+Diplomacy was designed (§3.4 of the scoring-design doc: embassy network size,
+treaty ratification counts, UN voting alignment, sanctions-coalition
+participation, mediated-negotiation track record) but its weighting and
+confidence-model alignment were never locked, and it shipped only ever as a
+permanent "Awaiting data feed" placeholder. It was removed entirely rather
+than kept as a placeholder — deleted from `hud/intelMetrics.ts`'s
+`IntelMetricId` union and `INTEL_METRICS`; every consumer (`AnalyticsPanel.tsx`'s
+`METRIC_AVAILABLE`, `IntelligencePanel.tsx`'s render loop and summary caption)
+is driven generically off `INTEL_METRICS`, so no other code references it.
+**`ICONS.diplomacy` (`hud/iconPaths.ts`) is intentionally still present** —
+`hud/sideNavItems.ts`'s ALLIANCES tab reuses that icon for an unrelated
+purpose. **The `METRIC_AVAILABLE`/`MetricThumbnail` "Awaiting data feed" path
+is intentionally still present too** — it's the extensibility point a future
+5th category would use if one is ever added; see the design doc's Status
+header, updated to state the removal plainly rather than describing Diplomacy
+as merely deferred. All 4 remaining categories (Military, Economy, Technology,
+Current Status) have real data and real UI treatment — there is no
+placeholder category currently shown anywhere in the Intelligence Engine.
 
-**UI — score lookups generalized rather than Taiwan-special-cased, one narrow exception where display genuinely
-needed a different layout:**
-- `IntelligencePanel.tsx`'s four `xIntelValue()` helpers (`militaryIntelValue`/`economyIntelValue`/
-  `technologyIntelValue`/`currentStatusIntelValue`) dropped their `selected.entity.kind !== 'country'` guard
-  entirely, now keying every lookup by `selected.id` directly (`MILITARY_SCORES[selected.id]`, etc.) — since
-  `selected.id` is the SAME denormalized id whether the selection is a Country (numeric) or Taiwan (`'taiwan'`),
-  this one change resolves both, AND is forward-compatible for free: any FUTURE GeoEntity that gains real score
-  data would resolve here automatically with no further code change. `currentStatusCountryId` (feeds
-  `ConflictChip`) generalized the same way.
-- **OVERVIEW is the one place that needed an actual Taiwan-specific branch, not a generalization** — a
-  GeoEntity's `ENTITY TYPE`/`STRATEGIC SIGNIFICANCE` layout (`GeoEntityDetails`) doesn't fit "recognized as a
-  country" the way a plain data lookup does; a `Country`'s `GOVERNMENT`/`CAPITAL`/`POPULATION`/`GDP` layout
-  does. `taiwanAsCountryLike(entity: GeoEntity): Country` shapes a `Country`-compatible object from Taiwan's
-  own GeoEntity record (population/gdpUsd/populationYear/gdpYear share identical field names on both
-  interfaces already) plus its new `countryProfiles.ts` entry, so `CountryDetails` itself needed zero changes
-  and can't silently regress for real countries — it just receives an object shaped like one. No
-  `areaKm2`/`areaYear` (GeoEntity carries no area field at all) — `CountryDetails`'s own `area && (...)` guard
-  already omits that row cleanly, the same way it omits POPULATION/GDP for a country with a genuine gap.
-  Dispatched by an explicit `selected.entity.data.id === 'taiwan'` check at the ONE call site — deliberately
-  NOT a general "render any GeoEntity like a Country" mechanism; every other GeoEntity is completely unaffected,
-  and this is the "check kind/id explicitly, don't paper over it with a name lookup" lesson this file's own
-  CapitalMarker/v2.3.0 history already established, applied in the opposite direction on purpose.
-- `hud/SearchBar.tsx`'s result tag reads `COUNTRY` for Taiwan specifically (an explicit `entry.id === 'taiwan'`
-  check at the render site, not a `kind`/`type` change) — every other `'geopolitical-entity'`-typed result
-  (Kosovo, Palestine, ...) still reads `GEOPOLITICAL`, unchanged; this wasn't a request to relabel that whole
-  classification, only Taiwan.
-- `hud/AnalyticsPanel.tsx`'s four `buildXRows()` functions now iterate `getRankableCountries()`
-  (`[...getCountries(), getEntity('taiwan')]`) instead of `getCountries()` directly — Taiwan's row flows
-  through the exact same sort/filter/column/highlight/step-navigation machinery every real country's does,
-  with zero Taiwan-specific branching anywhere in that machinery itself. `centroidById` (needed so clicking
-  Taiwan's row can compute a real world-space `direction` for `selectEntity`/camera flight) gained a Taiwan
-  entry derived from `useGeoEntityFeatures()` + `entities/entityGeometryIds.ts`'s `ENTITY_GEOMETRY_IDS`
-  (geometry id `'158'` → entity id `'taiwan'`) — the exact same technique `input/SelectionController.ts`'s own
-  candidate list already uses for GeoEntity centroids, not a new pattern. The header's "193 COUNTRIES ·
-  SOURCE" caption is no longer a hardcoded literal — `{activeLookupRows.length} COUNTRIES` — so it honestly
-  reads 194 rather than silently undercounting once the ranked list itself had more rows than the caption
-  claimed.
-
-**Verified live in the browser end to end**, not just per-file: searched "Taiwan" → tag read COUNTRY → selected
-it → OVERVIEW showed real GOVERNMENT/CAPITAL/POPULATION/GDP, MILITARY 52.5 and ECONOMY 81.8 bars, TECHNOLOGY
-correctly showing no bar (2/4 coverage, below floor) but a real, clickable drill-down (R&D 4.00%/2023,
-patents 837.0/2024, the other two rows "—"), CURRENT STATUS "NO ACTIVE CONFLICTS", and RELATIONSHIPS still
-showing "CLAIMANT — People's Republic of China" exactly as before, with the globe itself still rendering
-China's claim highlight (confirming the claims-rendering system needed zero changes). Confirmed Taiwan appears
-at its real ranked position in all 4 AnalyticsPanel rankings (Military rank 18/194, Economy rank 4/194,
-Current Status correctly showing "—"/"—" for conflicts/sanction) with header counts reading 194 throughout.
-
-**Same-day follow-up: `hud/CommandBar.tsx`'s bottom status bar** — direct request. COUNTRIES now reads
-`features.length + 1` (194) rather than the bare 193-country topology count, since Taiwan is recognized as a
-country across the Intelligence Engine even though it still renders via the GeoEntity topology, not this one.
-ENTITIES was relabeled TERRITORIES — that one segment's label text only (still `entityFeatures.length`,
-unchanged, still literally the rendered GeoEntity count including Taiwan's own geometry); nothing else in the
-app that refers to GeoEntities/territories elsewhere (search tags, `GEO_ENTITY_TYPE_LABEL`, the Layer Engine's
-category names, ...) was touched.
-
-**Diplomacy dropped entirely (v6.9.1, 2026-08-26)** — direct decision ("I'm thinking we drop diplomacy and
-keep the other metrics"), not a deferral like Technology's once-open 5th-component search or a demotion like
-Military's arms-import-TIV annotation. Diplomacy never had real, sourced data behind it — the design doc's
-§3.4 identified real formula inputs (embassy network size, treaty ratification counts, UN voting alignment,
-sanctions-coalition participation, mediated-negotiation track record) but its weighting and confidence-model
-alignment were never locked, so it shipped only ever as a permanent "Awaiting data feed" placeholder on both
-`IntelligencePanel.tsx` and `AnalyticsPanel.tsx` — see this file's own history above for every point that
-placeholder is mentioned. Removed by deleting `'diplomacy'` from `hud/intelMetrics.ts`'s `IntelMetricId` union
-and its `INTEL_METRICS` entry — every other reference to it (`AnalyticsPanel.tsx`'s `METRIC_AVAILABLE`,
-`IntelligencePanel.tsx`'s per-metric render loop and summary caption) is driven generically off
-`INTEL_METRICS`/`METRIC_AVAILABLE`, not a hardcoded `'diplomacy'` string comparison anywhere, so removing the
-one source record was the whole functional change — confirmed by `tsc -b` catching zero other references.
-`ICONS.diplomacy` (`hud/iconPaths.ts`) was deliberately NOT removed — `hud/sideNavItems.ts`'s ALLIANCES sidebar
-tab reuses that same icon for an unrelated purpose. `METRIC_AVAILABLE`/`MetricThumbnail`'s "Awaiting data feed"
-placeholder path also stayed in place, not deleted as dead code — it's the extensibility point a possible
-FUTURE 5th category would use, the same way Technology/Current Status originally shipped through it; Diplomacy
-re-entering for real (unlikely, but not impossible) would follow that same path, not resurrect a placeholder.
-Design doc §3.4/§8/§9/§10's Diplomacy content was left as historical record in
-`Intelligence Docs/intelligence-engine-scoring-design.md` rather than deleted — see that doc's own updated
-Status header, which now states the removal plainly rather than leaving Diplomacy described as merely
-"deferred." Verified live in the browser: `IntelligencePanel.tsx`'s INTELLIGENCE SUMMARY renders exactly 4
-rows for a real country (no DIPLOMACY row, no gap in the list), and `AnalyticsPanel.tsx`'s thumbnail grid
-renders exactly 4 thumbnails, all real/clickable (Military, Economy, Technology, Current Status) — no disabled
-"Awaiting data feed" tile at all, since every remaining category now has real data.
+### Entity/relationship type architecture
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
-is how `Conflict.participants`, `Relationship.parties`, and every
-`GeoEntity` relationship field point at other records — discriminated
-rather than a bare string id because country ids (ISO 3166-1 alpha-3) and
-GeoEntity ids (ad hoc slugs, no standard exists) aren't guaranteed disjoint.
-`'territory'` is a legacy discriminant value kept only so old data that
-still uses it type-checks; nothing in this codebase emits it anymore as of
-v3.0.0 — use `'geo-entity'`.
+is how `Conflict.participants`, `Relationship.parties`, and every `GeoEntity`
+relationship field point at other records — discriminated rather than a bare
+string id because country ids (ISO 3166-1 alpha-3) and GeoEntity ids (ad hoc
+slugs) aren't guaranteed disjoint. `'territory'` is a legacy discriminant kept
+only so old data type-checks — nothing emits it anymore; use `'geo-entity'`.
 
-**`data/registry/CountryRegistry.ts`** is the query seam: `registerCountry`/
-`getCountry`/`getCountries`/`removeCountry` over a plain `Map`, structurally
-identical to `layers/layerRegistry.ts` (see that section above) with one
-deliberate difference — registering a duplicate id **throws** here instead
-of warning-and-overwriting, since there's no benign reason (like Vite HMR)
-for the same country id to be registered twice yet. The registry doesn't
-import `countries.json` itself and has no opinion about where `Country`
-records come from; whatever eventually seeds it (a JSON loader, a future
-Data Engine) is separate, deliberate work, the same way `layers/placeholders/`
-— not `layerRegistry.ts` — is what actually knows which layers exist. Import
-both types and registry functions from the barrel, `data/index.ts`, not
-individual files — mirrors `layers/index.ts`'s role for the Layer Engine.
+**`data/registry/CountryRegistry.ts`** — `registerCountry`/`getCountry`/
+`getCountries`/`removeCountry` over a plain `Map`, structurally identical to
+`layers/layerRegistry.ts`, with one deliberate difference: registering a
+duplicate id **throws** here (no benign reason like Vite HMR for a duplicate
+yet). Has no opinion about where `Country` records come from. Import types
+and registry functions from the barrel, `data/index.ts`, not individual
+files.
 
-When a future layer actually consumes this data, it's expected to call
-`getCountry()`/`getCountries()` for whatever it needs and register itself
-through the Layer Engine the same way the placeholders do — this data
-architecture and the Layer Engine are independent pieces that a real layer
-will eventually connect.
+**`data/registry/GeoEntityRegistry.ts`** — the same `Map`-backed pattern
+(`registerEntity`/`getEntity`/`getEntities`/`getEntitiesByType`/
+`getRelatedEntities`) for everything geopolitically significant that isn't a
+UN-member sovereign state: de facto/partially-recognized states, dependencies/
+autonomous regions/SARs, strategically/militarily significant areas, disputed
+maritime features, and treaty-governed regions — see `GeoEntityType` in
+`data/types.ts` for the full five-way classification. `getRelatedEntities(id)`
+walks every relationship field in *both* directions (what `id` points at, and
+what points at `id`), for consumers like `ClaimsOverlayLayer` that need
+everything connected to an id regardless of direction.
 
-**`data/registry/GeoEntityRegistry.ts`** (v3.0.0, replacing v2.1.2's
-`TerritoryRegistry.ts`) is the same `Map`-backed pattern —
-`registerEntity`/`getEntity`/`getEntities`/`getEntitiesByType`/
-`getRelatedEntities` — for everything geopolitically significant that isn't
-a UN-member sovereign state: de facto/partially-recognized states (Taiwan,
-Kosovo, Palestine, Western Sahara), dependencies/autonomous regions/SARs
-(Puerto Rico, Hong Kong, Greenland, 37 more), strategically/militarily
-significant areas (Guantanamo Bay, the Cyprus Sovereign Base Areas,
-Baikonur, the Siachen Glacier), disputed maritime features (the Spratly
-Islands, Scarborough Reef), and treaty-governed regions (Antarctica) — see
-`GeoEntityType` in `data/types.ts` for the full five-way classification.
-`getEntitiesByType(type)` filters the registry by that classification;
-`getRelatedEntities(id)` walks every relationship field (below) in *both*
-directions — entities `id` points at, and entities that point at `id` — for
-consumers like `ClaimsOverlayLayer` that need "what's connected to this at
-all" rather than one specific direction.
+One interface, `GeoEntity`, covers all five classifications. The central
+design decision: **who controls an entity and who claims it are separate
+fields**, `administeredBy` (a list — real-world control is often split, e.g.
+Western Sahara) and `claimedBy`, since they frequently disagree. `parentEntity`
+(singular, optional) captures the uncontroversial "formally part of"
+relationship (Puerto Rico → USA) separately from the contested
+`administeredBy`/`claimedBy` fields. `claims` is the inverse of `claimedBy` —
+kept as its own field (not one bidirectional list) so a claims-overlay
+consumer can walk outward from a selection independently of walking inward.
+**Nothing in the current dataset actually populates `claims`** — every claim
+is recorded only as `claimedBy` on the claimed entity (e.g. Taiwan claims the
+Spratly Islands in every practical sense, but `taiwan.claims` is `[]`; the
+Spratly Islands' own `claimedBy` lists Taiwan instead). `ClaimsOverlayLayer.tsx`
+and `scripts/generateClaimsDoc.mjs` both account for this by reading
+`[...claimedBy, ...claims]` together — a new consumer reading `entity.claims`
+alone will get an incomplete answer. Every relation (`GeoEntityRelation`)
+accepts an optional `Country`/`GeoEntity` reference plus a required
+`displayName`, since the relevant government is frequently not a registered
+UN-member `Country` (Taiwan's own government, the Polisario Front/SADR).
 
-One interface, `GeoEntity`, covers all five classifications — not five
-separate interfaces the way `TerritoryRegistry` once needed only one for.
-The central design decision, carried forward from the pre-v3 `Territory`
-type: **who controls an entity and who claims it are separate fields**,
-`administeredBy` and `claimedBy`, not one field with a type flag. They
-frequently disagree (a government can control territory that isn't
-internationally recognized as rightfully theirs), and `administeredBy` is a
-*list* — real-world control is often split (Western Sahara has two
-administrators, divided by a berm) — so the type doesn't force picking one
-administrator or resolving the dispute itself. A `parentEntity` (singular,
-optional) captures the uncontroversial "formally part of" relationship
-(Puerto Rico -> USA) separately from the contested `administeredBy`/
-`claimedBy` fields, so a plain dependency isn't modeled as more disputed
-than it is. `claims` is the inverse of `claimedBy` — what this entity
-claims, as opposed to who claims it — kept as its own field rather than one
-bidirectional list specifically so a claims-overlay consumer can walk
-outward from a selection independently of walking inward. Every relation
-(`GeoEntityRelation`) accepts an optional `Country`/`GeoEntity` reference
-plus a required `displayName`, because the relevant government is
-frequently *not* a registered UN-member `Country` (Taiwan's own government,
-the Polisario Front/SADR) — same reasoning the pre-v3
-`ControllingAuthority`/`TerritoryClaimant` types established, carried
-forward unchanged.
+**`population`/`gdpUsd` on `GeoEntity` are hand-populated, per entity, in
+`registry/geoEntities.ts` itself — unlike `Country`'s, they are NOT
+auto-merged.** `scripts/buildGeoEntityEconomics.mjs` queries the same World
+Bank WDI indicators for every entity with a resident population, but only
+ever writes a **report** (`scripts/geoEntityEconomicsReport.json` + a
+marker-delimited `BACKLOG.md` section) — never into `geoEntities.ts` directly.
+The reason: that file's relationship data (`administeredBy`/`claimedBy`/...)
+is hand-curated with no API equivalent, so auto-writing just the economic
+half every run risks silently clobbering hand-curated content if the file's
+shape ever changes; a human reads the report and edits by hand instead. 23 of
+56 entities have real WDI-sourced figures; 16 more were queried and
+genuinely have no WDI data (left with an explicit "No WDI data" comment,
+never silently blank); Taiwan/Western Sahara/Crimea are deliberately
+deferred (Taiwan needs IMF WEO instead of WDI; the other two have contested
+administration, so "population of X" isn't a single unambiguous query); the
+3 uninhabited entries were never queried at all.
 
-**`population`/`gdpUsd` (+ `populationYear`/`gdpYear`), added in v6.1.0,
-mirror `Country`'s fields of the same name — but unlike `Country`'s, which
-`scripts/buildGovCapitalPopGdp.mjs` auto-merges into every UN member at
-runtime (see above), a `GeoEntity`'s are populated by hand, per entity, in
-`registry/geoEntities.ts` itself.** The difference is deliberate, not an
-oversight: `scripts/buildGeoEntityEconomics.mjs` queries the World Bank's
-WDI API (the same `NY.GDP.MKTP.CD`/`SP.POP.TOTL` indicators, same
-date-range-lookback methodology as the country script) for every
-`'territory'`/`'geopolitical-entity'` GeoEntity with a resident population,
-but only ever writes a **report**
-(`scripts/geoEntityEconomicsReport.json`, plus an idempotent marker-delimited
-`BACKLOG.md` section listing every no-WDI-data/partial/deferred entity —
-same pattern as `buildGovCapitalPopGdp.mjs`'s own gap report, see
-`BACKLOG.md`'s "Data sourcing (`buildGeoEntityEconomics.mjs`)" section) —
-never into `geoEntities.ts` directly. That file's relationship data
-(`administeredBy`/`claimedBy`/...)
-is hand-curated and has no API equivalent to auto-merge against, so
-auto-writing just the population/gdpUsd half every run would risk silently
-clobbering hand-curated content the next time the file's shape changes;
-a human reads the report and edits `geoEntities.ts` by hand instead, the
-same way every other field in that file already is. Result: 23 of the 56
-entities have real, WDI-sourced figures (Puerto Rico, Hong Kong, Macao,
-Kosovo, Palestine, ...), each with a per-field comment citing the exact WDI
-entity name/code/year and a `wdiProvenance()`-built `provenance` explaining
-the split (population/gdpUsd are sourced and confirmed; the entity's
-relationship data stays a simplified, hand-curated entry regardless). 16
-more were queried and came back with genuinely no WDI data (Jersey,
-Guernsey, Åland, ...) — left unscored with an explicit "No WDI data"
-comment, not silently blank. Three are deliberately deferred, not
-oversights: Taiwan (WDI structurally excludes it — needs IMF World Economic
-Outlook sourcing instead, not done here), and Western Sahara/Crimea (both
-have contested administration, so "population of X" isn't a single
-unambiguous WDI query the way an uncontested dependency's is — each needs
-its own human sourcing call). The three uninhabited entries (Heard
-Island/McDonald Islands, U.S. Minor Outlying Islands, South Georgia and the
-South Sandwich Islands) were never queried at all. See `LOGBOOK.md`'s
-v6.1.0 entry, and `hud/IntelligencePanel.tsx`'s `GeoEntityDetails` (above)
-for the render side.
+**`data/registry/geoEntities.ts`** is the real, always-imported dataset (56
+entities) — imported as a side effect of `data/index.ts` so the registry is
+populated before anything reads it. Its `provenance.source` carries a
+"simplified, not comprehensive or authoritative" caveat, same as every
+dataset in this directory.
 
-**`data/registry/geoEntities.ts`** (v3.0.0, replacing v2.2.4's
-`registry/territories.ts`) is the real, always-imported dataset — imported
-as a side effect of `data/index.ts`, so `GeoEntityRegistry` is populated
-before anything reads it. 56 entities: the v3 spec's 55 (including
-Gibraltar — see below) plus Crimea,
-carried forward from the pre-v3 dataset even though it isn't in that spec
-(removing shipped functionality wasn't asked for). Its own
-`provenance.source` carries the same "simplified, not comprehensive or
-authoritative" caveat every dataset in this directory uses. See
-`LOGBOOK.md`'s v3.0.0 entry for the judgment calls this file had to make
-where the spec was ambiguous or silent (Gibraltar's inclusion, Crimea's
-classification, which real-world parent/claimant relationships were added
-beyond the spec's explicit list).
-
-**`CLAIMS.md`** (repo root, v3.1.1, rewritten v3.1.3) is a generated,
-complete roster — all 193 UN member states (sourced from `public/geo/
-countries-un193.json`, the same topology `useCountryFeatures.ts` fetches at
-runtime, not a second hand-typed list) and all registered GeoEntities, each
-showing its claim relationships or "None," plus a "Summary: active
-disputes" section up top for the 11 that actually have one. Produced by
-`scripts/generateClaimsDoc.mjs` (`npm run docs:claims`) reading
-`GeoEntityRegistry` directly, not hand-maintained — same "one source of
-truth, no drift" reasoning `public/geo/*.json` being generated rather than
-hand-edited already established in this codebase. Regenerate it after
-editing any `claimedBy`/`claims`/`countries-un193.json` field; don't
-hand-edit `CLAIMS.md` itself.
-
-**Note for anyone reading `claims` off a `GeoEntity` directly instead of
-through this generator:** `claimedBy` and `claims` are meant to be the same
-fact recorded from two ends (see `GeoEntity`'s doc comment above), but
-nothing in this dataset currently populates `claims` — every claim is
-recorded only as `claimedBy` on the claimed entity (Taiwan claims Spratly
-Islands/Scarborough Reef in every practical sense, but `taiwan.claims` is
-`[]`; both reefs list Taiwan in their own `claimedBy` instead).
-`ClaimsOverlayLayer.tsx` already accounts for this (it reads
-`[...claimedBy, ...claims]` together — see that file) and
-`generateClaimsDoc.mjs` infers the missing direction the same way; a new
-consumer reading `entity.claims` alone will get an incomplete answer. See
-`LOGBOOK.md`'s v3.1.3 entry.
-
-`data/registry/exampleTerritories.ts` (the pre-v3 illustrative,
-deliberately-unimported schema-validation file) was removed in v3.0.0 —
-its job (prove the schema holds up against real, complicated cases without
-being mistaken for the real dataset) is now served by `geoEntities.ts`
-itself, which is real, imported, *and* already covers the complicated
-cases (split control, non-Country claimants, multi-party maritime disputes)
-that file existed to validate.
+**`CLAIMS.md`** (repo root) is a generated, complete roster of all 193 UN
+member states plus every registered GeoEntity and their claim relationships
+("None" where there are none), with an "active disputes" summary up top.
+Produced by `scripts/generateClaimsDoc.mjs` (`npm run docs:claims`) reading
+`GeoEntityRegistry` directly — **regenerate it after editing any
+`claimedBy`/`claims`/`countries-un193.json` field; never hand-edit
+`CLAIMS.md` itself.**
 
 ### Entity Resolution (`src/entities/`)
 
