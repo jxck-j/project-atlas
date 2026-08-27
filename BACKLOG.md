@@ -980,29 +980,8 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   actually needs it, to confirm the function's shape is right rather than
   speculative.
 
-## Category Highlighting (v3.3.0)
-
-- **"Only military territories, only sovereign territories" was mapped onto
-  this app's existing six-way classification** (`'strategic-region'` for
-  "military," `'country'` for "sovereign") rather than treated as new
-  category concepts — the request's own wording doesn't exactly match any
-  existing `GeoEntityType` label, so this is an interpretation, not a
-  literal read. Worth confirming, same as other wording-mapping judgment
-  calls in this project's history (Tab's "categories/layers" in v3.2.0,
-  Gibraltar's inclusion in v3.0.0).
-
 ## Not yet verified
 
-- **The Demographics section (`hud/SegmentedBar.tsx`, `hud/IntelligencePanel.tsx`'s DEMOGRAPHICS
-  sub-section, and `hud/AnalyticsPanel.tsx`'s new ETHNICITY/RELIGION tabs, 2026-08-26, re-sourced to
-  UNSD-primary the same day) has never been rendered in an actual browser** — browser extension wasn't
-  connected either session. `tsc -b`/`oxlint`/`npm test`/`npm run build` all pass, and the underlying data
-  was hand-verified against real `src/data/currentStatus.ts` output for several countries (US, Mexico, China,
-  Brazil, Canada, UK, Germany, Taiwan, Ghana, Malaysia), but not visually: the segmented bar's proportional
-  widths at real percentage values (Canada's ~250-entry UNSD ethnicity list is a real stress case for the
-  "Other" bucket's tooltip length), the "Other" segment's hover tooltip (native `title`, multi-line), and the
-  ETHNICITY/RELIGION ranked list's `lg:`-only group columns all need a real look. Dev server was left running
-  at `localhost:5173` for the user to check directly.
 - **A real, hand-sourced US Hispanic/Latino ethnicity override is a genuine open follow-on, not built yet.**
   Verified directly (2026-08-26): UNSD's US ethnicGroups entry uses the same Census Bureau RACE categories
   (White, Black or African American, Asian, ...) Factbook's own text already summarized — no separate
@@ -1031,13 +1010,6 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   have a valid Total row nearby and would currently be trusted as-is). Worth a systematic sanity check (e.g.
   flag any resolved UNSD total that's wildly off from a country's known population) if this data is ever
   promoted beyond portfolio-demo confidence.
-- **`scene/PointerMarker.tsx`'s new, smaller sizing constants (dot radius
-  0.007, callout distance `GLOBE_RADIUS × 1.1`, ±4° swing) were derived by
-  comparing them against the previous, reportedly-oversized values — not
-  by looking at a rendered result.** No browser tooling was available this
-  session either. Worth a real pass to confirm "more subtle" reads as
-  "still findable," not "too subtle to notice" — same open question the
-  `DASH_SIZE`/`GAP_SIZE` item below already flags for a different overlay.
 - **The v3.1.5 "related country" overlay's dual-role case (Gibraltar: UK as
   parent, Spain as claimant, both highlighted simultaneously) has only
   been checked against the data (`tsx`, not a browser)** — confirmed the
