@@ -1362,12 +1362,22 @@ per category:
   matcher); personnel comes from CIA Factbook, the same fallback path every
   other country already uses when WDI has no personnel figure.
 - **Economy**: real (IMF WEO one-off — see Economy above).
-- **Technology**: 2 of 4 components real (R&D expenditure from Taiwan's own
-  NSTC figure; patents-per-million from TIPO, Taiwan's IP office). High-tech
-  exports and the ICT Development Index are genuine, logged gaps — no
-  methodology-matched source exists for either. 2-of-4 coverage is below the
-  3-of-4 floor, so Taiwan's Technology composite is `null`/`'unavailable'`
-  even though both real components are visible in the drilldown/columns.
+- **Technology**: 3 of 4 components real (R&D expenditure from Taiwan's own
+  NSTC figure; patents-per-million from TIPO, Taiwan's IP office; high-tech
+  exports % — added 2026-08-27 — computed directly from UN Comtrade itself,
+  reporter code 490 "Other Asia, nes" (the long-documented code Taiwan's own
+  trade data is filed under, since Comtrade can't publish a Taiwan-labeled
+  reporter), SITC Rev.4-classified export values summed per the OECD/Eurostat
+  high-tech product list, divided by SITC sections 5-8 minus division 68 —
+  same-source, not a cross-source substitute the way Economy's IMF WEO
+  override or Military's CIA Factbook personnel fallback are; see
+  `scripts/buildTechnology.mjs`'s `TAIWAN_HIGH_TECH_EXPORTS_PCT` comment for
+  the full code list, the two transcription errors it fixed against
+  Eurostat's published list, and the sanity check against South Korea/
+  Malaysia's real WDI values). The ICT Development Index remains a genuine,
+  logged gap — ITU doesn't publish Taiwan data at all. 3-of-4 coverage
+  crosses the coverage floor, so Taiwan's Technology composite is now a real
+  `'proxy'`-confidence score, not `null`/`'unavailable'`.
 - **Current Status**: `conflicts: []`, `sanctionTier: null` — both real
   positive facts (UCDP's 25+ battle-death threshold hasn't been crossed;
   no active OFAC program), pushed directly rather than derived from the

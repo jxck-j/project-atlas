@@ -17,6 +17,23 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.10.4 — Technology/Taiwan: closed the high-tech-exports% gap via UN Comtrade
+
+**Intelligence Engine, Technology category.** Taiwan's `highTechExportsPct` component (WDI's `TX.VAL.TECH.MF.ZS`
+has no Taiwan row) is now sourced directly from UN Comtrade itself — reporter code 490 ("Other Asia, nes"),
+the code Taiwan's own trade data is filed under — computed from SITC Rev.4-classified export values against
+the OECD/Eurostat high-tech product list, divided by SITC sections 5-8 minus division 68 ("manufactured
+exports," verified against WDI's own definition). Same-source, unlike Economy's Taiwan override (which
+substitutes IMF WEO for WDI entirely) — this pulls from the same database WDI's own indicator is built from.
+Result: 39.28% (2024), sanity-checked against real WDI peer values (South Korea 36.26%, Malaysia 58.63%).
+
+This crosses Technology's 3-of-4 coverage floor: **Taiwan's Technology composite is now a real
+`'proxy'`-confidence score (96.7) instead of `null`/`'unavailable'`.** Only the ICT Development Index remains
+a genuine, logged gap for Taiwan. See `LOGBOOK.md`'s entry for two real transcription errors found and fixed
+against Eurostat's published SITC4 code list along the way, and why the brief's anticipated HS→SITC4
+conversion step turned out to be unnecessary (Comtrade already serves this reporter's data pre-converted to
+SITC4).
+
 ## v6.10.3 — AnalyticsPanel: fixed a true-zero ranking bug, added an UNMEASURED label
 
 **Bug fix, Intelligence Engine.** Reported directly: sorting Military's ranked list by NUCLEAR put the Bahamas

@@ -308,8 +308,8 @@ async function buildCountryScore(country) {
 // excluded from every other WDI-sourced field in this app), and ITU's own
 // IDI table doesn't cover Taiwan either (confirmed directly — see IDI_2024's
 // own header comment; the raw wikitext's row sequence jumps straight past
-// where Taiwan would sort). Only 2 of the 4 components have a real,
-// citable, methodology-matched alternative source:
+// where Taiwan would sort). 3 of the 4 components now have a real, citable,
+// methodology-matched alternative source:
 //   - rdExpenditurePctGdp: Taiwan's National Science and Technology Council
 //     (NSTC) publishes this figure directly; the precise decimal here is as
 //     republished by Taiwan's Overseas Community Affairs Council (citing
@@ -325,17 +325,25 @@ async function buildCountryScore(country) {
 //     (which excludes Taiwan). "Domestic invention patent applications,
 //     2024" is the resident-filer figure — matches WDI's own resident-only
 //     definition, not the "72,742 total including foreign filers" headline.
-// highTechExportsPct and the ICT Development Index have NO equivalent
-// direct/authoritative source found that matches the underlying
-// methodology (UN Comtrade/WITS's own product classification for the
-// former; ITU doesn't publish Taiwan data at all for the latter) — left as
-// genuine, logged gaps rather than approximated. Population (for the
-// patents-per-million denominator) is IMF WEO's indicator LP, 2024 — the
-// SAME figure src/data/registry/geoEntities.ts's Taiwan record now carries,
-// not a second independently-fetched number.
+//   - highTechExportsPct (2026-08-27): unlike the two components above, this
+//     one is NOT a cross-source substitute — it's computed same-source, from
+//     UN Comtrade itself, the exact database WDI's TX.VAL.TECH.MF.ZS is
+//     built from. UN Comtrade carries Taiwan's own trade data under reporter
+//     code 490, "Other Asia, nes" — a long-documented workaround (confirmed
+//     directly against the UN Comtrade Help Center's own "Taiwan, Province
+//     of China Trade data" page): Taiwan reports its trade to Comtrade like
+//     any other economy, but for political reasons Comtrade can't publish it
+//     under a Taiwan-labeled reporter code, so it's filed under this
+//     generic-sounding code instead, which in practice carries only Taiwan's
+//     data. See TAIWAN_HIGH_TECH_EXPORTS_PCT's own comment below for the
+//     computation. ICT Development Index remains the one genuine, logged
+//     gap — ITU doesn't publish Taiwan data at all, and no equivalent
+//     direct/authoritative source was found. Population (for the
+//     patents-per-million denominator) is IMF WEO's indicator LP, 2024 — the
+//     SAME figure src/data/registry/geoEntities.ts's Taiwan record now carries,
+//     not a second independently-fetched number.
 // ---------------------------------------------------------------------------
 function buildTaiwanRecord() {
-  logGap('Taiwan', 'High-tech exports (% of manufactured exports)', 'No WDI entry (structural exclusion) and no directly comparable WITS/Comtrade-methodology figure found — left unscored.')
   logGap('Taiwan', 'ICT Development Index', 'No ITU IDI 2024 entry for Taiwan — not published/not an ITU member — left unscored.')
   return {
     id: 'taiwan',
@@ -345,7 +353,7 @@ function buildTaiwanRecord() {
       rdExpenditurePctGdp: { value: 4.0, year: 2023 },
       patentApplicationsResident: { value: 19586, year: 2024 },
       population: { value: 23_400_220, year: 2024 },
-      highTechExportsPct: { value: undefined, year: undefined },
+      highTechExportsPct: { value: TAIWAN_HIGH_TECH_EXPORTS_PCT, year: 2024 },
     },
   }
 }
@@ -357,10 +365,74 @@ function buildTaiwanRecord() {
 const TAIWAN_RD_SOURCE_URL = 'https://www.ocac.gov.tw/OCAC/Eng/Pages/Detail.aspx?nodeid=329&pid=78934030'
 const TAIWAN_PATENTS_SOURCE_URL = 'https://www.tipo.gov.tw/en/cp-896-1001221-28301-2.html'
 
+// ---------------------------------------------------------------------------
+// TAIWAN_HIGH_TECH_EXPORTS_PCT (2026-08-27) — computed from UN Comtrade
+// itself, reporter code 490 ("Other Asia, nes" — see buildTaiwanRecord's own
+// TAIWAN comment for why that code is Taiwan's), SITC Rev.4 classification,
+// flow X (exports), partner 0 (World), period 2024 — the most recent year
+// Comtrade has an SITC4-classified dataset for this reporter. Fetched
+// 2026-08-27 via the public (no-subscription-key) preview endpoint,
+// https://comtradeapi.un.org/public/v1/preview/C/A/S4 — 500-record/call cap,
+// unlimited calls/day; every code below returned in a single call (77 of 86
+// requested distinct codes had a nonzero record — the other 9 returned zero
+// records on a direct re-query too, confirmed genuine no-trade rather than
+// an API artifact).
+//
+// HAND-VERIFIED AGAINST EUROSTAT'S OWN PUBLISHED SITC4 HIGH-TECH PRODUCT
+// LIST (ec.europa.eu/eurostat/statistics-explained/images/1/1d/
+// High_tech_product_codes.pdf, the OECD-developed list WDI's own
+// TX.VAL.TECH.MF.ZS methodology is built from) rather than trusting the code
+// list as originally handed off — two real errors found and fixed:
+//   - Electrical machinery's exclusion list had "778.66" mistyped as an
+//     extra-digit "777866"; corrected to 77866.
+//   - Aerospace was missing code 7923 (one of three weight-class splits,
+//     792.2/792.3/792.4, under "aeroplanes and other aircraft,
+//     mechanically-propelled (other than helicopters)") — added.
+// Every other code checked out exactly against Eurostat's table. Because the
+// codes are queried directly against Comtrade's own SITC4-CLASSIFIED
+// dataset for reporter 490 (Comtrade converts from the reporter's original
+// HS submission to SITC4 server-side), this sidesteps the HS->SITC4
+// conversion step — and the "776.4 sub-codes not broken out" gap WDI's own
+// Oct 2024 methodology note flags for HAND conversions — entirely; nothing
+// here is HS-classified or hand-converted.
+//
+// MANUFACTURED EXPORTS (the % denominator) verified against
+// TX.VAL.MANF.ZS's own definition before trusting the prompt's assumption:
+// "Manufactures comprise commodities in SITC sections 5 (chemicals), 6
+// (basic manufactures), 7 (machinery and transport equipment), and 8
+// (miscellaneous manufactured goods), excluding division 68 (non-ferrous
+// metals)" — section/division numbering is unchanged between SITC Rev.3
+// (where this definition text is written) and Rev.4, so it applies as-is.
+//
+// Per-category totals (raw FOB export value, US$, 2024) and the final
+// composite, computed from the fetched Comtrade rows:
+//   Aerospace                    1,262,730,446
+//   Computers/office machines   99,040,076,269
+//   Electronics/telecom         54,047,874,757
+//   Pharmacy                       217,830,039
+//   Scientific instruments      13,790,932,527
+//   Electrical machinery         3,233,506,781
+//   Chemistry                    1,773,685,515
+//   Non-electrical machinery       918,435,503
+//   Armament                       164,983,178
+//   HIGH-TECH TOTAL            174,450,055,014
+//   Manufactured (5+6+7+8-68)  444,115,674,121
+//   => 174,450,055,014 / 444,115,674,121 * 100 = 39.28%
+//
+// SANITY CHECK before wiring in (per the build brief's explicit
+// instruction): 39.28% sits between South Korea's WDI TX.VAL.TECH.MF.ZS
+// 2024 value (36.26%) and Malaysia's (58.63%) — consistent with a
+// semiconductor/ICT-dominated export profile, not a bug-shaped low
+// single-digit result.
+// ---------------------------------------------------------------------------
+const TAIWAN_HIGH_TECH_EXPORTS_PCT = 39.28
+const TAIWAN_HIGH_TECH_EXPORTS_SOURCE_URL =
+  'https://comtradeapi.un.org/public/v1/preview/C/A/S4?reporterCode=490&period=2024&partnerCode=0&flowCode=X'
+
 console.log(`Building Technology scores for ${countries.length} ${isSample ? 'sample' : ''} countries...`)
 const built = await mapWithConcurrency(countries, 8, buildCountryScore)
 built.push(buildTaiwanRecord())
-console.log('Added Taiwan (NSTC/OCAC-sourced R&D%, TIPO-sourced patents — see TAIWAN header comment; high-tech exports% and ICT IDI left as genuine gaps).')
+console.log('Added Taiwan (NSTC/OCAC-sourced R&D%, TIPO-sourced patents, UN Comtrade-sourced high-tech exports% — see TAIWAN header comment; ICT IDI left as a genuine gap).')
 
 // Patents per million population — computed here (not per-country in
 // buildCountryScore) so it can be normalized with the same
@@ -421,7 +493,10 @@ function finalizeCountry(r) {
       raw: r.raw.highTechExportsPct.value ?? null,
       normalized: highTechPct,
       year: r.raw.highTechExportsPct.year,
-      sourceUrl: wbUrl(r.alpha3, HIGH_TECH_EXPORTS_INDICATOR),
+      // Taiwan's figure is UN Comtrade-sourced directly (reporter 490), not
+      // WDI (which has no Taiwan entry) — see buildTaiwanRecord's own TAIWAN
+      // comment and TAIWAN_HIGH_TECH_EXPORTS_PCT's comment above.
+      sourceUrl: r.id === 'taiwan' ? TAIWAN_HIGH_TECH_EXPORTS_SOURCE_URL : wbUrl(r.alpha3, HIGH_TECH_EXPORTS_INDICATOR),
     },
     ictDevelopmentIndex: {
       raw: idiRaw,

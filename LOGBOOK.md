@@ -5,6 +5,65 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-27 (cont.) — Technology/Taiwan: high-tech exports% closed via UN Comtrade (same-source), not a cross-source substitute
+
+Direct request, with a specific build recipe: close Taiwan's `highTechExportsPct` gap (component 3 of 4,
+`TX.VAL.TECH.MF.ZS` — WDI has no Taiwan row) the same way Economy's Taiwan override closes its own WDI gaps,
+but **same-source** rather than cross-source. Economy's precedent (`buildEconomy.mjs`'s `buildTaiwanScore()`)
+substitutes a *different* organization's data (IMF WEO) for WDI's. This one instead computes the figure from
+WDI's own underlying source, UN Comtrade — Comtrade carries Taiwan's real trade data, just filed under
+reporter code 490 ("Other Asia, nes"), a long-documented workaround (confirmed against the UN Comtrade Help
+Center's own "Taiwan, Province of China Trade data" page) that exists because Comtrade can't publish a
+Taiwan-labeled reporter for political reasons, even though Taiwan reports its trade like any other economy.
+
+**Judgment call 1 — skipped the HS→SITC4 conversion the brief assumed was necessary.** The brief's build
+recipe assumed Comtrade only has reporter 490's data in HS classification, requiring a manual HS→SITC4
+conversion via UN's correlation tables — and pre-flagged a known gap in that conversion (WDI's Oct 2024
+metadata note: HS2022→SITC4 tables don't break out product 776's sub-codes, causing false zeros unless code
+776 is summed in its entirety). Checked first, rather than assuming the brief's premise: hit Comtrade's public
+`getDA` endpoint for reporter 490 under classification `S4` directly
+(`https://comtradeapi.un.org/public/v1/getDA/C/A/S4?reporterCode=490`) and found Comtrade has *already*
+server-side-converted this reporter's data into SITC Rev.4 for every year 2009-2024, no HS conversion needed
+on this end at all. Queried the SITC4-classified dataset directly instead — this sidesteps the 776-sub-code
+gap entirely (nothing here is HS-classified or hand-converted), and is arguably a *more* accurate figure than
+a hand-rolled HS→SITC4 conversion would have produced.
+
+**Judgment call 2 — hand-verified the brief's SITC4 code list against Eurostat's own published table
+(ec.europa.eu/eurostat/statistics-explained/images/1/1d/High_tech_product_codes.pdf, the OECD-developed list
+WDI's own methodology is built from) rather than trusting it as handed off, per the brief's own "verify before
+trusting" instruction — and found two real errors:**
+1. Electrical machinery's exclusion list had `778.66` mistyped with an extra digit (`777866` instead of
+   `77866`).
+2. Aerospace was missing code `792.3` — one of three weight-class splits (792.2/792.3/792.4) under "aeroplanes
+   and other aircraft, mechanically-propelled (other than helicopters)."
+
+Used the corrected list (see `scripts/buildTechnology.mjs`'s `TAIWAN_HIGH_TECH_EXPORTS_PCT` comment for the
+full code set and per-category totals) rather than the as-given one — the uncorrected list would have silently
+undercounted both categories.
+
+**Judgment call 3 — verified the "manufactured exports" denominator convention** (SITC sections 5-8 minus
+division 68) against `TX.VAL.MANF.ZS`'s own definition text rather than assuming the brief's stated convention
+was right: confirmed via web search ("Manufactures comprise commodities in SITC sections 5 (chemicals), 6
+(basic manufactures), 7 (machinery and transport equipment), and 8 (miscellaneous manufactured goods),
+excluding division 68 (non-ferrous metals)") — the definition text is written against SITC Rev.3, but
+section/division numbering for 5/6/7/8/68 is unchanged in Rev.4, so it applies as-is.
+
+**Result**: 39.28% (2024) — sanity-checked against real WDI values for peer semiconductor/ICT-exporting
+economies before wiring it in (South Korea 36.26%, Malaysia 58.63% — Taiwan sits between them, not a
+bug-shaped low single-digit result). This crosses Technology's 3-of-4 coverage floor: Taiwan's composite is
+now a real `'proxy'`-confidence score (96.7) instead of `null`/`'unavailable'`. Only the ICT Development Index
+remains a genuine, logged gap for Taiwan — ITU doesn't publish Taiwan data at all, and no direct/authoritative
+substitute was found (same conclusion as before this change; not investigated further here, out of scope).
+
+Data pulled via Comtrade's public (no-subscription-key) preview endpoint — unlimited calls/day, 500
+records/call cap; the entire ~86-code query fit in one call. Hardcoded as a snapshot constant
+(`TAIWAN_HIGH_TECH_EXPORTS_PCT`), not a live-refreshing pull — same treatment as every other Taiwan override
+in this script and `buildEconomy.mjs`'s IMF WEO one, since none of these are wired into an automated re-run
+path the way the 193-country WDI loop is.
+
+Verified `tsc -b --noEmit`/`oxlint` clean; `--sample` dry run confirmed Taiwan's confidence flipped from
+`'unavailable'` to `'proxy'` before running the full 193-country build.
+
 ## 2026-08-27 — AnalyticsPanel: true-zero ranking bug (Bahamas at rank 21 on NUCLEAR), UNMEASURED label
 
 Direct report: sorting Military's ranked list by NUCLEAR put the Bahamas at rank 21, well ahead of most
