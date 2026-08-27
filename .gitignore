@@ -22,3 +22,10 @@ yarn-error.log*
 
 # local Claude Code settings (machine-specific paths/permissions)
 .claude/settings.local.json
+
+# Raw Statistics Canada CSD boundary source (~150MB uncompressed shapefile) —
+# too large to commit unlike every other scripts/vendor/ source (all under
+# GitHub's 50MB per-file threshold). Fetch by hand per scripts/vendor/README.md;
+# scripts/buildCanadaCitiesData.mjs's processed output (public/geo/) is what
+# actually ships and IS committed.
+scripts/vendor/canada/

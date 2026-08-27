@@ -61,6 +61,12 @@ interface SelectionState {
   // flyToUsCity below, which is the only setter (set together with
   // flyToTarget in one atomic update, never on its own).
   usCityOutline: { id: string; stateAbbrev: string; name: string } | null
+  // Canadian counterpart to usCityOutline — same reasoning, set by
+  // flyToCaCity() below. A separate field rather than generalizing
+  // usCityOutline's shape (e.g. a `region`-named key) since the two
+  // datasets' UI integrations are still deliberately parallel, not shared —
+  // see useCanadaCitiesIndex.ts's header comment.
+  caCityOutline: { id: string; provinceAbbrev: string; name: string } | null
 }
 
 const useSelectionStore = create<SelectionState>(() => ({
@@ -71,6 +77,7 @@ const useSelectionStore = create<SelectionState>(() => ({
   flyToTarget: null,
   flyToTargetSeq: 0,
   usCityOutline: null,
+  caCityOutline: null,
 }))
 
 export interface SelectEntityOptions {
@@ -102,6 +109,7 @@ export function selectEntity(entity: ResolvedEntity, direction: Vector3, options
     selected: { entity, id: entity.id, name: entity.name, direction },
     inspectorOpen: shouldOpen ? true : state.inspectorOpen,
     usCityOutline: null,
+    caCityOutline: null,
   }))
 }
 
@@ -129,7 +137,7 @@ export function selectCountry(country: { id: string; name: string; direction: Ve
 }
 
 export function clearSelection() {
-  useSelectionStore.setState({ selected: null, inspectorOpen: false, usCityOutline: null })
+  useSelectionStore.setState({ selected: null, inspectorOpen: false, usCityOutline: null, caCityOutline: null })
 }
 
 // v3.2.0. Opening does nothing without a selection to show — there's
@@ -174,6 +182,21 @@ export function flyToUsCity(direction: Vector3, target: { id: string; stateAbbre
     flyToTarget: direction,
     flyToTargetSeq: state.flyToTargetSeq + 1,
     usCityOutline: target,
+    caCityOutline: null,
+  }))
+}
+
+// Canadian counterpart to flyToUsCity — same atomic-update reasoning, shares
+// the same flyToTarget/flyToTargetSeq fields (useCameraFlight.ts's flight
+// trigger is already generic over "a bare direction," not US-specific) and
+// clears usCityOutline so a Canadian and a US city outline can't both be
+// showing at once.
+export function flyToCaCity(direction: Vector3, target: { id: string; provinceAbbrev: string; name: string }) {
+  useSelectionStore.setState((state) => ({
+    flyToTarget: direction,
+    flyToTargetSeq: state.flyToTargetSeq + 1,
+    usCityOutline: null,
+    caCityOutline: target,
   }))
 }
 
@@ -185,6 +208,7 @@ export function resetView() {
     inspectorOpen: false,
     resetSeq: state.resetSeq + 1,
     usCityOutline: null,
+    caCityOutline: null,
   }))
 }
 

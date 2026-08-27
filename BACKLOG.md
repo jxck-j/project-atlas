@@ -168,6 +168,19 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   which country each Territory belongs to) have no equivalent generated
   register. Could be a second section in `CLAIMS.md` or a sibling generated
   doc if that information turns out to be useful outside the app itself.
+- **`buildCountryTopology.mjs`'s `SIMPLIFY_QUANTILE` comment likely describes
+  the wrong direction** — found while tuning `buildCanadaCitiesData.mjs`'s
+  own simplification (see `GEO_ENGINE_CHANGELOG.md`'s Canada entry):
+  empirically, a *lower* quantile removes more points (more aggressive), not
+  a higher one, which is the opposite of what the comment
+  ("raise it for more aggressive simplification") says — traced to
+  `topojson-simplify`'s `quantile()` sorting its weight array descending
+  before indexing, which inverts the naive reading. `0.35` still visibly
+  produces correct country borders in production, so this is a
+  documentation-accuracy issue, not a functional bug — worth fixing the
+  comment (and double-checking `buildStatesProvincesTopology.mjs`/
+  `buildEntityTopology.mjs`'s identical comments) next time someone's
+  already in that file, not urgent on its own.
 - **`data/registry/GeoEntityRegistry.ts`'s `getRelatedEntities()` has no
   UI consumer yet** — built as general-purpose infrastructure for the
   claims overlay and future relationship-graph views, but only

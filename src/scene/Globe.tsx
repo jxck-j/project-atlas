@@ -12,6 +12,8 @@ import { GeoEntities } from './GeoEntities'
 import { PointerMarker } from './PointerMarker'
 import { UsCityOutlineHighlight } from './UsCityOutlineHighlight'
 import { UsCityLabels } from './UsCityLabels'
+import { CanadaCityOutlineHighlight } from './CanadaCityOutlineHighlight'
+import { CanadaCityLabels } from './CanadaCityLabels'
 import { CountryLabels } from './CountryLabels'
 import { LayerEngine } from '../layers'
 import { GLOBE_RADIUS as RADIUS } from './constants'
@@ -182,6 +184,8 @@ export function Globe() {
       <CountryLabels />
       <UsCityOutlineHighlight />
       <UsCityLabels />
+      <CanadaCityOutlineHighlight />
+      <CanadaCityLabels />
       <WaterLabels occluder={coreSphereRef} />
       <LayerEngine />
 

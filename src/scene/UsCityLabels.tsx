@@ -143,7 +143,14 @@ interface CityCandidate extends DeclutterCandidate {
 
 export function UsCityLabels() {
   const allCities = useUsCitiesIndex()
-  const { selected, usCityOutline } = useSelection()
+  // Deliberately does NOT hide on `selected` (a country/province selection)
+  // — only while an actual city outline is in focus (either country's, see
+  // CanadaCityLabels.tsx), a narrower "one specific city" moment. Used to
+  // also blank out on any selection, mirroring WaterLabels.tsx's identical
+  // pattern, but reported directly as "the highlight masks everything" once
+  // cities became real content rather than a decorative afterthought —
+  // WaterLabels itself is unchanged, this was scoped to cities only.
+  const { usCityOutline, caCityOutline } = useSelection()
   const { camera, size } = useThree()
   const [visible, setVisible] = useState<CityCandidate[]>([])
   const lastRun = useRef(0)
@@ -155,7 +162,7 @@ export function UsCityLabels() {
     if (now - lastRun.current < DECLUTTER_INTERVAL_MS) return
     lastRun.current = now
 
-    if (selected || usCityOutline) {
+    if (usCityOutline || caCityOutline) {
       if (visible.length > 0) setVisible([])
       return
     }

@@ -64,3 +64,58 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   precedents above. Raising that constant (up to 6, for full coverage) is
   the upgrade path later, no pipeline redesign required. Decorative-only,
   same reasoning as lakes above.
+
+## `canada/lcsd000b21a_e.{shp,shx,dbf,prj,xml}` — NOT committed
+
+- **Source:** Statistics Canada 2021 Census Subdivision (CSD) cartographic
+  boundary file — the Canadian equivalent of the US Census "Places" layer
+  `scripts/vendor/census/` already vendors (see `buildUsCitiesData.mjs`'s own
+  header comment). Direct, no-login download:
+  `https://www12.statcan.gc.ca/census-recensement/2021/geo/sip-pis/boundary-limites/files-fichiers/lcsd000b21a_e.zip`
+- **Fetched:** 2026-08-27.
+- **License:** Statistics Canada data is available under the Open Government
+  Licence – Canada (free reuse with attribution); see
+  `www.statcan.gc.ca/en/reference/licence`.
+- **NOT committed, unlike every other source in this file** — the shapefile
+  unzips to ~300MB, far past GitHub's 50MB per-file threshold every other
+  vendored source here respects (the US Census place file, at ~45MB total
+  across its four parts, is the closest comparison and stays under it).
+  `scripts/vendor/canada/` is gitignored; fetch the zip above by hand,
+  unzip it into `scripts/vendor/canada/lcsd000b21a_e/`, and run `npm run
+  build:geo:canada-cities` — only that script's processed output
+  (`public/geo/canada-cities/`) is committed.
+- **Coordinate system caveat:** ships in "NAD83 / Statistics Canada Lambert"
+  (a projected CRS, meters), not geographic lat/lng like every other source
+  in this file — confirmed via the shapefile's own `.prj` sidecar.
+  `buildCanadaCitiesData.mjs` reprojects every ring with `proj4` (added as a
+  devDependency for this) before anything downstream touches the
+  coordinates. No other vendored source here has needed this.
+- **Coverage caveat:** excludes CSDs typed `'NO'`/`'SNO'` (Statistics
+  Canada's own "Unorganized"/"Subdivision of Unorganized" statistical
+  catch-all for land not part of a real named municipality, confirmed
+  against StatCan's own CSD type dictionary) — these aren't settlements, and
+  also happen to be the dataset's biggest outliers by raw size (three of
+  them in Nunavut alone accounted for ~99% of that province's unsimplified
+  shard weight). 4,931 of 5,161 source CSDs kept.
+
+## `canada/population-98100002.zip` — Population by CSD
+
+- **Source:** Statistics Canada Table 98-10-0002-01 ("Population and
+  dwelling counts: Canada, provinces and territories, census subdivisions"),
+  fetched via the StatCan Web Data Service (WDS) API's
+  `getFullTableDownloadCSV` endpoint rather than the interactive table
+  browser — a direct, no-login CSV export, the same "found direct path"
+  pattern `buildMilitary.mjs`'s SIPRI TIV endpoint and `buildCurrentStatus.mjs`'s
+  UNSD zipped-CSV export already use elsewhere in this project.
+- **Fetched:** 2026-08-27.
+- **License:** Open Government Licence – Canada, same as the boundary file
+  above.
+- **Committed** (unlike the boundary file above) — the CSV is ~550KB
+  zipped, well within every other vendored source's size norm here.
+- **Join key:** the table's `DGUID` column is directly comparable to the
+  boundary shapefile's own `DGUID` property for a CSD-level row (both are
+  `"2021A0005"` + `CSDUID`) — no name-matching pass needed, unlike
+  `buildUsCitiesData.mjs`'s hand-curated state-capital list. The table mixes
+  every geography level (Canada, provinces, census divisions, CSDs) in one
+  file; `buildCanadaCitiesData.mjs` filters to CSD-level rows by DGUID
+  schema-type prefix before joining.

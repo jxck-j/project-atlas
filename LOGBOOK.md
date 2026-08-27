@@ -5,6 +5,75 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-08-27 — Geo Data Engine: Canada city boundaries, scope, branch, and a simplification-direction surprise
+
+**Scope and branch, decided up front.** Extending `buildUsCitiesData.mjs`'s
+city-boundary approach beyond the US started with two open questions: which
+countries, and where. "North America" was narrowed to Canada + Mexico only —
+Central America/Caribbean nations have much less consistent official
+boundary data, and taking them on in the same pass would have meant doing
+real per-country data-quality triage before writing a line of code, rather
+than after. This branch, not `main`, was the obvious place — its whole
+documented purpose is prototyping exactly this next tier of geographic data
+before it's judged ready for `main` (rivers/lakes already set that precedent
+this cycle). See `GEO_ENGINE_README.md` for what's actually built vs. still
+open.
+
+**The raw source didn't fit this project's existing vendoring assumption.**
+Every `scripts/vendor/` source up to now gets committed directly — even the
+~45MB US Census place shapefile stays under GitHub's 50MB per-file warning.
+Statistics Canada's 2021 CSD cartographic boundary file unzips to ~300MB.
+Rather than force-fit it into the existing pattern, `scripts/vendor/canada/`
+is gitignored and documented as a hand-fetch step in `scripts/vendor/README.md`
+— only `buildCanadaCitiesData.mjs`'s processed output ships. First source
+this project has needed to handle this way.
+
+**First vendored geo source that isn't already lat/lng.** Confirmed via the
+shapefile's own `.prj` sidecar: NAD83 / Statistics Canada Lambert, a
+projected CRS in meters, not geographic coordinates. Every other geometry
+source this codebase has ever touched (Natural Earth, US Census) ships
+lat/lng already. Added `proj4` as a devDependency and reprojected every ring
+before anything downstream (centroid, search index, rendering) touches the
+coordinates — no prior script in this codebase needed this, so there was no
+pattern to copy.
+
+**A naive first pass wrote a 752MB combined output — 5,161 CSDs, no
+filtering, no simplification, mirroring `buildUsCitiesData.mjs`'s "no
+simplification needed" assumption.** That assumption doesn't hold for
+Canada: US Census "Places" are already small/compact per feature, but a CSD
+can legitimately be a sparse rural or northern administrative unit covering
+a huge, complex-coastline area. Nunavut's shard alone was 211MB. Inspecting
+it by per-feature byte size found the actual cause: 3 of its 31 features —
+all typed `'NO'` ("Unorganized," Statistics Canada's own statistical
+catch-all for land outside any real named municipality, confirmed against
+StatCan's CSD type dictionary) — accounted for ~99% of that province's
+weight (one of them, "Qikiqtaaluk, Unorganized," alone serialized to ~49MB).
+These aren't settlements in the first place, so excluding CSDTYPE
+`'NO'`/`'SNO'` (230 of 5,161 nationally) was both the correct semantic call
+and the fix — Nunavut's shard dropped to 183KB.
+
+**Applying `topojson-simplify` per-province on top of that surfaced a real
+misunderstanding — direction, not magnitude.** Following
+`buildCountryTopology.mjs`'s existing comment ("raise it for more aggressive
+simplification"), the first attempt raised `SIMPLIFY_QUANTILE` from 0.35 to
+0.9 to shrink the still-oversized remaining shards. Output got *larger*
+(533MB, up from 274MB). A direct point-count measurement at several
+quantiles confirmed the relationship runs backward from the comment: fewer
+points survive at a *lower* quantile. Traced into `topojson-simplify`'s own
+source — `quantile()` sorts its weight array **descending** before indexing
+by percentile, which inverts the naive "higher percentile keeps more"
+reading. Since `0.35` has clearly been producing visually-correct country
+borders in production, the actual library behavior at that value is
+presumably fine — this looks like the *comment's description* is backwards,
+not the tuned constant itself. Not chased further into
+`buildStatesProvincesTopology.mjs`/`buildEntityTopology.mjs` (same comment,
+unverified) since it's out of this branch's scope — flagged in
+`BACKLOG.md` instead. Landed on `SIMPLIFY_QUANTILE = 0.05` for Canada
+(considerably more aggressive than the 0.35 every other script here uses,
+because CSD-level detail is denser than country/admin-1-level detail to
+start with) after confirming a real city (Toronto, 44KB) still comes out a
+recognizable shape at that setting, not a degenerate triangle.
+
 ## 2026-08-08 — v5.1.0: the black hole was a flat triangle sagging below a curved sphere
 
 **Root cause of the v5.0.0 black-gap defect, finally found.** Every
