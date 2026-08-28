@@ -1,21 +1,25 @@
 import type { LodLevel, LodLevelId } from './types'
 
-// The ordered zoom ladder, shallowest (least detail) first. Distance
-// thresholds for the implemented city tiers are the same values
-// UsCityLabels.tsx's old REVEAL_TIERS already tuned by eye across this
-// session (Hattiesburg's off-screen-candidate bug, then the Gulfport/
-// Biloxi spacing-collision fix) — carried forward rather than re-guessed,
-// since they were already validated in the browser. `every-incorporated-
-// city`'s 2.52 is a deliberately independent, hand-tuned number, NOT
-// derived from CAMERA_MIN_DISTANCE (scene/constants.ts) even though the
-// two happen to be close — this level's reveal point is a product/legibility
-// decision (when does "show literally everything" start making sense),
-// while CAMERA_MIN_DISTANCE is a rendering-safety limit (how close the
-// camera can physically get before country/state mesh shells break — see
-// that constant's own comment). Tying them together made an unrelated
-// camera-safety tweak silently retune this level's product behavior the
-// last time CAMERA_MIN_DISTANCE moved; keeping them separate means each
-// can change for its own reason without touching the other.
+// The ordered zoom ladder, shallowest (least detail) first.
+//
+// 2026-08-27 retune: the city tiers (metro-areas through small-cities) used
+// to be crammed into 2.85-2.55 — a sliver right next to CAMERA_MIN_DISTANCE
+// (2.5) with no city content anywhere above it. CAMERA_FOCUS_DISTANCE
+// (scene/constants.ts, 4.8 = GLOBE_RADIUS * 2.0 — where the camera lands
+// when a country/GeoEntity is SELECTED, not just hovered) was nowhere near
+// any of them, so the single most common "zoom in" action in the app —
+// clicking a country — revealed zero cities regardless of that country's
+// size. Reported directly by an outside tester as "you have to zoom in too
+// far to see anything." Re-anchored so `metro-areas` reveals AT
+// CAMERA_FOCUS_DISTANCE exactly — selecting a country now always shows its
+// biggest cities immediately — with the rest of the ladder spread out
+// underneath it rather than bunched at the bottom. `every-incorporated-
+// city`'s 2.52 is unchanged: showing literally every place, however small,
+// is still deliberately gated to the closest zoom, independent of
+// CAMERA_MIN_DISTANCE (2.5) for the same reason as before — that's a
+// rendering-safety limit, not a product decision about this tier, and
+// tying them together would let an unrelated camera-safety tweak silently
+// retune this level's behavior.
 export const LOD_LEVELS: LodLevel[] = [
   {
     id: 'earth',
@@ -55,29 +59,29 @@ export const LOD_LEVELS: LodLevel[] = [
   {
     id: 'metro-areas',
     label: 'Major Metropolitan Areas',
-    description: 'US cities scored (by population, capitals floored) at 700,000+.',
-    revealDistance: 2.85,
+    description: 'Cities scored (by population, capitals floored) at 700,000+ — revealed at CAMERA_FOCUS_DISTANCE, so selecting a country always shows its biggest cities immediately.',
+    revealDistance: 4.8,
     implemented: true,
   },
   {
     id: 'large-cities',
     label: 'Large Cities',
-    description: 'US cities scored at 250,000+.',
-    revealDistance: 2.7,
+    description: 'Cities scored at 250,000+.',
+    revealDistance: 4.0,
     implemented: true,
   },
   {
     id: 'medium-cities',
     label: 'Medium Cities',
-    description: 'US cities scored at 100,000+.',
-    revealDistance: 2.6,
+    description: 'Cities scored at 100,000+.',
+    revealDistance: 3.4,
     implemented: true,
   },
   {
     id: 'small-cities',
     label: 'Small Cities',
-    description: 'US cities scored at 30,000+.',
-    revealDistance: 2.55,
+    description: 'Cities scored at 30,000+.',
+    revealDistance: 2.9,
     implemented: true,
   },
   {

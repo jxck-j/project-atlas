@@ -79,3 +79,12 @@ outline and reveals the passive population-ranked label in its place, and
 confirmed zero console errors through the whole flow. `npm run build` also
 verified clean. See `GEO_ENGINE_README.md`'s Canada section for the full
 verification note.
+
+## City-tier LOD retune — selecting a country no longer hides its cities, and reveal distances widened (2026-08-27)
+
+**Two separate, cross-cutting fixes**, both reported by real testers (a second person testing the app, and directly by the user), both landing here rather than as one-off Canada tweaks since they affect `UsCityLabels.tsx` identically.
+
+1. `UsCityLabels.tsx`/`CanadaCityLabels.tsx` no longer hide on `selected` (a country/province pick) — only while an actual city outline (either country's) is in focus. Previously mirrored `WaterLabels.tsx`'s blanket "hide on any selection" pattern, which read as "the highlight masks everything" once city labels became real content. `WaterLabels.tsx` itself is unchanged.
+2. `src/lod/lodLevels.ts`'s city tiers were re-anchored: `metro-areas` now reveals at `CAMERA_FOCUS_DISTANCE` (4.8) instead of 2.85, with `large-cities`/`medium-cities`/`small-cities` spread out underneath (4.0/3.4/2.9) rather than crammed into a 0.3-unit sliver next to `CAMERA_MIN_DISTANCE`. Previously, selecting a country — the single most common "zoom in" interaction — landed at 4.8 and revealed zero cities regardless of that country's size, reported directly as "you have to zoom in too far to see anything." `every-incorporated-city` (2.52) is unchanged. `lodLevels.test.ts`'s hardcoded boundary-value tests were updated alongside (they're deliberately written to fail on a silent threshold change — see that file's own header comment — so this was an expected, not surprising, test update).
+
+Verified: `tsc -b`/`oxlint`/`vitest` (60/60) all pass, and confirmed live — selected Canada via search, zoomed into the resulting screenshot, and found TORONTO/WINNIPEG/CHICAGO/NEW YORK all rendering immediately at the landing distance with no further zoom.
