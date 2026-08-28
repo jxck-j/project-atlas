@@ -19,11 +19,17 @@ export type SideNavId =
   | 'environment'
   | 'weather'
   | 'filters'
+  | 'alliances'
 
-// Which top-bar tab is active. Only 'map' has anything behind it today —
-// the other three are rendered inactive (see TopNav.tsx) because no
-// corresponding view exists.
-export type TopNavTab = 'map' | 'intelligence' | 'layers' | 'analytics' | 'database'
+// Which top-bar tab is active. 'map' and 'analytics' have a real view
+// behind them (see TopNav.tsx); the rest are rendered inactive because no
+// corresponding view exists yet. 'news' (previously 'layers' — replaced
+// since SideRail already owns layer selection, making a top-bar LAYERS tab
+// redundant) has no view either, same as 'database'. 'intelligence' was
+// dropped entirely in v6.9.2 — direct decision, judged redundant with
+// IntelligencePanel.tsx (per-entity) and AnalyticsPanel.tsx (cross-country
+// rankings), which already cover the Intelligence Engine.
+export type TopNavTab = 'map' | 'news' | 'analytics' | 'database'
 
 const useNavStore = create<{ section: SideNavId; tab: TopNavTab; sideRailCollapsed: boolean }>(() => ({
   section: 'overview',

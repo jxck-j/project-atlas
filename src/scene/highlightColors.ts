@@ -61,7 +61,7 @@ export const HIGHLIGHT_COLORS = {
   // a claimant (Taiwan -> China). Deliberately one color/one role for both:
   // from the viewer's perspective "which country is connected to what I
   // selected" is one question, answered by ClaimsOverlayLayer.tsx's
-  // RelatedCountryMarker label ("PARENT — NETHERLANDS" vs.
+  // RelatedCountryMarker label ("SOVEREIGN — NETHERLANDS" vs.
   // "CLAIMANT — CHINA") rather than by a second color to memorize. See
   // LOGBOOK.md's v3.1.5 entry.
   // O — orange: a warm accent, clearly distinct from claimsOverlay's red
@@ -79,6 +79,11 @@ export const HIGHLIGHT_COLORS = {
   // and "highlight strategic regions" is looking at the same *kind* of cue
   // (a category-wide accent) each time, not a fact that needs its own
   // color to stay distinguishable the way claimed-vs-claimant did.
+  // Reused again (not a new 8th slot — see this file's own "exactly 7 hues"
+  // note above) by layers/geoOverlays/AllianceHighlightLayer.tsx: "every
+  // member country of the selected alliance" is the same kind of group-wide
+  // accent as a category highlight, just grouped by alliance instead of by
+  // GeoEntityType/country.
   // V — violet: the spectrum's last hue, distinct from selected's indigo by
   // both hue and lightness (also validated as an adjacent pair, since this
   // is claimsOverlay/relatedCountry's neighbor in the legend).

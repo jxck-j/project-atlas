@@ -31,6 +31,45 @@ const SIMPLIFIED_PROVENANCE = {
   source: 'Simplified entry — not a comprehensive or authoritative dataset.',
 }
 
+// Provenance for an entity whose population/gdpUsd came from
+// scripts/buildGeoEntityEconomics.mjs's World Bank WDI lookup — used in
+// place of SIMPLIFIED_PROVENANCE on entries below that have real sourced
+// figures, since population/gdpUsd are now a cited, verifiable number
+// rather than an editorial judgment call. This does NOT mean the rest of
+// the entity's data (parentEntity/administeredBy/claimedBy) is any less
+// simplified/hand-curated than every other entry in this file — the
+// generated `source` string says so explicitly, since GeoEntity has only
+// one `provenance` field for the whole record, not one per field.
+function wdiProvenance(wdiName: string, wdiCode: string, populationYear?: number, gdpYear?: number) {
+  const parts = [`World Bank WDI, entity "${wdiName}" (${wdiCode})`]
+  if (populationYear != null) parts.push(`population: ${populationYear}`)
+  if (gdpYear != null) parts.push(`GDP: ${gdpYear}`)
+  return {
+    confidence: 'confirmed' as const,
+    source:
+      `${parts.join(' — ')}. Relationship data (parent/administration) remains a simplified, ` +
+      'hand-curated entry — see this file\'s header comment.',
+  }
+}
+
+// Taiwan's sibling of wdiProvenance above — WDI structurally excludes
+// Taiwan (same reason scripts/buildEconomy.mjs's own Taiwan one-off and
+// scripts/buildGeoEntityEconomics.mjs's header comment both give), so its
+// population/gdpUsd come from IMF WEO instead, the same source
+// economyScores.ts's own Taiwan entry already uses for gdpNominal — this
+// reuses that EXACT figure rather than re-deriving a second one, so the two
+// never drift apart.
+function imfWeoProvenance(populationYear: number, gdpYear: number) {
+  return {
+    confidence: 'confirmed' as const,
+    source:
+      `IMF World Economic Outlook — population: ${populationYear} (indicator LP), GDP: ${gdpYear} ` +
+      '(indicator NGDPD, same figure src/data/economyScores.ts\'s Taiwan entry uses). WDI structurally ' +
+      'excludes Taiwan, same reason this app\'s other Taiwan-specific sourcing does. Relationship data ' +
+      '(parent/administration/claims) remains a simplified, hand-curated entry — see this file\'s header comment.',
+  }
+}
+
 // world-atlas's source topology (and therefore this app's Country Registry
 // ids, and `selected.id` whenever a country is selected) keys countries by
 // their raw ISO 3166-1 NUMERIC code, not the alpha-3 code ("840", not
@@ -153,6 +192,18 @@ function dependency(
 //    political significance, alongside sovereign states.
 // ---------------------------------------------------------------------------
 
+// population/gdpUsd resolved (no longer deferred) alongside real
+// Military/Economy/Technology sourcing for Taiwan — direct request ("Taiwan
+// should be recognized as a country... it should still show as claimed by
+// China"), which needed these two fields real so hud/IntelligencePanel.tsx
+// could render Taiwan's OVERVIEW section the same way a Country's renders.
+// WDI structurally excludes Taiwan (China's WDI figures already claim to
+// represent "one China"), so — same reasoning scripts/buildEconomy.mjs's own
+// Taiwan one-off already established for gdpNominal — these come from IMF
+// WEO instead of the WDI pass scripts/buildGeoEntityEconomics.mjs ran for
+// every other entity in this file. gdpUsd reuses the EXACT same figure
+// src/data/economyScores.ts's Taiwan entry already has (indicator NGDPD),
+// not a second independently-fetched number, so the two can't drift apart.
 register({
   id: 'taiwan',
   name: 'Taiwan',
@@ -161,7 +212,15 @@ register({
   administeredBy: [toUnregistered('Government of the Republic of China (Taiwan)', { since: '1949' })],
   claimedBy: [toCountry('CHN', "People's Republic of China")],
   claims: [],
-  provenance: SIMPLIFIED_PROVENANCE,
+  // Population: IMF WEO, indicator LP, 2024 (most recent actual year — see
+  // buildEconomy.mjs's buildTaiwanScore for the same vintage-year technique).
+  population: 23_400_220,
+  populationYear: 2024,
+  // GDP: IMF WEO, indicator NGDPD, 2024 — same raw figure as
+  // economyScores.ts's ECONOMY_SCORES.taiwan.components.gdpNominal.raw.
+  gdpUsd: 801_495_464_000,
+  gdpYear: 2024,
+  provenance: imfWeoProvenance(2024, 2024),
 })
 
 register({
@@ -174,7 +233,13 @@ register({
   ],
   claimedBy: [toCountry('ISR', 'State of Israel')],
   claims: [],
-  provenance: SIMPLIFIED_PROVENANCE,
+  // Population: World Bank WDI SP.POP.TOTL, "West Bank and Gaza" (PSE), 2024.
+  population: 5_289_152,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "West Bank and Gaza" (PSE), 2024.
+  gdpUsd: 16_016_900_000,
+  gdpYear: 2024,
+  provenance: wdiProvenance('West Bank and Gaza', 'PSE', 2024, 2024),
 })
 
 register({
@@ -185,9 +250,21 @@ register({
   administeredBy: [toUnregistered('Government of the Republic of Kosovo', { since: '2008' })],
   claimedBy: [toCountry('SRB', 'Republic of Serbia')],
   claims: [],
-  provenance: SIMPLIFIED_PROVENANCE,
+  // Population: World Bank WDI SP.POP.TOTL, "Kosovo" (XKX), 2024.
+  population: 1_594_353,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Kosovo" (XKX), 2024.
+  gdpUsd: 11_203_038_332,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Kosovo', 'XKX', 2024, 2024),
 })
 
+// No population/gdpUsd here — administration is contested (Morocco west of
+// the berm, the Polisario Front/SADR east of it), so "population of Western
+// Sahara" isn't a single unambiguous WDI query the way a normal dependency's
+// is (which government's figures would it even represent?). Needs a
+// deliberate human sourcing decision, not a batch WDI fill — see
+// scripts/buildGeoEntityEconomics.mjs's SKIP_DEFERRED_SOURCING.
 register({
   id: 'western-sahara',
   name: 'Western Sahara',
@@ -221,19 +298,127 @@ register({
 //    confirmation; trivial to remove if that assumption is wrong.
 // ---------------------------------------------------------------------------
 
-register(dependency('puerto-rico', 'Puerto Rico', ['Commonwealth of Puerto Rico'], 'USA', 'United States of America'))
-register(dependency('greenland', 'Greenland', ['Kalaallit Nunaat'], 'DNK', 'Kingdom of Denmark'))
-register(dependency('hong-kong', 'Hong Kong', ['Hong Kong SAR'], 'CHN', "People's Republic of China"))
-register(dependency('macao', 'Macao', ['Macao SAR', 'Macau'], 'CHN', "People's Republic of China"))
-register(dependency('new-caledonia', 'New Caledonia', [], 'FRA', 'French Republic'))
-register(dependency('curacao', 'Curaçao', [], 'NLD', 'Kingdom of the Netherlands'))
-register(dependency('aruba', 'Aruba', [], 'NLD', 'Kingdom of the Netherlands'))
-register(dependency('turks-and-caicos-islands', 'Turks and Caicos Islands', [], 'GBR', 'United Kingdom'))
-register(dependency('saint-martin', 'Saint Martin', [], 'FRA', 'French Republic'))
-register(dependency('sint-maarten', 'Sint Maarten', [], 'NLD', 'Kingdom of the Netherlands'))
+// Population/GDP below are from scripts/buildGeoEntityEconomics.mjs's World
+// Bank WDI lookup (scripts/geoEntityEconomicsReport.json, generated
+// 2026-08-13) — see wdiProvenance above. An entry with neither field carries
+// a trailing "No WDI data" comment instead of silently having nothing, so a
+// missing figure reads as "checked, WDI doesn't track this" rather than
+// "not checked yet."
+
+register({
+  ...dependency('puerto-rico', 'Puerto Rico', ['Commonwealth of Puerto Rico'], 'USA', 'United States of America'),
+  // Population: World Bank WDI SP.POP.TOTL, "Puerto Rico" (PRI), 2024.
+  population: 3_202_521,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Puerto Rico" (PRI), 2024.
+  gdpUsd: 126_029_527_034,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Puerto Rico', 'PRI', 2024, 2024),
+})
+register({
+  ...dependency('greenland', 'Greenland', ['Kalaallit Nunaat'], 'DNK', 'Kingdom of Denmark'),
+  // Population: World Bank WDI SP.POP.TOTL, "Greenland" (GRL), 2024.
+  population: 56_836,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Greenland" (GRL), 2023 — no 2024 figure reported yet.
+  gdpUsd: 3_326_543_974,
+  gdpYear: 2023,
+  provenance: wdiProvenance('Greenland', 'GRL', 2024, 2023),
+})
+register({
+  ...dependency('hong-kong', 'Hong Kong', ['Hong Kong SAR'], 'CHN', "People's Republic of China"),
+  // Population: World Bank WDI SP.POP.TOTL, "Hong Kong SAR, China" (HKG), 2024.
+  population: 7_524_100,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Hong Kong SAR, China" (HKG), 2024.
+  gdpUsd: 408_368_682_415,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Hong Kong SAR, China', 'HKG', 2024, 2024),
+})
+register({
+  ...dependency('macao', 'Macao', ['Macao SAR', 'Macau'], 'CHN', "People's Republic of China"),
+  // Population: World Bank WDI SP.POP.TOTL, "Macao SAR, China" (MAC), 2024.
+  population: 687_000,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Macao SAR, China" (MAC), 2024.
+  gdpUsd: 49_467_258_923,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Macao SAR, China', 'MAC', 2024, 2024),
+})
+register({
+  ...dependency('new-caledonia', 'New Caledonia', [], 'FRA', 'French Republic'),
+  // Population: World Bank WDI SP.POP.TOTL, "New Caledonia" (NCL), 2024.
+  population: 292_639,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "New Caledonia" (NCL), 2024.
+  gdpUsd: 8_548_919_387,
+  gdpYear: 2024,
+  provenance: wdiProvenance('New Caledonia', 'NCL', 2024, 2024),
+})
+register({
+  ...dependency('curacao', 'Curaçao', [], 'NLD', 'Kingdom of the Netherlands'),
+  // Population: World Bank WDI SP.POP.TOTL, "Curacao" (CUW), 2024.
+  population: 155_967,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Curacao" (CUW), 2024.
+  gdpUsd: 3_561_178_212,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Curacao', 'CUW', 2024, 2024),
+})
+register({
+  ...dependency('aruba', 'Aruba', [], 'NLD', 'Kingdom of the Netherlands'),
+  // Population: World Bank WDI SP.POP.TOTL, "Aruba" (ABW), 2024.
+  population: 107_995,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Aruba" (ABW), 2024.
+  gdpUsd: 4_167_588_070,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Aruba', 'ABW', 2024, 2024),
+})
+register({
+  ...dependency('turks-and-caicos-islands', 'Turks and Caicos Islands', [], 'GBR', 'United Kingdom'),
+  // Population: World Bank WDI SP.POP.TOTL, "Turks and Caicos Islands" (TCA), 2024.
+  population: 46_535,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Turks and Caicos Islands" (TCA), 2024.
+  gdpUsd: 1_745_378_000,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Turks and Caicos Islands', 'TCA', 2024, 2024),
+})
+register({
+  ...dependency('saint-martin', 'Saint Martin', [], 'FRA', 'French Republic'),
+  // Population: World Bank WDI SP.POP.TOTL, "St. Martin (French part)" (MAF), 2024.
+  population: 26_129,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "St. Martin (French part)" (MAF), 2021 — no more recent figure reported.
+  gdpUsd: 649_206_263,
+  gdpYear: 2021,
+  provenance: wdiProvenance('St. Martin (French part)', 'MAF', 2024, 2021),
+})
+register({
+  ...dependency('sint-maarten', 'Sint Maarten', [], 'NLD', 'Kingdom of the Netherlands'),
+  // Population: World Bank WDI SP.POP.TOTL, "Sint Maarten (Dutch part)" (SXM), 2024.
+  population: 43_350,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Sint Maarten (Dutch part)" (SXM), 2024.
+  gdpUsd: 1_797_836_648,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Sint Maarten (Dutch part)', 'SXM', 2024, 2024),
+})
 register(dependency('saint-pierre-and-miquelon', 'Saint Pierre and Miquelon', [], 'FRA', 'French Republic'))
+// No WDI population/GDP data for SPM in 2000-2024 (scripts/buildGeoEntityEconomics.mjs) — left unscored.
 register(dependency('pitcairn-islands', 'Pitcairn Islands', [], 'GBR', 'United Kingdom'))
-register(dependency('french-polynesia', 'French Polynesia', [], 'FRA', 'French Republic'))
+// No WDI population/GDP data for PCN in 2000-2024 — left unscored.
+register({
+  ...dependency('french-polynesia', 'French Polynesia', [], 'FRA', 'French Republic'),
+  // Population: World Bank WDI SP.POP.TOTL, "French Polynesia" (PYF), 2024.
+  population: 281_807,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "French Polynesia" (PYF), 2024.
+  gdpUsd: 6_323_716_355,
+  gdpYear: 2024,
+  provenance: wdiProvenance('French Polynesia', 'PYF', 2024, 2024),
+})
 register(
   dependency(
     'french-southern-and-antarctic-lands',
@@ -247,20 +432,81 @@ register(
     ]
   ),
 )
+// No WDI population/GDP data for ATF in 2000-2024 — left unscored (no
+// permanent civilian population: scientific/military personnel only).
 register(dependency('us-minor-outlying-islands', 'U.S. Minor Outlying Islands', [], 'USA', 'United States of America'))
 register(dependency('montserrat', 'Montserrat', [], 'GBR', 'United Kingdom'))
-register(dependency('us-virgin-islands', 'U.S. Virgin Islands', [], 'USA', 'United States of America'))
+// No WDI population/GDP data for MSR in 2000-2024 — left unscored.
+register({
+  ...dependency('us-virgin-islands', 'U.S. Virgin Islands', [], 'USA', 'United States of America'),
+  // Population: World Bank WDI SP.POP.TOTL, "Virgin Islands (U.S.)" (VIR), 2024.
+  population: 104_377,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Virgin Islands (U.S.)" (VIR), 2022 — no more recent figure reported.
+  gdpUsd: 4_672_000_000,
+  gdpYear: 2022,
+  provenance: wdiProvenance('Virgin Islands (U.S.)', 'VIR', 2024, 2022),
+})
 register(dependency('saint-barthelemy', 'Saint Barthélemy', [], 'FRA', 'French Republic'))
+// No WDI population/GDP data for BLM in 2000-2024 — left unscored.
 register(dependency('anguilla', 'Anguilla', [], 'GBR', 'United Kingdom'))
-register(dependency('british-virgin-islands', 'British Virgin Islands', [], 'GBR', 'United Kingdom'))
-register(dependency('cayman-islands', 'Cayman Islands', [], 'GBR', 'United Kingdom'))
-register(dependency('bermuda', 'Bermuda', [], 'GBR', 'United Kingdom'))
+// No WDI population/GDP data for AIA in 2000-2024 — left unscored.
+register({
+  ...dependency('british-virgin-islands', 'British Virgin Islands', [], 'GBR', 'United Kingdom'),
+  // Population: World Bank WDI SP.POP.TOTL, "British Virgin Islands" (VGB), 2024.
+  population: 39_471,
+  populationYear: 2024,
+  // GDP: no WDI NY.GDP.MKTP.CD data for VGB in 2000-2024 — left unscored.
+  provenance: wdiProvenance('British Virgin Islands', 'VGB', 2024, undefined),
+})
+register({
+  ...dependency('cayman-islands', 'Cayman Islands', [], 'GBR', 'United Kingdom'),
+  // Population: World Bank WDI SP.POP.TOTL, "Cayman Islands" (CYM), 2024.
+  population: 74_457,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Cayman Islands" (CYM), 2024.
+  gdpUsd: 7_765_336_505,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Cayman Islands', 'CYM', 2024, 2024),
+})
+register({
+  ...dependency('bermuda', 'Bermuda', [], 'GBR', 'United Kingdom'),
+  // Population: World Bank WDI SP.POP.TOTL, "Bermuda" (BMU), 2024.
+  population: 64_636,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Bermuda" (BMU), 2024.
+  gdpUsd: 9_194_499_000,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Bermuda', 'BMU', 2024, 2024),
+})
 register(dependency('saint-helena', 'Saint Helena', ['Saint Helena, Ascension and Tristan da Cunha'], 'GBR', 'United Kingdom'))
+// No WDI population/GDP data for SHN in 2000-2024 — left unscored.
 register(dependency('jersey', 'Jersey', ['Bailiwick of Jersey'], 'GBR', 'United Kingdom'))
+// No WDI population/GDP data for JEY in 2000-2024 — left unscored.
 register(dependency('guernsey', 'Guernsey', ['Bailiwick of Guernsey'], 'GBR', 'United Kingdom'))
-register(dependency('isle-of-man', 'Isle of Man', [], 'GBR', 'United Kingdom'))
+// No WDI population/GDP data for GGY in 2000-2024 — left unscored.
+register({
+  ...dependency('isle-of-man', 'Isle of Man', [], 'GBR', 'United Kingdom'),
+  // Population: World Bank WDI SP.POP.TOTL, "Isle of Man" (IMN), 2024.
+  population: 84_160,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Isle of Man" (IMN), 2023 — no more recent figure reported.
+  gdpUsd: 7_576_129_933,
+  gdpYear: 2023,
+  provenance: wdiProvenance('Isle of Man', 'IMN', 2024, 2023),
+})
 register(dependency('aland', 'Åland', ['Åland Islands'], 'FIN', 'Republic of Finland'))
-register(dependency('faroe-islands', 'Faroe Islands', [], 'DNK', 'Kingdom of Denmark'))
+// No WDI population/GDP data for ALA in 2000-2024 — left unscored.
+register({
+  ...dependency('faroe-islands', 'Faroe Islands', [], 'DNK', 'Kingdom of Denmark'),
+  // Population: World Bank WDI SP.POP.TOTL, "Faroe Islands" (FRO), 2024.
+  population: 54_640,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Faroe Islands" (FRO), 2024.
+  gdpUsd: 4_052_937_170,
+  gdpYear: 2024,
+  provenance: wdiProvenance('Faroe Islands', 'FRO', 2024, 2024),
+})
 // Mauritius's claim is backed by the ICJ's 2019 advisory opinion and
 // subsequent UN General Assembly resolutions calling for the UK's
 // withdrawal, and by the 2024/2025 UK-Mauritius treaty negotiations
@@ -271,9 +517,15 @@ register(
     toCountry('MUS', 'Republic of Mauritius'),
   ])
 )
+// No WDI population/GDP data for IOT in 2000-2024 — left unscored (no
+// permanent civilian population: Diego Garcia's military/contractor
+// population is transient, not resident).
 register(dependency('norfolk-island', 'Norfolk Island', [], 'AUS', 'Commonwealth of Australia'))
+// No WDI population/GDP data for NFK in 2000-2024 — left unscored.
 register(dependency('cook-islands', 'Cook Islands', [], 'NZL', 'New Zealand'))
+// No WDI population/GDP data for COK in 2000-2024 — left unscored.
 register(dependency('wallis-and-futuna', 'Wallis and Futuna Islands', [], 'FRA', 'French Republic'))
+// No WDI population/GDP data for WLF in 2000-2024 — left unscored.
 register(
   dependency(
     'south-georgia-and-south-sandwich-islands',
@@ -289,16 +541,50 @@ register(
     toCountry('ARG', 'Argentine Republic'),
   ])
 )
+// No WDI population/GDP data for FLK in 2000-2024 — left unscored.
 register(dependency('niue', 'Niue', [], 'NZL', 'New Zealand'))
-register(dependency('american-samoa', 'American Samoa', [], 'USA', 'United States of America'))
-register(dependency('guam', 'Guam', [], 'USA', 'United States of America'))
-register(dependency('northern-mariana-islands', 'Northern Mariana Islands', [], 'USA', 'United States of America'))
+// No WDI population/GDP data for NIU in 2000-2024 — left unscored.
+register({
+  ...dependency('american-samoa', 'American Samoa', [], 'USA', 'United States of America'),
+  // Population: World Bank WDI SP.POP.TOTL, "American Samoa" (ASM), 2024.
+  population: 46_765,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "American Samoa" (ASM), 2022 — no more recent figure reported.
+  gdpUsd: 871_000_000,
+  gdpYear: 2022,
+  provenance: wdiProvenance('American Samoa', 'ASM', 2024, 2022),
+})
+register({
+  ...dependency('guam', 'Guam', [], 'USA', 'United States of America'),
+  // Population: World Bank WDI SP.POP.TOTL, "Guam" (GUM), 2024.
+  population: 167_777,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Guam" (GUM), 2022 — no more recent figure reported.
+  gdpUsd: 6_910_000_000,
+  gdpYear: 2022,
+  provenance: wdiProvenance('Guam', 'GUM', 2024, 2022),
+})
+register({
+  ...dependency('northern-mariana-islands', 'Northern Mariana Islands', [], 'USA', 'United States of America'),
+  // Population: World Bank WDI SP.POP.TOTL, "Northern Mariana Islands" (MNP), 2024.
+  population: 44_278,
+  populationYear: 2024,
+  // GDP: World Bank WDI NY.GDP.MKTP.CD, "Northern Mariana Islands" (MNP), 2022 — no more recent figure reported.
+  gdpUsd: 1_096_000_000,
+  gdpYear: 2022,
+  provenance: wdiProvenance('Northern Mariana Islands', 'MNP', 2024, 2022),
+})
 register(
   dependency('heard-island-and-mcdonald-islands', 'Heard Island and McDonald Islands', [], 'AUS', 'Commonwealth of Australia'),
 )
-register(
-  dependency('gibraltar', 'Gibraltar', [], 'GBR', 'United Kingdom', [toCountry('ESP', 'Kingdom of Spain')])
-)
+register({
+  ...dependency('gibraltar', 'Gibraltar', [], 'GBR', 'United Kingdom', [toCountry('ESP', 'Kingdom of Spain')]),
+  // Population: World Bank WDI SP.POP.TOTL, "Gibraltar" (GIB), 2024.
+  population: 39_329,
+  populationYear: 2024,
+  // GDP: no WDI NY.GDP.MKTP.CD data for GIB in 2000-2024 — left unscored.
+  provenance: wdiProvenance('Gibraltar', 'GIB', 2024, undefined),
+})
 
 // ---------------------------------------------------------------------------
 // 3. StrategicRegion — military, intelligence, or strategic significance.
@@ -530,6 +816,13 @@ register({
 // the five v3 classifications — see LOGBOOK.md's v3.0.0 entry.
 // ---------------------------------------------------------------------------
 
+// No population/gdpUsd here — administration is contested (Russian de facto
+// control since 2014, not internationally recognized; Ukraine's own figures
+// wouldn't reflect on-the-ground reality either), the same problem Western
+// Sahara has above: no single source's number is an uncontroversial answer
+// to "population of Crimea." Needs a deliberate human sourcing decision, not
+// a batch WDI fill — see scripts/buildGeoEntityEconomics.mjs's
+// SKIP_DEFERRED_SOURCING.
 register({
   id: 'crimea',
   name: 'Crimea',

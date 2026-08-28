@@ -93,6 +93,39 @@ function projectToScreen(
   return { visible: onNearSide && inFrustumDepth && inFramedView, px, py }
 }
 
+// A rough (flat-plane, not a true two-point screen projection) estimate of
+// how large a feature spanning `extentDeg` of arc on a sphere of
+// `sphereRadius` currently reads on screen, in pixels — the Google-Maps-
+// style "is this country big enough right now to spell out in full, or
+// should it read as an abbreviation" question CountryLabels.tsx needs,
+// which depends on the CURRENT camera distance, not just the feature's own
+// real-world size (a small country can earn its full name once you're
+// zoomed in close enough, and a large one still reads as an abbreviation
+// from the default overview distance). Deliberately approximate: computing
+// a real two-point screen-space size (project the near/far edge of the
+// feature and measure the pixel gap) would be more accurate but isn't worth
+// it for a "should this be short or long" threshold decision — this uses
+// the standard "world units visible per pixel at distance d, given a
+// vertical FOV" relationship instead of the full NDC projection
+// projectToScreen already does for point visibility.
+export function apparentSizePx(
+  extentDeg: number,
+  cameraDistance: number,
+  viewportHeight: number,
+  fovDeg: number,
+  sphereRadius: number
+): number {
+  if (cameraDistance <= 0) return 0
+  const extentRad = (extentDeg * Math.PI) / 180
+  // Chord length of an arc of extentRad radians on a circle of sphereRadius
+  // — the real-world "diameter" this feature spans.
+  const worldDiameter = 2 * sphereRadius * Math.sin(extentRad / 2)
+  const fovRad = (fovDeg * Math.PI) / 180
+  const worldHeightAtDistance = 2 * cameraDistance * Math.tan(fovRad / 2)
+  if (worldHeightAtDistance <= 0) return 0
+  return (worldDiameter / worldHeightAtDistance) * viewportHeight
+}
+
 // Exported so callers that build a candidate pool BEFORE calling
 // declutterLabels (UsCityLabels.tsx's population/zoom-tier prefilter) can
 // use the same real "is this on screen" test instead of a cheaper but

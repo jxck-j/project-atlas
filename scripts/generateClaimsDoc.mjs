@@ -97,6 +97,12 @@ function formatClaimsList(list) {
     .join('; ')
 }
 
+// Singular "Claimant" for one claiming entity, plural "Claimants" when
+// listing more than one — mirrors IntelligencePanel.tsx's buildRelationFeed.
+function claimantLabel(claimedBy) {
+  return claimedBy.length > 1 ? 'Claimants' : 'Claimant'
+}
+
 // The "All UN Member States" section's per-country "Claims" answer — just
 // the country-keyed slice of inferredClaimsByKey, since a Country record
 // never carries an explicit `claims` field to union with (see data/types.ts).
@@ -116,11 +122,11 @@ for (const entity of disputed) {
   summaryLines.push(`### ${entity.name} (${TYPE_LABEL[entity.type]})`)
   summaryLines.push('')
   if (entity.claimedBy.length > 0) {
-    summaryLines.push(`- **Claimed by:** ${entity.claimedBy.map(formatRelation).join('; ')}`)
+    summaryLines.push(`- **${claimantLabel(entity.claimedBy)}:** ${entity.claimedBy.map(formatRelation).join('; ')}`)
   }
   const claims = claimsOf(entity)
   if (claims.length > 0) {
-    summaryLines.push(`- **Claims:** ${formatClaimsList(claims)}`)
+    summaryLines.push(`- **Territorial Claims:** ${formatClaimsList(claims)}`)
   }
   summaryLines.push('')
 }
@@ -133,7 +139,9 @@ for (const country of countries) {
   const claims = claimsByCountryId(country.id)
   countryLines.push(`### ${country.name}`)
   countryLines.push('')
-  countryLines.push(claims.length > 0 ? `- **Claims:** ${formatClaimsList(claims)}` : '- **Claims:** None')
+  countryLines.push(
+    claims.length > 0 ? `- **Territorial Claims:** ${formatClaimsList(claims)}` : '- **Territorial Claims:** None'
+  )
   countryLines.push('')
 }
 
@@ -144,15 +152,15 @@ const entityLines = []
 for (const entity of entities) {
   entityLines.push(`### ${entity.name} (${TYPE_LABEL[entity.type]})`)
   entityLines.push('')
-  entityLines.push(`- **Parent Entity:** ${entity.parentEntity ? formatRelation(entity.parentEntity) : 'None'}`)
+  entityLines.push(`- **Sovereign State:** ${entity.parentEntity ? formatRelation(entity.parentEntity) : 'None'}`)
   entityLines.push(
-    `- **Administered By:** ${entity.administeredBy.length > 0 ? entity.administeredBy.map(formatRelation).join('; ') : 'None'}`
+    `- **Administering Power:** ${entity.administeredBy.length > 0 ? entity.administeredBy.map(formatRelation).join('; ') : 'None'}`
   )
   entityLines.push(
-    `- **Claimed By:** ${entity.claimedBy.length > 0 ? entity.claimedBy.map(formatRelation).join('; ') : 'None'}`
+    `- **${claimantLabel(entity.claimedBy)}:** ${entity.claimedBy.length > 0 ? entity.claimedBy.map(formatRelation).join('; ') : 'None'}`
   )
   const claims = claimsOf(entity)
-  entityLines.push(`- **Claims:** ${claims.length > 0 ? formatClaimsList(claims) : 'None'}`)
+  entityLines.push(`- **Territorial Claims:** ${claims.length > 0 ? formatClaimsList(claims) : 'None'}`)
   entityLines.push('')
 }
 

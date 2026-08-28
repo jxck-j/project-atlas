@@ -5,9 +5,11 @@ import { latLngToVector3 } from '../utils/geo'
 import {
   geometryToAngularExtent,
   geometryToBorderSegments,
+  geometryToBorderSegmentsWithDistances,
   geometryToCentroid,
   geometryToFillMesh,
   geometryToLineSegments,
+  geometryToLineSegmentsWithDistances,
 } from './countryGeometry'
 
 // A simple 10x10-degree square, centered nowhere near the antimeridian —
@@ -101,15 +103,18 @@ describe('geometryToAngularExtent', () => {
     expect(geometryToAngularExtent(ANTIMERIDIAN_SLIVER)).toBeCloseTo(20, 10)
   })
 
-  // Reads as one combined bounding box across every polygon's points, not
-  // each polygon's own extent kept separate and maxed — min/max lat/lng
-  // accumulate across the whole `for (const rings of polygons)` loop before
-  // the final `maxLat - minLat` / `maxLng - minLng` is taken. Two small,
-  // far-apart polygons (each individually only 5 degrees across) combine
-  // into a bounding box that's 90 degrees across, spanning the gap between
-  // them — worth knowing if this function is ever used to size something
-  // per-polygon rather than per-whole-MultiPolygon-country.
-  it('spans a single bounding box across every polygon\'s points, including the gap between them', () => {
+  // 2026-08-09: previously combined every polygon's independently-unwrapped
+  // points into one running bounding box, spanning the gap between two
+  // far-apart polygons as if they were one shape — for a real MultiPolygon
+  // country with a distant exclave (Russia's Kaliningrad vs. its Far East,
+  // the USA's Alaska/Hawaii vs. the mainland), that meant the "how big does
+  // this look" answer partly reflected the empty ocean between disconnected
+  // pieces, not either piece's own size. Now takes the MAX of each
+  // polygon's own independently-computed extent instead — matching what
+  // this function is actually used for (sizing the single landmass a label
+  // sits on, not the union of every disconnected piece a country owns). See
+  // LOGBOOK.md's v5.2.4 entry.
+  it('takes the larger polygon\'s own extent, not a combined bounding box across the gap', () => {
     const small: Position[] = [
       [0, 0],
       [5, 0],
@@ -125,9 +130,71 @@ describe('geometryToAngularExtent', () => {
       [50, 50],
     ]
     const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [[small], [large]] }
-    // Combined bbox: lat 0..90, lng 0..90 -> both spans are 90, larger than
-    // either polygon's own extent (5 and 40 respectively).
-    expect(geometryToAngularExtent(multi)).toBeCloseTo(90, 10)
+    // Each polygon's own extent: small=5, large=40. Max is 40 — NOT the
+    // combined-bbox 90 that would span the gap between them (lat 0..90,
+    // lng 0..90).
+    expect(geometryToAngularExtent(multi)).toBeCloseTo(40, 10)
+  })
+
+  // The actual real-world bug this replaced: two exclaves of the same
+  // country on OPPOSITE branches of the antimeridian wrap, each unwrapped
+  // independently (correctly, in isolation) but then combined into one
+  // running min/max with no shared reference between them — e.g. Russia's
+  // Kaliningrad (~20°E) and Far East (~170°E, which some geometry unwraps
+  // toward -190°E instead depending on which points precede it) reportedly
+  // combined into a ~503-degree "extent", an impossible value for any real
+  // bounding box (max possible is 360) that then broke downstream trig in
+  // labelDeclutter.ts's apparentSizePx (sin of a bogus half-angle past 180°
+  // flips sign) — surfaced as "why does the USA/Russia abbreviate, they
+  // have huge footprints."
+  it('does not produce an impossible (>360 degree) result for exclaves on opposite antimeridian branches', () => {
+    const westExclave: Position[] = [
+      [19, 54],
+      [20, 54],
+      [20, 55],
+      [19, 55],
+      [19, 54],
+    ]
+    const eastExclave: Position[] = [
+      [-170, 66],
+      [-169, 66],
+      [-169, 67],
+      [-170, 67],
+      [-170, 66],
+    ]
+    const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [[westExclave], [eastExclave]] }
+    // Each exclave is individually tiny (~1 degree across); the max of the
+    // two independent, correctly-bounded extents should be small — nowhere
+    // near the ~500+ degrees the old combined-bounding-box bug produced.
+    expect(geometryToAngularExtent(multi)).toBeLessThan(5)
+  })
+
+  // Antarctica's real coastline ring runs all the way around the pole,
+  // touching every longitude, rather than dipping near the antimeridian
+  // just once — unlike every other case above. `unwrapRingLongitudes`
+  // doesn't error on it, but the cumulative drift from walking all the way
+  // around means the ring's last point (the same physical point as its
+  // first, since rings are closed) unwraps to ~360° away from the first
+  // instead of matching it, so its longitude span comes out as ~360°
+  // instead of "meaningless, this ring touches every longitude." Naively
+  // taking that as the extent collapses `apparentSizePx` to ~0 forever
+  // (`sin(360°/2) = sin(180°) ≈ 0`) — reported as "Antarctica is
+  // abbreviated even zoomed all the way out." This ring: constant-ish
+  // latitude (-80 to -82, a 2-degree band) sweeping longitude from -180
+  // through 180 and back to its own start, the same shape as a polar
+  // coastline.
+  it('uses only the latitude span for a ring that encircles a pole, not its meaningless ~360-degree longitude span', () => {
+    const poleEncirclingRing: Position[] = [
+      [-180, -80],
+      [-90, -82],
+      [0, -80],
+      [90, -82],
+      [180, -80],
+      [-180, -80],
+    ]
+    // Latitude span is 2 (-82..-80); the old (buggy for this case) logic
+    // would have returned ~360 (the longitude span) instead.
+    expect(geometryToAngularExtent({ type: 'Polygon', coordinates: [poleEncirclingRing] })).toBeCloseTo(2, 10)
   })
 })
 
@@ -212,6 +279,84 @@ describe('geometryToBorderSegments', () => {
   })
 })
 
+// v6.2.4: reported directly as some states'/provinces' dashed borders
+// rendering solid instead of dashed — root-caused to a ring-unaware
+// cumulative-distance computation (see countryGeometry.ts's
+// geometryToBorderSegmentsWithDistances doc comment for the full
+// mechanism). This describe block guards the fix: distances must reset to 0
+// at the start of every ring, not carry the previous ring's ending value
+// (or the huge, never-rendered "gap" between two unrelated rings) forward.
+describe('geometryToBorderSegmentsWithDistances', () => {
+  const RADIUS = 5
+  const TRIANGLE: Polygon = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [-90, 0],
+        [0, 90],
+        [0, 0],
+      ],
+    ],
+  }
+
+  it('produces the same positions as geometryToBorderSegments', () => {
+    const { positions } = geometryToBorderSegmentsWithDistances(TRIANGLE, RADIUS)
+    const plain = geometryToBorderSegments(TRIANGLE, RADIUS)
+    expect(Array.from(positions)).toEqual(Array.from(plain))
+  })
+
+  it('starts a single ring at distance 0 and accumulates monotonically', () => {
+    const { distances } = geometryToBorderSegmentsWithDistances(TRIANGLE, RADIUS)
+    // 3 segments -> 6 distance entries (start, end) x 3, one pair per segment.
+    expect(distances.length).toBe(6)
+    expect(distances[0]).toBe(0)
+    for (let i = 1; i < distances.length; i++) {
+      expect(distances[i]).toBeGreaterThanOrEqual(distances[i - 1])
+    }
+  })
+
+  it('resets distance to 0 at the start of a MultiPolygon\'s second ring, not carrying the first ring\'s total (or the gap between them) forward', () => {
+    const squareA: Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [0, 0],
+          [10, 0],
+          [10, 10],
+          [0, 10],
+          [0, 0],
+        ],
+      ],
+    }
+    const squareB: Polygon = {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [100, 0],
+          [110, 0],
+          [110, 10],
+          [100, 10],
+          [100, 0],
+        ],
+      ],
+    }
+    const multi: MultiPolygon = { type: 'MultiPolygon', coordinates: [squareA.coordinates, squareB.coordinates] }
+
+    const a = geometryToBorderSegmentsWithDistances(squareA, RADIUS)
+    const combined = geometryToBorderSegmentsWithDistances(multi, RADIUS)
+
+    // squareA's ring contributes 4 segments -> 8 distance entries; squareB's
+    // ring must start its own entries back at 0, exactly matching what
+    // squareA's ring alone produced (not squareA's final cumulative value,
+    // and not squareA's final value plus the real-world gap to squareB).
+    const squareARingLength = 8
+    expect(Array.from(combined.distances.slice(0, squareARingLength))).toEqual(Array.from(a.distances))
+    expect(combined.distances[squareARingLength]).toBe(0)
+    expect(Array.from(combined.distances.slice(squareARingLength))).toEqual(Array.from(a.distances))
+  })
+})
+
 // 2026-08-08: geometryToLineSegments is the LineString/MultiLineString
 // equivalent of geometryToBorderSegments above (added for rivers, which
 // have no ring to close and no interior — see countryGeometry.ts's own
@@ -283,6 +428,67 @@ describe('geometryToLineSegments', () => {
   it('returns an empty array for Polygon geometry (not its job)', () => {
     const segments = geometryToLineSegments(SIMPLE_SQUARE, RADIUS)
     expect(segments.length).toBe(0)
+  })
+})
+
+// v6.2.5: same ring-reset fix as geometryToBorderSegmentsWithDistances, but
+// for the MultiLineString mesh() produces for states/provinces' deduplicated
+// boundary layer (scene/useStatesProvincesFeatures.ts) — every disconnected
+// arc in that mesh needs its own dash phase starting at 0, not one carried
+// over (with a phantom "distance" for the real-world gap between two
+// unrelated arcs) from whatever arc happened to be walked previously.
+describe('geometryToLineSegmentsWithDistances', () => {
+  const RADIUS = 5
+  const OPEN_LINE: LineString = {
+    type: 'LineString',
+    coordinates: [
+      [0, 0],
+      [-90, 0],
+      [0, 90],
+    ],
+  }
+
+  it('produces the same positions as geometryToLineSegments', () => {
+    const { positions } = geometryToLineSegmentsWithDistances(OPEN_LINE, RADIUS)
+    const plain = geometryToLineSegments(OPEN_LINE, RADIUS)
+    expect(Array.from(positions)).toEqual(Array.from(plain))
+  })
+
+  it('starts a single line at distance 0 and accumulates monotonically', () => {
+    const { distances } = geometryToLineSegmentsWithDistances(OPEN_LINE, RADIUS)
+    // 2 segments -> 4 distance entries.
+    expect(distances.length).toBe(4)
+    expect(distances[0]).toBe(0)
+    for (let i = 1; i < distances.length; i++) {
+      expect(distances[i]).toBeGreaterThanOrEqual(distances[i - 1])
+    }
+  })
+
+  it('resets distance to 0 at the start of a MultiLineString\'s second line, not carrying the first line\'s total forward', () => {
+    const lineA: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+      ],
+    }
+    const lineB: LineString = {
+      type: 'LineString',
+      coordinates: [
+        [100, 0],
+        [110, 0],
+      ],
+    }
+    const multi: MultiLineString = { type: 'MultiLineString', coordinates: [lineA.coordinates, lineB.coordinates] }
+
+    const a = geometryToLineSegmentsWithDistances(lineA, RADIUS)
+    const combined = geometryToLineSegmentsWithDistances(multi, RADIUS)
+
+    // lineA has 2 segments -> 4 distance entries; lineB's must start back at 0.
+    const lineASegmentCount = 4
+    expect(Array.from(combined.distances.slice(0, lineASegmentCount))).toEqual(Array.from(a.distances))
+    expect(combined.distances[lineASegmentCount]).toBe(0)
   })
 })
 

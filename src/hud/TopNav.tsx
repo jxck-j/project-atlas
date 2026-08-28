@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { toggleHudPanel, useHudPanel } from './hudPanelStore'
 import { resetView } from './selectionStore'
 import { AtlasLogo, Icon } from './icons'
@@ -5,15 +6,49 @@ import { ICONS } from './iconPaths'
 import { setTopNavTab, useTopNavTab, type TopNavTab } from './navStore'
 import { SearchBar } from './SearchBar'
 
-// Only 'map' has a view behind it. The other four are rendered inactive
-// rather than omitted (the layout reads as incomplete without them) and
-// rather than as working tabs (that would imply views this app doesn't
-// have) — see this session's note on affordances with nothing behind them.
+// Whole-document fullscreen (the Fullscreen API), not a CSS/layout trick —
+// so it also fullscreens the browser chrome away, matching what pressing F11
+// already does. Tracked with local state + a `fullscreenchange` listener
+// rather than a store: this button is the only consumer, and the listener
+// is required regardless (the user can exit via Esc/F11 without ever
+// touching this button, so `document.fullscreenElement` can change out from
+// under us).
+function useFullscreen() {
+  const [isFullscreen, setIsFullscreen] = useState(() => document.fullscreenElement != null)
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement != null)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  const toggle = () => {
+    if (document.fullscreenElement != null) {
+      void document.exitFullscreen()
+    } else {
+      void document.documentElement.requestFullscreen()
+    }
+  }
+
+  return { isFullscreen, toggle }
+}
+
+// 'map' and, as of the Analytics view (hud/AnalyticsPanel.tsx), 'analytics'
+// have a view behind them. The remaining two are rendered inactive rather
+// than omitted (the layout reads as incomplete without them) and rather
+// than as working tabs (that would imply views this app doesn't have) — see
+// this session's note on affordances with nothing behind them. NEWS
+// (v6.5.1) replaced what used to be a LAYERS tab here — direct request,
+// since layer selection already lives on SideRail (every category row),
+// making a second, top-bar LAYERS destination redundant. INTELLIGENCE was
+// dropped entirely in v6.9.2 (direct decision) rather than kept as a fourth
+// inert placeholder — it would only ever have duplicated
+// IntelligencePanel.tsx/AnalyticsPanel.tsx, which already cover the
+// Intelligence Engine.
 const TABS: { id: TopNavTab; label: string; wired: boolean }[] = [
   { id: 'map', label: 'MAP', wired: true },
-  { id: 'intelligence', label: 'INTELLIGENCE', wired: false },
-  { id: 'layers', label: 'LAYERS', wired: false },
-  { id: 'analytics', label: 'ANALYTICS', wired: false },
+  { id: 'news', label: 'NEWS', wired: false },
+  { id: 'analytics', label: 'ANALYTICS', wired: true },
   { id: 'database', label: 'DATABASE', wired: false },
 ]
 
@@ -57,6 +92,7 @@ function IconButton({
 export function TopNav() {
   const activeTab = useTopNavTab()
   const openPanel = useHudPanel()
+  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 
   return (
     <header className="pointer-events-auto fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-7 border-b border-[#14213a] bg-[linear-gradient(180deg,rgba(6,10,19,0.96),rgba(6,10,19,0.82))] px-4 backdrop-blur-[12px]">
@@ -106,14 +142,20 @@ export function TopNav() {
       {/* Utilities — top right */}
       <div className="ml-auto flex items-center gap-1.5">
         <SearchBar />
+        <IconButton
+          icon={isFullscreen ? ICONS.fullscreenExit : ICONS.fullscreenEnter}
+          label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+          active={isFullscreen}
+          onClick={toggleFullscreen}
+        />
         <IconButton icon={ICONS.star} label="Favorites" />
         <IconButton icon={ICONS.bell} label="Notifications" badge />
         <IconButton icon={ICONS.user} label="Account" />
         <IconButton
           icon={ICONS.layers}
-          label="Layers"
-          active={openPanel === 'layers'}
-          onClick={() => toggleHudPanel('layers')}
+          label="Layer Presets"
+          active={openPanel === 'layerPresets'}
+          onClick={() => toggleHudPanel('layerPresets')}
         />
         <IconButton
           icon={ICONS.settings}

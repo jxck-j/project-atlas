@@ -225,6 +225,14 @@ export const ALPHA3_TO_NUMERIC = {
   ZAF: "710",
   SGS: "239",
   SSD: "728",
+  // "SDS" isn't a real ISO 3166-1 code — it's the non-standard adm0_a3
+  // Natural Earth's admin-1 states/provinces layer uses to tag South
+  // Sudan's provinces specifically (a known quirk of that one dataset;
+  // Natural Earth's admin-0 layer and every other source in this codebase
+  // already use the canonical "SSD"). Aliased to the same numeric id so
+  // buildStatesProvincesTopology.mjs resolves South Sudan's provinces
+  // instead of dropping the one UN member this table would otherwise miss.
+  SDS: "728",
   ESP: "724",
   LKA: "144",
   SDN: "729",

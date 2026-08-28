@@ -55,10 +55,14 @@ export function CommandBar() {
         </Segment>
         <Segment>
           <span className="text-[#6d82a8]">COUNTRIES</span>
-          <span className="font-mono tabular-nums text-[#e6efff]">{features.length}</span>
+          {/* features.length is the literal 193-country topology count —
+              +1 for Taiwan, which is recognized as a country across the
+              Intelligence Engine (see CLAUDE.md) even though it still
+              renders via the GeoEntity topology below, not this one. */}
+          <span className="font-mono tabular-nums text-[#e6efff]">{features.length + 1}</span>
         </Segment>
         <Segment>
-          <span className="text-[#6d82a8]">ENTITIES</span>
+          <span className="text-[#6d82a8]">TERRITORIES</span>
           <span className="font-mono tabular-nums text-[#e6efff]">{entityFeatures.length}</span>
         </Segment>
         <Segment>

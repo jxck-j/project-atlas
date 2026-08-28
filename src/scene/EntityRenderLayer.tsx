@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useThree, type ThreeEvent } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import { FrontSide, type Mesh, type Vector3 } from 'three'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
+import { useFrontOfGlobeVisible } from './useFrontOfGlobeVisible'
+import { useApparentFontSize, type FontSizeConfig } from './useApparentFontSize'
+import { useClickDragGuard } from './useClickDragGuard'
 import type { GeoEntityEntry } from './geoEntityEntries'
 
 // Shared by scene/Countries.tsx and scene/GeoEntities.tsx (v4.4, "Phase 4"
-// dedup) — both rendered one merged border lineSegments + one merged fill
+// dedup) — both render one merged border lineSegments + one merged fill
 // mesh per entry, with identical hover/select/dim color logic, the same
 // click-vs-drag threshold, and the same large-vs-small HoverLabel callout
 // choice. Kept separate in each caller (not folded in here) is only what's
@@ -20,6 +23,17 @@ import type { GeoEntityEntry } from './geoEntityEntries'
 // just no-ops, since every rendered GeoEntity already has a GeometryMap
 // registration by the time it's clickable) — both live in each caller's own
 // onSelect callback, passed in as a prop.
+//
+// scene/StatesProvinces.tsx used this component too, from v4.4 through
+// 2026-08-15 — its own dashedBorders/hideDefaultBorders props existed
+// solely for that caller. Once states/provinces grew to ~4,500 individually
+// interactive entries (the 1:10m upgrade), this component's one-mesh-per-
+// entry model became the FPS bottleneck itself; scene/ProvinceFillLayer.tsx
+// (2026-08-16) replaced it there with a merged-mesh renderer built for that
+// scale, so this component is back to being Countries.tsx/GeoEntities.tsx-
+// only, and those two dead props were removed along with it rather than
+// left in place with no caller. See LOGBOOK.md's "States/provinces FPS"
+// entries for the full reasoning trail.
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
 
 // v3.1: sourced from scene/highlightColors.ts, the same palette
@@ -28,66 +42,68 @@ const COLOR_DEFAULT = HIGHLIGHT_COLORS.default.hex
 const COLOR_HOVER = HIGHLIGHT_COLORS.hovered.hex
 const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 
-// How far (in screen pixels) the pointer may move between down/up and still
-// count as a "click" rather than a drag-to-rotate gesture.
-const CLICK_MOVE_THRESHOLD = 6
-
-// Angular bounding-box extent (degrees) above which an entry gets an inline
-// hover label instead of a leader-line callout. The median country is ~6.4°
-// (e.g. Ghana); the smallest are sub-2° (Qatar, Luxembourg) — 7° comfortably
-// separates "big enough to label in place" from "needs a pointer".
-const LARGE_ENTITY_THRESHOLD_DEG = 7
-
-// Hover label: large entries get an inline name at their centroid; small
-// ones get a leader-line callout (a radial line out to the label), matching
-// atlas annotation conventions for tiny nations/features.
-function HoverLabel({ entry }: { entry: GeoEntityEntry }) {
-  const isLarge = entry.angularExtent >= LARGE_ENTITY_THRESHOLD_DEG
-
+// Hover label — always inline at the entry's own centroid, in the exact
+// spot its passive label (CountryLabels.tsx/GeoEntityLabels.tsx/
+// StateProvinceLabels.tsx, all via PassiveEntityLabels.tsx) already sits.
+// Selection no longer gets its own copy of this label at all (see
+// `selectedEntry` below) — only ever rendered for the currently-hovered,
+// not-currently-selected entry.
+//
+// 2026-08-09 (v5.2.7): previously gave small entries (under
+// LARGE_ENTITY_THRESHOLD_DEG = 7°) a leader-line + dot + offset callout
+// instead — reported directly as unwanted for every entity kind ("get rid
+// of the call out line... the hovered text should remain on the country
+// but replace the regular visible text"). Removed the size branch
+// entirely: every entry now gets the same inline treatment large ones
+// already had, positioned at the same centroid PassiveEntityLabels.tsx
+// uses, so hovering swaps the passive grey text for this glowing one in
+// place rather than sprouting a pointer off to the side.
+//
+// 2026-08-09 (v5.2.8): font size now comes from
+// PassiveEntityLabels.tsx's useApparentFontSize(entry.angularExtent) — the
+// exact formula that file uses for the passive label this one replaces —
+// instead of a flat `text-xs` (12px), which was bigger than even that
+// file's own MAX_FONT_PX (11px) for the LARGEST entity on screen and
+// produced a visible size jump on every hover ("two different font sizes
+// when hovering... the glowing yellow font should only be the smaller
+// size not the big one"). Matching the formula wasn't sufficient on its
+// own, though ("the font still gets bigger when hovering") — this Html
+// still carried a leftover `distanceFactor={8}`, which applies its own
+// distance-dependent CSS scale transform on top of whatever `fontSize` is
+// set to. PassiveEntityLabels.tsx's Html has never used distanceFactor
+// (fontSizePx there is already meant to BE the final on-screen size), so
+// as long as this one still had it, the two could never actually match at
+// any camera distance except by coincidence. Dropped here for the same
+// reason Globe.tsx's WaterLabels, Lakes.tsx, and UsCityLabels.tsx already
+// dropped it: a label sized off apparent screen size shouldn't also get
+// an extra unbounded distance-based scale on top.
+//
+// Only actually needs a front/back-of-globe check for the *selected* case —
+// a hovered entry is already known front-facing (the pointer had to reach
+// its mesh to hover it) — but selection persists across camera rotation
+// while hover doesn't, and this component can't tell which reason it's
+// being rendered for. Checking unconditionally is cheap (at most one
+// HoverLabel ever mounted now) and always correct either way. See
+// useFrontOfGlobeVisible.ts and LOGBOOK.md's v5.2.1 entry.
+export function HoverLabel({ entry, fontSizeConfig }: { entry: GeoEntityEntry; fontSizeConfig?: FontSizeConfig }) {
   const anchor = useMemo(
     () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.006),
     [entry.centroid]
   )
-  const calloutPoint = useMemo(
-    () => latLngToVector3(entry.centroid.lat, entry.centroid.lng, GLOBE_RADIUS * 1.35),
-    [entry.centroid]
-  )
+  const labelVisible = useFrontOfGlobeVisible(anchor)
+  const fontSizePx = useApparentFontSize(entry.angularExtent, fontSizeConfig)
 
-  if (isLarge) {
-    return (
-      <Html position={anchor} center distanceFactor={8} zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
-        <div
-          className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
-          style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
-        >
-          {entry.name.toUpperCase()}
-        </div>
-      </Html>
-    )
-  }
+  if (!labelVisible) return null
 
   return (
-    <group>
-      <Line points={[anchor, calloutPoint]} color="#FFD24C" lineWidth={1} transparent opacity={0.85} />
-      <mesh position={anchor}>
-        <sphereGeometry args={[0.01, 8, 8]} />
-        <meshBasicMaterial color="#FFD24C" />
-      </mesh>
-      <Html
-        position={calloutPoint}
-        center
-        distanceFactor={8}
-        zIndexRange={[20, 0]}
-        style={{ pointerEvents: 'none' }}
+    <Html position={anchor} center zIndexRange={[20, 0]} style={{ pointerEvents: 'none' }}>
+      <div
+        className="whitespace-nowrap tracking-[0.2em] text-amber-200"
+        style={{ fontSize: `${fontSizePx}px`, textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
       >
-        <div
-          className="whitespace-nowrap text-xs tracking-[0.2em] text-amber-200"
-          style={{ textShadow: '0 0 8px rgba(255,210,76,0.85)' }}
-        >
-          {entry.name.toUpperCase()}
-        </div>
-      </Html>
-    </group>
+        {entry.name.toUpperCase()}
+      </div>
+    </Html>
   )
 }
 
@@ -95,28 +111,19 @@ export interface EntityRenderLayerProps {
   entries: GeoEntityEntry[]
   selectedEntityId: string | undefined
   onSelect: (entry: GeoEntityEntry, direction: Vector3) => void
-  // Country-only: propagates the hovered geometry id out to
-  // scene/hoveredCountry.ts so CountryLabels.tsx can suppress a redundant
-  // passive label for whatever this layer is already glow-labeling via
-  // HoverLabel. GeoEntities has no equivalent always-on label layer, so it
-  // omits this prop.
+  // Propagates the hovered geometry id out to each caller's own hover-id
+  // publisher (Countries.tsx's hoveredCountry.ts, GeoEntities.tsx's
+  // hoveredGeoEntity.ts, StatesProvinces.tsx's hoveredStateProvince.ts —
+  // all three since v5.2.7) so that entry's PassiveEntityLabels.tsx layer
+  // excludes whichever entity this one is already glow-labeling via
+  // HoverLabel.
   onHoverChange?: (geometryId: string | null) => void
 }
 
 export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHoverChange }: EntityRenderLayerProps) {
   const { gl } = useThree()
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const dragStart = useRef<{ x: number; y: number } | null>(null)
-
-  // Track where a pointer-down started (in screen space) so a drag-to-rotate
-  // gesture over an entry doesn't get misread as a click-to-select.
-  useEffect(() => {
-    const onDown = (e: PointerEvent) => {
-      dragStart.current = { x: e.clientX, y: e.clientY }
-    }
-    window.addEventListener('pointerdown', onDown)
-    return () => window.removeEventListener('pointerdown', onDown)
-  }, [])
+  const wasDragGesture = useClickDragGuard()
 
   // Reflect hover state as a cursor change on the canvas itself.
   useEffect(() => {
@@ -131,16 +138,10 @@ export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHover
   }, [hoveredId, onHoverChange])
 
   const hoveredEntry = hoveredId ? entries.find((e) => e.geometryId === hoveredId) : undefined
-  const selectedEntry = selectedEntityId != null ? entries.find((e) => e.entityId === selectedEntityId) : undefined
 
   function handlePointerUp(entry: GeoEntityEntry, e: ThreeEvent<PointerEvent>) {
     e.stopPropagation()
-    const start = dragStart.current
-    if (start) {
-      const dx = e.nativeEvent.clientX - start.x
-      const dy = e.nativeEvent.clientY - start.y
-      if (Math.hypot(dx, dy) > CLICK_MOVE_THRESHOLD) return // was a drag, not a click
-    }
+    if (wasDragGesture(e.nativeEvent.clientX, e.nativeEvent.clientY)) return // was a drag, not a click
 
     // Use the clicked mesh's CURRENT world matrix so the direction is
     // correct even while the globe is mid-rotation at the moment of click.
@@ -210,9 +211,15 @@ export function EntityRenderLayer({ entries, selectedEntityId, onSelect, onHover
           </group>
         )
       })}
-      {selectedEntry && <HoverLabel key={`selected-${selectedEntry.geometryId}`} entry={selectedEntry} />}
-      {hoveredEntry && hoveredEntry.geometryId !== selectedEntry?.geometryId && (
-        <HoverLabel key={`hovered-${hoveredEntry.geometryId}`} entry={hoveredEntry} />
+      {/* 2026-08-09 (v5.2.8): a selected entity no longer gets its own glow
+          label at all — reported directly as redundant with
+          IntelligencePanel.tsx's own name heading, which is already on
+          screen for as long as anything's selected. Only ever renders for
+          the hovered entry, and only when it isn't ALSO the selected one
+          (hovering the thing you already have selected shouldn't
+          resurrect the redundant label either). */}
+      {hoveredEntry && hoveredEntry.entityId !== selectedEntityId && (
+        <HoverLabel key={hoveredEntry.geometryId} entry={hoveredEntry} />
       )}
     </group>
   )

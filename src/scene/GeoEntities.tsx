@@ -5,6 +5,7 @@ import { buildGeoEntityEntries, type GeoEntityEntry } from './geoEntityEntries'
 import { selectEntity, useSelection } from '../hud/selectionStore'
 import { resolveEntity } from '../entities/EntityResolver'
 import { getEntityForGeometry } from '../entities/GeometryMap'
+import { setHoveredGeoEntityId } from './hoveredGeoEntity'
 import { EntityRenderLayer } from './EntityRenderLayer'
 
 // Renders every non-country GeoEntity (all five v3 classifications — see
@@ -46,5 +47,27 @@ export function GeoEntities() {
     selectEntity(resolved, direction)
   }
 
-  return <EntityRenderLayer entries={entities} selectedEntityId={selected?.id} onSelect={handleSelect} />
+  // EntityRenderLayer reports hover by geometryId (the id its onPointerOver/
+  // onPointerOut handlers actually see); GeoEntityLabels.tsx's exclusion
+  // check needs the entityId instead (the two differ for 44 of these 55
+  // entities — see geoEntityEntries.ts's GeoEntityEntry doc comment), so
+  // this looks the entry up before publishing. Needed since v5.2.7:
+  // GeoEntityLabels.tsx's passive label now sits at the exact same centroid
+  // EntityRenderLayer.tsx's HoverLabel does (no more leader-line callout
+  // keeping them visually apart), so without this a hovered entity would
+  // show both labels stacked on top of each other instead of the hover
+  // label replacing the passive one.
+  function handleHoverChange(geometryId: string | null) {
+    const entityId = geometryId ? (entities.find((e) => e.geometryId === geometryId)?.entityId ?? null) : null
+    setHoveredGeoEntityId(entityId)
+  }
+
+  return (
+    <EntityRenderLayer
+      entries={entities}
+      selectedEntityId={selected?.id}
+      onSelect={handleSelect}
+      onHoverChange={handleHoverChange}
+    />
+  )
 }

@@ -7,4 +7,6 @@
 export { LayerEngine } from './LayerEngine'
 export { getLayerDefinitions } from './layerRegistry'
 export { toggleLayer, setLayerEnabled, isLayerEnabled, useLayerEnabledMap } from './layerStore'
+export { saveLayerPreset, applyLayerPreset, deleteLayerPreset, useLayerPresets } from './layerPresetsStore'
 export type { LayerDefinition } from './types'
+export type { LayerPreset } from './layerPresetsStore'

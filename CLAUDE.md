@@ -6,9 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A command-center-style 3D globe built with React 19 + TypeScript + Vite + Three.js
 (via React Three Fiber / drei) + Tailwind v4. The globe renders as a holographic
-wireframe projection (graticule grid, glowing country borders, Fresnel atmosphere
-rim) rather than a photo-real Earth texture — closer to a tactical display than a
-map app. Country data covers exactly the 193 UN member states.
+wireframe projection (glowing country borders, a static equator line, Fresnel
+atmosphere rim) rather than a photo-real Earth texture — closer to a tactical
+display than a map app. A full lat/long graticule grid also rendered through
+v5.0.0 but was removed in v5.1.0 (see `README.md`'s "Design direction"); v6.2.1
+added back only the single equator line, not the full grid. Country data covers
+exactly the 193 UN member states.
 
 ## Branch context
 
@@ -50,13 +53,17 @@ npm run preview    # preview the production build
 npm run build:geo  # regenerate the four geo assets below (runs the npm scripts in sequence)
 npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
-npm run build:geo:states     # regenerate public/geo/states-provinces.json (294 admin-1 features, 9 countries)
+npm run build:geo:states     # regenerate public/geo/states-provinces.json (4,539 admin-1 features, 235 countries/territories)
 npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/major-city point markers)
 npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
                               # Census shapefile changes)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
-npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
+npm run build:military       # regenerate src/data/militaryScores.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run build:technology     # regenerate src/data/technologyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
 ```
 
 `tsc -b --noEmit` (project references mode, not plain `tsc --noEmit`) is the
@@ -73,6 +80,17 @@ exactly the functions tied to this project's documented bug history (the
 `CAMERA_MIN_DISTANCE` tightening, the `flyToUsCity()` timing hazard, the
 antimeridian-unwrapping earcut deviation). It does not cover component
 behavior — verify UI changes by actually driving the dev server.
+
+## Before revising a decided area
+
+LOGBOOK.md is the project's decision history — CLAUDE.md states current
+state, LOGBOOK.md states why it got that way. Several categories here
+(Economy, Current Status, Technology, Demographics) have had decisions
+revised after initial ship — coverage floors added, weighting switched,
+sourcing changed. Before changing behavior in an area with prior history,
+check LOGBOOK.md's entries for that area first, so a settled call doesn't
+get re-litigated or silently reversed without knowing it was already
+decided and why.
 
 ## Research assistant & peer reviewer: Gemini CLI
 
@@ -211,6 +229,34 @@ Two non-obvious things here matter a lot:
   `DoubleSide`, a pointer ray that misses every near-hemisphere country (e.g. a gap
   over open ocean) can continue through the globe and hit a country's back-facing
   triangles on the *far* side, causing wrong-country click-throughs.
+- **`geometryToAngularExtent` takes the MAX of each polygon's own
+  independently-unwrapped extent, not a combined bounding box across every
+  polygon** (v5.2.4) — a MultiPolygon country's separate pieces (Russia's
+  Kaliningrad exclave vs. its Far East, the USA's Alaska/Hawaii vs. the
+  mainland) can each unwrap correctly in isolation but land on different
+  360°-multiple "branches" relative to each other; combining them into one
+  running min/max produced results past 360° for Russia specifically
+  (~503°), which then broke `labelDeclutter.ts`'s `apparentSizePx` (`sin` of
+  a bogus half-angle past 180° flips sign). If you're computing anything
+  that needs "how big does the single landmass under this entity's label
+  actually look," use this function; don't reach for a from-scratch
+  combined bounding box across a MultiPolygon's rings — see this file's own
+  header comment and `LOGBOOK.md`'s v5.2.4 entry for the full reasoning
+  and the accepted tradeoff (a true archipelago that doesn't cross the
+  antimeridian, like Indonesia, now reports only its single largest
+  island's extent).
+  **A ring that encircles a pole (v5.2.6) needs its longitude span
+  ignored entirely, not just kept per-ring.** Antarctica's coastline runs
+  all the way around the pole rather than dipping near the antimeridian
+  once — `unwrapRingLongitudes` doesn't error on it, but the cumulative
+  drift over a full lap doesn't cancel out to ~0 like it does for every
+  other ring's closure back to its own start; it lands ~360° away instead,
+  which `geometryToAngularExtent` used to report as the extent (`sin(180°)
+  ≈ 0` in `apparentSizePx`, permanently collapsing Antarctica's apparent
+  size to zero — always abbreviated, regardless of zoom). A ring whose
+  unwrapped last point is more than 180° from its unwrapped first point
+  encircles a pole; use only its latitude span in that case. See
+  `LOGBOOK.md`'s v5.2.6 entry.
 
 Every function in this file is generic over any GeoJSON `Geometry` — nothing
 in it is country-specific despite the file name. `scene/GeoEntities.tsx`
@@ -234,16 +280,113 @@ click/highlight behavior.
 **v4.5.0 extracted that shared rendering into `scene/EntityRenderLayer.tsx`**
 once `countryGeometry.ts` had Phase 1 test coverage (v4.3.1) to guard
 against exactly the regression the duplication above was written to avoid.
-`Countries.tsx` and `GeoEntities.tsx` (and `StatesProvinces.tsx`, below) now
-each build their own `GeoEntityEntry[]` and pass an `onSelect` callback into
-one shared `<EntityRenderLayer>`, which owns the border/fill mesh per
-entry, hover/select/dim color computation, the click-vs-drag threshold, and
-`HoverLabel`. What stays in each caller is only what's a *real* difference:
+`Countries.tsx` and `GeoEntities.tsx` each build their own `GeoEntityEntry[]`
+and pass an `onSelect` callback into one shared `<EntityRenderLayer>`, which
+owns the border/fill mesh per entry, hover/select/dim color computation, the
+click-vs-drag threshold (`scene/useClickDragGuard.ts`, its own module as of
+2026-08-16 — oxlint's react-refresh rule flags a hook exported alongside
+components from the same `.tsx` file), and `HoverLabel` (exported from
+`EntityRenderLayer.tsx` as of that same date — see below for why).
+`StatesProvinces.tsx` used `EntityRenderLayer` too from
+v4.4 through 2026-08-15, but stopped once province count made its
+one-mesh-per-entry model the bottleneck itself — see below. `HoverLabel`
+(v5.2.7) renders every entry the same way
+regardless of size — inline, glowing, at the entry's own centroid, the
+exact position `PassiveEntityLabels.tsx`'s passive label for that same
+entry already occupies — replacing that passive label in place rather than
+sprouting a leader-line callout off to the side, which is what every
+entity under `LARGE_ENTITY_THRESHOLD_DEG` (7°) got before. Because hover
+and passive labels now share a position, each caller also needs to
+publish its own hovered id (`Countries.tsx`'s pre-existing
+`hoveredCountry.ts`, `GeoEntities.tsx`'s `hoveredGeoEntity.ts`,
+`StatesProvinces.tsx`'s `hoveredStateProvince.ts`, all v5.2.7 except the
+first) so its own passive-label layer excludes whichever entity is
+currently hover-glowing — otherwise the two labels stack exactly on top of
+each other instead of one replacing the other. Each publisher converts
+`EntityRenderLayer`'s reported geometryId to the corresponding entityId
+before publishing (needed for `GeoEntities.tsx` specifically — 44 of 55
+GeoEntities have a geometry id that differs from their entity id, see
+below). **v5.2.8** fixed `HoverLabel` rendering visibly bigger than the
+passive label it replaces — two stacked causes: it had hardcoded a flat
+font size instead of sharing `PassiveEntityLabels.tsx`'s apparent-size
+formula (now factored into `scene/useApparentFontSize.ts`, imported by
+both), and its `<Html>` still carried a leftover `distanceFactor` prop
+applying its own distance-based scale on top, which the passive label's
+`<Html>` has never used (see "Frame loop"'s `WaterLabels`/`Lakes.tsx`/
+`UsCityLabels.tsx` precedent for dropping it). The same version also
+stopped rendering `HoverLabel` at all for a *selected-but-not-hovered*
+entity — `IntelligencePanel.tsx`'s name heading already covers that case
+— so it's hover-only now; see the correction below and `LOGBOOK.md`'s
+v5.2.8 entry. What stays in each caller is only what's a *real* difference:
 how entries get built (see below), and what happens when a click resolves
 to nothing — `Countries.tsx` falls back to `selectCountry()` so a click
 never silently no-ops, `GeoEntities.tsx` and `StatesProvinces.tsx` just
 no-op, since every rendered shape in those two already has a `GeometryMap`
 registration by the time it's clickable.
+
+**v6.3.3** made that shared apparent-size formula configurable rather than
+one fixed set of constants — `useApparentFontSize.ts`'s
+`computeApparentFontSizePx`/`useApparentFontSize` and
+`PassiveEntityLabels.tsx`/`HoverLabel` (`EntityRenderLayer.tsx`) now all take
+an optional `FontSizeConfig` (min/max font px, apparent-size ratio),
+defaulting to the original constants so every pre-existing caller is
+unchanged. `scene/stateLabelFontConfig.ts` is the first override: a direct
+request (with a concrete example, Hessen in Germany) that state/province
+labels read about 1.67x bigger than country labels at every zoom level, not
+just a raised ceiling — scaling the floor/ceiling/ratio by the same factor
+reproduces the identical growth curve, just uniformly bigger. Kept as its
+own plain `.ts` module (not exported from `StateProvinceLabels.tsx`) for the
+same oxlint react-refresh reason `geoEntityEntries.ts`/`useClickDragGuard.ts`
+already are, and imported by both `StateProvinceLabels.tsx`'s passive layer
+and `ProvinceFillLayer.tsx`'s `HoverLabel` call — the two are meant to read
+as the same size at all times per the v5.2.8 fix above, so overriding only
+one would just relocate that same mismatch bug.
+
+**`StatesProvinces.tsx` grew its own rendering path separate from
+`EntityRenderLayer` once province count made the shared component's
+one-mesh-per-entry model the actual performance bottleneck, not just a
+different visual treatment.** The path there: v6.2.4 added dashed borders
+(`LineDashedMaterial` instead of solid) so a province boundary read as
+visually distinct from a country one; v6.2.5 added a deduplicated boundary
+line (`useStatesProvincesFeatures.ts`'s `useStatesProvincesBoundary()`,
+built via `topojson-client`'s `mesh()` — every arc walked exactly once
+regardless of how many provinces reference it) as `StatesProvinces.tsx`'s
+own `BoundaryMesh` component, since rendering every province's own full
+border ring drew every INTERNAL admin-1 boundary twice (once from each
+adjacent province's ring), which while both were dashed reliably looked
+solid wherever the two independently-phased dash patterns happened to
+mostly cover each other's gaps (reported for a Brazilian state pair — see
+`LOGBOOK.md`'s v6.2.5 entry). Both of those lived as `EntityRenderLayer`
+props (`dashedBorders`, `hideDefaultBorders`) at the time.
+
+**The 1:10m upgrade (below) changed the actual scale this layer needed to
+handle — 294 provinces to 4,539 — and everything downstream of that had to
+be revisited, not just tuned.** Dashing was dropped entirely (2026-08-16):
+even after normalizing dash count per ring (`countryGeometry.ts`'s
+distance functions), a technically-correct dash pattern across thousands
+of small boundaries just read as visual noise, reported directly as a
+preference; `BoundaryMesh` now renders solid at a muted opacity instead.
+More fundamentally, `EntityRenderLayer` mounting one individually-
+raycast/redrawn mesh per province (fine at Countries.tsx/GeoEntities.tsx's
+~193/~55 scale) became the FPS bottleneck itself once there were thousands
+of them — confirmed directly as "destroying fps," and confirmed AGAIN
+after an LOD-gate-only fix (only render once zoomed in) and a front-facing
+filter (`scene/useFrontFacingEntries.ts`, exclude back-facing/off-screen
+provinces) each helped but didn't fully resolve it, especially over a
+province-dense region like Europe where a front-facing filter excludes
+little. `scene/ProvinceFillLayer.tsx` (2026-08-16) is the actual fix:
+one merged mesh (`scene/mergedProvinceFill.ts`) handles hit-testing via
+triangle `faceIndex` → entry lookup instead of one mesh per entry, plus
+small unraycastable overlay meshes/borders for whichever entry is
+hovered/selected — same visual result, same click precision (same
+triangles, just concatenated into one buffer), far fewer objects. Since
+`StatesProvinces.tsx` no longer calls `EntityRenderLayer` at all, that
+component's now-dead `dashedBorders`/`hideDefaultBorders` props were
+removed along with it rather than left in place with no caller — see
+`LOGBOOK.md`'s "States/provinces FPS" parts 1-4 for the full trail of what
+was tried, including the two attempts that turned out insufficient once
+actually checked in the browser, and `BACKLOG.md` for whether this is
+confirmed fully resolved.
 
 `GeoEntities.tsx` deliberately does **only** primary selection (hover,
 click, highlight the one clicked entity) — no parent-overlay or
@@ -394,14 +537,19 @@ call and no manual clock feeding left to get wrong.
   through entities; a closed one stays closed until Enter (`openInspector()`)
   explicitly opens it. See the Input Layer section below and
   `LOGBOOK.md`'s v3.2.0 entry.
-- `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' | 'settings'
-  | null`) is open; mutually exclusive, toggled from `Toolbar.tsx`.
+- `hud/hudPanelStore.ts` — which single toolbar dropdown (`'search' |
+  'settings' | 'layers' | 'alliances' | null`, v6.2.0 added the last one) is
+  open; mutually exclusive, toggled from `hud/TopNav.tsx`/`hud/SideRail.tsx`.
 - A country's fill/border color and opacity in `Countries.tsx` are computed
   per-country from `isSelected` / `isHovered` / `isDimmed` (dimmed = some other
   country is selected) — there's no separate "theme" object, it's inline per-render.
-- The hover/selected country's name label (`HoverLabel` in `Countries.tsx`) shows
-  for *either* hover or selection (selection persists the label even without
-  hovering). Water-body labels (`WaterLabels`) only show when nothing is
+- The hover country's name label (`HoverLabel`, in the shared
+  `scene/EntityRenderLayer.tsx` — see "Rendering Engine" below) shows only
+  while actually hovered. **Through v5.2.7 it also persisted for whatever
+  was selected, even without hovering; v5.2.8 dropped that** —
+  `IntelligencePanel.tsx`'s own name heading already covers a selected
+  entity for as long as anything's selected, so the two were redundant.
+  Water-body labels (`WaterLabels`) only show when nothing is
   selected; the capital marker (`CapitalMarker`, both in `Globe.tsx`) only shows
   when the selected country has profile data in `countryProfiles.ts`.
   `CapitalMarker` renders through `scene/PointerMarker.tsx` (v3.3.0) — a
@@ -410,20 +558,57 @@ call and no manual clock feeding left to get wrong.
   independently drifted into being reported as too large/far-swinging;
   tune sizing there, not in either caller, so the two can't drift apart
   again.
-  `WaterLabels` uses `Html`'s `occlude` prop against a ref to the core sphere
-  specifically, **not** the whole scene (`occlude={true}`/no ref) — occluding
-  against everything also catches the atmosphere glow shells (which sit in front
-  of every label regardless of which hemisphere it's on) and hides all labels
-  unconditionally, always.
+  `WaterLabels` (v5.2.1) determines front/back-of-globe visibility the same
+  way `CountryLabels.tsx` and `Lakes.tsx`/`Rivers.tsx` do — an analytic
+  dot-product check (`labelDeclutter.ts`'s `isCandidateVisible`) against the
+  core sphere's radius, computed per-frame with the globe's current ambient
+  rotation factored in — not `Html`'s raycast-based `occlude` prop. It used
+  `occlude` originally, but that never reliably hid a far-side label in
+  practice (reported as an ocean name staying visible "through" the globe at
+  every zoom level and camera angle, not just near the terminator); rather
+  than debug why the raycast approach was unreliable, it was replaced with
+  the mechanism this codebase had already solved once.
+  **`scene/useFrontOfGlobeVisible.ts`** (v5.2.2) generalizes that same
+  analytic check into a small hook for every *other* `Html` label that
+  persists while something stays selected rather than only while it's
+  hovered: `Cities.tsx`'s `CityLabel` and `PointerMarker.tsx` (so both
+  `CapitalMarker` and `ClaimsOverlayLayer.tsx`'s related-country marker get
+  it for free), plus `EntityRenderLayer.tsx`'s `HoverLabel` — which used to
+  fit that same description (selection persisted it without hovering) but,
+  since v5.2.8, is hover-only; it keeps the same unconditional check anyway
+  because a hovered entry is already known front-facing, so the check is
+  merely cheap and harmless there now rather than load-bearing. All
+  three had the identical latent bug `WaterLabels` did — reported first for
+  ocean names, but the actual root cause (an `Html` label has no WebGL
+  depth buffer to be hidden by, unlike the real `<mesh>`/`<Line>` dot and
+  leader line every one of these markers also draws) applies to any
+  selection-triggered label, not just water bodies. `scene/UsCityLabels.tsx`
+  needed no version of this: it never persists a label past what
+  `declutterLabels` already re-evaluates continuously.
+  `WaterLabels` (v5.2.4) also dropped `Html`'s `distanceFactor` prop — that
+  scales a label to a constant world-space size, which reads BIGGER on
+  screen the closer the camera gets, unbounded; reported directly as sea/
+  strait/gulf names growing "extremely too big" and overlapping once
+  zoomed in close (Strait of Hormuz over the Persian Gulf, Red Sea over
+  sovereign states). `UsCityLabels.tsx` already documents dropping this
+  exact prop for the identical reason. Water bodies have no polygon data
+  to size against the way countries/GeoEntities do (see
+  `data/waterBodies.ts`), so this only stops the unbounded growth — it
+  doesn't give them apparent-size-based scaling.
+  See `LOGBOOK.md`'s v5.2.1, v5.2.2, and v5.2.4 entries.
 - **`hud/IntelligencePanel.tsx`** (v2.2.2) dispatches on
   `selected.entity.kind`: `CountryDetails` (unchanged since v1 — same
   `COUNTRY_PROFILES` lookup, same GOVERNMENT/CAPITAL/POPULATION/GDP rows,
   same "no profile data" fallback) for `'country'`, `GeoEntityDetails`
   (v3.0.0, replacing v2.2.2's Territory-only `TerritoryDetails`) for
-  `'geo-entity'` — ENTITY TYPE / PARENT ENTITY / ADMINISTERED BY / CLAIMED
-  BY / CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
+  `'geo-entity'` — ENTITY TYPE / SOVEREIGN STATE / ADMINISTERING POWER /
+  CLAIMANT(S) / TERRITORIAL CLAIMS, plus STRATEGIC SIGNIFICANCE / TREATY FRAMEWORK when
   `GeoEntity.metadata` carries them, reusing the same `DataRow` component.
-  Every relationship field is allowed to be empty/absent (see
+  **v6.1.0 added POPULATION/GDP rows** (same source-year-in-parens
+  treatment and `utils/formatScale.ts` formatting as `CountryDetails`'s),
+  shown only for the minority of GeoEntities that have them — see the
+  Geopolitical data architecture section below for which entities do and
+  why. Every relationship field is allowed to be empty/absent (see
   `data/types.ts`), so each row is omitted individually rather than falling
   back to one blanket "no data" message. Still deliberately a two-way
   check, not a registry/plugin system like the Layer Engine's — one
@@ -462,7 +647,14 @@ call and no manual clock feeding left to get wrong.
   border + fill highlight alone reads clearly enough for a disputed claim.
   The marker is still shown for the uncontested `'parent'` role (e.g.
   Puerto Rico → USA), where there's no dispute to read from a highlight
-  alone.
+  alone. **v6.2.4: `useRelatedCountryRoles()` skips this entirely for a
+  selected `'administrative-division'`** (a state/province) — every
+  province's `parentEntity`/`administeredBy` points at its own sovereign
+  country by construction (`useStatesProvincesFeatures.ts`), so without
+  this carve-out every one of the provinces would highlight its own
+  country on every select, which isn't a relationship worth flagging the
+  way an uncontested dependency or a disputed claim is. Every other
+  `GeoEntityType` is unaffected.
 - **`CategoryHighlightLayer.tsx`** (v3.3.0) registers six ordinary Layer
   Engine layers — one per selectable classification (`'country'` plus the
   five `GeoEntityType` values) — each drawing every entity in that one
@@ -531,25 +723,63 @@ selection concept.
   types anywhere in its logic: great-circle bearing (`utils/geo.ts`'s
   `bearingBetween`, kept only within a ±90° cone of the requested
   direction) then great-circle distance (`angularDistance`) among what's
-  left. `useEntityNavigation()` builds the live candidate list from the same
-  two sources `hud/SearchBar.tsx` already draws its own index from
-  (`useCountryFeatures()` + `useGeoEntityFeatures()`, centroids via
-  `scene/countryGeometry.ts`'s `geometryToCentroid`), and calls the
-  *existing* `selectEntity()` with `{ openInspector: false }`. Also owns
-  Tab/Shift+Tab category cycling — six fixed categories (`'country'` plus
-  the five `GeoEntityType` values), landing on the alphabetically-first
-  entity in whichever category comes next. See `LOGBOOK.md`'s v3.2.0 entry
-  for why `geometryToCentroid`'s known (pre-existing, documented)
-  imprecision means this occasionally picks a geographically-surprising
-  neighbor — inherited, not new.
+  left. `useEntityNavigation()` builds the live candidate list from
+  `useCountryFeatures()` + `useGeoEntityFeatures()` (centroids via
+  `scene/countryGeometry.ts`'s `geometryToCentroid`) unconditionally, plus
+  `useStatesProvincesFeatures()` only while the `'states-provinces'` Layer
+  Engine layer is actually enabled (that layer is off by default — see
+  `layers/geoOverlays/StatesProvincesLayer.tsx` — and without this gate,
+  arrow-key navigation could select and fly to a state/province that isn't
+  rendered on the globe at all). Cities are excluded entirely, regardless of
+  whether the `'cities'` layer is on — reported directly that arrow-key
+  navigation shouldn't reach cities; they stay selectable by click or search,
+  just never a keyboard-navigation candidate. Calls the *existing*
+  `selectEntity()` with `{ openInspector: false }`. Also owns Tab/Shift+Tab
+  category cycling — seven fixed categories (`'country'` plus six of the
+  seven `GeoEntityType` values, `'city'` omitted for the same reason), landing
+  on the alphabetically-first entity in whichever category comes next. See
+  `LOGBOOK.md`'s v3.2.0 entry for why `geometryToCentroid`'s known
+  (pre-existing, documented) imprecision means this occasionally picks a
+  geographically-surprising neighbor — inherited, not new.
 - `InputManager.tsx` — mounted once from `App.tsx` (outside the Canvas,
   like every other HUD component), renders nothing. The one file that knows
   the full mapping from one-shot command to system: arrows →
-  `SelectionController`, R/Space → `CameraController`'s wrappers,
+  `SelectionController` OR `hud/analyticsStepStore.ts` (tab-dependent — see
+  below), R/Space → `CameraController`'s wrappers,
   Enter/Escape/I → `openInspector`/`closeInspector`/`clearSelection`
   (Escape is two-stage: closes the panel first if open, only clears the
   selection on a second press once it's already closed), L/`/` →
   `toggleHudPanel('layers' | 'search')`.
+
+  **Arrow routing is tab-aware (v6.8.1 follow-up fix)** — direct report:
+  arrows stayed "locked to the map" (silently driving `SelectionController`'s
+  entity navigation on a globe hidden behind whatever tab was actually
+  showing) regardless of which top-nav tab was active. `InputManager` now
+  reads `useTopNavTab()` and branches the four `select-*` commands: on
+  `'map'`, unchanged — `selectDirection(...)`. On `'analytics'`,
+  ArrowUp/ArrowDown call `getAnalyticsStepHandler()?.(-1 | 1)`
+  (`hud/analyticsStepStore.ts` — a plain, non-reactive publisher
+  `hud/AnalyticsPanel.tsx` points at its current `jumpToOffset`, same
+  "cross-component value, read imperatively, not React state"
+  pattern `scene/globeRotation.ts` already established) instead, stepping
+  the open ranking; ArrowLeft/ArrowRight no-op there (no ranking-list
+  meaning for "left"/"right"). On any other tab (news/database — neither
+  has a real view yet), all four no-op. Only the four
+  arrow commands are tab-gated — R/Space/WASDQE/Tab/Enter/Escape/L/`/`
+  are unchanged and still always target the map/inspector regardless of
+  tab, since only the arrow behavior was reported as wrong.
+
+**v6.9.2: the INTELLIGENCE top-nav tab was dropped entirely** — direct decision, not left as a fourth
+"not available yet" placeholder alongside NEWS/DATABASE. It was judged redundant before ever getting a real
+view: the Intelligence Engine already has two homes, `hud/IntelligencePanel.tsx` (per-entity drill-down) and
+`hud/AnalyticsPanel.tsx` (the cross-country rankings the wired ANALYTICS tab opens), and a third,
+dashboard-style destination for the same data wasn't asked for. Removed by dropping `'intelligence'` from
+`hud/navStore.ts`'s `TopNavTab` union and its `TABS` entry in `hud/TopNav.tsx`; `input/InputManager.tsx`'s
+tab-aware arrow routing needed no logic change (it only ever branched on `'map'`/`'analytics'` explicitly and
+already fell through to no-op for everything else), just a comment update. NEWS and DATABASE are unaffected
+and still render as inert, disabled tabs. If a genuinely new view (e.g. a flat, searchable table over the
+country/GeoEntity registries) is ever built for the DATABASE tab, it's expected to follow this same pattern —
+flip `wired: true` in `TABS`, nothing else in `TopNav.tsx`/`InputManager.tsx` needs to change to accommodate it.
 
 **Why WASDQE camera nudging lives in `scene/CameraControls.tsx`'s hook tree
 but the keyboard listener itself lives in `InputManager.tsx`, outside the
@@ -627,6 +857,56 @@ etc. is expected to own its own data/state internally and hand the Layer
 Engine a component via `registerLayer()`, the same way the placeholders do.
 That decoupling — engines produce layers, the Layer Engine only knows how to
 register/toggle/mount/unmount them — is the reason this version exists.
+
+**A layer's control surface doesn't have to be `LayerPanel.tsx` (v6.2.0).**
+`layers/geoOverlays/AllianceHighlightLayer.tsx` (highlights the member
+countries of whichever alliance is currently picked from an
+`hud/AllianceBadge.tsx` pill — see `data/allianceMemberships.ts`) registers
+exactly like any other layer, but its own on/off state is driven by
+`hud/allianceHighlightStore.ts`, not a `LayerPanel` toggle row a user finds
+by browsing categories. The pill-browsing UI for it, `hud/AlliancesPanel.tsx`,
+opens from its own `SideRail.tsx` tab (`sideNavItems.ts`'s `SIDE_NAV_ITEMS`,
+undocumented elsewhere in this file — a left-docked, collapsible tab strip,
+parallel to `LayerPanel.tsx`/`SettingsPanel.tsx`, that filters `LayerPanel`
+by Layer Engine category) via a new optional `SideNavItem.panel` field
+naming which `HudPanel` that tab opens — every item before this one omits it
+and defaults to `'layers'`; ALLIANCES is the first to set it to `'alliances'`
+instead, since "browse and click a pill" doesn't fit `LayerPanel`'s
+one-row-per-toggle layout. `SideRail.tsx`'s click handler reads this field
+generically rather than hardcoding `'layers'`, so a future tab can open its
+own dedicated panel the same way without another rewrite of that handler.
+
+**`layers/layerPresetsStore.ts` + `hud/LayerPresetsPanel.tsx` (v6.5.0)** — direct request: a user who's already
+arranged a combination of layers they like shouldn't have to re-toggle each one by hand next time they want
+it. A preset is a named snapshot (`{id, name, layers: Record<layerId, boolean>, createdAt}`) of
+`layerStore.ts`'s enabled map at save time, captured via `getLayerDefinitions()` + `isLayerEnabled()` and
+restored via `setLayerEnabled()` (both pre-existing exports — this needed no changes to `layerStore.ts`
+itself). `applyLayerPreset()` only touches layer ids that are both in the saved snapshot AND still
+registered today: a layer removed from the app since the preset was saved has nothing left to restore, and a
+layer registered *since* the preset was saved isn't mentioned in the snapshot at all, so applying an old
+preset never silently forces an unrelated layer off. Presets persist to `localStorage`
+(`atlas.layerPresets`) — this codebase's first use of it. Every other piece of UI state
+(`hud/settingsStore.ts`'s camera sensitivity, `layerStore.ts`'s own live enabled map) resets to defaults on
+reload; a saved preset is the deliberate exception, since "store" is the whole point of the feature.
+
+This reassigns, rather than reuses, `hud/TopNav.tsx`'s Layers icon button: before v6.5.0 it toggled the same
+`'layers'` `HudPanel` (`hud/LayerPanel.tsx`'s per-layer toggle list) that every `SideRail.tsx` category row
+also opens. As of v6.5.0 it opens a new, distinct `'layerPresets'` `HudPanel` (`hud/LayerPresetsPanel.tsx`)
+instead — save-current-config / apply / delete, not another toggle list — while every `SideRail.tsx` row is
+unchanged and still opens `'layers'`. The two panels share the exact same fixed-position dock
+(`top-[72px] left-[168px]`) every other `HudPanel`-driven panel uses, and are mutually exclusive the same way
+(only one `HudPanel` open at a time) — a user can still get to individual per-layer toggles from the sidebar
+at any time; this panel only adds a way to snapshot/restore the whole map at once, it doesn't replace the
+toggle list.
+
+**v6.5.1** replaced the panel header's preset-count badge with a ✕ close button (`closeHudPanel()`, styled
+like `IntelligencePanel.tsx`'s own) — every other panel this size has no way to close itself short of
+re-clicking the toolbar icon that opened it; direct request. **v6.5.2** replaced `hud/TopNav.tsx`'s top-bar
+LAYERS tab (the tab-strip one, `navStore.ts`'s `TopNavTab` — a different, unrelated `'layers'` string from
+`HudPanel`'s) with NEWS, still inert like INTELLIGENCE/DATABASE were at the time — direct request, since
+`SideRail.tsx` already owns real layer selection, leaving that tab-strip destination pure duplication.
+**v6.9.2 dropped the INTELLIGENCE tab entirely** — see this file's own "INTELLIGENCE tab dropped" entry
+further down; NEWS/DATABASE are unaffected and still inert placeholders.
 
 ### LOD Engine (`src/lod/`, v4.3)
 
@@ -706,138 +986,560 @@ LOD Engine's distance thresholds should ever need to force by themselves.
 
 ### Geopolitical data architecture (`src/data/`)
 
-Schema + query-layer foundation for future layers (v2.1 added the schema,
-v2.1.1 added the registry below). Nothing renders this, nothing is
-registered as a layer, and no country data is populated yet. Deliberately
-separate from two things that already exist and might look similar at a
-glance:
+Schema + query-layer foundation for future layers. Deliberately separate from
+two things that already exist and might look similar at a glance:
 
 - `scene/countryGeometry.ts` — that's border/fill *geometry*, this is
-  attribute *facts* (population, claimants, participants, ...).
-- `data/countryProfiles.ts` — that's already-shipped, presentation-formatted
-  data for the IntelligencePanel (population as `"335 Million"`). The new
-  `Country` type stores the same kind of facts as plain numbers instead,
-  because it's meant to be computed on (sorted, filtered, thresholded) by
-  future layers — formatting is a presentation concern downstream of this.
-  The two datasets are not merged; see `LOGBOOK.md` for why that's a
-  separate decision, not a side effect of adding this schema.
+  attribute *facts* (population, claimants, participants, scores, ...).
+- `data/countryProfiles.ts` — already-shipped, presentation-formatted data for
+  the IntelligencePanel (government type, capital name/coordinates, factbook
+  snapshot metadata). The `Country` type stores facts as plain, unformatted
+  values instead, meant to be computed on (sorted, filtered, thresholded) by
+  layers — formatting is a presentation concern downstream of this.
+
+**`population`/`gdpUsd` (+ `populationYear`/`gdpYear`) are auto-merged into the
+`Country` registry** — `scripts/buildGovCapitalPopGdp.mjs` writes
+`data/countryEconomics.ts` (World Bank-sourced), and `useCountryFeatures.ts`
+reads it alongside each country's id/name. This is a narrow, deliberate
+exception to "geometry facts and presentation data are separate," not a
+general merge policy. `IntelligencePanel.tsx` reads the raw numbers off
+`Country` and formats them at render time via `utils/formatScale.ts`
+(`formatPopulation`/`formatGdp`) rather than storing pre-formatted strings, so
+a threshold-crossing correction (millions → billions) is a formatter change,
+not a rebuild.
+
+**What stays manual-only, and why:** `government`/`governmentNote` (a stable
+"Presidential Republic" vs. a transitional/contested government string is a
+judgment call no source API states cleanly) and
+`capital`/`capitalLat`/`capitalLng` (a handful of countries have genuine
+multi-capital ambiguity, resolved by hand, logged in `BACKLOG.md`) stay in
+`countryProfiles.ts`, hand-curated, never auto-merged. `population`/`gdpUsd`
+were judged safe to auto-merge specifically because the source is unambiguous
+per country, every gap is logged to `BACKLOG.md` rather than guessed, and
+merging only populates `Country`-only fields — it can never overwrite a
+hand-curated one. A future field being considered for the same treatment
+should meet that same bar.
+
+### Intelligence Engine scoring data
+
+Four categories have real, sourced 0-100 (or categorical) data:
+**Military**, **Economy**, **Technology**, **Current Status**. This is a
+separate, NOT-yet-merged dataset from the `Country`/`countryProfiles.ts`
+auto-merge above — don't confuse the two. Diplomacy was designed but never
+shipped real data and was removed entirely (see its own subsection below).
+The full scoring-design rationale (locked components, zero-vs-coverage-gap
+classification, weighting decisions, and every revision's reasoning) lives in
+`Intelligence Docs/intelligence-engine-scoring-design.md` and `LOGBOOK.md` —
+**not duplicated here; check LOGBOOK.md before changing normalization,
+weighting, or coverage-floor logic in any of these categories, since most of
+them have already been revised at least once post-launch.**
+
+Shared UI shape across all four:
+
+- **`hud/IntelligencePanel.tsx`**'s INTELLIGENCE SUMMARY renders one `IntelRow`
+  per scored category (Military/Economy/Technology as a 0-100 bar; Current
+  Status as `ConflictChip`/`SanctionBadge` chips instead of a bar, since
+  neither of its fields is a magnitude). `IntelRow`'s bar fill is a single
+  solid color per row, computed by `intelValueColor(value)` (red at 0 → amber
+  at 50 → green at 100), applied identically to the adjacent value text.
+  `hud/intelMetrics.ts` is the shared source for metric ids/labels/icons
+  (`INTEL_METRICS`) and `utils/intelValueColor.ts` for the color ramp, so
+  `IntelligencePanel.tsx` and `AnalyticsPanel.tsx` can't drift on either.
+- **Citation drill-down**: Military/Economy/Technology status-bar rows are
+  `<button>`s — clicking collapses the other rows and expands every scored
+  component (raw value, source name/URL, snapshot year/date; a missing
+  component still gets a row showing "—", never omitted). Clicking again (or
+  changing selection) collapses back. All three drilldowns share
+  `IntelligencePanel.tsx`'s `sourceLabel()` helper and the same
+  `<button>`/collapse mechanics; only the row data differs per category.
+  Current Status has no drilldown — its chip-expand interaction (below) is a
+  different, lighter mechanism.
+- **`hud/AnalyticsPanel.tsx`** is the full-screen dashboard mounted from
+  `hud/TopNav.tsx`'s ANALYTICS tab — one clickable thumbnail per metric,
+  drilling into a ranked/filtered list of every registered country (plus
+  Taiwan — see its own subsection). Military/Economy/Technology share generic
+  ranked-list machinery: `BaseRankedRow`/`AnalyticsColumn<TRow>`/
+  `compareRows`/`SortableHeader`/`ColumnHeaderRow`/`RankedListRow`, with
+  `MILITARY_COLUMNS`/`ECONOMY_COLUMNS`/`TECHNOLOGY_COLUMNS` and their own
+  `buildXRows()` functions as the only category-specific pieces (each
+  category's component shapes are genuinely different types). Sort state
+  (`{ key, direction }`) resets to `SCORE`/descending whenever the active
+  metric changes; every column header is click-to-sort, a coverage gap
+  (`raw === null`) always sorts last regardless of direction, and ties break
+  alphabetically. Clicking a row calls `selectEntity()` (same as a map click
+  or search result) but never `flyToSelectedCountry()` — the globe is hidden
+  behind this full-screen view, so `direction` is computed but the flight
+  itself waits until the user switches back to the MAP tab. The ranked list
+  stays open across a row click (does not auto-close). Current Status and
+  Demographics (below) use their own bespoke row/header components instead of
+  this shared machinery, since neither has a single SCORE number to rank by.
+- **`RankingLookupBar`** (in `AnalyticsPanel.tsx`) is a jump-to-country search
+  scoped to whichever ranking is open — deliberately not `SearchBar.tsx`'s
+  `selectEntry()`, since that would open `IntelligencePanel` on top of this
+  full-screen view. It scrolls the matching row into view
+  (`scrollIntoView({ behavior: 'auto', ... })` — instant, not smooth; a smooth
+  scroll combined with the same-tick highlight state update was found to
+  render a blank transient frame) and flashes a self-clearing glow highlight.
+  Chevron buttons (and ArrowUp/ArrowDown while the search box is focused) step
+  the highlighted row to its neighbor in the list's current on-screen order,
+  reading `lookupHighlightId` first and falling back to `selected?.id` so
+  stepping works right after a plain row click too. Stepping always calls
+  `closeInspector()` (never `selectCountryRow()`) — it moves the highlight
+  cursor without opening or re-syncing `IntelligencePanel`; only an explicit
+  row click opens the panel. The header (breadcrumb, lookup bar, step
+  buttons, source label) is `sticky top-0` with an opaque background so
+  scrolling rows pass behind it, not through it.
+
+#### Military (`src/data/militaryScores.ts`, `scripts/buildMilitary.mjs`)
+
+`npm run build:military` generates scores for all 193 countries from SIPRI
+expenditure/industrial-base xlsx, World Bank WDI, CIA Factbook, FAS Nuclear
+Notebook, and a reverse-engineered SIPRI arms-transfers endpoint (see the
+script's header comment for the sourcing trail). 5 scored components:
+expenditure (double-weighted — an explicit, on-the-record exception to the
+design doc's "weights need citable backing" discipline), % of GDP, personnel,
+nuclear warheads, defense-industrial base revenue. Log-min-max normalized,
+with a coverage-floor/confidence-tier system and explicit true-zero-vs-
+coverage-gap classification (a confirmed no-standing-military country renders
+`N/A`, not a scored `0.0` — genuinely inapplicable, not merely unmeasured).
+Arms-import dependency (TIV) is sourced but demoted to a non-scoring
+annotation, shown last and visually subordinate in the drilldown. `BACKLOG.md`
+tracks per-field sourcing gaps (air fleet is backlogged — paywalled source, no
+free equivalent) and is regenerated by the build script itself.
+`MILITARY_SCORES` is keyed by `Country.id` (the numeric ISO topology id) and
+only applies to `'country'` selections — plus Taiwan (see below).
+
+#### Economy (`src/data/economyScores.ts`, `scripts/buildEconomy.mjs`)
+
+`npm run build:economy` generates 5 World Bank WDI components: nominal GDP
+(log-min-max normalized, double-weighted), GDP per capita PPP (percentile
+rank), 5yr-trailing real GDP growth (percentile rank), unemployment
+(percentile rank, inverted), inflation (gaussian centered on a 2% target —
+`score = 100 * exp(-((inflation - 2.0)^2) / (2 * 1.0^2))`, σ = 1.0pp taken
+from the Bank of England's own tolerance band, not derived from sample
+spread — used directly, no percentile step). GDP per capita stays percentile
+rank rather than log-min-max, since log-min-max is only appropriate where raw
+magnitude itself is the point (aggregate economic size), not per-capita
+prosperity. `EconomyScore` carries a real per-component `raw`/`normalized`/
+`year`/`sourceUrl` breakdown, same shape as `MilitaryScore`, for the shared
+citation drilldown. Coverage floor requires ≥3 of 5 components present to
+score at all (below that, `value` stays `null`); `coveragePresent` (what the
+floor and confidence tiers key off) is computed from the undoubled component
+list even though GDP counts twice in the actual composite average, so a
+doubled component can't cross the floor on a technicality.
+
+**Taiwan is a one-off exception**: WDI structurally excludes Taiwan, so
+`buildEconomy.mjs`'s `buildTaiwanScore()` sources all 5 of its components from
+IMF WEO instead (the only IMF/WEO dependency left in this script), filtered to
+actual-year-only data (WEO includes forward projections; those are excluded).
+Taiwan is appended to the ranking pool before percentiles are computed, so it
+participates in the same 194-way ranking as every country, and is keyed by its
+GeoEntity registry id (`'taiwan'`) rather than a numeric topology id — the one
+exception to this file's numeric-id-keying convention.
+
+#### Technology (`src/data/technologyScores.ts`, `scripts/buildTechnology.mjs`)
+
+`npm run build:technology` generates 4 equal-weighted, percentile-rank-
+normalized components: R&D expenditure (% GDP, WDI `GB.XPD.RSDV.GD.ZS`),
+patent applications by residents per million population (WDI's WIPO-sourced
+`IP.PAT.RESD` ÷ `SP.POP.TOTL`), high-tech exports (% of manufactured exports,
+WDI `TX.VAL.TECH.MF.ZS`), and the ITU ICT Development Index. Coverage floor
+needs ≥3 of 4 present to score. See the design doc's "Investigated and not
+included" subsection for the 9 other candidates that didn't clear this
+project's open-data/coverage/single-purpose bar.
+
+**The ICT Development Index has no live API** (`datahub.itu.int` 403s an
+unauthenticated fetch; ITU's bulk-data access is request-only). `IDI_2024` in
+`buildTechnology.mjs` is a hand-transcribed snapshot (172 economies) of ITU's
+published 2024 edition, parsed deterministically from the sourced Wikipedia
+wikitable rather than eyeballed, to avoid transcription error. **Re-running
+the build script refreshes the 3 WDI-sourced components but NOT `IDI_2024`** —
+that needs a by-hand update against ITU's next published edition. India is
+genuinely absent from ITU's own table (confirmed by inspecting the raw
+wikitext, not a parsing gap) — a real, logged coverage gap, not a guess.
+
+#### Current Status (`src/data/currentStatus.ts`, `scripts/buildCurrentStatus.mjs`)
+
+Not a 0-100 composite — two independent, categorical fields per country:
+`conflicts: ConflictEntry[]` (UCDP-sourced — `conflictType`, optional
+`conflictName`, `snapshotDate`, `source`) and `sanctionTier: 'red' | 'orange'
+| 'yellow' | null` (+ `sanctionPrograms`). Every country gets an explicit
+`conflicts: []`/`sanctionTier: null` when neither applies — absence is a real,
+positive fact here, never omitted the way an unscored Military/Economy
+component is.
+
+**Conflicts**: `conflictType` comes from the annual UCDP/PRIO Armed Conflict
+Dataset's own classification where available, falling back to
+`'unclassified'` for a conflict the monthly UCDP Candidate Events Dataset has
+caught but no annual release has typed yet — no manual override path.
+Countries are matched primarily by UCDP's Gleditsch-Ward numeric codes
+(`scripts/lib/gleditschWard.mjs` bridges these to this project's UN-193
+topology names), **plus** a name-resolution pass that also attaches a
+Candidate/GED conflict to every named `side_a`/`side_b` government, not just
+the event's own geolocated `country_id` — needed because a remote participant
+(e.g. the US in a conflict physically located elsewhere) has no GW-coded
+territory link in that dataset the way the ACD's `gwno_loc` field provides.
+
+**Sanctions**: a small hand-maintained seed, three OFAC tiers — RED
+(comprehensive embargo: Cuba, Iran, North Korea, Syria — fully verified
+against each program's own regulatory text), ORANGE (sectoral/hybrid: Russia,
+Belarus, Venezuela, Myanmar, Sudan, Nicaragua), YELLOW (list-based only,
+SDN/Consolidated List screening: Afghanistan, Central African Republic, DR
+Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia, South Sudan, Yemen).
+Only RED is fully per-program verified; ORANGE/YELLOW are secondary-source
+seeds flagged in `BACKLOG.md` for verification. Not a live pull (see
+`LOGBOOK.md` for why, and `BACKLOG.md` for it as a standing live-pull
+candidate).
+
+**Rendering**: `ConflictChip` (one per entry, colored/labeled by
+`conflictType` via `scene/conflictTypeStyles.ts`, citation in a tooltip;
+labels are plain-language — "INTERNATIONAL WAR", "CIVIL WAR", "FOREIGN-BACKED
+CIVIL WAR", "COLONIAL CONFLICT", "RECENTLY DETECTED" — display-only, the
+underlying `ConflictType` values are unchanged) and `SanctionBadge` (a
+compact "S" mark colored by tier via `scene/sanctionTierColors.ts`, hidden
+when `sanctionTier` is `null`). `CurrentStatusRow` collapses to a headline
+("AT WAR (6)" / "NO ACTIVE CONFLICTS") and only reveals chips on click.
+`shortenConflictName()` differentiates same-type chips for one country by
+stripping this country's own name out of the raw `conflictName`. Clicking a
+chip highlights the resolved party/parties on the globe via
+`resolvePartyCountryIds()` (a non-state side like a rebel group is skipped;
+the viewed country is the fallback if nothing else resolves) — routed through
+`hud/conflictPartiesHighlightStore.ts` and
+`layers/geoOverlays/ConflictPartiesHighlightLayer.tsx`.
+
+`SanctionBadge` is clickable, opening `hud/SanctionTierMenu.tsx` — a global
+popover across all 193 countries listing every tier's members as clickable
+chips, plus a per-tier "S" icon that toggles
+`hud/sanctionHighlightStore.ts`'s `highlightedTier` (one tier at a time), read
+by `layers/geoOverlays/SanctionHighlightLayer.tsx`. Clicking a country chip
+resolves + selects + flies the camera to it and closes the menu (outside
+click or Escape also close it).
+
+**`AnalyticsPanel.tsx`** renders Current Status as its own filtered/sortable
+list, not the shared ranked-list machinery (no SCORE bar to rank by).
+`buildCurrentStatusRows()` maps every country to `{id, name, conflicts,
+sanctionTier}`; three filter tabs (ALL / ACTIVE CONFLICT / SANCTIONED, with
+live counts) sit above the list; `SortableHeader` drives order by COUNTRY,
+CONFLICTS (default — a real sortable integer), or SANCTION (by tier
+severity). Each row shows one colored dot per distinct `conflictType` plus
+the total count, and the same colored "S" badge — SANCTION is a plain,
+non-clickable cell here (a row-level click already selects the country, so a
+second click meaning on the same small badge would be ambiguous). **The
+CONFLICTS cell is the one exception** — it's its own click target (a nested
+`<button>` with `stopPropagation()`, since the row itself is a
+`<div role="button">` rather than a real `<button>` to allow the nesting) that
+expands each `ConflictEntry` as a small pill inline in the list, independent
+per-row `useState` (not lifted, so re-sorting can't detach an expansion from
+the wrong country).
+
+#### Demographics (ethnicity + religion)
+
+An informational-only extension of `currentStatus.ts`, **not** a scored
+Intelligence Engine category: `ethnicGroups`/`religions:
+{name: string; pct: number}[] | undefined`, each resolved **independently**
+per field, with its own `ethnicGroupsSnapshotDate`/`religionsSnapshotDate`
+recording which source and year resolved it. **The two fields go through
+completely different, independent priority chains — ethnicity's is
+unchanged from its original design, religion's was replaced entirely**:
+
+- `ethnicGroups`: UN Statistics Division (UNSD) → CIA Factbook.
+- `religions`: ARDA World Religion Database → UNSD → CIA Factbook.
+
+**Ethnicity — UN Statistics Division primary** (data.un.org/UNdata,
+tableCode 26), pulled via UNdata's unauthenticated CORS-open zipped-CSV
+export endpoint (`UNSD_DOWNLOAD_BASE` in `buildCurrentStatus.mjs`) — no
+documented bulk API exists, so this is a found direct path around a gated
+UI, the same pattern as `buildMilitary.mjs`'s SIPRI TIV endpoint. Filtered
+to Area="Total"/Sex="Both Sexes"; a country's most recent year with an
+explicit "Total" group row is used as the percentage denominator — a year
+with no Total row is treated as "UNSD has nothing," falling through to
+Factbook rather than inferring a total by summing components.
+`UNSD_NAME_ALIASES` bridges ~11 real name mismatches between UNSD and this
+app's UN-193 topology names.
+
+**A UNSD ethnicity result is also rejected — falling through to Factbook the
+same as "UNSD has nothing" — when its single largest group is a
+generic/residual label** (`isDominatedByGenericBucket()`: exact-match
+against `other`, `not stated`, `not specified`, `not applicable`, `not
+asked`, `not declared`, `unknown`, `refused to respond`, `refused to
+answer`, at ≥50% share). Real case this was built against: Poland's UNSD
+ethnic table codes 98.19% of the population as a literal "Other" row (the
+census schedule only enumerates named minority nationalities, so the
+implicitly-Polish majority has no row of its own), while Factbook plainly
+states "Polish 96.9%" — technically present UNSD data that adds to 100% is
+still less informative than a same-size Factbook figure when the largest
+slice has no real name. Same shape for Costa Rica/Colombia/Bolivia's
+ethnicity — every occurrence is logged to `BACKLOG.md`, never silently
+swapped. This is a real, deliberately low bar (50%) — a country whose
+minor/immigrant groups happen to collectively make up a modest "other"
+share, without dominating the result, is left on UNSD.
+
+**Religion — ARDA (thearda.com) World Religion Database primary.** Switched
+from UNSD-primary because ARDA's own coverage is close to universal (real
+run: 194/194 countries) where UNSD's religion table has real gaps (Russia
+has zero rows — religion has never been a census question there) and the
+same generic-bucket problem ethnicity's quality gate exists for. Scraped
+from each country's own `thearda.com/world-religion/national-profiles?u=
+{code}c` page's "Religious Adherents" table (`ARDA_NAME_ALIASES` bridges
+~13 real name mismatches, e.g. `Turkey` → `Turkey/Türkiye`, `North Korea` →
+`Korea, (North) Democratic Republic of`) — never the page's separate,
+State-Department-sourced prose ("Religious demographics" section further
+down the same page), which has been observed to disagree with the table
+itself (Sudan's prose says "70 percent... Muslim," the table's own row says
+91.36%). Cited as `"World Religion Database (Brill), via ARDA {year}"`,
+dated by the WRD edition year in the table's own heading, not any
+country-specific census year — this is an academic compilation on its own
+publication timeline, not raw census data.
+
+**Category granularity is asymmetric on purpose: every top-level religion is
+one candidate EXCEPT Christians**, which is expanded into its own indented
+sub-denomination rows (Catholics, Protestants, Orthodox, Independents,
+unaffiliated Christians, ...), each competing directly against every other
+religion's top-level row in the same ranking pool — confirmed against a
+real case (Sudan) before shipping: Muslims 91.36%, Catholics 3.22%, Ethnic
+religionists 2.77%, and Protestants 1.54% all compete on equal footing, so
+Sudan's real top-4 is Muslims/Catholics/Ethnic-religionists/Protestants,
+with everything else (Agnostics, Orthodox, Atheists, ...) folding into
+Other. A country with a fragmented Christian population can plausibly show
+multiple Christian sub-groups in one top-4 (Catholics AND Protestants) at
+once. A non-Christian religion's own sub-rows (Sunnis/Shias under Muslims)
+are read but discarded — real constituent detail with no display path here.
+**When a non-Christian top-level row has no value of its own but its
+children do** (Sudan's "Non-Religious" row is blank; its children
+"Agnostics"/"Atheists" are real, measured values) **the children are used as
+individual candidates instead of discarding real data** — confirmed with
+the user rather than assumed, since ARDA's real page structure didn't match
+what the original design brief's own example list implied. If Christians'
+sub-rows don't sum to the parent total by more than
+`CHRISTIAN_REMAINDER_THRESHOLD_PCT` (0.5 points — below that is ordinary
+independent-rounding noise across 5-6 separately-rounded figures), the
+shortfall becomes its own "Other Christian" candidate.
+
+**A country's raw religion percentages can legitimately sum well past
+100%** — ARDA's own "double affiliation" data for ~30 real countries (South
+Korea's real, well-documented Buddhist/Confucianist/folk-religion overlap
+sums to ~117%; several small Pacific nations with syncretic Christian
+denominations run as high as ~144%) — verified against the live page, not a
+parsing bug. `hud/SegmentedBar.tsx` scales down rendered segment WIDTHS
+proportionally whenever the true total exceeds 100% (`widthScale = 100 /
+totalPct`), so segments can never overflow the bar's fixed-width,
+`overflow-hidden` track and get silently clipped — the legend/tooltip text
+still shows each segment's real, unscaled percentage, only the visual width
+is adjusted. A normal (≤100%) total scales by exactly 1, unchanged.
+
+**Fallback (both fields): CIA World Factbook** for whatever the chain above
+doesn't cover — for religion, this only fires for a country with neither an
+ARDA profile nor UNSD table 28 coverage. `parseFactbookPctList()` extracts
+comma-separated "<name> <pct>%" clauses, handling paren-depth-aware comma
+splitting for multi-item asides, stripping each segment's own parenthetical
+content before matching, decoding HTML entities before parsing, and
+accepting leading-dot decimals. `resolveFactbookDemographics()` only parses
+and gap-logs whichever field(s) the caller still actually needs (an explicit
+`{needsEthnic, needsReligion}` flag) — added specifically because, once ARDA
+resolves religion for nearly every country, calling this function only for
+a country's *ethnicity* gap would otherwise still unconditionally log a
+spurious "Religions... left unsourced" BACKLOG.md entry for a field that
+was never actually missing. A country/field with nothing parseable from any
+source in its chain gets `undefined`, logged to a marker-delimited
+`BACKLOG.md` section.
+
+**Grouping is a render-time concern**, not done in the build script —
+`hud/demographicsGrouping.ts`'s `groupTopFourPlusOther()` sorts descending,
+excludes a fixed `NON_RANKABLE_NAMES` set (`other`, `not stated`, `unknown`,
+`refused to respond`, matched case-insensitively) from the top-4 pool
+regardless of size, and folds everything past position 4 plus every
+non-rankable group into a synthesized "Other" segment with a `breakdown` for
+`hud/SegmentedBar.tsx`'s tooltip. A **separate synthesized "Unknown" segment**
+(`{name: 'Unknown', pct: 100 - reportedSum}`) is appended whenever a
+country's reported figures fall short of 100% by more than a 1-point
+threshold (ordinary rounding drift below that) — kept distinct from "Other"
+on purpose: "Other" is real named groups the source chose not to break out,
+"Unknown" is population the source's figures don't cover at all. Guarded so a
+country with zero source data (`groups` empty) never synthesizes "Unknown
+100%" — it still renders as "—", and guarded the other direction too (a
+negative shortfall, i.e. a >100% total, never produces a negative-percentage
+segment — see the SegmentedBar width-scaling note above for how a >100%
+total is actually handled). Colored via a dedicated
+`DEMOGRAPHIC_UNKNOWN_COLOR`, not cycled into the 5-slot named-group palette.
+`hud/demographicColors.ts` reuses 5 of `scene/highlightColors.ts`'s existing
+hex values rather than inventing new ones.
+
+`IntelligencePanel.tsx` renders a DEMOGRAPHICS section (ETHNICITY/RELIGION,
+each its own `SegmentedBar`) below INTELLIGENCE SUMMARY, skipped entirely
+when a country has neither field. `AnalyticsPanel.tsx` has its own ETHNICITY
+and RELIGION thumbnails with bespoke `DemographicHeaderRow`/
+`DemographicListRow` components (not the shared ranked-list machinery — no
+natural single ranking axis, since each country's largest group has a
+different name); default sort is alphabetical by country, with GROUP 1-4 /
+OTHER / UNKNOWN as the other sortable columns.
+
+**Known gap: US ethnicity has no Hispanic/Latino breakdown.** Both UNSD and
+Factbook mirror the same US Census Bureau RACE categories (White, Black,
+Asian, ...), not a separate Hispanic/non-Hispanic ethnicity question — no
+Census Bureau override exists in this codebase. A real fix would need
+hand-sourced ACS table B03002 data layered on top; flagged in `BACKLOG.md`,
+not built speculatively.
+
+### Taiwan recognized as a country across the Intelligence Engine
+
+Taiwan is treated as a country everywhere the Intelligence Engine surfaces
+data, while staying a `GeoEntity` architecturally — **not** merged into the
+193-country `CountryRegistry`/topology, since only `GeoEntity` has claim
+fields (`claimedBy: China`), and `Country` doesn't. Real, sourced data exists
+per category:
+
+- **Military**: all 5 components real — SIPRI's own sheets include a literal
+  "Taiwan" row for expenditure/%GDP/Top-100 revenue (matched by literal name
+  via `findYearSeriesForLiteralName()`, bypassing the topology-based name
+  matcher); personnel comes from CIA Factbook, the same fallback path every
+  other country already uses when WDI has no personnel figure.
+- **Economy**: real (IMF WEO one-off — see Economy above).
+- **Technology**: 3 of 4 components real (R&D expenditure from Taiwan's own
+  NSTC figure; patents-per-million from TIPO, Taiwan's IP office; high-tech
+  exports % — added 2026-08-27 — computed directly from UN Comtrade itself,
+  reporter code 490 "Other Asia, nes" (the long-documented code Taiwan's own
+  trade data is filed under, since Comtrade can't publish a Taiwan-labeled
+  reporter), SITC Rev.4-classified export values summed per the OECD/Eurostat
+  high-tech product list, divided by SITC sections 5-8 minus division 68 —
+  same-source, not a cross-source substitute the way Economy's IMF WEO
+  override or Military's CIA Factbook personnel fallback are; see
+  `scripts/buildTechnology.mjs`'s `TAIWAN_HIGH_TECH_EXPORTS_PCT` comment for
+  the full code list, the two transcription errors it fixed against
+  Eurostat's published list, and the sanity check against South Korea/
+  Malaysia's real WDI values). The ICT Development Index remains a genuine,
+  logged gap — ITU doesn't publish Taiwan data at all. 3-of-4 coverage
+  crosses the coverage floor, so Taiwan's Technology composite is now a real
+  `'proxy'`-confidence score, not `null`/`'unavailable'`.
+- **Current Status**: `conflicts: []`, `sanctionTier: null` — both real
+  positive facts (UCDP's 25+ battle-death threshold hasn't been crossed;
+  no active OFAC program), pushed directly rather than derived from the
+  193-topology-keyed conflict datasets Taiwan isn't part of.
+- **`data/registry/geoEntities.ts`'s Taiwan entry** has real `population`/
+  `gdpUsd` (IMF WEO, the GDP figure reused verbatim from `economyScores.ts`'s
+  Taiwan entry so the two can't drift) via an `imfWeoProvenance()` helper.
+- **`data/countryProfiles.ts`** has a hand-added Taiwan entry (Semi-
+  Presidential Republic, Taipei) so `CountryDetails` has real GOVERNMENT/
+  CAPITAL data — see "Data quirks" below.
+
+**UI generalization, not special-casing, except where the layout genuinely
+differs:** `IntelligencePanel.tsx`'s `xIntelValue()` helpers key every lookup
+by `selected.id` directly (works for a numeric country id or `'taiwan'`
+identically — and is forward-compatible for any future GeoEntity that gains
+score data). The one deliberate exception is OVERVIEW: a GeoEntity's
+`ENTITY TYPE`/`STRATEGIC SIGNIFICANCE` layout doesn't fit "recognized as a
+country," so `taiwanAsCountryLike(entity): Country` shapes a
+`Country`-compatible object from Taiwan's GeoEntity + profile data and hands
+it to the unmodified `CountryDetails` component, dispatched by an explicit
+`selected.entity.data.id === 'taiwan'` check at one call site — every other
+GeoEntity is unaffected. `SearchBar.tsx` tags Taiwan `COUNTRY` via an explicit
+id check (every other geopolitical-entity result still reads `GEOPOLITICAL`).
+`AnalyticsPanel.tsx`'s ranked-row builders iterate `getRankableCountries()`
+(`[...getCountries(), getEntity('taiwan')]`) so Taiwan's row flows through the
+same sort/filter/column/highlight machinery as every real country, with a
+`centroidById` entry derived the same way `SelectionController.ts` already
+derives GeoEntity centroids. `hud/CommandBar.tsx`'s COUNTRIES count includes
+Taiwan (+1); its ENTITIES segment was relabeled TERRITORIES (label text only,
+still counts rendered GeoEntity geometry including Taiwan's).
+
+### Diplomacy — removed
+
+Diplomacy was designed (§3.4 of the scoring-design doc: embassy network size,
+treaty ratification counts, UN voting alignment, sanctions-coalition
+participation, mediated-negotiation track record) but its weighting and
+confidence-model alignment were never locked, and it shipped only ever as a
+permanent "Awaiting data feed" placeholder. It was removed entirely rather
+than kept as a placeholder — deleted from `hud/intelMetrics.ts`'s
+`IntelMetricId` union and `INTEL_METRICS`; every consumer (`AnalyticsPanel.tsx`'s
+`METRIC_AVAILABLE`, `IntelligencePanel.tsx`'s render loop and summary caption)
+is driven generically off `INTEL_METRICS`, so no other code references it.
+**`ICONS.diplomacy` (`hud/iconPaths.ts`) is intentionally still present** —
+`hud/sideNavItems.ts`'s ALLIANCES tab reuses that icon for an unrelated
+purpose. **The `METRIC_AVAILABLE`/`MetricThumbnail` "Awaiting data feed" path
+is intentionally still present too** — it's the extensibility point a future
+5th category would use if one is ever added; see the design doc's Status
+header, updated to state the removal plainly rather than describing Diplomacy
+as merely deferred. All 4 remaining categories (Military, Economy, Technology,
+Current Status) have real data and real UI treatment — there is no
+placeholder category currently shown anywhere in the Intelligence Engine.
+
+### Entity/relationship type architecture
 
 `EntityRef` (`{ type: 'country' | 'territory' | 'geo-entity', id: string }`)
-is how `Conflict.participants`, `Relationship.parties`, and every
-`GeoEntity` relationship field point at other records — discriminated
-rather than a bare string id because country ids (ISO 3166-1 alpha-3) and
-GeoEntity ids (ad hoc slugs, no standard exists) aren't guaranteed disjoint.
-`'territory'` is a legacy discriminant value kept only so old data that
-still uses it type-checks; nothing in this codebase emits it anymore as of
-v3.0.0 — use `'geo-entity'`.
+is how `Conflict.participants`, `Relationship.parties`, and every `GeoEntity`
+relationship field point at other records — discriminated rather than a bare
+string id because country ids (ISO 3166-1 alpha-3) and GeoEntity ids (ad hoc
+slugs) aren't guaranteed disjoint. `'territory'` is a legacy discriminant kept
+only so old data type-checks — nothing emits it anymore; use `'geo-entity'`.
 
-**`data/registry/CountryRegistry.ts`** is the query seam: `registerCountry`/
-`getCountry`/`getCountries`/`removeCountry` over a plain `Map`, structurally
-identical to `layers/layerRegistry.ts` (see that section above) with one
-deliberate difference — registering a duplicate id **throws** here instead
-of warning-and-overwriting, since there's no benign reason (like Vite HMR)
-for the same country id to be registered twice yet. The registry doesn't
-import `countries.json` itself and has no opinion about where `Country`
-records come from; whatever eventually seeds it (a JSON loader, a future
-Data Engine) is separate, deliberate work, the same way `layers/placeholders/`
-— not `layerRegistry.ts` — is what actually knows which layers exist. Import
-both types and registry functions from the barrel, `data/index.ts`, not
-individual files — mirrors `layers/index.ts`'s role for the Layer Engine.
+**`data/registry/CountryRegistry.ts`** — `registerCountry`/`getCountry`/
+`getCountries`/`removeCountry` over a plain `Map`, structurally identical to
+`layers/layerRegistry.ts`, with one deliberate difference: registering a
+duplicate id **throws** here (no benign reason like Vite HMR for a duplicate
+yet). Has no opinion about where `Country` records come from. Import types
+and registry functions from the barrel, `data/index.ts`, not individual
+files.
 
-When a future layer actually consumes this data, it's expected to call
-`getCountry()`/`getCountries()` for whatever it needs and register itself
-through the Layer Engine the same way the placeholders do — this data
-architecture and the Layer Engine are independent pieces that a real layer
-will eventually connect.
+**`data/registry/GeoEntityRegistry.ts`** — the same `Map`-backed pattern
+(`registerEntity`/`getEntity`/`getEntities`/`getEntitiesByType`/
+`getRelatedEntities`) for everything geopolitically significant that isn't a
+UN-member sovereign state: de facto/partially-recognized states, dependencies/
+autonomous regions/SARs, strategically/militarily significant areas, disputed
+maritime features, and treaty-governed regions — see `GeoEntityType` in
+`data/types.ts` for the full five-way classification. `getRelatedEntities(id)`
+walks every relationship field in *both* directions (what `id` points at, and
+what points at `id`), for consumers like `ClaimsOverlayLayer` that need
+everything connected to an id regardless of direction.
 
-**`data/registry/GeoEntityRegistry.ts`** (v3.0.0, replacing v2.1.2's
-`TerritoryRegistry.ts`) is the same `Map`-backed pattern —
-`registerEntity`/`getEntity`/`getEntities`/`getEntitiesByType`/
-`getRelatedEntities` — for everything geopolitically significant that isn't
-a UN-member sovereign state: de facto/partially-recognized states (Taiwan,
-Kosovo, Palestine, Western Sahara), dependencies/autonomous regions/SARs
-(Puerto Rico, Hong Kong, Greenland, 37 more), strategically/militarily
-significant areas (Guantanamo Bay, the Cyprus Sovereign Base Areas,
-Baikonur, the Siachen Glacier), disputed maritime features (the Spratly
-Islands, Scarborough Reef), and treaty-governed regions (Antarctica) — see
-`GeoEntityType` in `data/types.ts` for the full five-way classification.
-`getEntitiesByType(type)` filters the registry by that classification;
-`getRelatedEntities(id)` walks every relationship field (below) in *both*
-directions — entities `id` points at, and entities that point at `id` — for
-consumers like `ClaimsOverlayLayer` that need "what's connected to this at
-all" rather than one specific direction.
+One interface, `GeoEntity`, covers all five classifications. The central
+design decision: **who controls an entity and who claims it are separate
+fields**, `administeredBy` (a list — real-world control is often split, e.g.
+Western Sahara) and `claimedBy`, since they frequently disagree. `parentEntity`
+(singular, optional) captures the uncontroversial "formally part of"
+relationship (Puerto Rico → USA) separately from the contested
+`administeredBy`/`claimedBy` fields. `claims` is the inverse of `claimedBy` —
+kept as its own field (not one bidirectional list) so a claims-overlay
+consumer can walk outward from a selection independently of walking inward.
+**Nothing in the current dataset actually populates `claims`** — every claim
+is recorded only as `claimedBy` on the claimed entity (e.g. Taiwan claims the
+Spratly Islands in every practical sense, but `taiwan.claims` is `[]`; the
+Spratly Islands' own `claimedBy` lists Taiwan instead). `ClaimsOverlayLayer.tsx`
+and `scripts/generateClaimsDoc.mjs` both account for this by reading
+`[...claimedBy, ...claims]` together — a new consumer reading `entity.claims`
+alone will get an incomplete answer. Every relation (`GeoEntityRelation`)
+accepts an optional `Country`/`GeoEntity` reference plus a required
+`displayName`, since the relevant government is frequently not a registered
+UN-member `Country` (Taiwan's own government, the Polisario Front/SADR).
 
-One interface, `GeoEntity`, covers all five classifications — not five
-separate interfaces the way `TerritoryRegistry` once needed only one for.
-The central design decision, carried forward from the pre-v3 `Territory`
-type: **who controls an entity and who claims it are separate fields**,
-`administeredBy` and `claimedBy`, not one field with a type flag. They
-frequently disagree (a government can control territory that isn't
-internationally recognized as rightfully theirs), and `administeredBy` is a
-*list* — real-world control is often split (Western Sahara has two
-administrators, divided by a berm) — so the type doesn't force picking one
-administrator or resolving the dispute itself. A `parentEntity` (singular,
-optional) captures the uncontroversial "formally part of" relationship
-(Puerto Rico -> USA) separately from the contested `administeredBy`/
-`claimedBy` fields, so a plain dependency isn't modeled as more disputed
-than it is. `claims` is the inverse of `claimedBy` — what this entity
-claims, as opposed to who claims it — kept as its own field rather than one
-bidirectional list specifically so a claims-overlay consumer can walk
-outward from a selection independently of walking inward. Every relation
-(`GeoEntityRelation`) accepts an optional `Country`/`GeoEntity` reference
-plus a required `displayName`, because the relevant government is
-frequently *not* a registered UN-member `Country` (Taiwan's own government,
-the Polisario Front/SADR) — same reasoning the pre-v3
-`ControllingAuthority`/`TerritoryClaimant` types established, carried
-forward unchanged.
+**`population`/`gdpUsd` on `GeoEntity` are hand-populated, per entity, in
+`registry/geoEntities.ts` itself — unlike `Country`'s, they are NOT
+auto-merged.** `scripts/buildGeoEntityEconomics.mjs` queries the same World
+Bank WDI indicators for every entity with a resident population, but only
+ever writes a **report** (`scripts/geoEntityEconomicsReport.json` + a
+marker-delimited `BACKLOG.md` section) — never into `geoEntities.ts` directly.
+The reason: that file's relationship data (`administeredBy`/`claimedBy`/...)
+is hand-curated with no API equivalent, so auto-writing just the economic
+half every run risks silently clobbering hand-curated content if the file's
+shape ever changes; a human reads the report and edits by hand instead. 23 of
+56 entities have real WDI-sourced figures; 16 more were queried and
+genuinely have no WDI data (left with an explicit "No WDI data" comment,
+never silently blank); Taiwan/Western Sahara/Crimea are deliberately
+deferred (Taiwan needs IMF WEO instead of WDI; the other two have contested
+administration, so "population of X" isn't a single unambiguous query); the
+3 uninhabited entries were never queried at all.
 
-**`data/registry/geoEntities.ts`** (v3.0.0, replacing v2.2.4's
-`registry/territories.ts`) is the real, always-imported dataset — imported
-as a side effect of `data/index.ts`, so `GeoEntityRegistry` is populated
-before anything reads it. 56 entities: the v3 spec's 55 (including
-Gibraltar — see below) plus Crimea,
-carried forward from the pre-v3 dataset even though it isn't in that spec
-(removing shipped functionality wasn't asked for). Its own
-`provenance.source` carries the same "simplified, not comprehensive or
-authoritative" caveat every dataset in this directory uses. See
-`LOGBOOK.md`'s v3.0.0 entry for the judgment calls this file had to make
-where the spec was ambiguous or silent (Gibraltar's inclusion, Crimea's
-classification, which real-world parent/claimant relationships were added
-beyond the spec's explicit list).
+**`data/registry/geoEntities.ts`** is the real, always-imported dataset (56
+entities) — imported as a side effect of `data/index.ts` so the registry is
+populated before anything reads it. Its `provenance.source` carries a
+"simplified, not comprehensive or authoritative" caveat, same as every
+dataset in this directory.
 
-**`CLAIMS.md`** (repo root, v3.1.1, rewritten v3.1.3) is a generated,
-complete roster — all 193 UN member states (sourced from `public/geo/
-countries-un193.json`, the same topology `useCountryFeatures.ts` fetches at
-runtime, not a second hand-typed list) and all registered GeoEntities, each
-showing its claim relationships or "None," plus a "Summary: active
-disputes" section up top for the 11 that actually have one. Produced by
-`scripts/generateClaimsDoc.mjs` (`npm run docs:claims`) reading
-`GeoEntityRegistry` directly, not hand-maintained — same "one source of
-truth, no drift" reasoning `public/geo/*.json` being generated rather than
-hand-edited already established in this codebase. Regenerate it after
-editing any `claimedBy`/`claims`/`countries-un193.json` field; don't
-hand-edit `CLAIMS.md` itself.
-
-**Note for anyone reading `claims` off a `GeoEntity` directly instead of
-through this generator:** `claimedBy` and `claims` are meant to be the same
-fact recorded from two ends (see `GeoEntity`'s doc comment above), but
-nothing in this dataset currently populates `claims` — every claim is
-recorded only as `claimedBy` on the claimed entity (Taiwan claims Spratly
-Islands/Scarborough Reef in every practical sense, but `taiwan.claims` is
-`[]`; both reefs list Taiwan in their own `claimedBy` instead).
-`ClaimsOverlayLayer.tsx` already accounts for this (it reads
-`[...claimedBy, ...claims]` together — see that file) and
-`generateClaimsDoc.mjs` infers the missing direction the same way; a new
-consumer reading `entity.claims` alone will get an incomplete answer. See
-`LOGBOOK.md`'s v3.1.3 entry.
-
-`data/registry/exampleTerritories.ts` (the pre-v3 illustrative,
-deliberately-unimported schema-validation file) was removed in v3.0.0 —
-its job (prove the schema holds up against real, complicated cases without
-being mistaken for the real dataset) is now served by `geoEntities.ts`
-itself, which is real, imported, *and* already covers the complicated
-cases (split control, non-Country claimants, multi-party maritime disputes)
-that file existed to validate.
+**`CLAIMS.md`** (repo root) is a generated, complete roster of all 193 UN
+member states plus every registered GeoEntity and their claim relationships
+("None" where there are none), with an "active disputes" summary up top.
+Produced by `scripts/generateClaimsDoc.mjs` (`npm run docs:claims`) reading
+`GeoEntityRegistry` directly — **regenerate it after editing any
+`claimedBy`/`claims`/`countries-un193.json` field; never hand-edit
+`CLAIMS.md` itself.**
 
 ### Entity Resolution (`src/entities/`)
 
@@ -985,10 +1687,27 @@ needs to change — they're already generic over `SearchEntry`/
   selection equality checks. The fallback is `` `feature-${index}` `` — keep this
   pattern if you add another feature-keyed list.
 - `data/countryProfiles.ts` is illustrative demo data (government/capital are
-  stable facts; population/GDP are rounded approximate snapshots), covering
-  ~60 of the 193 countries. The intelligence panel degrades gracefully ("No
-  profile data available") for the rest — don't assume every country has a
-  profile.
+  stable facts; population/GDP are rounded approximate snapshots). **As of
+  2026-08-12, all 193 UN member states have a profile** (originally ~60;
+  the remaining 132 were filled in after being reported as "a lot of
+  countries are missing their capitals" — see that file's own header
+  comment for the caveats specific to that batch, including a few
+  governments labeled descriptively rather than forced into a standard
+  republic/monarchy category because they were mid-transition when
+  written). `IntelligencePanel.tsx`'s CountryDetails "No profile data
+  available" fallback is now effectively unreachable through normal
+  selection (every UN member has an entry) but stays in place.
+  **`COUNTRY_PROFILES` has one deliberate non-UN entry, Taiwan** — added
+  2026-08-26 alongside "Taiwan recognized across the Intelligence Engine"
+  (see this file's own entry further down) so `CountryDetails` has real
+  GOVERNMENT/CAPITAL data to render for it. An EARLIER version of this
+  paragraph claimed this entry already existed, as a "worked example" of
+  why `CapitalMarker` gates on `selected.entity.kind === 'country'` rather
+  than a name-only lookup — that claim turned out to be stale/inaccurate
+  when actually checked (no Taiwan entry existed in the file at all before
+  2026-08-26); `CapitalMarker`'s own kind-based gate is real and unaffected,
+  but wasn't actually being exercised by a live Taiwan profile entry the
+  way this doc used to imply.
 
 ## Code style
 

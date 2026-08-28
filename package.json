@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "5.1.0",
+  "version": "6.10.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,12 @@
     "build:geo:rivers": "node scripts/buildRiversTopology.mjs",
     "build:geo:us-cities": "node scripts/buildUsCitiesData.mjs",
     "build:geo:canada-cities": "node scripts/buildCanadaCitiesData.mjs",
+    "build:profiles": "tsx scripts/buildGovCapitalPopGdp.mjs",
+    "build:military": "node scripts/buildMilitary.mjs",
+    "build:economy": "node scripts/buildEconomy.mjs",
+    "build:technology": "node scripts/buildTechnology.mjs",
+    "build:current-status": "node scripts/buildCurrentStatus.mjs",
+    "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
@@ -53,6 +59,7 @@
     "tsx": "^4.23.1",
     "typescript": "~6.0.2",
     "vite": "^8.1.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "xlsx": "^0.18.5"
   }
 }

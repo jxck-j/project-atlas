@@ -91,6 +91,81 @@ export function geometryToBorderSegments(geometry: Geometry, radius: number): Fl
   return new Float32Array(positions)
 }
 
+// Same walk as geometryToBorderSegments above, but also returns a parallel
+// 'lineDistance' array for LineDashedMaterial — with the cumulative distance
+// reset to 0 at the start of EACH RING, not carried over from the previous
+// one. This matters specifically for dashed borders (states/provinces,
+// v6.2.4; the pre-existing claim/related-country overlay dashes in
+// layers/geoOverlays/ClaimsOverlayLayer.tsx) on any MultiPolygon or
+// holed-Polygon entity — reported directly as some states' dashed borders
+// rendering solid instead. Root cause: the previous approach ran a generic,
+// ring-unaware `computeLineDistances(geometry)` as a *separate* pass over
+// the already-flattened position buffer, summing consecutive-vertex
+// distances across the ENTIRE buffer with no idea where one ring ends and
+// the next begins. For a single-ring shape that's harmless (there's only
+// one continuous path), which is why simple states/provinces looked fine.
+// But geometryToBorderSegments never draws a segment BETWEEN rings — GL_LINES
+// pairs always land exactly on ring boundaries (every ring contributes an
+// even vertex count) — so the generic pass was still adding one huge, never-
+// rendered "phantom" distance for every ring transition (the real-world gap
+// between, say, an island and the mainland) into the running cumulative
+// total. Every vertex in every ring AFTER the first then inherited that
+// inflated phase offset, which can put an entire ring's real (short) length
+// inside a single mod(dashSize+gapSize) cycle — the mod value never crosses
+// into the gap portion for that whole ring, so it renders as one unbroken
+// dash: a solid line. Multi-ring states (coastal ones with islands) hit
+// this; simple single-ring states didn't, matching what was reported.
+// Fixed at the source, in the one place that actually knows ring
+// boundaries, instead of trying to reverse-engineer them from a flat buffer
+// afterward — see LOGBOOK.md.
+// 2026-08-15: distances are normalized to [0, 1] per ring (divided by that
+// ring's own total length) rather than left as absolute world-space
+// distance — a fixed DASH_SIZE/GAP_SIZE against absolute distance meant a
+// small ring's entire perimeter could fit inside a single dash+gap cycle,
+// rendering as one unbroken solid line instead of a dash pattern (reported
+// once the states/provinces layer's 1:10m upgrade added far more small
+// provinces than the 1:50m pilot ever had). Normalizing means every ring
+// gets the same NUMBER of dashes regardless of its actual size — small and
+// huge rings both read as "hatched." This is a shared function
+// (ClaimsOverlayLayer.tsx's dashed claim outlines use it too), so this
+// changes their dash density slightly as a side effect — an improvement of
+// the same bug class, not a regression: a huge country's claim outline used
+// to get far more/denser dashes than a small one, purely from size.
+export function geometryToBorderSegmentsWithDistances(
+  geometry: Geometry,
+  radius: number
+): { positions: Float32Array; distances: Float32Array } {
+  const polygons = geometryToPolygons(geometry)
+  const positions: number[] = []
+  const distances: number[] = []
+
+  for (const rings of polygons) {
+    for (const ring of rings) {
+      const unwrapped = unwrapRingLongitudes(ring)
+      const ringDistances: number[] = []
+      let ringLength = 0
+      for (let i = 0; i < unwrapped.length - 1; i++) {
+        const [lngA, latA] = unwrapped[i]
+        const [lngB, latB] = unwrapped[i + 1]
+        const a = latLngToVector3(latA, lngA, radius)
+        const b = latLngToVector3(latB, lngB, radius)
+        positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+        ringDistances.push(ringLength)
+        ringLength += a.distanceTo(b)
+        ringDistances.push(ringLength)
+      }
+      // ringLength === 0 is a degenerate (single-point or zero-length) ring
+      // — normalizing by 1 instead of dividing by zero just leaves it at
+      // its raw (all-zero) distances, which never renders a visible dash
+      // pattern either way.
+      const norm = ringLength > 0 ? ringLength : 1
+      for (const d of ringDistances) distances.push(d / norm)
+    }
+  }
+
+  return { positions: new Float32Array(positions), distances: new Float32Array(distances) }
+}
+
 function geometryToPolylines(geometry: Geometry): Position[][] {
   return geometry.type === 'LineString'
     ? [(geometry as LineString).coordinates]
@@ -124,6 +199,49 @@ export function geometryToLineSegments(geometry: Geometry, radius: number): Floa
   }
 
   return new Float32Array(positions)
+}
+
+// Same "reset per independent path, not across the whole buffer" fix as
+// geometryToBorderSegmentsWithDistances above, for a MultiLineString instead
+// of a MultiPolygon's rings — added for v6.2.5's deduplicated state/province
+// boundary mesh (scene/useStatesProvincesFeatures.ts's boundary geometry,
+// built via topojson-client's mesh()), whose whole reason for existing is
+// that it packs many electrically-unrelated arcs (some touching, most not)
+// into one MultiLineString; without a per-line reset here, the exact same
+// "one shape's dash phase corrupted by a huge phantom distance carried over
+// from an unrelated line" bug geometryToBorderSegmentsWithDistances fixed
+// for country/GeoEntity rings would just resurface one level up.
+// Normalized to [0, 1] per line, same reasoning and same 2026-08-15 change
+// as geometryToBorderSegmentsWithDistances above — each arc in
+// StatesProvinces.tsx's deduplicated BoundaryMesh gets a consistent dash
+// count regardless of that arc's own length.
+export function geometryToLineSegmentsWithDistances(
+  geometry: Geometry,
+  radius: number
+): { positions: Float32Array; distances: Float32Array } {
+  const lines = geometryToPolylines(geometry)
+  const positions: number[] = []
+  const distances: number[] = []
+
+  for (const line of lines) {
+    const unwrapped = unwrapRingLongitudes(line)
+    const lineDistances: number[] = []
+    let lineLength = 0
+    for (let i = 0; i < unwrapped.length - 1; i++) {
+      const [lngA, latA] = unwrapped[i]
+      const [lngB, latB] = unwrapped[i + 1]
+      const a = latLngToVector3(latA, lngA, radius)
+      const b = latLngToVector3(latB, lngB, radius)
+      positions.push(a.x, a.y, a.z, b.x, b.y, b.z)
+      lineDistances.push(lineLength)
+      lineLength += a.distanceTo(b)
+      lineDistances.push(lineLength)
+    }
+    const norm = lineLength > 0 ? lineLength : 1
+    for (const d of lineDistances) distances.push(d / norm)
+  }
+
+  return { positions: new Float32Array(positions), distances: new Float32Array(distances) }
 }
 
 // 2026-08-07: a documented, real defect (see BACKLOG.md and LOGBOOK.md) —
@@ -300,31 +418,92 @@ export function geometryToCentroid(geometry: Geometry): { lat: number; lng: numb
 
 // Max angular extent (degrees) across latitude and longitude, used to decide
 // whether a country is "large" enough on screen for an inline hover label or
-// needs a leader-line callout instead. Computed per-polygon (each exterior
-// ring unwrapped against itself) since separate polygons of a MultiPolygon
-// (e.g. Alaska vs. the continental US) are often far apart and unwrapping
-// them against a shared reference wouldn't be meaningful.
+// needs a leader-line callout instead (and, since v5.2.4, to estimate a
+// label's actual apparent on-screen size — see labelDeclutter.ts's
+// apparentSizePx). Computed per-polygon — each exterior ring unwrapped
+// against ONLY ITSELF, with the single largest resulting span taken as the
+// answer — since separate polygons of a MultiPolygon (e.g. Alaska/Hawaii vs.
+// the continental US, Kaliningrad vs. the rest of Russia) are often
+// genuinely far apart, and a combined bounding box across all of them
+// doesn't represent "how big does the landmass under this country's label
+// actually look" (the label sits on the single largest piece — see
+// geometryToCentroid's "largest ring by point count" rule — not on some
+// point in the empty space between disconnected exclaves).
+//
+// 2026-08-09: previously combined every ring's independently-unwrapped
+// points into ONE running min/max — for a country whose separate polygons
+// straddle the antimeridian on different "branches" of the ±180° wrap (any
+// country with an Arctic/Pacific exclave far from its mainland: Russia's
+// Kaliningrad and Far East, the USA's Hawaii and Alaska), that combined the
+// two branches' longitudes as if they were part of one bounding box,
+// producing nonsense (Russia computed as ~503°, well past the 360° a real
+// bounding box can even span) that then broke downstream trig math
+// (apparentSizePx's `sin` of a bogus half-angle past 180° flips sign,
+// making both of these countries' labels register as having ~0 or negative
+// apparent size and always fall back to their abbreviation, even at close
+// zoom — reported directly: "why is the USA abbreviated, it has one of the
+// largest footprints"). Taking the max PER-RING span instead can't produce
+// that kind of runaway value (a single connected ring's own unwrap never
+// needs to cross more than one dateline), and happens to also match this
+// function's original documented intent, which the old combined-bounding-
+// box code didn't actually implement despite what its own comment said.
+// Known accepted tradeoff, not a new regression: a true multi-island
+// archipelago that doesn't cross the antimeridian (Indonesia, Philippines)
+// reports only its single largest island's extent, undercounting the
+// visual spread of the whole nation — real, but nowhere near as wrong as
+// the bug this replaced, and not something reported as an issue.
+//
+// 2026-08-09 (v5.2.6): "a single connected ring's own unwrap never needs to
+// cross more than one dateline" (above) turned out to have one exception:
+// Antarctica's coastline ring runs all the way around the pole, touching
+// every longitude, rather than just dipping near the antimeridian once.
+// `unwrapRingLongitudes` still "works" on it in the sense that it doesn't
+// throw or produce a per-point error, but the CUMULATIVE drift as you
+// walk all the way around a pole-encircling ring means its last point
+// unwraps to roughly 360° away from its first, even though they're the
+// same physical point (rings are closed) — the min/max longitude then
+// spans a nonsense-for-this-purpose ~360°, and `sin(360°/2) = sin(180°) ≈
+// 0` in `apparentSizePx` collapses Antarctica's apparent size to zero at
+// every zoom level, always falling back to its abbreviation ("Antarctica
+// is abbreviated even zoomed all the way out, despite having plenty of
+// room"). A normal ring — even a huge one, even one that legitimately
+// crosses the antimeridian once (Russia's mainland) — always closes back
+// to within a few degrees of its own starting unwrapped longitude, because
+// the unwrap direction it drifted during the ring cancels out by the time
+// it returns to its own start; only a ring that encircles a pole doesn't
+// cancel out, since it keeps drifting the same direction all the way
+// around. That gives a cheap, reliable detector with a huge margin (~0 vs
+// ~360, no real ring lands in between): if a ring's unwrapped last point
+// is more than 180° from its unwrapped first point, it encircles a pole,
+// and its longitude span is meaningless (it "spans" every longitude by
+// definition) — only its latitude span (how far it reaches from the pole)
+// says anything real about its size.
 export function geometryToAngularExtent(geometry: Geometry): number {
   const polygons = geometryToPolygons(geometry)
 
-  let minLat = Infinity
-  let maxLat = -Infinity
-  let minLng = Infinity
-  let maxLng = -Infinity
+  let maxExtent = 0
 
   for (const rings of polygons) {
     const exterior = rings[0]
     if (!exterior || exterior.length === 0) continue
 
     const unwrapped = unwrapRingLongitudes(exterior)
+    let minLat = Infinity
+    let maxLat = -Infinity
+    let minLng = Infinity
+    let maxLng = -Infinity
     for (const [lng, lat] of unwrapped) {
       if (lat < minLat) minLat = lat
       if (lat > maxLat) maxLat = lat
       if (lng < minLng) minLng = lng
       if (lng > maxLng) maxLng = lng
     }
+
+    const closureGapDeg = Math.abs(unwrapped[unwrapped.length - 1][0] - unwrapped[0][0])
+    const encirclesPole = closureGapDeg > 180
+    const ringExtent = encirclesPole ? maxLat - minLat : Math.max(maxLat - minLat, maxLng - minLng)
+    if (ringExtent > maxExtent) maxExtent = ringExtent
   }
 
-  if (!isFinite(minLat)) return 0
-  return Math.max(maxLat - minLat, maxLng - minLng)
+  return maxExtent
 }

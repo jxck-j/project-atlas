@@ -1,10 +1,28 @@
-import { clearSelection, flyToSelectedCountry, useSelection } from './selectionStore'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCountryFeatures } from '../scene/useCountryFeatures'
+import { clearSelection, flyToSelectedCountry, useSelection, type SelectedEntity } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
-import type { GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
+import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
+import { ALLIANCES } from '../data/allianceMemberships'
+import { COUNTRY_NAME_TO_ISO3 } from '../data/countryIso3'
+import { MILITARY_SCORES, type MilitaryScore } from '../data/militaryScores'
+import { ECONOMY_SCORES, type EconomyScore } from '../data/economyScores'
+import { TECHNOLOGY_SCORES, type TechnologyScore } from '../data/technologyScores'
+import { CURRENT_STATUS, type ConflictEntry, type CurrentStatus } from '../data/currentStatus'
+import { SANCTION_TIER_STYLE, withAlpha } from '../scene/sanctionTierColors'
+import { CONFLICT_TYPE_STYLE } from '../scene/conflictTypeStyles'
+import { SanctionTierMenu } from './SanctionTierMenu'
+import { toggleConflictPartiesHighlight, useConflictPartiesHighlight } from './conflictPartiesHighlightStore'
+import { AllianceBadge } from './AllianceBadge'
+import type { Country, GeoEntity, GeoEntityRelation, GeoEntityType } from '../data'
 import { HIGHLIGHT_COLORS } from '../scene/highlightColors'
+import { formatArea, formatGdp, formatGdpPerCapita, formatPopulation } from '../utils/formatScale'
+import { intelValueColor } from '../utils/intelValueColor'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
+import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
+import { SegmentedBar } from './SegmentedBar'
 
 // `.cp-row` — label left, value right-aligned on the same baseline, rather
 // than the stacked label-over-value the pre-restyle panel used. The
@@ -18,37 +36,706 @@ function DataRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-// `.intel-row` — icon / label / 62px track / right-aligned value.
+// `.intel-row` — icon / label / 155px track / right-aligned value.
 //
-// `value` is optional AND CURRENTLY NEVER PASSED: nothing in data/types.ts
-// carries a 0-100 score for any of these metrics (Country has population
-// and gdpUsd, both unpopulated — src/data/countries/countries.json is `[]`
-// — and neither is a rating), and the Conflict type's own doc comment is
-// explicit that this project does not fabricate assessments like these
-// without an editorial process behind them. So the row renders its empty
-// state: flat track, em-dash value. The prop exists so an eventual
-// Intelligence Engine only has to pass a number here — the bar chrome,
-// gradient, and glow are already correct and match the reference exactly.
-function IntelRow({ label, icon, value }: { label: string; icon: readonly string[]; value?: number }) {
-  return (
-    <div className="flex items-center gap-2 py-[5px]">
+// Track is 155px (62px × 2.5 — reported as too short at the original size).
+// The fill is a single solid color, not a gradient — `intelValueColor`
+// interpolates red(0)→amber(50)→green(100) once per row, from that row's
+// own value, and the same computed color is applied to both the fill and
+// the value text beside it, so a country's number and its bar always read
+// as the same color.
+//
+// `value` is optional: real for MILITARY/ECONOMY/TECHNOLOGY (see
+// militaryIntelValue/economyIntelValue/technologyIntelValue below, each
+// sourced from its own src/data/*Scores.ts). CURRENT STATUS never passes
+// one at all — design doc §3.5 is explicit it never converges to a single
+// number (see CurrentStatusRow below instead). A fifth category (Diplomacy)
+// existed as an "Awaiting data feed" placeholder through 2026-08-26 and was
+// then dropped entirely, not just left unsourced — see intelMetrics.ts's
+// own comment. `confidence === 'proxy'`
+// tags the label — see
+// Intelligence Docs/intelligence-engine-scoring-design.md §6's "UI should
+// visually flag this is a proxy metric, not a direct measurement" — so a
+// coverage-floor-but-not-full-coverage score never reads with the same
+// confidence as a fully measured one. `notApplicable` renders "N/A" instead
+// of the usual em-dash — for a confirmed no-standing-military country
+// (`MilitaryScore.confirmed`), the composite is genuinely inapplicable, not
+// merely unmeasured, so it shouldn't share the "—" a data gap gets.
+const INTEL_BAR_WIDTH_PX = 155
+
+// MilitaryConfidence and EconomyConfidence (militaryScores.ts / economyScores.ts)
+// are independently-declared but identical 3-value unions — both trace back
+// to the design doc §6's illustrative ScoreConfidence, which was never
+// actually factored into a shared exported type in data/types.ts. IntelRow
+// takes this shape directly rather than importing both category-specific
+// aliases just to satisfy a prop type.
+type ScoreConfidence = 'measured' | 'proxy' | 'unavailable'
+
+// `onClick` (v6.3.2) makes the row a `<button>` instead of a `<div>` — see
+// the design doc's §7 "status bars are clickable" citation drill-down.
+// Passed only for a metric that actually has per-component source data to
+// show (currently just MILITARY, and only while a MilitaryScore record
+// exists for the selection); the other four metrics have no sources to
+// drill into yet, so they stay plain, inert rows.
+function IntelRow({
+  label,
+  icon,
+  value,
+  confidence,
+  notApplicable,
+  onClick,
+  expanded,
+}: {
+  label: string
+  icon: readonly string[]
+  value?: number
+  confidence?: ScoreConfidence
+  notApplicable?: boolean
+  onClick?: () => void
+  expanded?: boolean
+}) {
+  const isProxy = confidence === 'proxy'
+  const color = value !== undefined ? intelValueColor(value) : '#51648a'
+  const content = (
+    <>
       <span className="grid w-[17px] place-items-center text-[#4d95ff]">
         <Icon paths={icon} />
       </span>
-      <span className="flex-1 text-[9.5px] font-bold tracking-[0.1em] text-[#aebfdc]">{label}</span>
-      <span className="h-1 w-[62px] overflow-hidden rounded-sm bg-[#14213a]">
+      <span className="flex-1 text-[9.5px] font-bold tracking-[0.1em] text-[#aebfdc]">
+        {label}
+        {isProxy && <span className="ml-1.5 text-[#e0a340]">PROXY</span>}
+      </span>
+      <span className="h-1 overflow-hidden rounded-sm bg-[#14213a]" style={{ width: `${INTEL_BAR_WIDTH_PX}px` }}>
         <span
-          className="block h-full rounded-sm bg-[linear-gradient(90deg,#2d6fd8,#6db0ff)] shadow-[0_0_6px_rgba(63,139,255,0.8)]"
-          style={{ width: `${value ?? 0}%` }}
+          className="block h-full rounded-sm shadow-[0_0_6px_rgba(255,255,255,0.25)]"
+          style={{ width: `${value ?? 0}%`, backgroundColor: color }}
         />
       </span>
-      <span
-        className={`w-8 text-right text-[11.5px] font-bold ${
-          value === undefined ? 'text-[#51648a]' : 'text-[#e6efff]'
-        }`}
-      >
-        {value === undefined ? '—' : `${value}%`}
+      <span className="w-12 text-right text-[11.5px] font-bold" style={{ color }}>
+        {value === undefined ? (notApplicable ? 'N/A' : '—') : value.toFixed(1)}
       </span>
+    </>
+  )
+
+  if (!onClick) {
+    return <div className="flex items-center gap-2 py-[5px]">{content}</div>
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full items-center gap-2 rounded py-[5px] text-left transition-colors hover:bg-[rgba(255,255,255,0.05)] ${
+        expanded ? 'bg-[rgba(255,255,255,0.05)]' : ''
+      }`}
+    >
+      {content}
+    </button>
+  )
+}
+
+// Friendly citation labels for a component's `sourceUrl` — the raw URLs are
+// what's actually stored (so a real link can be followed), but a domain
+// isn't a citation a reader recognizes at a glance. Shared across every
+// category's drill-down (originally Military-only, generalized once Economy
+// needed the exact same World Bank WDI branch this already had).
+function sourceLabel(url: string | undefined): string {
+  if (!url) return 'Source unavailable'
+  if (url.includes('sipri.org/sites/default/files/SIPRI-Milex')) return 'SIPRI Military Expenditure Database'
+  if (url.includes('sipri.org/sites/default/files/SIPRI-Top-100')) return 'SIPRI Top 100 Arms-Producing Companies'
+  if (url.includes('armstransfers.sipri.org')) return 'SIPRI Arms Transfers Database'
+  if (url.includes('worldbank.org')) return 'World Bank (WDI)'
+  if (url.includes('fas.org')) return 'FAS Nuclear Notebook'
+  if (url.includes('itu.int')) return 'ITU (ICT Development Index)'
+  if (url.includes('factbook.json')) return 'CIA World Factbook'
+  try {
+    return new URL(url).hostname
+  } catch {
+    return 'Source'
+  }
+}
+
+interface MilitaryDrilldownRow {
+  label: string
+  raw: number | null
+  format: (raw: number) => string
+  sourceUrl?: string
+  dateLabel?: string
+}
+
+// The design doc's §7: "drops down the list of metrics/sources that fed
+// that bar's score — source name, value used, snapshot date." Lists all 5
+// scored components (whether or not each one actually has a value for this
+// country — a missing one is shown as "—", not omitted, so a coverage gap
+// is visible here too) plus, last and visually subordinate, the sourced but
+// NOT-scored arms-import annotation (see militaryScores.ts's header comment
+// for why it's excluded from `value`) when this country has one.
+function MilitaryDrilldown({ score }: { score: MilitaryScore }) {
+  const rows: MilitaryDrilldownRow[] = [
+    {
+      label: 'Military Expenditure',
+      raw: score.components.expenditureUsd.raw,
+      format: (raw) => formatGdp(raw * 1e6) ?? '—',
+      sourceUrl: score.components.expenditureUsd.sourceUrl,
+      dateLabel: score.components.expenditureUsd.sourceDate ?? score.components.expenditureUsd.year?.toString(),
+    },
+    {
+      label: '% of GDP',
+      raw: score.components.pctGdp.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.pctGdp.sourceUrl,
+      dateLabel: score.components.pctGdp.sourceDate ?? score.components.pctGdp.year?.toString(),
+    },
+    {
+      label: 'Active Personnel',
+      raw: score.components.personnel.raw,
+      format: (raw) => formatPopulation(raw) ?? '—',
+      sourceUrl: score.components.personnel.sourceUrl,
+      dateLabel: score.components.personnel.sourceDate ?? score.components.personnel.year?.toString(),
+    },
+    {
+      label: 'Nuclear Warheads',
+      raw: score.components.nuclearWarheads.raw,
+      format: (raw) => raw.toLocaleString('en-US'),
+      sourceUrl: score.components.nuclearWarheads.sourceUrl,
+      dateLabel: score.components.nuclearWarheads.sourceDate ?? score.components.nuclearWarheads.year?.toString(),
+    },
+    {
+      label: 'Defense-Industrial Base Revenue',
+      raw: score.components.industrialBaseRevenueUsdM.raw,
+      format: (raw) => formatGdp(raw * 1e6) ?? '—',
+      sourceUrl: score.components.industrialBaseRevenueUsdM.sourceUrl,
+      dateLabel: score.components.industrialBaseRevenueUsdM.sourceDate ?? score.components.industrialBaseRevenueUsdM.year?.toString(),
+    },
+  ]
+
+  const tiv = score.annotations.armsImportTiv
+
+  return (
+    <div className="pt-1">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 border-b border-[rgba(22,35,60,0.6)] py-2 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.label}</div>
+            {row.sourceUrl ? (
+              <a
+                href={row.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[10px] text-[#4d95ff] hover:underline"
+              >
+                {sourceLabel(row.sourceUrl)}
+              </a>
+            ) : (
+              <div className="text-[10px] text-[#51648a]">No source</div>
+            )}
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.raw == null ? '—' : row.format(row.raw)}</div>
+            <div className="text-[10px] text-[#6d82a8]">{row.dateLabel ?? '—'}</div>
+          </div>
+        </div>
+      ))}
+      {tiv.raw != null && (
+        <div className="flex items-start justify-between gap-3 py-2 opacity-70">
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold italic text-[#aebfdc]">Arms Import (TIV) — not scored</div>
+            <a href={tiv.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
+              {sourceLabel(tiv.sourceUrl)}
+            </a>
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#aebfdc]">{tiv.raw.toLocaleString('en-US')}</div>
+            <div className="text-[10px] text-[#6d82a8]">{tiv.year ?? '—'}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Keyed by `selected.id` directly rather than gating on
+// `selected.entity.kind === 'country'` — MILITARY_SCORES is keyed by the
+// numeric ISO topology id for every Country, EXCEPT Taiwan (a GeoEntity),
+// keyed by its GeoEntity registry id ('taiwan') instead — the same
+// exception Economy/Technology/Current Status all use. `selected.id` is the
+// SAME denormalized id either way (see hud/selectionStore.ts's
+// SelectedEntity doc comment), so this one lookup already resolves both
+// cases correctly with no kind check needed: a country resolves by its
+// numeric id, Taiwan resolves by 'taiwan', and any OTHER GeoEntity (which
+// has no score entry at all) naturally falls through to `undefined` — the
+// same empty state a still-unscored country already gets. Forward-
+// compatible for free: a future GeoEntity that gains real score data would
+// resolve here automatically, no code change needed.
+function militaryIntelValue(selected: SelectedEntity | null) {
+  return selected ? MILITARY_SCORES[selected.id] : undefined
+}
+
+// Same convention as militaryIntelValue above.
+function economyIntelValue(selected: SelectedEntity | null) {
+  return selected ? ECONOMY_SCORES[selected.id] : undefined
+}
+
+interface EconomyDrilldownRow {
+  label: string
+  raw: number | null
+  format: (raw: number) => string
+  sourceUrl?: string
+  dateLabel?: string
+}
+
+// Same citation-drill-down shape as MilitaryDrilldown (design doc §7), for
+// Economy's 5 components. No annotations row — none exist for Economy v1
+// (see economyScores.ts's own header comment). gdpGrowth's dateLabel shows
+// the year RANGE actually averaged (components.gdpGrowth.years, sorted
+// ascending by the build script) rather than a single year, since the value
+// itself is a 5-year mean, not a single snapshot.
+function EconomyDrilldown({ score }: { score: EconomyScore }) {
+  const growthYears = score.components.gdpGrowth.years
+  const growthDateLabel =
+    growthYears && growthYears.length > 0
+      ? growthYears.length === 1
+        ? `${growthYears[0]}`
+        : `${growthYears[0]}–${growthYears[growthYears.length - 1]}`
+      : undefined
+
+  const rows: EconomyDrilldownRow[] = [
+    {
+      label: 'GDP',
+      raw: score.components.gdpNominal.raw,
+      format: (raw) => formatGdp(raw) ?? '—',
+      sourceUrl: score.components.gdpNominal.sourceUrl,
+      dateLabel: score.components.gdpNominal.year?.toString(),
+    },
+    {
+      label: 'GDP per Capita (PPP)',
+      raw: score.components.gdpPerCapitaPpp.raw,
+      format: (raw) => formatGdpPerCapita(raw) ?? '—',
+      sourceUrl: score.components.gdpPerCapitaPpp.sourceUrl,
+      dateLabel: score.components.gdpPerCapitaPpp.year?.toString(),
+    },
+    {
+      label: 'Real GDP Growth (5yr avg)',
+      raw: score.components.gdpGrowth.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.gdpGrowth.sourceUrl,
+      dateLabel: growthDateLabel,
+    },
+    {
+      label: 'Unemployment Rate',
+      raw: score.components.unemploymentRate.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.unemploymentRate.sourceUrl,
+      dateLabel: score.components.unemploymentRate.year?.toString(),
+    },
+    {
+      label: 'Inflation (CPI)',
+      raw: score.components.inflationCpi.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.inflationCpi.sourceUrl,
+      dateLabel: score.components.inflationCpi.year?.toString(),
+    },
+  ]
+
+  return (
+    <div className="pt-1">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 border-b border-[rgba(22,35,60,0.6)] py-2 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.label}</div>
+            {row.sourceUrl ? (
+              <a href={row.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
+                {sourceLabel(row.sourceUrl)}
+              </a>
+            ) : (
+              <div className="text-[10px] text-[#51648a]">No source</div>
+            )}
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.raw == null ? '—' : row.format(row.raw)}</div>
+            <div className="text-[10px] text-[#6d82a8]">{row.dateLabel ?? '—'}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+interface TechnologyDrilldownRow {
+  label: string
+  raw: number | null
+  format: (raw: number) => string
+  sourceUrl?: string
+  dateLabel?: string
+}
+
+// Same citation-drill-down shape as MilitaryDrilldown/EconomyDrilldown
+// (design doc §7), for Technology's 4 components. No annotations row — none
+// exist for Technology (all 4 components are coverage-gap-only, see
+// technologyScores.ts's own header comment). ICT Development Index's
+// dateLabel is fixed at 2022 (the 2024 edition's own reference year) rather
+// than reading a per-country year, since every country in that hand-
+// transcribed snapshot shares the same edition/reference year.
+function TechnologyDrilldown({ score }: { score: TechnologyScore }) {
+  const rows: TechnologyDrilldownRow[] = [
+    {
+      label: 'R&D Expenditure (% GDP)',
+      raw: score.components.rdExpenditurePctGdp.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.rdExpenditurePctGdp.sourceUrl,
+      dateLabel: score.components.rdExpenditurePctGdp.year?.toString(),
+    },
+    {
+      label: 'Patent Applications (per million, residents)',
+      raw: score.components.patentsPerMillion.raw,
+      format: (raw) => raw.toFixed(1),
+      sourceUrl: score.components.patentsPerMillion.sourceUrl,
+      dateLabel: score.components.patentsPerMillion.year?.toString(),
+    },
+    {
+      label: 'High-Tech Exports (% of manufactured)',
+      raw: score.components.highTechExportsPct.raw,
+      format: (raw) => `${raw.toFixed(2)}%`,
+      sourceUrl: score.components.highTechExportsPct.sourceUrl,
+      dateLabel: score.components.highTechExportsPct.year?.toString(),
+    },
+    {
+      label: 'ICT Development Index',
+      raw: score.components.ictDevelopmentIndex.raw,
+      format: (raw) => raw.toFixed(1),
+      sourceUrl: score.components.ictDevelopmentIndex.sourceUrl,
+      dateLabel: score.components.ictDevelopmentIndex.year?.toString(),
+    },
+  ]
+
+  return (
+    <div className="pt-1">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 border-b border-[rgba(22,35,60,0.6)] py-2 last:border-b-0"
+        >
+          <div className="min-w-0">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.label}</div>
+            {row.sourceUrl ? (
+              <a href={row.sourceUrl} target="_blank" rel="noreferrer" className="text-[10px] text-[#4d95ff] hover:underline">
+                {sourceLabel(row.sourceUrl)}
+              </a>
+            ) : (
+              <div className="text-[10px] text-[#51648a]">No source</div>
+            )}
+          </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[11px] font-semibold text-[#e6efff]">{row.raw == null ? '—' : row.format(row.raw)}</div>
+            <div className="text-[10px] text-[#6d82a8]">{row.dateLabel ?? '—'}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Same convention as militaryIntelValue/economyIntelValue above.
+function technologyIntelValue(selected: SelectedEntity | null) {
+  return selected ? TECHNOLOGY_SCORES[selected.id] : undefined
+}
+
+// Same convention as militaryIntelValue/economyIntelValue above —
+// `undefined` here (a GeoEntity other than Taiwan, or nothing selected) is
+// what tells the render below to fall back to the plain unsourced IntelRow.
+function currentStatusIntelValue(selected: SelectedEntity | null): CurrentStatus | undefined {
+  return selected ? CURRENT_STATUS[selected.id] : undefined
+}
+
+// Current Status is categorical, not a magnitude (design doc §3.5) — a
+// conflict chip per entry, colored/labeled by conflictType, deliberately
+// does NOT reuse IntelRow's scored-bar treatment, the same reasoning
+// AllianceBadge's own doc comment gives for alliance membership. Severity
+// ordering (roughly: a state-vs-state war reads as more severe than an
+// unconfirmed internal skirmish) drives the color, not any real UCDP
+// ranking — UCDP itself doesn't rank these types against each other.
+// Labels/colors live in scene/conflictTypeStyles.ts, shared with
+// AnalyticsPanel.tsx's CURRENT STATUS view — see that module's own header
+// comment.
+
+// Differentiates same-type chips for one country (direct feedback: Myanmar
+// shows 5 separate "CIVIL WAR" chips with nothing to tell them apart) by
+// pulling the OTHER party out of the raw `conflictName` UCDP already gives
+// us, rather than inventing a new field. Two source shapes to handle:
+//   - PRIO-sourced names are literally "`${side_a} vs. ${side_b}`" (see
+//     buildCurrentStatus.mjs) — one side is always this country's own
+//     government, which is redundant context here (we already know whose
+//     panel this is), so this strips it and keeps only the other side.
+//     Works from either side of an interstate conflict without knowing in
+//     advance which side this country is on.
+//   - Candidate-sourced names are UCDP's own GED `conflict_name` field,
+//     shaped "`${country}: ${label}`" (e.g. "Iran: Kurdistan") — strips the
+//     leading "<country>: " the same way.
+// Falls back to the untouched name (still a real, if less trimmed,
+// distinguisher) whenever neither shape matches cleanly, rather than
+// guessing at a country name that isn't actually present verbatim in the
+// string (e.g. a Gleditsch-Ward historical alias like "Russia (Soviet
+// Union): Government").
+function shortenConflictName(name: string | undefined, countryName: string): string | undefined {
+  if (!name) return undefined
+  if (name.includes(' vs. ')) {
+    const [a, b] = name.split(' vs. ')
+    const aIsThisCountry = a.includes(`Government of ${countryName}`)
+    const bIsThisCountry = b.includes(`Government of ${countryName}`)
+    if (aIsThisCountry && !bIsThisCountry) return b
+    if (bIsThisCountry && !aIsThisCountry) return a
+    return name
+  }
+  const prefix = `${countryName}: `
+  return name.startsWith(prefix) ? name.slice(prefix.length) : name
+}
+
+// Resolves a conflict's real parties back to Country ids so clicking a chip
+// can highlight them on the globe (direct request). Only meaningful for
+// PRIO-sourced names (the "`${side_a} vs. ${side_b}`" shape) — each side is
+// comma-joined when more than one state is involved (e.g. "Government of
+// United Kingdom, Government of United States of America"), so this splits
+// on both ' vs. ' and ', ', strips the "Government of " prefix, and looks
+// up whatever's left. A rebel/non-state side_b (the common case for a civil
+// war — "KNU", "Hamas, ...") never resolves to a country, which is
+// correct: it has no geometry to highlight. Falls back to just the
+// selected-country's own id whenever nothing else resolves (candidate-
+// sourced names have no side_a/side_b structure at all, and a pure civil
+// war only ever resolves its own government) — clicking a chip should
+// always highlight *something*, never silently no-op.
+function resolvePartyCountryIds(
+  conflictName: string | undefined,
+  fallbackCountryId: string,
+  countryNameToId: Map<string, string>
+): string[] {
+  function resolveOne(rawName: string): string | undefined {
+    const name = rawName.startsWith('Government of ') ? rawName.slice('Government of '.length) : rawName
+    if (countryNameToId.has(name)) return countryNameToId.get(name)
+    // Historical/Gleditsch-Ward-style government names UCDP's own ACD text
+    // uses ("Myanmar (Burma)", "Yemen (North Yemen)", "Russia (Soviet
+    // Union)") aren't literal matches for this project's canonical UN-193
+    // name, but always start with it — same prefix heuristic
+    // shortenConflictName uses above, just checked against every country
+    // instead of one already-known one.
+    for (const [canonicalName, id] of countryNameToId) {
+      if (name.startsWith(`${canonicalName} (`)) return id
+    }
+    return undefined
+  }
+
+  if (!conflictName || !conflictName.includes(' vs. ')) return [fallbackCountryId]
+  const ids = conflictName
+    .split(' vs. ')
+    .flatMap((side) => side.split(', '))
+    .map(resolveOne)
+    .filter((id): id is string => id != null)
+  return ids.length > 0 ? ids : [fallbackCountryId]
+}
+
+// The full citation (conflict name, which UCDP product, which release) is
+// real and sourced but too long for a chip — it's surfaced as a native
+// tooltip instead of a click-to-drilldown, unlike Military/Economy, since
+// there's no per-component breakdown here to justify that heavier
+// mechanism (design doc §7's drill-down is for a composite's components;
+// a conflict chip already shows its type up front, plus the other party
+// when one is distinguishable — see shortenConflictName above). Clickable
+// (direct request) — highlights every resolved party on the globe via
+// conflictPartiesHighlightStore.ts, colored the same as the chip itself so
+// the highlight visually traces back to the chip that caused it.
+// `highlightKey` is `${countryId}:${index}` rather than anything derived
+// from the entry's own content — simplest way to guarantee uniqueness even
+// for two chips that happen to share both conflictType and conflictName
+// (both currently possible if a country had two distinct unclassified
+// candidate detections with no name yet).
+function ConflictChip({
+  entry,
+  countryName,
+  countryId,
+  index,
+}: {
+  entry: ConflictEntry
+  countryName: string
+  countryId: string
+  index: number
+}) {
+  const style = CONFLICT_TYPE_STYLE[entry.conflictType]
+  const shortName = shortenConflictName(entry.conflictName, countryName)
+  const sourceLabel = entry.source === 'ucdp-prio-annual' ? 'UCDP/PRIO ACD' : 'UCDP Candidate'
+  const title = [entry.conflictName, `${sourceLabel} ${entry.snapshotDate}`].filter(Boolean).join(' — ')
+
+  const features = useCountryFeatures()
+  const countryNameToId = useMemo(
+    () => new Map(features.map((f) => [(f.properties?.name as string) ?? '', String(f.id)])),
+    [features]
+  )
+  const highlight = useConflictPartiesHighlight()
+  const highlightKey = `${countryId}:${index}`
+  const isHighlighted = highlight?.key === highlightKey
+
+  function handleClick() {
+    const countryIds = resolvePartyCountryIds(entry.conflictName, countryId, countryNameToId)
+    toggleConflictPartiesHighlight({ key: highlightKey, countryIds, color: style.color })
+  }
+
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={handleClick}
+      className="rounded-full border px-2 py-0.5 text-[9.5px] font-bold tracking-[0.06em] transition-shadow"
+      style={{
+        borderColor: style.color,
+        backgroundColor: isHighlighted ? style.color : style.background,
+        color: isHighlighted ? '#0a0f1a' : style.color,
+        boxShadow: isHighlighted ? `0 0 6px ${style.color}` : undefined,
+      }}
+    >
+      {style.label}
+      {shortName && <span className="ml-1 font-semibold opacity-80">— {shortName}</span>}
+    </button>
+  )
+}
+
+// A compact "S" badge rather than a chip — design doc §3.5 is explicit that
+// `sanctionTier` is a standalone fact, not one-of-many the way conflicts
+// are, so it never shares ConflictChip's pill treatment. Same badge shape
+// regardless of tier, just recolored; the real OFAC program name(s) — the
+// only part of this that isn't yet individually verified for ORANGE/YELLOW,
+// see the build script's own header comment — surface in the tooltip, not
+// on the badge face itself. Clickable (direct request) — opens
+// SanctionTierMenu.tsx, a global browser of all three tiers, not just this
+// country's own — `isMenuOpen` drives a filled/ringed active state so it's
+// obvious the menu it opened is still open, the same active-state idiom
+// IntelRow's `expanded` prop already uses for a drill-down row.
+function SanctionBadge({
+  tier,
+  programs,
+  isMenuOpen,
+  onClick,
+}: {
+  tier: NonNullable<CurrentStatus['sanctionTier']>
+  programs?: string[]
+  isMenuOpen: boolean
+  onClick: () => void
+}) {
+  const style = SANCTION_TIER_STYLE[tier]
+  const title = [style.label, ...(programs ?? [])].join(' — ')
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className="grid h-[15px] w-[15px] shrink-0 place-items-center rounded-full border text-[9px] leading-none font-extrabold transition-shadow"
+      style={{
+        borderColor: style.color,
+        backgroundColor: isMenuOpen ? style.color : withAlpha(style.color, 0.2),
+        color: isMenuOpen ? '#0a0f1a' : style.color,
+        boxShadow: isMenuOpen ? `0 0 8px ${style.color}` : undefined,
+      }}
+    >
+      S
+    </button>
+  )
+}
+
+// The row itself: label line matching every other IntelRow's icon/label
+// layout (so CURRENT STATUS reads as part of the same list), but the
+// value/track area is replaced with a plain-language headline
+// ("AT WAR"/"NO ACTIVE CONFLICTS") plus a standalone sanctionTier badge
+// (never a chip — see SanctionBadge above). Collapsed by default —
+// direct feedback that a wall of jargon chips ("internationalized_internal"
+// etc.) was overwhelming at a glance; the headline is the "how much detail
+// does someone need before deciding whether to dig in" layer, and clicking
+// it expands the individual chips below, mirroring Military/Economy's own
+// collapsed-bar → clickable-drilldown shape (design doc §7) rather than
+// inventing a new interaction. Deliberately does NOT reuse
+// `expandedMetric`'s single-drilldown-at-a-time state the way Military/
+// Economy's citation drilldowns do — that mechanism replaces the whole
+// INTELLIGENCE SUMMARY section with a full breakdown table; this is a much
+// lighter "show a few more rows directly below," so it gets its own local
+// toggle that doesn't hide Military/Economy/Technology while
+// open. "AT WAR" is used for every non-empty case regardless of
+// conflictType mix (interstate, civil war, or just a recent unconfirmed
+// detection) rather than picking a "worse" headline per type — UCDP itself
+// doesn't rank these against each other (see CONFLICT_TYPE_STYLE's own
+// comment), so this headline doesn't invent a ranking either; the count
+// suffix is what actually differentiates "AT WAR" from "AT WAR (5)".
+//
+// Also owns the sanction-menu open/close state (not lifted to
+// IntelligencePanel itself — nothing else needs to know this menu is open)
+// and closes it on an outside click, Escape, or a country selection inside
+// the menu.
+function CurrentStatusRow({ status, countryId }: { status: CurrentStatus; countryId: string }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const hasConflicts = status.conflicts.length > 0
+
+  useEffect(() => {
+    if (!isMenuOpen) return
+    function handlePointerDown(e: PointerEvent) {
+      if (!containerRef.current?.contains(e.target as Node)) setIsMenuOpen(false)
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setIsMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isMenuOpen])
+
+  return (
+    <div className="py-[5px]">
+      <div ref={containerRef} className="relative flex items-center gap-2">
+        <span className="grid w-[17px] place-items-center text-[#4d95ff]">
+          <Icon paths={ICONS.shield} />
+        </span>
+        <span className="flex-1 text-[9.5px] font-bold tracking-[0.1em] text-[#aebfdc]">CURRENT STATUS</span>
+        {hasConflicts ? (
+          <button
+            type="button"
+            onClick={() => setIsExpanded((open) => !open)}
+            className="flex items-center gap-1 text-[10px] font-bold tracking-[0.06em]"
+            style={{ color: '#ff9d5c' }}
+          >
+            AT WAR{status.conflicts.length > 1 ? ` (${status.conflicts.length})` : ''}
+            <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+              <Icon paths={ICONS.chevronDown} size={10} />
+            </span>
+          </button>
+        ) : (
+          <span className="text-[10px] font-semibold text-[#51648a]">NO ACTIVE CONFLICTS</span>
+        )}
+        {status.sanctionTier && (
+          <SanctionBadge
+            tier={status.sanctionTier}
+            programs={status.sanctionPrograms}
+            isMenuOpen={isMenuOpen}
+            onClick={() => setIsMenuOpen((open) => !open)}
+          />
+        )}
+        {isMenuOpen && <SanctionTierMenu onSelectCountry={() => setIsMenuOpen(false)} />}
+      </div>
+      {isExpanded && hasConflicts && (
+        <div className="mt-1.5 ml-[25px] flex flex-wrap gap-1.5">
+          {status.conflicts.map((entry, i) => (
+            // ConflictEntry has no stable id of its own (see
+            // data/currentStatus.ts) — index is safe here since this list
+            // is regenerated wholesale on every build, never reordered in
+            // place at runtime.
+            <ConflictChip key={i} entry={entry} countryName={status.name} countryId={countryId} index={i} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -120,7 +807,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   if (entity.parentEntity) {
     items.push({
       key: `parent-${entity.parentEntity.displayName}`,
-      category: 'PARENT ENTITY',
+      category: 'SOVEREIGN STATE',
       color: HIGHLIGHT_COLORS.relatedCountry.hex,
       icon: ICONS.pin,
       primary: entity.parentEntity.displayName,
@@ -131,7 +818,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   for (const relation of entity.administeredBy) {
     items.push({
       key: `administered-${relation.displayName}`,
-      category: 'ADMINISTERED BY',
+      category: 'ADMINISTERING POWER',
       color: HIGHLIGHT_COLORS.territoryOverlay.hex,
       icon: ICONS.shield,
       primary: relation.displayName,
@@ -140,10 +827,14 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
     })
   }
 
+  // Singular "CLAIMANT" for one claiming entity, plural "CLAIMANTS" when
+  // listing more than one — every row for this entity's claimedBy list
+  // shares the same category label since they're one set being listed.
+  const claimantLabel = entity.claimedBy.length > 1 ? 'CLAIMANTS' : 'CLAIMANT'
   for (const relation of entity.claimedBy) {
     items.push({
       key: `claimed-by-${relation.displayName}`,
-      category: 'CLAIMED BY',
+      category: claimantLabel,
       color: HIGHLIGHT_COLORS.claimsOverlay.hex,
       icon: ICONS.target,
       primary: relation.displayName,
@@ -154,7 +845,7 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   for (const relation of entity.claims) {
     items.push({
       key: `claims-${relation.displayName}`,
-      category: 'CLAIMS',
+      category: 'TERRITORIAL CLAIMS',
       color: HIGHLIGHT_COLORS.claimsOverlay.hex,
       icon: ICONS.bookmark,
       primary: relation.displayName,
@@ -165,12 +856,28 @@ function buildRelationFeed(entity: GeoEntity): RelationFeedItem[] {
   return items
 }
 
-// Unchanged from before v2.2.2 — same COUNTRY_PROFILES lookup, same four
-// fields, same fallback message. Kept as its own component (rather than
-// inlined) so the kind dispatch below reads as "one component per entity
-// kind," the pattern a future kind follows too.
-function CountryDetails({ name }: { name: string }) {
-  const profile = COUNTRY_PROFILES[name]
+// GOVERNMENT/CAPITAL still come from the name-keyed, presentation-formatted
+// COUNTRY_PROFILES (unchanged since v2.2.2). POPULATION/GDP/AREA come from
+// the raw Country record itself (`country.population`/`.gdpUsd`/`.areaKm2`,
+// populated by scene/useCountryFeatures.ts from data/countryEconomics.ts)
+// and are formatted here, at render time, via utils/formatScale.ts — see
+// that file's and countryEconomics.ts's header comments for why the split: a
+// figure correcting across a unit threshold (millions -> billions) used to
+// need a full data rebuild when the formatted string was baked in at build
+// time. Each row is omitted, not fabricated, when its source has a gap
+// (see scripts/buildGovCapitalPopGdp.mjs's known-gaps handling) — and shows
+// its sourced year in parens whenever that year isn't
+// PRIMARY_ECONOMIC_YEAR, so a stale World Bank figure never reads as
+// current (e.g. South Sudan's GDP, last reported by the World Bank in
+// 2015). governmentNote/factbookSnapshot are the same caveat lines as
+// before, so a real, dated data source doesn't read as a live feed. Kept as
+// its own component (rather than inlined) so the kind dispatch below reads
+// as "one component per entity kind," the pattern a future kind follows too.
+function CountryDetails({ country }: { country: Country }) {
+  const profile = COUNTRY_PROFILES[country.name]
+  const population = formatPopulation(country.population)
+  const gdp = formatGdp(country.gdpUsd)
+  const area = formatArea(country.areaKm2)
 
   if (!profile) {
     return (
@@ -184,8 +891,36 @@ function CountryDetails({ name }: { name: string }) {
     <>
       <DataRow label="GOVERNMENT" value={profile.government} />
       <DataRow label="CAPITAL" value={profile.capital} />
-      <DataRow label="POPULATION" value={profile.population} />
-      <DataRow label="GDP" value={profile.gdp} />
+      {population && (
+        <DataRow
+          label="POPULATION"
+          value={
+            country.populationYear && country.populationYear !== PRIMARY_ECONOMIC_YEAR
+              ? `${population} (${country.populationYear})`
+              : population
+          }
+        />
+      )}
+      {gdp && (
+        <DataRow
+          label="GDP"
+          value={country.gdpYear && country.gdpYear !== PRIMARY_ECONOMIC_YEAR ? `${gdp} (${country.gdpYear})` : gdp}
+        />
+      )}
+      {area && (
+        <DataRow
+          label="AREA"
+          value={country.areaYear && country.areaYear !== PRIMARY_ECONOMIC_YEAR ? `${area} (${country.areaYear})` : area}
+        />
+      )}
+      {profile.governmentNote && (
+        <div className="pt-1 text-[10.5px] italic leading-snug text-[#51648a]">{profile.governmentNote}</div>
+      )}
+      {profile.factbookSnapshot && (
+        <div className="pt-1 text-[10.5px] italic leading-snug text-[#51648a]">
+          Government/capital: factbook.json snapshot ({profile.factbookSnapshot.snapshotDate}), not a live feed.
+        </div>
+      )}
     </>
   )
 }
@@ -211,10 +946,38 @@ const GEO_ENTITY_TYPE_LABEL: Record<GeoEntityType, string> = {
 // the RELATIONSHIPS feed section below — same fields, same values, rendered
 // as feed rows instead of semicolon-joined strings. What stays here is the
 // entity's own attributes.
+// POPULATION/GDP follow the exact same source-year-in-parens treatment as
+// CountryDetails above — see that component's doc comment. Unlike Country's
+// population/gdpUsd (auto-merged for every UN member by
+// scene/useCountryFeatures.ts), a GeoEntity only has these fields when a
+// human has hand-verified a source for it in
+// src/data/registry/geoEntities.ts (see that file's wdiProvenance() calls
+// and scripts/buildGeoEntityEconomics.mjs) — most entities still have
+// neither, and both rows are simply omitted for those, the same as a
+// Country with a genuine World Bank gap.
 function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
+  const population = formatPopulation(entity.population)
+  const gdp = formatGdp(entity.gdpUsd)
+
   return (
     <>
       <DataRow label="ENTITY TYPE" value={GEO_ENTITY_TYPE_LABEL[entity.type]} />
+      {population && (
+        <DataRow
+          label="POPULATION"
+          value={
+            entity.populationYear && entity.populationYear !== PRIMARY_ECONOMIC_YEAR
+              ? `${population} (${entity.populationYear})`
+              : population
+          }
+        />
+      )}
+      {gdp && (
+        <DataRow
+          label="GDP"
+          value={entity.gdpYear && entity.gdpYear !== PRIMARY_ECONOMIC_YEAR ? `${gdp} (${entity.gdpYear})` : gdp}
+        />
+      )}
       {entity.metadata?.strategicSignificance && (
         <DataRow label="STRATEGIC SIGNIFICANCE" value={entity.metadata.strategicSignificance} />
       )}
@@ -223,13 +986,40 @@ function GeoEntityDetails({ entity }: { entity: GeoEntity }) {
   )
 }
 
-const INTEL_METRICS: { label: string; icon: readonly string[] }[] = [
-  { label: 'MILITARY', icon: ICONS.military },
-  { label: 'ECONOMY', icon: ICONS.economy },
-  { label: 'DIPLOMACY', icon: ICONS.diplomacy },
-  { label: 'TECHNOLOGY', icon: ICONS.technology },
-  { label: 'CURRENT STATUS', icon: ICONS.shield },
-]
+// Deliberately narrow, NOT a general "render any GeoEntity like a Country"
+// mechanism — direct request specifically for Taiwan ("Taiwan should be
+// recognized as a country... it should still show as claimed by China").
+// Taiwan stays a GeoEntity architecturally (its claim relationship only
+// exists as a GeoEntity field — see data/registry/geoEntities.ts's own
+// header comment on why claimedBy/administeredBy live there, not on
+// Country); this only changes what OVERVIEW renders for it, by explicit id
+// check at the one call site below — nowhere else in this codebase (search
+// tags aside — see hud/SearchBar.tsx) treats Taiwan differently from any
+// other GeoEntity. Shapes a `Country`-compatible object from Taiwan's own
+// GeoEntity record (population/gdpUsd/populationYear/gdpYear share the
+// exact same field names on both interfaces already) plus its hand-added
+// data/countryProfiles.ts entry (government/capital), so CountryDetails
+// itself needs no changes and can't silently regress for real countries —
+// it just receives an object shaped like one. No `areaKm2`/`areaYear` —
+// GeoEntity carries no area field at all, so CountryDetails's own
+// `area && (...)` guard already omits that row cleanly, the same way it
+// omits POPULATION/GDP for any country with a genuine sourcing gap. This
+// is exactly the "check kind, not just look up by name" lesson
+// CLAUDE.md's CapitalMarker/v2.3.0 history warns about, applied in the
+// opposite direction on purpose: the check here is an explicit id
+// comparison, not a name lookup standing in for one.
+function taiwanAsCountryLike(entity: GeoEntity): Country {
+  return {
+    id: entity.id,
+    name: entity.name,
+    aliases: entity.aliases,
+    status: 'partially-recognized',
+    population: entity.population,
+    populationYear: entity.populationYear,
+    gdpUsd: entity.gdpUsd,
+    gdpYear: entity.gdpYear,
+  }
+}
 
 export function IntelligencePanel() {
   const { selected, inspectorOpen } = useSelection()
@@ -243,6 +1033,70 @@ export function IntelligencePanel() {
 
   const relationFeed =
     selected?.entity.kind === 'geo-entity' ? buildRelationFeed(selected.entity.data) : []
+  // Alliance membership is a Country-only concept (no GeoEntity is itself a
+  // NATO/OECD/BRICS/... member) — see allianceMemberships.ts. Derived by
+  // filtering ALLIANCES' memberCountryCodes at render time against the
+  // selected country's ISO3 code, not a duplicated per-country list.
+  const countryIso3 = selected?.entity.kind === 'country' ? COUNTRY_NAME_TO_ISO3[selected.entity.data.name] : undefined
+  const memberAlliances = countryIso3
+    ? ALLIANCES.filter((alliance) => alliance.memberCountryCodes.includes(countryIso3))
+    : []
+
+  // v6.3.1: the first real Intelligence Engine data wired into this panel —
+  // see data/militaryScores.ts's header comment and
+  // Intelligence Docs/intelligence-engine-scoring-design.md. A confirmed
+  // no-standing-military country (`.confirmed`) renders N/A instead of a
+  // bar — see IntelRow's `notApplicable` doc comment — so `militaryBarValue`
+  // deliberately excludes it even though `.value` is a real, sourced 0
+  // there. An 'unavailable'-confidence country's `.value` is already null,
+  // same empty-bar treatment IntelRow gives every other still-unsourced
+  // metric.
+  const militaryScore = militaryIntelValue(selected)
+  const militaryIsNoMilitary = militaryScore?.confirmed === true
+  const militaryBarValue = militaryScore && !militaryIsNoMilitary ? (militaryScore.value ?? undefined) : undefined
+  const hasMilitaryBar = militaryBarValue != null
+
+  // Second Intelligence Engine category wired into this panel — see
+  // data/economyScores.ts's header comment. No `confirmed`/`notApplicable`
+  // concept here (that's Military-specific), so unlike militaryBarValue this
+  // is just the raw score value.
+  const economyScore = economyIntelValue(selected)
+  const economyBarValue = economyScore?.value ?? undefined
+  const hasEconomyBar = economyBarValue != null
+
+  // Third Intelligence Engine category wired into this panel — see
+  // data/technologyScores.ts's header comment. Same shape as
+  // economyBarValue/hasEconomyBar above (no confirmed/notApplicable concept
+  // here either).
+  const technologyScore = technologyIntelValue(selected)
+  const technologyBarValue = technologyScore?.value ?? undefined
+  const hasTechnologyBar = technologyBarValue != null
+
+  // Fourth Intelligence Engine category wired into this panel — see
+  // data/currentStatus.ts's header comment. Not a bar value at all (see
+  // CurrentStatusRow above), so there's no equivalent barValue/hasBar pair
+  // — `currentStatus` being defined (a Country selection with a real
+  // record) is itself the "sourced" signal used below.
+  const currentStatus = currentStatusIntelValue(selected)
+  // ConflictChip needs the selected entity's own id (to resolve/fallback
+  // party highlighting) — currentStatus itself carries only `name`, not id.
+  // `selected.id` directly (not kind-gated) so Taiwan resolves here too —
+  // its own `conflicts` is always empty, so no ConflictChip ever actually
+  // renders for it, but CurrentStatusRow still needs a truthy id to render
+  // at all rather than falling back to the plain unsourced IntelRow.
+  const currentStatusCountryId = selected?.id
+
+  // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
+  // (MILITARY, ECONOMY, TECHNOLOGY) collapses the other rows and drops down
+  // its component sources. Only a metric with a real score record for the
+  // current selection is ever clickable — a GeoEntity selection with no
+  // score (any GeoEntity other than Taiwan) still gets a plain, inert row.
+  // Resets whenever the selection changes so a drill-down never carries
+  // over onto a newly selected entity.
+  const [expandedMetric, setExpandedMetric] = useState<IntelMetricId | null>(null)
+  useEffect(() => {
+    setExpandedMetric(null)
+  }, [selected?.id])
 
   return (
     <div
@@ -273,21 +1127,201 @@ export function IntelligencePanel() {
             <div className="border-b border-[#16233c] px-4 py-3">
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>OVERVIEW</div>
               {selected.entity.kind === 'country' ? (
-                <CountryDetails name={selected.entity.name} />
+                <CountryDetails country={selected.entity.data} />
+              ) : selected.entity.data.id === 'taiwan' ? (
+                <CountryDetails country={taiwanAsCountryLike(selected.entity.data)} />
               ) : (
                 <GeoEntityDetails entity={selected.entity.data} />
               )}
             </div>
 
+            {memberAlliances.length > 0 && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-2`}>ALLIANCES</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {memberAlliances.map((alliance) => (
+                    <AllianceBadge key={alliance.id} alliance={alliance} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="border-b border-[#16233c] px-4 py-3">
               <div className={`${PANEL_SECTION_LABEL} mb-2`}>INTELLIGENCE SUMMARY</div>
-              {INTEL_METRICS.map((metric) => (
-                <IntelRow key={metric.label} label={metric.label} icon={metric.icon} />
-              ))}
-              <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
-                Awaiting data feed — no assessment data is currently sourced.
-              </div>
+              {INTEL_METRICS.filter((metric) => expandedMetric === null || metric.id === expandedMetric).map((metric) => {
+                if (metric.id === 'military') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={militaryBarValue}
+                      confidence={militaryScore?.confidence}
+                      notApplicable={militaryIsNoMilitary}
+                      expanded={expandedMetric === 'military'}
+                      onClick={
+                        militaryScore
+                          ? () => setExpandedMetric((current) => (current === 'military' ? null : 'military'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
+                if (metric.id === 'economy') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={economyBarValue}
+                      confidence={economyScore?.confidence}
+                      expanded={expandedMetric === 'economy'}
+                      onClick={
+                        economyScore
+                          ? () => setExpandedMetric((current) => (current === 'economy' ? null : 'economy'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
+                if (metric.id === 'technology') {
+                  return (
+                    <IntelRow
+                      key={metric.id}
+                      label={metric.label}
+                      icon={metric.icon}
+                      value={technologyBarValue}
+                      confidence={technologyScore?.confidence}
+                      expanded={expandedMetric === 'technology'}
+                      onClick={
+                        technologyScore
+                          ? () => setExpandedMetric((current) => (current === 'technology' ? null : 'technology'))
+                          : undefined
+                      }
+                    />
+                  )
+                }
+                if (metric.id === 'current-status') {
+                  return currentStatus && currentStatusCountryId ? (
+                    <CurrentStatusRow key={metric.id} status={currentStatus} countryId={currentStatusCountryId} />
+                  ) : (
+                    <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
+                  )
+                }
+                return <IntelRow key={metric.id} label={metric.label} icon={metric.icon} />
+              })}
+              {expandedMetric === 'military' && militaryScore ? (
+                <MilitaryDrilldown score={militaryScore} />
+              ) : expandedMetric === 'economy' && economyScore ? (
+                <EconomyDrilldown score={economyScore} />
+              ) : expandedMetric === 'technology' && technologyScore ? (
+                <TechnologyDrilldown score={technologyScore} />
+              ) : (
+                <>
+                  {(() => {
+                    // military is "resolved" (not a data gap) either when it
+                    // has a real bar, or when it's a confirmed
+                    // no-standing-military country — see militaryIsNoMilitary
+                    // above. Economy has no equivalent confirmed-N/A state.
+                    const militaryResolved = hasMilitaryBar || militaryIsNoMilitary
+                    const sourcedParts: string[] = []
+                    if (hasMilitaryBar) {
+                      sourcedParts.push(
+                        `Military (SIPRI/World Bank/FAS${
+                          militaryScore!.confidence === 'proxy'
+                            ? `, ${militaryScore!.coveragePresent}/${militaryScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
+                    if (hasEconomyBar) {
+                      sourcedParts.push(
+                        `Economy (World Bank WDI${
+                          economyScore!.confidence === 'proxy'
+                            ? `, ${economyScore!.coveragePresent}/${economyScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
+                    if (hasTechnologyBar) {
+                      sourcedParts.push(
+                        `Technology (World Bank WDI/ITU${
+                          technologyScore!.confidence === 'proxy'
+                            ? `, ${technologyScore!.coveragePresent}/${technologyScore!.coverageTotal}`
+                            : ''
+                        })`
+                      )
+                    }
+                    if (currentStatus) {
+                      sourcedParts.push('Current Status (UCDP/OFAC)')
+                    }
+                    const unsourcedLabels = INTEL_METRICS.filter((metric) => {
+                      if (metric.id === 'military') return !militaryResolved
+                      if (metric.id === 'economy') return !hasEconomyBar
+                      if (metric.id === 'technology') return !hasTechnologyBar
+                      if (metric.id === 'current-status') return !currentStatus
+                      return true
+                    }).map((metric) => metric.label)
+
+                    if (sourcedParts.length > 0) {
+                      return (
+                        <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                          {sourcedParts.join('; ')} sourced.
+                          {unsourcedLabels.length > 0 && ` ${unsourcedLabels.join('/')} — no assessment data currently sourced.`}
+                        </div>
+                      )
+                    }
+                    if (militaryIsNoMilitary) {
+                      return unsourcedLabels.length > 0 ? (
+                        <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                          {unsourcedLabels.join('/')} — no assessment data currently sourced.
+                        </div>
+                      ) : null
+                    }
+                    return (
+                      <div className="mt-2 text-[10px] leading-relaxed italic text-[#51648a]">
+                        Awaiting data feed — no assessment data is currently sourced.
+                      </div>
+                    )
+                  })()}
+                  {militaryIsNoMilitary && militaryScore?.confirmedNote && (
+                    <div className="mt-1 text-[10px] leading-relaxed italic text-[#51648a]">
+                      {militaryScore.confirmedNote}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+
+            {/* Demographics — CIA World Factbook ethnicity/religion
+                breakdowns (src/data/currentStatus.ts's ethnicGroups/
+                religions, see that file's own header comment). Informational
+                only, no scoring implications — a separate section from
+                INTELLIGENCE SUMMARY above rather than a 5th IntelRow, since
+                neither field converges to a single scored value the way
+                Military/Economy/Technology do. Gated on the SAME
+                `currentStatus` lookup that section already computes
+                (selected.id keyed, so this also "just works" for Taiwan) —
+                skipped entirely for a country with neither field, and never
+                shown at all for a GeoEntity, which has no CurrentStatus
+                record. */}
+            {currentStatus && (currentStatus.ethnicGroups || currentStatus.religions) && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-2`}>DEMOGRAPHICS</div>
+                {currentStatus.ethnicGroups && (
+                  <div className="mb-3">
+                    <div className="mb-1 text-[9.5px] font-bold tracking-[0.08em] text-[#6d82a8]">ETHNICITY</div>
+                    <SegmentedBar groups={currentStatus.ethnicGroups} />
+                  </div>
+                )}
+                {currentStatus.religions && (
+                  <div>
+                    <div className="mb-1 text-[9.5px] font-bold tracking-[0.08em] text-[#6d82a8]">RELIGION</div>
+                    <SegmentedBar groups={currentStatus.religions} />
+                  </div>
+                )}
+              </div>
+            )}
 
             {relationFeed.length > 0 && (
               <div className="border-b border-[#16233c] px-4 py-3">

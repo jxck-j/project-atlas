@@ -14,7 +14,6 @@ import { Vector3 } from 'three'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
-import { useCitiesFeatures } from '../scene/useCitiesFeatures'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
@@ -22,6 +21,7 @@ import { angularDistance, bearingBetween, latLngToVector3, normalizeAngle } from
 import { resolveEntity } from '../entities/EntityResolver'
 import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 import { selectEntity, useSelection } from '../hud/selectionStore'
+import { useLayerEnabledMap } from '../layers'
 import { getEntity } from '../data'
 import type { GeoEntity, GeoEntityType } from '../data'
 import type { NavigationDirection } from './types'
@@ -57,11 +57,13 @@ export interface NavigableEntity {
   lng: number
 }
 
-// Fixed, generic — not tied to any specific entity's data, just the eight
-// classifications every selectable thing already belongs to (country plus
-// all seven GeoEntityType values — see data/types.ts's GeoEntityType and
-// CLAUDE.md's Geopolitical data architecture section). Tab/Shift+Tab cycle
-// through this list.
+// Fixed, generic — not tied to any specific entity's data, just the seven
+// classifications every selectable thing except a city already belongs to
+// (country plus six of the seven GeoEntityType values — see data/types.ts's
+// GeoEntityType and CLAUDE.md's Geopolitical data architecture section).
+// Tab/Shift+Tab cycle through this list. `city` is deliberately omitted —
+// cities aren't reachable via arrow-key/Tab keyboard navigation at all, see
+// useEntityNavigation below.
 const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
   'country',
   'geopolitical-entity',
@@ -70,7 +72,6 @@ const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
   'maritime-feature',
   'geographic-region',
   'administrative-division',
-  'city',
 ]
 
 /**
@@ -86,8 +87,9 @@ const CATEGORY_ORDER: readonly NavigableEntity['category'][] = [
  *    selectable; this function itself has no notion of either (see
  *    useEntityNavigation below, which builds `candidates` from the same
  *    live registries scene/Countries.tsx and scene/GeoEntities.tsx render
- *    from — nothing reaches this function that isn't currently on the
- *    globe).
+ *    from, plus states/provinces only when that Layer Engine layer is
+ *    actually enabled — nothing reaches this function that isn't currently
+ *    on the globe. Cities are never included — see useEntityNavigation.
  *
  * Pure and generic: no entity id, name, or type ever appears in this
  * function's logic — it only ever reasons about lat/lng and distance,
@@ -125,9 +127,10 @@ export function findNearestInDirection(
 }
 
 /**
- * Builds the live candidate list (every rendered country + every rendered
- * GeoEntity, the same two sources hud/SearchBar.tsx already draws its own
- * index from) and exposes the two keyboard-driven selection actions:
+ * Builds the live candidate list (every rendered country, every rendered
+ * GeoEntity, and states/provinces while that layer is enabled — never
+ * cities, see the comment below) and exposes the two keyboard-driven
+ * selection actions:
  * `selectDirection` (arrow keys) and `cycleCategory` (Tab/Shift+Tab). Both
  * resolve through `entities/EntityResolver.ts` and write through
  * `hud/selectionStore.ts`'s `selectEntity()` — the same path a map click or
@@ -141,8 +144,22 @@ export function useEntityNavigation() {
   const countryFeatures = useCountryFeatures()
   const geoEntityFeatures = useGeoEntityFeatures()
   const provinceFeatures = useStatesProvincesFeatures()
-  const cityFeatures = useCitiesFeatures()
   const { selected } = useSelection()
+  // Countries and GeoEntities render unconditionally (Globe.tsx mounts
+  // <Countries />/<GeoEntities /> directly), but states/provinces are an
+  // ordinary Layer Engine layer (off by default — see
+  // StatesProvincesLayer.tsx) mounted only while enabled. Without this
+  // check, arrow-key/Tab navigation could select — and fly the camera to —
+  // a state/province that isn't actually rendered on the globe, because
+  // useStatesProvincesFeatures() fetches the same geometry regardless of
+  // whether its layer is toggled on.
+  //
+  // Cities have no equivalent gate here at all — reported directly that
+  // arrow-key navigation shouldn't reach cities, full stop, not "only while
+  // the cities layer happens to be on" the way states/provinces works.
+  // Cities stay selectable by click or search either way; this file just
+  // never builds candidates for them.
+  const enabledLayers = useLayerEnabledMap()
 
   const candidates = useMemo<NavigableEntity[]>(() => {
     const countryEntries = countryFeatures.map((f, index) => {
@@ -176,7 +193,11 @@ export function useEntityNavigation() {
     // States/provinces: same shape as geoEntityEntries above, but every
     // feature's geometry id already equals its entity id (see
     // useStatesProvincesFeatures.ts) — no ENTITY_GEOMETRY_IDS lookup needed.
-    const provinceEntries = provinceFeatures.flatMap((f) => {
+    // Gated on the 'states-provinces' layer actually being enabled (see the
+    // comment on enabledLayers above) — StatesProvincesLayer.tsx registers
+    // it with defaultEnabled: false, so this is empty until the user turns
+    // it on.
+    const provinceEntries = !(enabledLayers['states-provinces'] ?? false) ? [] : provinceFeatures.flatMap((f) => {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (!id) return []
       const registryEntity = getEntity(id)
@@ -192,27 +213,8 @@ export function useEntityNavigation() {
       ]
     })
 
-    // Cities: same shape as provinceEntries, but reading lat/lng straight
-    // off Point coordinates — geometryToCentroid assumes Polygon/
-    // MultiPolygon (see hud/SearchBar.tsx's identical note).
-    const cityEntries = cityFeatures.flatMap((f) => {
-      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
-      if (!id || f.geometry.type !== 'Point') return []
-      const [lng, lat] = f.geometry.coordinates
-      const registryEntity = getEntity(id)
-      return [
-        {
-          id,
-          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
-          category: registryEntity?.type ?? ('city' as const),
-          lat,
-          lng,
-        },
-      ]
-    })
-
-    return [...countryEntries, ...geoEntityEntries, ...provinceEntries, ...cityEntries]
-  }, [countryFeatures, geoEntityFeatures, provinceFeatures, cityFeatures])
+    return [...countryEntries, ...geoEntityEntries, ...provinceEntries]
+  }, [countryFeatures, geoEntityFeatures, provinceFeatures, enabledLayers])
 
   function goTo(candidate: NavigableEntity) {
     const resolved = resolveEntity(candidate.id)

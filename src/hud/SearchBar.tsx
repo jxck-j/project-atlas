@@ -389,7 +389,15 @@ export function SearchBar() {
               >
                 <span className="truncate">{entry.name}</span>
                 <span className="shrink-0 text-[9px] tracking-[0.15em] text-[#6d82a8]">
-                  {ENTITY_TYPE_LABEL[entry.kind]}
+                  {/* Taiwan reads COUNTRY here — direct request ("Taiwan
+                      should be recognized as a country") — even though it's
+                      still a GeoEntity architecturally (kind === 'geopolitical-
+                      entity'/GEOPOLITICAL for every OTHER entry of that
+                      type, e.g. Kosovo/Palestine, which this deliberately
+                      does NOT relabel). Scoped by explicit id check, not a
+                      kind/type change, so nothing else that branches on
+                      entry.kind is affected. */}
+                  {entry.id === 'taiwan' ? 'COUNTRY' : ENTITY_TYPE_LABEL[entry.kind]}
                 </span>
               </button>
             </li>

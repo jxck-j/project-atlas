@@ -38,8 +38,39 @@ export const LOD_LEVELS: LodLevel[] = [
   {
     id: 'states',
     label: 'States / Provinces',
-    description: 'Admin-1 boundaries for 9 large countries — same "always on" reasoning as countries.',
-    revealDistance: null,
+    // 2026-08-15: gated behind a real reveal distance, not "always on" like
+    // countries/lakes/rivers — this tier grew from 294 features (9 large
+    // countries, 1:50m) to 4,539 (nearly every country, 1:10m), and
+    // rendering all of them regardless of zoom made every one individually
+    // hoverable/clickable at once, tanking FPS (thousands of raycast
+    // targets on every pointer move, thousands of draw calls on every
+    // camera-drag frame). First pass used 5.0 (shortly before
+    // CAMERA_FOCUS_DISTANCE, 4.8 — scene/constants.ts), which is what let
+    // this tier still be active over a wide multi-country view (e.g. all of
+    // Europe in frame) and reintroduce the same FPS problem despite the
+    // per-country/per-entry merge work — see LOGBOOK.md's "States/provinces
+    // FPS" entries. 2026-08-17: tightened to 2.5 (== CAMERA_MIN_DISTANCE,
+    // scene/constants.ts) after comparing against how much closer Google
+    // Maps zooms before revealing admin-1 boundaries — read as too
+    // aggressive (past every city tier's own threshold, tightest at 2.52).
+    // Eased out to 3.5, then dialed back in to 2.8 the same day — 2.8 sat
+    // BETWEEN metro-areas (2.85) and large-cities (2.7), so states unlocked
+    // just after the metro-areas city tier rather than before the entire
+    // city ladder (3.5/5.0's behavior) or after all of it (2.5's).
+    // 2026-08-20: eased again to 2.85, matching metro-areas exactly — direct
+    // request that states/provinces become visible at the same zoom level
+    // as major cities, not one tier later. (Numeric threshold only controls
+    // WHEN a tier activates, not where it sits in resolveActiveLevels()'s
+    // returned array — that's fixed by this list's own declaration order, so
+    // 'states' always reports right after 'countries' regardless of which
+    // number is here.)
+    // 2026-08-27: metro-areas retuned to 4.8 (see this file's top-of-file
+    // comment — the old 2.85 was nowhere near CAMERA_FOCUS_DISTANCE, so
+    // selecting a country revealed no cities). 'states' moves to 4.8 with it
+    // to preserve the 2026-08-20 design intent above — it's meant to share
+    // metro-areas' threshold, not drift out of sync with it.
+    description: 'Admin-1 boundaries — nearly every country, revealed at the same distance as major (metro-area) cities.',
+    revealDistance: 4.8,
     implemented: true,
   },
   {

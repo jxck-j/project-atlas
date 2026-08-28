@@ -3,7 +3,7 @@ import { FrontSide } from 'three'
 import { registerLayer } from '../layerRegistry'
 import { useGeoEntityFeatures } from '../../scene/useGeoEntityFeatures'
 import { useCountryFeatures } from '../../scene/useCountryFeatures'
-import { buildGeoEntityEntries } from '../../scene/geoEntityEntries'
+import { buildGeoEntityEntries, DASH_SIZE, GAP_SIZE } from '../../scene/geoEntityEntries'
 import { buildCountryEntries, type CountryEntry } from '../../scene/countryEntries'
 import { GLOBE_RADIUS } from '../../scene/constants'
 import { HIGHLIGHT_COLORS } from '../../scene/highlightColors'
@@ -36,8 +36,9 @@ import type { GeoEntity } from '../../data'
 // replacing v3.0's pulsing-solid-line approximation — see LOGBOOK.md. This
 // needs the border geometry's 'lineDistance' attribute, which
 // scene/geoEntityEntries.ts's buildGeoEntityEntries() precomputes for every
-// entry (see that file's computeLineDistances()), so nothing extra is
-// required here beyond picking a material. Fill stays deliberately
+// entry via scene/countryGeometry.ts's geometryToBorderSegmentsWithDistances
+// (ring-aware as of v6.2.4 — see that function's own doc comment), so
+// nothing extra is required here beyond picking a material. Fill stays deliberately
 // near-zero opacity and a color that's never COLOR_SELECTED — that's what
 // actually satisfies "do not fill claimed territories with the same color
 // as the claimant," the dash is a legibility choice on top of it.
@@ -45,8 +46,6 @@ import type { GeoEntity } from '../../data'
 // explains.
 const CLAIM_COLOR = HIGHLIGHT_COLORS.claimsOverlay.hex
 const CLAIM_FILL_RADIUS_FACTOR = 1.002
-const DASH_SIZE = 0.028
-const GAP_SIZE = 0.02
 
 function countryIdOf(selectedId: string, kind: 'country' | 'geo-entity') {
   return kind === 'country' ? selectedId : undefined
@@ -101,8 +100,8 @@ function useClaimRelatedEntityIds(): Set<string> {
 // share one color/one mechanism — from the viewer's perspective "which
 // country is connected to what I selected" is one question, whether the
 // answer is "administers it" or "claims it" — and the marker's label text
-// (PARENT vs. CLAIMANT, or both if a future entry somehow has both) is what
-// actually distinguishes them, not a second color to memorize. See
+// (SOVEREIGN vs. CLAIMANT, or both if a future entry somehow has both) is
+// what actually distinguishes them, not a second color to memorize. See
 // data/types.ts's GeoEntity doc comment for why `parentEntity` and
 // `claimedBy` are separate fields in the first place (an uncontroversial
 // dependency isn't "disputed," so modeling it via the claim fields would
@@ -134,6 +133,17 @@ function useRelatedCountryRoles(): Map<string, Set<RelatedCountryRole>> {
     const roles = new Map<string, Set<RelatedCountryRole>>()
     if (!selected || selected.entity.kind !== 'geo-entity') return roles
 
+    // v6.2.4: a state/province's parentEntity/administeredBy always point at
+    // its own sovereign country (see useStatesProvincesFeatures.ts) — every
+    // one of the 294 registered provinces would otherwise highlight its
+    // country with this same "related country" treatment on every select,
+    // which reported directly as unwanted: an administrative subdivision
+    // being part of its own country isn't a relationship worth flagging the
+    // way an uncontested dependency (Puerto Rico -> USA) or a disputed claim
+    // is — it's just what a province IS. Every other GeoEntityType keeps the
+    // existing behavior; this is scoped to 'administrative-division' only.
+    if ((selected.entity.data as GeoEntity).type === 'administrative-division') return roles
+
     function addRole(countryId: string, role: RelatedCountryRole) {
       const existing = roles.get(countryId) ?? new Set<RelatedCountryRole>()
       existing.add(role)
@@ -156,7 +166,7 @@ interface RelatedCountryEntry extends CountryEntry {
 }
 
 const ROLE_LABEL: Record<RelatedCountryRole, string> = {
-  parent: 'PARENT',
+  parent: 'SOVEREIGN',
   claimant: 'CLAIMANT',
 }
 
@@ -238,7 +248,7 @@ function ClaimedGeoEntitiesOverlay({ entityIds }: { entityIds: Set<string> }) {
           <lineSegments geometry={entry.borderGeometry}>
             {/* dashSize/gapSize are in world units (GLOBE_RADIUS = 2.4) —
                 requires the geometry's 'lineDistance' attribute, which
-                geoEntityEntries.ts's computeLineDistances() already set. */}
+                geoEntityEntries.ts's buildGeoEntityEntries() already set. */}
             <lineDashedMaterial
               color={CLAIM_COLOR}
               dashSize={DASH_SIZE}

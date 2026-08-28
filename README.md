@@ -12,7 +12,9 @@ GeoJSON/TopoJSON data) rendered as thin glowing lines over a pitch-black
 ocean, a subtle Fresnel atmosphere rim, and pulsing capital-city markers —
 closer to a Halo/TRON/JARVIS tactical display than a map app. The lat/long
 graticule grid this used to also render (v5.0.0 and earlier) was removed in
-v5.1.0 — see that entry in `CHANGELOG.md`.
+v5.1.0 — see that entry in `CHANGELOG.md`. v6.2.1 added back a single fixed
+reference line, the equator (`scene/Equator.tsx`) — narrower in scope than
+the removed grid, which crisscrossed the whole globe.
 
 The HUD follows a "glass command console" aesthetic (v5.0.0): a dark
 near-black background, a full-spectrum ROYGBIV-mapped highlight palette
@@ -40,9 +42,9 @@ npm install
 npm run dev        # start dev server (http://localhost:5173)
 npm run build      # type-check + production build to dist/
 npm run preview    # preview the production build
-npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities}.json
+npm run build:geo  # regenerate public/geo/{countries-un193,entities,states-provinces,cities,lakes,rivers}.json
 npm run docs:claims # regenerate CLAIMS.md from data/registry/geoEntities.ts
-npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts)
+npm test           # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
 ```
 
 Verify changes with `tsc -b --noEmit`, `npm run lint` (oxlint), `npm test`,
@@ -78,11 +80,28 @@ project's pure geometry/math functions, not component behavior.
   **Search** field (type a name, press Enter — matches any country, any
   GeoEntity classification, or any of the 32,608 US Census places as of
   v4.2, then selects/flies the camera there; a matched US city also draws
-  its real boundary on demand), a **Layers** button (toggle visualization
-  layers on/off — as of v2.0 these are architecture-validating placeholders,
-  not real data; see Layer Engine below), and a **Settings** button (camera
-  rotate/zoom sensitivity, with a reset). Favorites/notifications/account
-  icons are also present but not wired to anything yet.
+  its real boundary on demand), a **Layers** button, and a **Settings**
+  button (camera rotate/zoom sensitivity, with a reset). Favorites/
+  notifications/account icons are also present but not wired to anything
+  yet. **As of v6.5.0 the Layers button opens Layer Presets** — save the
+  current on/off state of every layer under a name, then click it later to
+  restore that whole configuration at once, rather than re-toggling each
+  layer by hand. Presets persist across reloads (saved to this browser).
+  Toggling individual layers is still done from the sidebar (every
+  category row still opens the toggle list, unchanged) — this button only
+  snapshots/restores the whole thing.
+- The top bar's **ANALYTICS** tab (v6.4.0) opens a full-screen dashboard: one
+  clickable thumbnail per Intelligence Engine metric (Military, Economy,
+  Diplomacy, Technology, Current Status). **Military and, as of v6.6.0,
+  Economy** have real data — clicking either shows every one of the 193 UN
+  member states ranked by score, with every underlying component (5 per
+  category) as its own sortable column, not just the composite; Diplomacy/
+  Technology/Current Status are disabled, showing the same "no assessment
+  data currently sourced" state the intelligence panel's own status bars
+  already use for them. Clicking any column header re-sorts the list by
+  that column (toggle ascending/descending on repeat clicks) without
+  changing any country's actual score. Clicking a country in the ranked
+  list opens its intelligence panel without leaving the ranked list.
 - The left **sidebar** (v5.0.0) lists the map's ten selectable sections —
   Overview, Countries, Cities, Military, Economy, Infrastructure, Conflicts,
   Environment, Weather, Filters. Selecting one scopes the Layer Panel to
@@ -93,6 +112,11 @@ project's pure geometry/math functions, not component behavior.
 - **Water body labels** (oceans always; seas/gulfs/straits/bays once you zoom
   in past a threshold) sit on the globe surface and hide themselves on the far
   side of the sphere so they don't float through it.
+- **Lakes and rivers** (v5.2.0, Natural Earth 1:50m — 412 lakes, 116 major
+  rivers) render always-on as opaque pitch-black fill/lines with a thin cyan
+  outline, the same "reads as real open water" treatment as the ocean —
+  decorative physical geography, not selectable or searchable. Lake names
+  appear as labels only once zoomed all the way in.
 - Closing the intelligence panel (✕) clears the selection.
 - **Ambient rotation** (v3.3.1) is off by default and toggled with **T** —
   see the Keyboard bullet below. It's still frozen automatically while a
@@ -156,20 +180,35 @@ src/
                                CLAUDE.md), rendered through
                                EntityRenderLayer.tsx. Primary selection only
                                — no parent/claims overlay logic here, that's
-                               layers/geoOverlays/
+                               layers/geoOverlays/. Publishes hover state to
+                               hoveredGeoEntity.ts (v5.2.7, converting
+                               EntityRenderLayer's geometryId to the
+                               corresponding entityId first) so
+                               GeoEntityLabels.tsx can exclude whichever
+                               entity is currently hover-glowing
+    hoveredGeoEntity.ts             (v5.2.7) hoveredCountry.ts's pattern,
+                               generalized for GeoEntities — see
+                               GeoEntities.tsx above
     EntityRenderLayer.tsx       (v4.5.0) The rendering Countries.tsx and
                                GeoEntities.tsx used to each keep their own
                                copy of — border/fill mesh per entry,
                                hover/select/dim color logic, click-vs-drag
-                               threshold, the HoverLabel large-vs-small
-                               callout choice — extracted once
+                               threshold, HoverLabel — extracted once
                                countryGeometry.ts had test coverage (v4.3.1)
-                               to guard against a regression. Each caller
-                               keeps only its real differences (how entries
-                               get built, what happens on a click-resolution
-                               miss) and passes an onSelect callback in;
-                               StatesProvinces.tsx (below) adopted it too
-                               once GeoEntities.tsx's copy was folded in
+                               to guard against a regression. HoverLabel
+                               (v5.2.7) renders every entry the same way
+                               regardless of size — inline, glowing, at the
+                               entry's own centroid — replacing its passive
+                               label in place; previously anything under
+                               LARGE_ENTITY_THRESHOLD_DEG (7°) got a
+                               leader-line + dot + offset callout instead,
+                               reported as unwanted for every entity kind.
+                               Each caller keeps only its real differences
+                               (how entries get built, what happens on a
+                               click-resolution miss) and passes an
+                               onSelect callback in; StatesProvinces.tsx
+                               (below) adopted it too once GeoEntities.tsx's
+                               copy was folded in
     geoEntityEntries.ts        (v3.0.0) The "raw GeoJSON feature -> renderable
                                entry" logic pulled out of GeoEntities.tsx into
                                a plain .ts module so the geoOverlays layers
@@ -181,6 +220,20 @@ src/
                                GeoEntities.tsx, own file since provinces are
                                conditionally rendered (toggled) in a way the
                                other five classifications aren't
+    StateProvinceLabels.tsx        (v5.2.7) Same PassiveEntityLabels.tsx
+                               treatment as CountryLabels.tsx/
+                               GeoEntityLabels.tsx, mounted alongside
+                               StatesProvinces.tsx's EntityRenderLayer so it
+                               shares that layer's on/off toggle — but a much
+                               tighter reveal distance (~3.2, vs. countries'
+                               default-overview ~6.5): state/province names
+                               stay hidden until you're focused on a region
+    hoveredStateProvince.ts        (v5.2.7) hoveredCountry.ts's pattern,
+                               written by StatesProvinces.tsx so
+                               StateProvinceLabels.tsx can exclude whichever
+                               province EntityRenderLayer's HoverLabel is
+                               already glowing (now at the same centroid
+                               position — see EntityRenderLayer.tsx below)
     useStatesProvincesFeatures.ts (v4.0) Fetches states-provinces.json;
                                creates GeoEntity records directly from the
                                fetched geometry (unlike useGeoEntityFeatures.ts,
@@ -221,16 +274,87 @@ src/
                                CategoryHighlightLayer.tsx needed the same
                                thing; mirrors geoEntityEntries.ts for the
                                GeoEntity side
-    CountryLabels.tsx            (v4.3) Always-on country name labels,
-                               ranked by on-screen angular extent, sharing
-                               labelDeclutter.ts with UsCityLabels.tsx below
+    Lakes.tsx                     (v5.2.0) Always-on decorative water layer —
+                               412 Natural Earth lakes merged into one fill
+                               mesh + one border lineSegments (no per-feature
+                               interactivity); opaque pitch-black fill since
+                               land polygons have no actual holes where a
+                               lake sits, so a translucent tint read as
+                               geographically wrong
+    Rivers.tsx                    (v5.2.0) Same always-on pattern as
+                               Lakes.tsx, but LineString geometry rendered
+                               via countryGeometry.ts's new
+                               geometryToLineSegments (no ring to close, no
+                               interior to fill) instead of the border/fill
+                               pair; 116 of 462 source features (scalerank
+                               <= 3, major rivers only)
+    useLakesFeatures.ts             Fetches + parses lakes.json once, mirrors
+                               useCountryFeatures.ts's singleton pattern
+    useRiversFeatures.ts             Same, for rivers.json
+    coreSphereRef.ts               (v5.2.0) Plain non-reactive module-level
+                               ref to Globe.tsx's core sphere mesh — lets
+                               Lakes.tsx/Rivers.tsx (Layer Engine-mounted,
+                               not direct children of Globe.tsx) occlude
+                               their own Html labels against it the same way
+                               WaterLabels does via a prop
+    CountryLabels.tsx            (v4.3; Google-Maps-style abbreviation/sizing
+                               v5.2.3) Thin wrapper (v5.2.4) — builds
+                               {id, name, extent, localPosition} entries from
+                               useCountryFeatures() and hands them to
+                               PassiveEntityLabels.tsx, which owns the actual
+                               sizing/abbreviation/declutter/rendering logic
+                               shared with GeoEntityLabels.tsx below. Still
+                               owns what's genuinely country-specific: hiding
+                               entirely while selected, and excluding
+                               whichever country hoveredCountry.ts says
+                               already has a glowing HoverLabel elsewhere
+    GeoEntityLabels.tsx             (v5.2.4) Same always-on passive label
+                               treatment, extended to the 55 rendered
+                               GeoEntities (territories like Greenland,
+                               de facto states, strategic areas, ...) —
+                               previously had no passive label at all, only
+                               EntityRenderLayer.tsx's hover/selection-
+                               triggered HoverLabel. Excludes whichever
+                               entity is currently hover-glowing via
+                               hoveredGeoEntity.ts (v5.2.7) — needed once
+                               HoverLabel stopped using a leader-line
+                               callout and started rendering at the same
+                               centroid this passive label uses
+    PassiveEntityLabels.tsx          (v5.2.4) Extracted once CountryLabels.tsx
+                               and GeoEntityLabels.tsx needed the identical
+                               zoom-adaptive treatment — apparent-size-driven
+                               font size (labelDeclutter.ts's apparentSizePx),
+                               full-name-vs-abbreviation via
+                               countryAbbreviation.ts, one uniform text
+                               color, and a per-candidate declutter spacing
+                               radius (half the label's own estimated
+                               rendered width, not one flat constant for
+                               every label — same fix labelDeclutter.ts
+                               documents for the Gulfport/Biloxi regression,
+                               now also applied here). Optional
+                               maxCameraDistance prop (v5.2.7) hides the
+                               whole layer past a given zoom — how
+                               StateProvinceLabels.tsx gets its own, much
+                               tighter reveal distance than
+                               CountryLabels.tsx/GeoEntityLabels.tsx
+    countryAbbreviation.ts          (v5.2.3) Pure abbreviation derivation —
+                               initials of significant words for multi-word
+                               names ("United Kingdom" -> "UK"), first 3
+                               letters for single-word ones ("Ukraine" ->
+                               "UKR") — no ISO code lookup table needed
     UsCityLabels.tsx              (v4.3) Progressive US city label reveal —
                                Google-Maps-style, ranked by real Census
                                population, gated by the LOD Engine below
     labelDeclutter.ts             (v4.3) Shared screen-space decluttering:
                                rejects a lower-priority label if it would
                                land within spacing distance of an
-                               already-accepted one
+                               already-accepted one. apparentSizePx (v5.2.3)
+                               estimates a feature's CURRENT on-screen pixel
+                               size from its angular extent + live camera
+                               distance/FOV — the Google-Maps "big enough for
+                               its full name right now" question, which
+                               depends on zoom, not just the feature's fixed
+                               real-world size
     hoveredCountry.ts              (v4.3, zustand vanilla store since v4.4.0)
                                Non-reactive publisher so CountryLabels.tsx
                                can exclude whichever country Countries.tsx's
@@ -292,11 +416,15 @@ src/
                                against
     types.ts                    LodLevelId union naming the full intended
                                zoom progression (Earth -> Countries ->
-                               States/Provinces -> Metro Areas -> city
-                               tiers -> Every Incorporated City -> Roads/
-                               Rail/Rivers/Airports/Ports/Military Bases/
-                               Infrastructure), the last seven reserved
-                               (implemented: false, no work behind them yet)
+                               States/Provinces -> Lakes -> Rivers -> Metro
+                               Areas -> city tiers -> Every Incorporated
+                               City -> Roads/Rail/Airports/Ports/Military
+                               Bases/Infrastructure); Lakes/Rivers (v5.2.0)
+                               are the first of the originally-reserved ids
+                               to actually ship, both always-on like
+                               Countries/States; the remaining five stay
+                               reserved (implemented: false, no work behind
+                               them yet)
     lodLevels.ts                 The ordered ladder + pure
                                resolveActiveLevels/resolveDeepestLevel/
                                isLodLevelActive functions — a level is
@@ -319,6 +447,9 @@ src/
     layerStore.ts                Enabled/disabled runtime state (zustand,
                                  same pattern as the hud/*Store.ts files
                                  since v4.4.0)
+    layerPresetsStore.ts           (v6.5.0) Named snapshots of layerStore's
+                                 enabled map, save/apply/delete, persisted to
+                                 localStorage — see hud/LayerPresetsPanel.tsx
     LayerManager.tsx              Mounts/unmounts enabled layers, per-layer error
                                  boundary, mount/unmount lifecycle logging
     LayerEngine.tsx                Public entry point — the only thing Globe.tsx
@@ -359,15 +490,23 @@ src/
     CitiesLayer.tsx                (v4.1) Registers the city classification
                                  (category 'population', a new free-form
                                  value), off by default
+    LakesLayer.tsx                 (v5.2.0) Registers scene/Lakes.tsx,
+                                 default on — decorative physical geography,
+                                 not a toggleable classification the way the
+                                 layers above are
+    RiversLayer.tsx                 (v5.2.0) Same, for scene/Rivers.tsx
   hud/                       Plain DOM/Tailwind overlay, siblings of the Canvas
     panelStyles.ts              (v5.0.0) Single source of truth for the glass-
                                  panel chrome (rounded corners, translucent
                                  blur, thin border) every panel below shares
     TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
-                                 also resets view) / MAP·INTELLIGENCE·LAYERS·
-                                 ANALYTICS·DATABASE tabs (middle, only MAP
-                                 wired) / search·favorites·notifications·
-                                 account·layers·settings (right). Replaces
+                                 also resets view) / MAP·INTELLIGENCE·NEWS·
+                                 ANALYTICS·DATABASE tabs (middle — MAP and, as
+                                 of v6.4.0, ANALYTICS are wired; NEWS replaced
+                                 what was a redundant LAYERS tab as of
+                                 v6.5.1, since SideRail already owns layer
+                                 selection) / search·favorites·notifications·
+                                 account·layer presets·settings (right). Replaces
                                  Header.tsx + Toolbar.tsx (both removed)
     SideRail.tsx                 (v5.0.0) Left sidebar of ten selectable
                                  sections; each scopes LayerPanel.tsx to that
@@ -398,9 +537,14 @@ src/
                                  to disambiguate same-named places across
                                  states
     LayerPanel.tsx               Toggle list for registered layers, grouped by
-                                 category (opened from TopNav's Layers button
-                                 or the L key; scoped by SideRail's active
+                                 category (opened from every SideRail category
+                                 row, or the L key; scoped by SideRail's active
                                  section as of v5.0.0)
+    LayerPresetsPanel.tsx        (v6.5.0) Opened from TopNav's Layers button
+                                 instead, as of v6.5.0 — save/apply/delete a
+                                 named snapshot of every layer's on/off state
+                                 (layers/layerPresetsStore.ts), persisted to
+                                 localStorage (this codebase's first use of it)
     SettingsPanel.tsx           Camera sensitivity sliders + (v3.2.0)
                                  KEYBOARD SHORTCUTS reference (opened from
                                  TopNav's Settings button)
@@ -424,13 +568,39 @@ src/
                                  dispatched on entity kind. Restyled v5.0.0
                                  to a gradient masthead + sectioned body;
                                  gained an INTELLIGENCE SUMMARY block of
-                                 progress-bar metric rows (chrome only — no
-                                 score field exists anywhere in the schema,
-                                 so every bar renders in its empty state) and
-                                 a RELATIONSHIPS feed-row list for GeoEntities,
+                                 progress-bar metric rows — chrome-only at
+                                 first (no score field existed anywhere in the
+                                 schema, so every bar rendered in its empty
+                                 state), until MILITARY (v6.3.1, data/
+                                 militaryScores.ts) and ECONOMY (v6.6.0, data/
+                                 economyScores.ts) each got a real 0-100 score
+                                 with a citation drill-down (v6.3.2, §7 of the
+                                 design doc — click a wired bar to see its
+                                 sourced components); DIPLOMACY/TECHNOLOGY/
+                                 CURRENT STATUS still render empty — and a
+                                 RELATIONSHIPS feed-row list for GeoEntities,
                                  driven by the real parentEntity/
                                  administeredBy/claimedBy/claims data that was
                                  already here, just recast as feed rows
+    AnalyticsPanel.tsx           (v6.4.0) Full-screen dashboard behind
+                                 TopNav's ANALYTICS tab — one clickable
+                                 thumbnail per Intelligence Engine metric,
+                                 drilling into a ranked list of all 193
+                                 countries with every underlying component as
+                                 its own sortable column (v6.5.3/v6.5.4).
+                                 MILITARY (data/militaryScores.ts) and, as of
+                                 v6.6.0, ECONOMY (data/economyScores.ts) have
+                                 real data, sharing one generic sortable-table
+                                 implementation (BaseRankedRow/AnalyticsColumn)
+                                 rather than two near-identical copies; the
+                                 other three render the same "Awaiting data
+                                 feed" state IntelligencePanel.tsx already
+                                 uses for them. Clicking a row selects the
+                                 country without closing the list or moving
+                                 the camera
+    intelMetrics.ts               (v6.4.0) The five metric ids/labels/icons,
+                                 shared between IntelligencePanel.tsx's status
+                                 bars and AnalyticsPanel.tsx's thumbnails
     hudPanelStore.ts             Which single top-bar dropdown is open
     selectionStore.ts             Selected entity (country or GeoEntity,
                                  since v2.2.1 — see entities/) + usCityOutline
@@ -665,11 +835,14 @@ to build against without refactoring the globe itself.
   source before this is anything but a portfolio piece. Only ~60 of the 193
   countries are covered; the intelligence panel degrades gracefully ("No
   profile data available") for the rest.
-- The Military / Economy / Diplomacy / Technology / Current Status sections
-  in the intelligence panel are intentionally left as labeled placeholders
-  ("Awaiting data feed") — the brief didn't specify what should populate
-  them, and fabricating country-level assessments for a defense-context demo
-  isn't something to do casually. That's real future work.
+- Military (v6.3.1) and Economy (v6.6.0) are real, sourced Intelligence
+  Engine categories now — see `Intelligence Docs/
+  intelligence-engine-scoring-design.md`. Diplomacy / Technology / Current
+  Status are still intentionally left as labeled placeholders ("Awaiting
+  data feed") in both the intelligence panel and the Analytics ranked-list
+  thumbnails — fabricating country-level assessments for a defense-context
+  demo isn't something to do casually, and neither category's sourcing/
+  weighting is locked yet (see that doc's §9). That's real future work.
 - See `CLAUDE.md` for the harder-won technical details: antimeridian
   triangulation, why country geometry is merged per-country instead of
   per-ring/per-polygon (a real 7,234→386 draw-call fix), and the

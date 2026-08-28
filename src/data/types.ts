@@ -121,8 +121,33 @@ export interface Country {
   region?: string
   /** Total population as a plain number, not a formatted string — see the class doc comment above for why. */
   population?: number
+  /**
+   * Year the `population` figure is actually for. Populated alongside
+   * `population` by scripts/buildGovCapitalPopGdp.mjs (see
+   * data/countryEconomics.ts) — kept as an explicit field rather than
+   * assumed to always be "current" so a consumer can tell a fresh figure
+   * from a stale one without re-deriving it from `provenance.lastUpdated`.
+   */
+  populationYear?: number
   /** Gross domestic product in current US dollars, as a plain number. */
   gdpUsd?: number
+  /**
+   * Year the `gdpUsd` figure is actually for — may differ from
+   * `populationYear`. A missing/stale source (see
+   * scripts/buildGovCapitalPopGdp.mjs's World Bank lookback) can leave GDP
+   * several years behind population for the same country, or vice versa.
+   */
+  gdpYear?: number
+  /** Total land area in square kilometers, as a plain number (World Bank AG.LND.TOTL.K2). */
+  areaKm2?: number
+  /**
+   * Year the `areaKm2` figure is actually for — mirrors `gdpYear`'s reasoning,
+   * even though land area rarely changes year to year (a stale year here
+   * almost never means stale data, but the World Bank still reports it
+   * per-year and a genuine gap is still possible, so it's tracked the same
+   * explicit way rather than assumed current).
+   */
+  areaYear?: number
   provenance?: DataProvenance
 }
 
@@ -286,6 +311,25 @@ export interface GeoEntity {
   }
   /** Approximate centroid, for search/camera-fly when no rendered geometry exists for this entity (see entities/entityGeometryIds.ts) — most entities here DO have real geometry and derive their location from it instead; this is the fallback for the ones that don't (e.g. Crimea, which has no standalone polygon anywhere in the source data). */
   location?: GeoPoint
+  /**
+   * Total population as a plain number — mirrors Country.population above,
+   * for the same reason (a future layer computes on this; formatting is a
+   * render-time concern via utils/formatScale.ts, not baked in here). Most
+   * entries are `undefined`: a GeoEntity only gets a real figure once a
+   * human has hand-verified a source for it in
+   * src/data/registry/geoEntities.ts (see
+   * scripts/buildGeoEntityEconomics.mjs, which reports World Bank WDI
+   * figures for review but never writes into that file directly) — unlike
+   * Country's population/gdpUsd, which scripts/buildGovCapitalPopGdp.mjs
+   * merges in automatically at runtime for every UN member.
+   */
+  population?: number
+  /** Year the `population` figure is actually for — see Country.populationYear above for why this is tracked explicitly rather than assumed current. */
+  populationYear?: number
+  /** Gross domestic product in current US dollars, as a plain number — mirrors Country.gdpUsd above. See `population`'s doc comment for why this is hand-verified per entity rather than auto-merged. */
+  gdpUsd?: number
+  /** Year the `gdpUsd` figure is actually for — may differ from `populationYear`. See Country.gdpYear above. */
+  gdpYear?: number
   provenance?: DataProvenance
 }
 
