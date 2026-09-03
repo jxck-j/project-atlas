@@ -112,6 +112,9 @@ npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/ma
 npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
                               # Census shapefile changes)
+npm run build:geo:cities-global  # regenerate public/geo/global-cities-index.json (candidate global
+                              # replacement for cities.json — NOT part of build:geo, NOT yet wired into any
+                              # component; see city-boundaries-architecture.md)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
 npm run build:military       # regenerate src/data/militaryScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)

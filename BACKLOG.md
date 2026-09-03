@@ -724,6 +724,21 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   1:50m populated places layer doesn't flag either country's capital at
   this resolution. Every other of the 193 UN members does. Worth a manual
   addition if this ever needs to be complete rather than resolution-limited.
+- **Israel has no `PPLC`-flagged capital in GeoNames (found 2026-09-03,
+  `scripts/buildGlobalCitiesData.mjs`'s candidate global cities index).**
+  Every other of the 193 UN members resolves exactly one `PPLC` entry;
+  Israel resolves zero. Checked directly, not assumed a bug: GeoNames'
+  `IL.txt` export tags Jerusalem `PPLA` (ordinary first-order-admin-division
+  seat) rather than `PPLC` — deliberate, not missing data, almost certainly
+  because Jerusalem's status as Israel's capital is internationally
+  disputed (most UN members maintain embassies in/around Tel Aviv, not
+  Jerusalem). This project takes no position on the dispute; noting it here
+  as a real, known per-source quirk rather than silently patching Jerusalem
+  to `isCapital: true` in the build script (which would be making the
+  editorial call GeoNames itself deliberately avoided) or leaving it
+  unflagged with no explanation (which would misrepresent it as an
+  oversight the way South Sudan/Nauru's gap above actually is). Worth a
+  deliberate, logged decision before this index ships — not resolved here.
 - **Rivers (v5.2.0) only render `scalerank <= 3` — 116 of the source's 462
   features.** Deliberately partial, same pilot-scope reasoning as
   states/provinces above: raising the constant in

@@ -141,8 +141,16 @@ geoBoundaries-insufficient country) still needs.
 
 ## Migration plan
 
-1. Build the global point/population index (GeoNames-sourced), replacing
-   `cities.json`'s 223-entry curated list with full global coverage.
+1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
+   (`scripts/buildGlobalCitiesData.mjs`, `npm run build:geo:cities-global`,
+   not yet part of `build:geo` or wired into any component). Real output:
+   233,797 populated places across all 193 UN member states, 28.2 MB.
+   Surfaced one real finding along the way: Israel is the only UN member
+   with no `PPLC`-flagged capital in GeoNames — Jerusalem is tagged `PPLA`,
+   almost certainly because its status as Israel's capital is
+   internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
+   section rather than silently patched either direction. Still replaces
+   `cities.json`'s 223-entry curated list, not yet cut over.
 2. Build the boundary extraction: geoBoundaries' finest available ADM
    level per country by default, falling back to a direct, area-contained
    OSM query only where geoBoundaries doesn't reach city-level granularity
@@ -200,3 +208,14 @@ geoBoundaries-insufficient country) still needs.
   Jordan/Kuwait/the US spot checks did, or whether some countries land at
   a coarser level (the way Jordan's ADM2 is districts within a governorate,
   not neighborhoods), is unverified beyond the countries checked here.
+- **The real global-cities-index output is 28.2 MB (233,797 entries),
+  eager-fetched in full the same way `us-cities-index.json` (6.3 MB, 32,608
+  entries) already is today** — `UsCityLabels.tsx`/`useUsCitiesIndex.ts`
+  fetch that whole file unconditionally as soon as the component mounts, no
+  lazy loading. 28.2 MB is real, not estimated, and it's ~4.5x the existing
+  US-only file, not proportionally larger than population500-worldwide vs.
+  every-US-place would suggest — worth deciding before cutover whether
+  that's acceptable as one eager fetch or whether the index itself needs
+  sharding (by country or region, mirroring how the *boundary* layer is
+  already sharded) the way the point/population layer never has been
+  before. Not resolved here — a real product decision, not a sourcing one.

@@ -5,6 +5,37 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 (cont. x2) — Global cities index scaffolded: 233,797 places, all 193 UN members, one real capital gap
+
+First real build script from `city-boundaries-architecture.md`'s migration plan (step 1 of 6):
+`scripts/buildGlobalCitiesData.mjs` (`npm run build:geo:cities-global`, not part of `build:geo`, not wired into
+any component yet). Vendored `cities500.zip` (population ≥ 500, 233,797 rows after filtering, kept as a `.zip`
+and read via the existing `scripts/lib/zip.mjs` reader rather than committed unzipped — same pattern as the
+UCDP/UNSD vendored sources) and `countryInfo.txt` (GeoNames' own alpha-2→alpha-3 bridge, used only to reach the
+existing `ALPHA3_TO_NUMERIC` table, not a second country-code table) from GeoNames — CC BY 4.0.
+
+**Real output**: 233,797 populated places across all 193 UN member states, 28.2 MB. Deliberately produces only
+the lightweight index (id/name/lat/lng/population/`isCapital`) — no boundary geometry, matching
+`us-cities-index.json`'s existing "index vs. geometry" split (that stays a separate script, per the migration
+plan's step 2, using geoBoundaries/OSM per the corrected decision above).
+
+**One real finding, logged rather than silently patched**: 192 of 193 countries resolve exactly one `PPLC`
+(capital) entry. Israel resolves zero. Checked directly rather than assumed a bug: GeoNames' `IL.txt` tags
+Jerusalem `PPLA` (ordinary admin-division seat), not `PPLC` — a deliberate choice, almost certainly because
+Jerusalem's status as Israel's capital is internationally disputed (most embassies sit in/around Tel Aviv, not
+Jerusalem). This project takes no position on the dispute itself; the point is this needed a real decision
+(logged in `BACKLOG.md`'s Geographic coverage section) rather than either hand-patching `isCapital: true` onto
+Jerusalem (making the editorial call GeoNames' source data deliberately didn't) or leaving the gap unexplained
+(which would misrepresent a deliberate source choice as an oversight, unlike South Sudan/Nauru's genuine
+Natural Earth resolution-limit gap logged right above it).
+
+**Also surfaced a real, unresolved product question, not a sourcing one**: the output is 28.2 MB, eager-fetched
+in full the same way `us-cities-index.json` (6.3 MB) already is today via `useUsCitiesIndex.ts`. That's not a
+proportional scale-up of the US-only file (~4.5x, not the ~7x population500-worldwide-vs-Census-places napkin
+estimate suggested before actually building it) but still real enough to need a decision — accept one eager
+fetch, or shard the index itself (by country/region) the way only the *boundary* layer has ever needed sharding
+before. Left open in `city-boundaries-architecture.md` rather than decided by default.
+
 ## 2026-09-03 (cont.) — City boundary sourcing correction: geoBoundaries is the primary source, not a fallback to raw OSM
 
 Follow-up to the entry below, written the same day after actually verifying the plan it settled on. Two checks

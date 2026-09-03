@@ -153,6 +153,31 @@ time" discipline the rest of `scripts/build*.mjs` already relies on.
   roughly annually. Delete `arda/_country-list.html` and/or specific files under `arda/profiles/` to force a
   re-fetch against whatever ARDA is currently serving.
 
+## `geonames/cities500.zip`, `geonames/countryInfo.txt`
+
+- **Source:** GeoNames (`download.geonames.org/export/dump/`) — `cities500.zip` (every populated place with
+  population ≥ 500, or every capital/admin-seat regardless of population) and `countryInfo.txt` (ISO
+  alpha-2/alpha-3/numeric country code bridge, used only to reach `scripts/lib/iso3166.mjs`'s existing
+  `ALPHA3_TO_NUMERIC` table — not a second, competing country-code table). Both are direct, no-login,
+  no-API-key downloads.
+- **Fetched:** 2026-09-03.
+- **License:** CC BY 4.0 (`creativecommons.org/licenses/by/4.0/`, stated in the export's own `readme.txt`) —
+  **attribution required**. This is a new requirement for this app: every other vendored source here is
+  public domain or a government/NGO source that doesn't require display attribution (see
+  `city-boundaries-architecture.md`'s Open Items — no attribution UI exists anywhere in `src/hud/` yet).
+- **Used by:** `scripts/buildGlobalCitiesData.mjs` — the candidate global city/population index
+  (`public/geo/global-cities-index.json`), replacing `cities.json`'s 223-entry curated list. Kept as a `.zip`
+  and read at build time via `scripts/lib/zip.mjs` (same pattern as the UCDP/UNSD entries below), not
+  unzipped before committing.
+- **Coverage caveat:** 233,797 populated places kept across all 193 UN member states (77 rows skipped for no
+  GeoNames→ISO country match, 1,792 for a country that doesn't resolve to a registered UN member — non-UN
+  territories, same exclusion `buildCitiesData.mjs` already applies). 192 of 193 countries resolve exactly one
+  `PPLC` (capital) entry — **Israel resolves zero**, a deliberate GeoNames choice (Jerusalem is tagged `PPLA`,
+  not `PPLC`), not a data gap — see `BACKLOG.md`'s Geographic coverage section for the full finding and why it
+  wasn't silently patched either direction.
+- **Not re-downloaded automatically:** delete the files under `geonames/` to force a re-fetch against whatever
+  GeoNames is currently serving.
+
 ## `ne_50m_rivers_lake_centerlines.geojson`
 
 - **Source:** Natural Earth 1:50m Physical Vectors, "Rivers + lake
