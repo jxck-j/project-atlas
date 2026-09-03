@@ -5,6 +5,47 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 (cont. x3) — Two-tier headline/detail data loading, chosen as the pattern for every future large zoom-gated dataset
+
+Follow-up to the entry below, once the "28.2 MB eager-fetched in full" open item actually needed a decision.
+Direct discussion, framed around the project's own roadmap rather than just this one file: buildings
+(Overture's global footprint dataset) and hospitals (`infrastructure-layers.md`'s own "hundreds of thousands
+of facilities" note) are both coming, both far larger than cities, and neither could ever work as one eager
+fetch — so whatever gets decided for cities is really deciding the template every later large dataset follows,
+not a one-off tuning choice.
+
+Three shapes were laid out plainly (no jargon, explicit tradeoffs) rather than picked silently:
+
+1. **One eager fetch, unconditionally.** Simplest, but doesn't survive contact with the roadmap — buildings/
+   hospitals are gigabytes-scale, not 28 MB, so this would need replacing later regardless of what's decided
+   for cities now.
+2. **Shard by country, lazy-fetch only the country being viewed.** Already proven for boundary *geometry*
+   (`us-cities/{state}.json`), but doesn't answer the real problem for a *label/point* layer: a whole-earth
+   view needs major cities from many countries visible simultaneously, so "only load the one country you're
+   looking at" would trigger loading most/all shards at once anyway for the default view.
+3. **Tiered by zoom/LOD, not by country** — a small always-loaded "headline" set, full detail only once the
+   camera is actually close enough to need it. Reuses the LOD Engine's existing "more detail only as you get
+   closer" idea (already used for what's *rendered*) one layer earlier, for what's *fetched*.
+
+**Decided: option 3, with option 2 as its implementation mechanism once triggered** — not a compromise between
+them, they compose: the headline tier answers *when* to fetch more, country-sharding answers *how* the detail
+tier is organized once that trigger fires. Implemented directly in `scripts/buildGlobalCitiesData.mjs` rather
+than left as a future step: `HEADLINE_POPULATION_FLOOR = 200,000` (tuning knob, not load-bearing — chosen from
+a real size table: 50k→12,280 entries/1.5MB, 100k→6,238/778KB, 200k→3,099/386KB, 500k→1,265/157KB), OR any
+national capital regardless of population (same floor logic as `STATE_CAPITAL_FLOOR`, generalized). Detail
+tier is the complementary set (never duplicates a headline entry), sharded by country the same way boundary
+geometry already is.
+
+**Real output**: `global-cities-headline.json` — 3,099 entries, 386 KB, always eager-fetched. 193 per-country
+detail shards in `global-cities/` — 230,698 entries, 27.8 MB combined, largest (US) ~2.7 MB, median 18 KB,
+fetched only once a consumer's LOD tier + front-facing country need small-town coverage.
+
+Deliberately NOT generalized into shared "tiered loading" infrastructure yet — built concretely for cities
+only, per this project's own "duplicate until a real second instance proves the shared shape, then extract"
+discipline (the `EntityRenderLayer` precedent, `CLAUDE.md`). The consumer side (which hook fetches which tier,
+and when) is still migration plan step 3, not built here — this entry only covers the data shape decision and
+its real implementation.
+
 ## 2026-09-03 (cont. x2) — Global cities index scaffolded: 233,797 places, all 193 UN members, one real capital gap
 
 First real build script from `city-boundaries-architecture.md`'s migration plan (step 1 of 6):

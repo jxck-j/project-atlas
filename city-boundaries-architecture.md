@@ -143,8 +143,12 @@ geoBoundaries-insufficient country) still needs.
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
    (`scripts/buildGlobalCitiesData.mjs`, `npm run build:geo:cities-global`,
-   not yet part of `build:geo` or wired into any component). Real output:
-   233,797 populated places across all 193 UN member states, 28.2 MB.
+   not yet part of `build:geo` or wired into any component). Real output,
+   as a two-tier split (see Open Items below for why a flat file was
+   rejected after building it once): `global-cities-headline.json` (3,099
+   entries, 386 KB, always eager-fetched) + 193 per-country detail shards
+   in `global-cities/` (230,698 entries, 27.8 MB combined, lazy-fetched).
+   233,797 populated places total across all 193 UN member states.
    Surfaced one real finding along the way: Israel is the only UN member
    with no `PPLC`-flagged capital in GeoNames — Jerusalem is tagged `PPLA`,
    almost certainly because its status as Israel's capital is
@@ -208,14 +212,28 @@ geoBoundaries-insufficient country) still needs.
   Jordan/Kuwait/the US spot checks did, or whether some countries land at
   a coarser level (the way Jordan's ADM2 is districts within a governorate,
   not neighborhoods), is unverified beyond the countries checked here.
-- **The real global-cities-index output is 28.2 MB (233,797 entries),
-  eager-fetched in full the same way `us-cities-index.json` (6.3 MB, 32,608
-  entries) already is today** — `UsCityLabels.tsx`/`useUsCitiesIndex.ts`
-  fetch that whole file unconditionally as soon as the component mounts, no
-  lazy loading. 28.2 MB is real, not estimated, and it's ~4.5x the existing
-  US-only file, not proportionally larger than population500-worldwide vs.
-  every-US-place would suggest — worth deciding before cutover whether
-  that's acceptable as one eager fetch or whether the index itself needs
-  sharding (by country or region, mirroring how the *boundary* layer is
-  already sharded) the way the point/population layer never has been
-  before. Not resolved here — a real product decision, not a sourcing one.
+- ~~The real global-cities-index output is 28.2 MB, eager-fetched in
+  full~~ — **decided and built.** Rather than pick between "shard by
+  country" and "shard by zoom/LOD tier," combined them: a small always-
+  eager-fetched **headline** file (population ≥ `HEADLINE_POPULATION_FLOOR`
+  = 200,000, or any national capital regardless of population, via the same
+  floor logic as `STATE_CAPITAL_FLOOR`) plus **detail** shards, one per
+  country, fetched lazily only once a consumer's LOD tier and front-facing
+  country actually need small-town-level coverage. This is the general
+  pattern intended for every future large zoom-gated dataset in this
+  project's roadmap (buildings, hospitals, the reserved LOD tiers in
+  `src/lod/types.ts`) to follow, not just cities — see LOGBOOK.md's entry
+  for the full reasoning, including why "shard by country alone" doesn't
+  work for a whole-earth view needing major cities from many countries at
+  once. Real output: `global-cities-headline.json` is 3,099 entries, 386 KB
+  (down from 28.2 MB eager); 193 per-country detail shards average 148 KB,
+  largest (US) ~2.7 MB, median 18 KB — see
+  `scripts/buildGlobalCitiesData.mjs`. The consumer side (which hook
+  fetches which tier, and when — the generalized `CityLabels.tsx`/
+  `CityOutlineHighlight.tsx` work) is migration plan step 3, not done yet;
+  this only produces the two-tier data shape.
+- Attribution UI still genuinely unresolved (see above) — a placement
+  recommendation exists (bottom-right, unobtrusive, matching the HUD's
+  existing thin-line/low-opacity styling — the one open HUD corner, and the
+  universal web-map-attribution convention) but hasn't been built or
+  confirmed.
