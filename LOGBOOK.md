@@ -5,6 +5,44 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 (cont.) — City boundary sourcing correction: geoBoundaries is the primary source, not a fallback to raw OSM
+
+Follow-up to the entry below, written the same day after actually verifying the plan it settled on. Two checks
+against raw OpenStreetMap — done specifically to firm up "the exact query technique" open item before any
+build script got written — contradicted the "OSM primary, geoBoundaries fallback" decision:
+
+1. **Amman has no OSM boundary relation at all.** A direct Overpass query for `boundary=administrative` named
+   "Amman" within Jordan returns zero results. The real, validated city-scale Amman polygon exists only in
+   geoBoundaries' own data (sourced from Wikimedia Commons, not OSM) — there was nothing to extract from OSM
+   here regardless of query technique, so "OSM primary" was never going to work for this specific case that
+   motivated the whole investigation.
+2. **The `admin_level=8`-everywhere assumption was wrong, and not just imprecise.** Kuwait's actual
+   `boundary=administrative` relations sit at levels 2/4/6/7 — no level 8 exists at all. Neither level 6 nor
+   level 7 contains the neighborhood names geoBoundaries had reported (Qibla, Sharq, Dasman, Salmiya,
+   Hawalli); level 7 alone has 848 relations, mostly labeled "Block 1"/"NA" — a cadastral/planning tier, not
+   neighborhoods. Whatever geoBoundaries' own extraction did to produce clean Kuwait City district polygons,
+   it wasn't a flat `admin_level=X` filter — OSM's admin-level numbering is genuinely per-country (a known,
+   documented OSM modeling inconsistency), so no single hardcoded level works globally, or even reliably
+   within one country's own relation set.
+
+**Corrected decision: geoBoundaries is the default per-country source**, since it has already solved the
+actual hard problem (which level/relation set is city-equivalent, per country) across whatever mix of
+official/Wikimedia/OSM-derived data each country's finest tier draws from. Direct, area-contained OSM queries
+fill in only where geoBoundaries doesn't reach city-level granularity (confirmed so far just for the US, where
+geoBoundaries caps at counties) or has no entry for a country at all. `city-boundaries-architecture.md` updated
+in place rather than left describing the superseded plan — the "Final source decision" section now says why it
+reversed, not just what it reversed to.
+
+Also spot-checked GeoNames (the point/population layer, previously only reasoned about, not verified) while
+here: Amman and Kuwait City both resolve correctly as `PPLC` (capital) with real population figures. Kuwait
+City's own figure (60,064) is genuinely smaller than several other Kuwaiti governorates GeoNames tracks
+separately (Al Ahmadi 637,411) — confirms the `PPLC`-floor generalization from `STATE_CAPITAL_FLOOR` is
+necessary, not just theoretically motivated. Also surfaced that this migration is the first time this app has
+used data requiring visible attribution (GeoNames is CC BY 4.0, OSM/geoBoundaries mostly ODbL/mixed) — every
+existing source (Natural Earth, Census TIGER, StatCan, World Bank WDI) is public-domain-equivalent or doesn't
+require it, so no attribution UI exists anywhere in `src/hud/` today. Confirmed as a real pre-ship requirement,
+not resolved here.
+
 ## 2026-09-03 — City/admin boundary data: unifying on OpenStreetMap/Overture for every country, US included
 
 The per-country boundary pipeline (US Census TIGER, plus an unmerged StatCan pipeline for Canada on

@@ -97,41 +97,58 @@ boundaries already in this app. Adopting geoBoundaries as the primary
 source would have meant a real granularity downgrade for the US, in direct
 tension with "same dataset including the US."
 
-**Resolution — re-ran the OSM check for Kuwait properly:** geoBoundaries'
-Kuwait layer citing OpenStreetMap as its source (rather than a separate
-survey) was the tell that the earlier "Kuwait City has no OSM boundary"
-finding was wrong — a technique problem, not a data gap. Kuwait's 137
-district relations exist directly in OSM; a plain Nominatim
-name-text-search for "Kuwait City" just never surfaces them, since none of
-them are literally named that. Re-verified the same technique gap doesn't
-apply to the US spot-check cities (those resolve fine by name), confirming
-OSM's real US city-boundary coverage (commonly itself Census-TIGER-derived
-on import) reaches genuine city level, not just counties.
+**Follow-up — the "Kuwait resolved via OSM" finding above was only half
+right, and the `admin_level=8`-everywhere assumption it led to was wrong.**
+Re-querying Overpass directly (not through geoBoundaries) surfaced two real
+problems with treating raw OSM as the primary source:
+
+- **Amman has no OSM boundary relation at all.** A direct Overpass query
+  for `boundary=administrative` named "Amman" within Jordan returns zero
+  results. The real, validated city-scale Amman polygon exists only in
+  geoBoundaries' data (sourced from Wikimedia Commons, not OSM) — there is
+  nothing to extract from OSM here regardless of query technique.
+- **`admin_level` numbering isn't consistent enough to hardcode.** Kuwait's
+  actual `boundary=administrative` relations sit at levels 2/4/6/7 — no
+  level 8 exists at all. Worse, neither level 6 nor level 7 contains the
+  neighborhood names geoBoundaries reported (Qibla, Sharq, Dasman,
+  Salmiya, Hawalli): level 7 alone has 848 relations, mostly labeled
+  "Block 1"/"NA" — a cadastral/planning tier, not neighborhoods. Whatever
+  geoBoundaries' extraction did to produce clean Kuwait City district
+  polygons, it wasn't a flat `admin_level=X` filter. OSM's own admin-level
+  semantics are genuinely per-country (this is a documented OSM modeling
+  inconsistency, not specific to Kuwait), so a build script can't assume a
+  fixed level number works globally, or even within one country's own
+  boundary relations.
 
 ## Final source decision
 
-**OpenStreetMap/Overture, queried by area-containment (e.g. Overpass
-`admin_level=8` within a country boundary), not by name-text search.**
-Name search under-reports real coverage — this is the same lesson already
-logged in `infrastructure-layers.md`'s military-bases section (a
-`military=*`-only tag filter missed Ali Al Salem/Muwaffaq Salti because
-they're tagged `aeroway=aerodrome`) — a second, independent case of "query
-by what's actually there, not by what you expect the record to be named or
-tagged as."
+**geoBoundaries as the default per-country source, not a fallback** — it
+has already solved the actual hard problem (which admin level or relation
+set is city-equivalent, per country, including cases like Kuwait where raw
+OSM tagging doesn't cleanly answer that on its own), across whatever mix of
+official/Wikimedia/OSM-derived data each country's finest tier actually
+comes from. **Direct OSM queries (area-contained, not name-search) fill in
+only where geoBoundaries doesn't reach city-level granularity** — confirmed
+so far just for the US (geoBoundaries caps at counties; OSM's
+`admin_level=8` there does have real, largely Census-TIGER-derived city
+boundaries) — or where geoBoundaries has no entry for a country at all.
 
-**geoBoundaries stays as a documented fallback**, not the primary source —
-worth reaching for on a specific country if the real build script turns up
-sparse OSM boundary coverage there, not something to architect around
-preemptively.
+This reverses the first draft of this section, which had OSM as primary and
+geoBoundaries as fallback — written before the Amman/Kuwait re-check above.
+The area-containment-not-name-search lesson is still real and still
+applies to whichever direct OSM queries the US (and any other
+geoBoundaries-insufficient country) still needs.
 
 ## Migration plan
 
 1. Build the global point/population index (GeoNames-sourced), replacing
    `cities.json`'s 223-entry curated list with full global coverage.
-2. Build the OSM/Overture boundary extraction (`admin_level`-based,
-   area-contained, unioned across the relevant boundary/place tags per the
-   technique lesson above), producing the same per-city lazy-fetch file
-   shape `us-cities/*.json` already established.
+2. Build the boundary extraction: geoBoundaries' finest available ADM
+   level per country by default, falling back to a direct, area-contained
+   OSM query only where geoBoundaries doesn't reach city-level granularity
+   (the US today) or has no coverage for that country at all — producing
+   the same per-city lazy-fetch file shape `us-cities/*.json` already
+   established.
 3. Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.
@@ -147,15 +164,38 @@ preemptively.
 
 ## Open items
 
-- GeoNames data-quality spot check not yet done (only reasoned about, not
-  verified the way the boundary sources were).
-- Attribution requirements for ODbL-licensed OSM-derived boundaries (most
-  countries' finest-level data, per the Kuwait finding above) not yet
-  checked against how this app currently handles/displays data attribution
-  — needs resolving before shipping, not before this doc.
-- Exact query technique (which tag/level union per country) still needs
-  real design once the build script is written — the Jordan/Kuwait checks
-  here prove the approach works, not the final query shape.
+- ~~GeoNames data-quality spot check~~ — **done.** Amman resolved correctly
+  as `PPLC` (capital), population 1,275,857, matching real-world city-proper
+  figures. Kuwait City also resolved correctly as `PPLC`, but with a real
+  low-population nuance worth knowing before the build script is written:
+  its official population (60,064) is genuinely smaller than several other
+  Kuwaiti governorates GeoNames tracks separately (Al Ahmadi 637,411;
+  Hawalli 164,212) — "Kuwait City" in casual usage spans multiple
+  governorates Kuwait's own administrative structure keeps distinct. This
+  is exactly the case the `PPLC`-floor generalization (from
+  `STATE_CAPITAL_FLOOR`) exists to handle, not a data quality problem.
+  Coverage: 1,756 populated places for Jordan, 127 for Kuwait alone — far
+  beyond the current 223-entry curated list. License: CC BY 4.0
+  (attribution required — see below).
+- **Attribution is now a confirmed requirement, not just an open
+  question.** This app has never needed a data-attribution UI before —
+  every source used today (Natural Earth, Census TIGER, StatCan, World
+  Bank WDI) is public-domain-equivalent or doesn't require display
+  attribution. GeoNames (CC BY 4.0) and OSM/geoBoundaries'
+  ODbL-and-mixed-licensed boundaries both do. No attribution UI exists
+  anywhere in `src/hud/` today (checked — `IntelligencePanel.tsx`'s
+  per-component source citations are a different thing, individual
+  data-point sourcing in the drilldowns, not a basemap/dataset credit).
+  Needs a real UI decision (placement, styling) before this ships — not
+  resolved here, just confirmed real and scoped.
+- Exact query technique (which geoBoundaries ADM level per country, and
+  what the OSM fallback query looks like for country's geoBoundaries can't
+  reach deep enough) still needs real design once the build script is
+  written. **The `admin_level=8`-everywhere assumption from the first draft
+  of this doc was checked and found wrong** (see the Final source decision
+  section above) — whatever the fallback query technique ends up being, it
+  cannot hardcode a single admin_level number across countries, and
+  possibly not even within one country's own relation set.
 - Whether every country reaches genuine city-level granularity the way
   Jordan/Kuwait/the US spot checks did, or whether some countries land at
   a coarser level (the way Jordan's ADM2 is districts within a governorate,
