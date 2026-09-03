@@ -5,6 +5,25 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 (cont. x4) — First data-attribution UI, built but deliberately not mounted yet
+
+Resolves the other open item from the entry below: GeoNames (CC BY 4.0) and OSM/geoBoundaries (mostly ODbL)
+both require a persistent, visible credit as a real license condition, not a nice-to-have — the first time
+this app has needed one, since every prior source (Natural Earth, Census TIGER, StatCan, World Bank WDI) is
+public domain or otherwise doesn't require display attribution.
+
+`src/hud/AttributionCredit.tsx` — bottom-right (the one HUD corner nothing else claims: bottom-left is
+Telemetry/LegendPanel's stack, top is `TopNav`, right edge is `IntelligencePanel` while something's selected;
+also the universal web-map attribution convention), small unobtrusive text links, low opacity at rest. Built as
+an extensible `ATTRIBUTIONS` array rather than a single hardcoded credit, since OSM/geoBoundaries attribution
+is coming once the boundary extraction script (migration plan step 2) ships — adding it later is a one-line
+array entry, not a rebuild.
+
+**Deliberately not mounted in `App.tsx` yet.** None of the city data this credits is actually wired into any
+component or rendering on screen — mounting the credit now would claim the app uses GeoNames data when nothing
+visible actually does yet. Wiring it in belongs at cutover (migration plan step 5), alongside the data it
+credits actually going live, not staged ahead of it.
+
 ## 2026-09-03 (cont. x3) — Two-tier headline/detail data loading, chosen as the pattern for every future large zoom-gated dataset
 
 Follow-up to the entry below, once the "28.2 MB eager-fetched in full" open item actually needed a decision.

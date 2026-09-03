@@ -194,12 +194,15 @@ geoBoundaries-insufficient country) still needs.
   every source used today (Natural Earth, Census TIGER, StatCan, World
   Bank WDI) is public-domain-equivalent or doesn't require display
   attribution. GeoNames (CC BY 4.0) and OSM/geoBoundaries'
-  ODbL-and-mixed-licensed boundaries both do. No attribution UI exists
-  anywhere in `src/hud/` today (checked — `IntelligencePanel.tsx`'s
-  per-component source citations are a different thing, individual
-  data-point sourcing in the drilldowns, not a basemap/dataset credit).
-  Needs a real UI decision (placement, styling) before this ships — not
-  resolved here, just confirmed real and scoped.
+  ODbL-and-mixed-licensed boundaries both do. ~~No attribution UI exists
+  anywhere in `src/hud/` today~~ — **built.** `src/hud/AttributionCredit.tsx`
+  — bottom-right (the one open HUD corner, and the universal web-map
+  attribution convention), small/unobtrusive text links, an extensible
+  `ATTRIBUTIONS` array (GeoNames only so far — add OSM/geoBoundaries once
+  the boundary script ships). **Deliberately NOT mounted in `App.tsx`
+  yet** — wiring it in happens at cutover (migration plan step 5),
+  alongside the data it credits actually going live; crediting a source
+  nothing on screen renders from yet would misrepresent what's showing.
 - Exact query technique (which geoBoundaries ADM level per country, and
   what the OSM fallback query looks like for country's geoBoundaries can't
   reach deep enough) still needs real design once the build script is
