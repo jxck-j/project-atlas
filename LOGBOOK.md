@@ -5,6 +5,102 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 — City/admin boundary data: unifying on OpenStreetMap/Overture for every country, US included
+
+The per-country boundary pipeline (US Census TIGER, plus an unmerged StatCan pipeline for Canada on
+`geo-data-engine`) doesn't scale and doesn't reach the countries this project's own use case cares about most
+— neither Jordan nor Kuwait has an equivalent official, open, accessible city-boundary shapefile pipeline
+waiting to be vendored the way the US Census Bureau does. The plan on file (Canada, then Mexico, then
+Caribbean, then Central America — each its own hand-vendored agency source) was cancelled before Mexico
+started, not ripped out after the fact — nothing was sunk there yet.
+
+**Investigated geoBoundaries (William & Mary geoLab's open alternative to GADM) as a possible single primary
+source first.** Real, and it resolved the Middle East question convincingly: Jordan's finest level (ADM2,
+"Nahias") includes a genuine city-scale Amman polygon (~25km × 13km bbox, not the whole Governorate), sourced
+from Wikimedia Commons, Public Domain. Kuwait's ADM2 ("Areas") gives 137 real neighborhood polygons — Qibla,
+Sharq, Dasman, Salmiya, Hawalli, actual Kuwait City districts — sourced from OpenStreetMap, ODbL. But
+geoBoundaries' USA product only reaches ADM2 = Counties (~3,143 of them) — no city-level boundaries at all,
+which would have been a real granularity downgrade from the 32,608 real city boundaries already built from
+Census data. Adopting it as the primary source would have satisfied "one dataset" at the cost of "no fidelity
+loss for the US" — a real conflict with the explicit ask to include the US in this unification without
+regressing it.
+
+**Resolution: query OpenStreetMap directly, by area-containment, not by name search.** A first pass using
+Nominatim name-text search ("Amman", "Kuwait City") found no city-level boundary for either — only Amman's
+Governorate (province-sized, wrong granularity) and a bare point for Kuwait City. That read like a real OSM
+coverage gap in the Middle East specifically. It wasn't: geoBoundaries' own Kuwait metadata cited OpenStreetMap
+as its source, which was the tell — Kuwait's 137 district relations exist directly in OSM, a plain
+name-text-search for "Kuwait City" just never surfaces them, since none of them are literally named that.
+Re-checked US spot cities (Cupertino, Cambridge, Ann Arbor) the same way and confirmed they *do* resolve fine
+by name, and separately confirmed via Overpass that OSM's US `admin_level=8` city boundaries are commonly
+Census-TIGER-derived on import — meaning routing the US through OSM too doesn't cost fidelity, it just means
+one pipeline reads Census-quality data instead of a dedicated Census-only script reading it directly.
+
+**Decision: OpenStreetMap/Overture as the single boundary source for every country including the US, queried
+by area-containment (Overpass `admin_level`-scoped sweeps within each country), never by name-text search.**
+This is the second independent case of the same lesson logged below for military-base tagging — querying by
+what a record is *tagged/contained as*, not by what you'd guess it's *named*, is the load-bearing technique
+for extracting real coverage out of OSM. geoBoundaries stays as a documented fallback for any specific country
+that turns out to have sparse OSM boundary coverage once the real extraction script runs — not architected
+around from the start. See `city-boundaries-architecture.md` for the full scope, the existing
+`UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx` two-piece architecture this reuses unchanged (only the data
+source generalizes), and the migration plan. Not built yet — this is the sourcing decision, not the
+implementation.
+
+## 2026-09-03 — Infrastructure Engine: military bases need polygon-on-zoom, not a point, and a real OSM tag-scheme gap
+
+Direct scenario that exposed the gap: `infrastructure-layers.md` scoped military bases (item 12) as a
+**Point** — a colored dot, same as every other point-category item. That's the wrong primitive for "can we see
+the actual base perimeter that got struck" (the motivating example: an IRGC strike on a specific installation
+in Jordan or Kuwait) — a dot answers "where," not "what does the facility's footprint look like."
+
+Spot-checked whether real base-perimeter polygon data exists at all before changing the doc's render mechanism
+on assumption: 7 named installations (Muwaffaq Salti/Azraq, Prince Hassan, King Faisal in Jordan; Ali Al Salem,
+Ahmed Al Jaber, Camp Arifjan, Camp Buehring in Kuwait), all resolved as real OSM `way`/`relation` polygon
+geometry, not bare points. Jordan alone has 99+ separately-mapped military features in one bounded Overpass
+query; Kuwait 200+.
+
+**Real gap found in the process: a `military=*`/`landuse=military` tag-only filter silently misses real
+bases.** Ali Al Salem and Muwaffaq Salti are both tagged as ordinary `aeroway=aerodrome`, no military key at
+all; Camp Arifjan is tagged `boundary=administrative`. Whoever writes the real extraction script needs to union
+`landuse=military`, `military=*`, `aeroway=aerodrome`, and `boundary=administrative`, then cross-reference
+against a curated list of known military/joint-use installation names — "is this airfield military" isn't
+reliably recoverable from OSM's own tags alone in every case. Written directly into `infrastructure-layers.md`
+(the render-mechanism section and item 12) rather than left only in conversation, since it changes what the
+real build script has to do, not just what render treatment gets picked.
+
+## 2026-09-03 — Cesium rendering engine: prototyped, proven working, reverted in favor of three.js
+
+A `cesium-rendering-engine` branch (started 2026-08-27) prototyped replacing `src/scene/`'s Three.js/R3F globe
+with Cesium, triggered by three real gaps: no planetary-scale float precision (the `GLOBE_RADIUS = 2.4` trick
+that keeps this app's flat sphere precise breaks down the moment real entity tracking needs street-level
+camera distance), no entity-tracking primitives (nothing here models a continuously-moving, continuously-
+tracked object), and no real geodesic math (`utils/geo.ts`'s bearing/distance functions are great-circle
+approximations, not travel-planning-grade). The prototype (`src/scene-cesium/CesiumViewer.tsx`) was fully
+built and verified — real Sentinel-2 imagery, real individually-extruded OSM building volumes on a close
+oblique view — not just a typecheck-clean stub.
+
+**Reverted rather than promoted, once actual near-term requirements were scoped out rather than assumed.**
+Talking through what was actually wanted — clickable building/POI polygons with a dot-at-distance reveal,
+military-base perimeter polygons, 2D strategic terrain (not a 3D displacement mesh — deliberately, terrain's
+wargaming value here is strategic elevation reading, not photoreal relief), and city boundaries reaching every
+country — showed none of it needs Cesium's actual value proposition. Every one of those is an extension of a
+pattern this codebase already has (LOD Engine's dot-at-distance/polygon-at-zoom reveal, `ProvinceFillLayer`'s
+merged-mesh-at-scale rendering, the static build-time pipeline), just needing a different *data source*
+(OpenStreetMap/Overture — see the two entries above) rather than a different *rendering engine*. 2D terrain
+specifically argues against Cesium harder than for it: a flat DEM-derived texture/contour-line drape on the
+existing sphere needs none of the planetary-precision infrastructure that was Cesium's original reason for
+being considered. Adopting Cesium would have meant a large dependency (terrain/imagery streaming, Ion
+licensing, a second full rendering pipeline running alongside the existing one) to solve problems this
+project's existing engines turned out to already solve more cheaply — not a quality judgment against Cesium,
+a fit judgment once the requirements were actually named instead of assumed from "Cesium already has X built
+in."
+
+All prototype code removed (`src/scene-cesium/`, the `vite-plugin-cesium`/`cesium` dependencies, the App.tsx
+flag) — the branch had carried zero commits of its own (branched from `main`'s tip, prototype work stayed
+uncommitted) and was never pushed, so nothing was lost by retiring it. See `CLAUDE.md`'s "Rendering engine:
+Cesium evaluated and reverted" for the standing summary.
+
 ## 2026-08-27 (cont.) — Technology/Taiwan: high-tech exports% closed via UN Comtrade (same-source), not a cross-source substitute
 
 Direct request, with a specific build recipe: close Taiwan's `highTechExportsPct` gap (component 3 of 4,

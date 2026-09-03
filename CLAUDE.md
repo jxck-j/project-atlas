@@ -43,6 +43,60 @@ branch was last reset to match `main`'s tip on 2026-07-28 (after the
 v4.3.1–v4.5.0 promotion) — its own `GEO_ENGINE_*.md` files don't exist yet
 again until new prototyping work on this branch creates them.
 
+A `cesium-rendering-engine` branch existed briefly (2026-08-27 to
+2026-09-03) to prototype replacing the Rendering Engine with Cesium — see
+"Rendering engine: Cesium evaluated and reverted" below for why it was
+retired rather than promoted. It carried zero commits of its own (branched
+from `main`'s tip, all prototype work stayed uncommitted in the working
+tree) and was never pushed, so retiring it lost no history; the branch name
+was reused for this repo's next real thread of work once the Cesium
+question was settled.
+
+## Rendering engine: Cesium evaluated and reverted
+
+**Trigger**: real-time entity tracking (flights, ships, satellites) and
+POI-to-POI geodesic distance queries — both would need infrastructure
+`src/scene/`'s Three.js/R3F globe doesn't have: planetary-scale float
+precision (the `GLOBE_RADIUS = 2.4` trick that keeps 32-bit floats
+precise breaks down the moment "zoom in on one tracked ship" is real),
+entity-tracking primitives (nothing here models "a thing that moves
+continuously and stays tracked/labeled as it does"), and real geodesic math
+(`utils/geo.ts`'s `bearingBetween`/`angularDistance` are great-circle
+approximations tuned for this app's own arrow-key-navigation/label-declutter
+needs, not travel-planning-grade distance).
+
+**What was actually built and verified**: a bare `Cesium.Viewer`
+(`src/scene-cesium/CesiumViewer.tsx`, gated behind an App.tsx flag) with
+World Terrain, Sentinel-2 imagery, and OSM Buildings — confirmed genuinely
+rendering (real imagery, real individually-extruded building volumes on a
+close oblique view over Manhattan), not just typechecking clean.
+
+**Why it was reverted rather than promoted**: working through what the
+actual near-term feature requirements were (clickable building/POI
+polygons with a dot-at-distance reveal, military-base perimeter polygons,
+2D strategic terrain rather than a 3D displacement mesh, and city
+boundaries reaching every country, not just the US/Canada) showed none of
+them need Cesium's specific value proposition. Building/POI/military-base
+polygons and city boundaries are extensions of patterns that already exist
+in this codebase (the LOD Engine's dot-at-distance/polygon-at-zoom reveal,
+`ProvinceFillLayer`'s merged-mesh-at-scale rendering, the static build-time
+pipeline) sourced from OpenStreetMap/Overture instead of Cesium's live
+terrain/imagery streaming — see `city-boundaries-architecture.md` and
+`infrastructure-layers.md` for where that work continues. 2D strategic
+terrain (hypsometric tint or contour lines) is actively a *better* fit for
+a flat DEM-derived texture/vector-line drape on the existing sphere than
+for Cesium's 3D terrain mesh, and means this app never needs Cesium's whole
+reason for existing (planetary-scale precision) in the first place, since
+the globe stays flat either way. Adopting Cesium would have meant taking on
+a large dependency (terrain/imagery streaming, Ion asset licensing, a
+second full rendering pipeline running alongside `src/scene/`) to solve
+problems this codebase's existing engines already solve more cheaply once
+the actual requirements were scoped out — not a rejection of Cesium's
+quality, a rejection of the fit for what this project actually needs next.
+All prototype code (`src/scene-cesium/`, the `vite-plugin-cesium`
+dependency, the App.tsx flag) was removed; nothing from it shipped to any
+branch's history.
+
 ## Commands
 
 ```bash
