@@ -27,3 +27,11 @@ yarn-error.log*
 # debug/economy-component-breakdown.json) — regenerable, not consumed by
 # the app, not meant to be a permanent repo artifact
 debug/
+
+# scripts/buildCityBoundaries.mjs's US output (public/geo/city-boundaries/840/)
+# is a reshaped duplicate of already-committed public/geo/us-cities/*.json
+# (47 MB) - no network round-trip needed to regenerate it (unlike Jordan/
+# Kuwait's, which cost real Overpass/geoBoundaries calls and ARE committed),
+# so committing a second ~50 MB copy of the same underlying data would just
+# double repo size for nothing. Regenerate with `npm run build:geo:city-boundaries`.
+public/geo/city-boundaries/840/

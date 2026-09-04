@@ -327,6 +327,58 @@ already in the repo. **What it doesn't resolve yet:** the plausibility threshold
 Census-reuse path, output-file format, or the `CityLabels.tsx`/`CityOutlineHighlight.tsx` consumer side yet —
 migration plan steps 2 (formalize into a real script + fold in US), 3, and 4 below are all still open.
 
+### Sixth pass: formalized into a real build script — `scripts/buildCityBoundaries.mjs` (2026-09-04)
+
+The Fifth pass's scratch proof of concept is now a real, committed script (`npm run build:geo:city-boundaries`),
+covering exactly the three verified countries per the migration plan below — not the other 190 yet. Reusable
+join logic moved to `scripts/lib/sphericalGeometry.mjs` (point-in-polygon, spherical polygon area) and
+`scripts/lib/osmRelationToGeometry.mjs` (Overpass `out geom;` way-stitching), both written generically enough
+for the eventual 190-country pass, not Jordan/Kuwait-specific. Output: `public/geo/city-boundaries/{countryId}.json`
+(Jordan, Kuwait) — a GeoJSON `FeatureCollection` per country, `id`/`geometry`/`properties.name` shape matching
+`us-cities/{state}.json`'s existing convention, plus `population`/`isCapital`/`areaSqKm`/`source`/
+`matchedAdminUnit` — and `scripts/cityBoundariesReport.json` (every unmatched/rejected city, same "report,
+don't silently drop" discipline as `buildGeoEntityEconomics.mjs`/`researchCityAdminLevels.mjs`).
+
+**Two real bugs caught by actually running it against real data, not assumed correct from the design alone:**
+
+- **The area-plausibility ceiling's "does this city deserve leniency" check was wired to the wrong population
+  threshold.** First version reused `global-cities-headline.json`'s own `HEADLINE_POPULATION_FLOOR` (200,000 —
+  a "worth eager-fetching globally" cutoff) to decide which cities got the looser area ceiling. Aqaba —
+  95,048 population, the Fifth pass's own motivating example for why a looser ceiling was needed at all —
+  still got rejected on the first real run, because 95,048 < 200,000. Two genuinely different questions
+  (which cities are worth loading eagerly vs. which cities deserve area leniency) had been collapsed into one
+  constant. Fixed with a separate, independent, much lower bar:
+  `SUBSTANTIAL_POPULATION_FLOOR = 10,000` (or national capital) grants `LOOSE_MAX_SQKM = 5,000` instead of the
+  default `SOFT_MAX_SQKM = 2,000`. Re-running correctly kept Aqaba, Ma'an (50,350 pop), Al Azraq ash Shamālī
+  (14,800 pop), and Kuwait's Al Wafrah — Jordan's kept count rose from 135→138, Kuwait's rejected count
+  dropped from 1→0. **Rukban** (85,000 population, but its matched polygon is 21,523 km² — Ruwayshid
+  Sub-District, the same enormous desert unit Ar Ruwayshid/Ruwaished also fall into) correctly stays
+  rejected even with the leniency — real population inside a genuinely too-large polygon should still be
+  excluded, and the fix didn't accidentally make the ceiling unconditional.
+- **The US path silently regressed the exact problem this project already solved once.** First version merged
+  all 56 `us-cities/{state}.json` files into one `public/geo/city-boundaries/840.json` — 32,608 features, 49 MB,
+  a single eager-shaped file. That's precisely the "huge flat file" mistake the two-tier GeoNames index
+  (headline + per-country detail shards, see the Migration plan's step 1 below) was built specifically to
+  avoid, just recreated one layer down (per-country instead of global) for the one country large enough to
+  actually hit it. Caught by checking the real output file size, not by re-reading the design intent and
+  assuming it followed it. Fixed by keeping the US output sharded by state
+  (`public/geo/city-boundaries/840/{state}.json`, same 56 files `us-cities/` already uses) instead of merging —
+  same total data, same per-state fetch granularity that already worked, reshaped in place rather than
+  collapsed.
+
+**Final validated numbers:** Jordan 138/148 kept (10 rejected, 0 unmatched), Kuwait 25/28 kept (0 rejected,
+3 unmatched — geoBoundaries' real polygon gaps, unresolved, see the Fifth pass section), US 32,608 Census
+Places carried over unchanged across 56 state shards. Still open: the 3 Kuwait towns with no containing
+polygon at all (need a per-city fallback source, not just the per-country one), and everything downstream in
+the migration plan (the other 190 countries, the consumer-side components, cutover).
+
+**Only Jordan's and Kuwait's output is committed** (`public/geo/city-boundaries/{400,414}.json` — real data
+that cost a real Overpass/geoBoundaries round-trip to produce). **The US output
+(`public/geo/city-boundaries/840/`) is `.gitignore`d, not committed** — it's a reshaped duplicate of
+already-committed `public/geo/us-cities/*.json` (47 MB), regenerable in seconds with no network calls, so
+checking in a second ~50 MB copy of the same underlying data would only double repo size for nothing. Run
+`npm run build:geo:city-boundaries` to regenerate it locally.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -343,19 +395,16 @@ migration plan steps 2 (formalize into a real script + fold in US), 3, and 4 bel
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. **Not started — see "Second refinement" section above for the current
-   design, superseding this step's original per-country-source framing.**
-   Build the boundary extraction as a per-feature join: for every real
-   GeoNames city, find the containing polygon from whatever source that
-   country actually needs (US: reuse `buildUsCitiesData.mjs`'s existing
-   Census output directly, no new sourcing; Jordan: OSM `admin_level=6`,
-   verified; Kuwait: geoBoundaries ADM2, verified), keep it only if its
-   area is plausibly city-sized, and fall back per-*city* (not per-country)
-   otherwise. Producing the same per-city lazy-fetch file shape
-   `us-cities/*.json` already established. Start with just these three
-   verified countries as a real proof of concept before working through
-   the other 190 — each of which needs the same investigate-before-
-   trusting treatment, not a blind batch run.
+2. ~~Not started~~ — **done for the 3 verified countries** (`scripts/buildCityBoundaries.mjs`,
+   `npm run build:geo:city-boundaries`; see the Sixth pass section above for the two real bugs
+   caught building it). Real per-feature join for Jordan (OSM `admin_level=6`) and Kuwait
+   (geoBoundaries ADM2) against the already-shipped GeoNames city index; US reused
+   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by
+   state. Output in `public/geo/city-boundaries/`. **Not done: the other 190 countries** — each
+   needs the same investigate-before-trusting treatment (Fourth pass) before its own join can run,
+   not a blind batch extension of this script. Also not done: a per-*city* fallback for the 3 Kuwait
+   towns this pass found with no containing polygon at all (a per-country source can still leave
+   individual cities with nothing).
 3. Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.

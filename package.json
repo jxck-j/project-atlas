@@ -22,6 +22,7 @@
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "research:city-admin-levels": "node scripts/researchCityAdminLevels.mjs",
+    "build:geo:city-boundaries": "node scripts/buildCityBoundaries.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview",

@@ -1,0 +1,100 @@
+{
+  "jordan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Umm ar Raşāş",
+        "population": 0,
+        "matchedTo": "قضاء أم الرصاص",
+        "areaSqKm": 2857.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muthallath al Azraq",
+        "population": 0,
+        "matchedTo": "قضاء الأزرق",
+        "areaSqKm": 3950.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Ruwayshid",
+        "population": 0,
+        "matchedTo": "Rwaished Sub-District",
+        "areaSqKm": 21523,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jīzah",
+        "population": 4397,
+        "matchedTo": "قضاء الجيزة",
+        "areaSqKm": 2637.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jafr",
+        "population": 3557,
+        "matchedTo": "قضاء الجفر",
+        "areaSqKm": 28170.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Rīshah",
+        "population": 0,
+        "matchedTo": "قضاء وادي عربة",
+        "areaSqKm": 2338.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muthallath Şabḩā",
+        "population": 0,
+        "matchedTo": "قضاء الصالحية",
+        "areaSqKm": 2741.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tala Bay",
+        "population": 2000,
+        "matchedTo": "قضاء العقبة",
+        "areaSqKm": 2042.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ruwaished",
+        "population": 9805,
+        "matchedTo": "Rwaished Sub-District",
+        "areaSqKm": 21523,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rukban",
+        "population": 85000,
+        "matchedTo": "Rwaished Sub-District",
+        "areaSqKm": 21523,
+        "isSubstantial": true
+      }
+    ]
+  },
+  "kuwait": {
+    "unmatched": [
+      {
+        "name": "Al Mahbūlah",
+        "population": 18178,
+        "lat": 29.145,
+        "lng": 48.13028
+      },
+      {
+        "name": "Al Funayţīs",
+        "population": 1878,
+        "lat": 29.22528,
+        "lng": 48.10167
+      },
+      {
+        "name": "Al Finţās",
+        "population": 23071,
+        "lat": 29.17389,
+        "lng": 48.12111
+      }
+    ],
+    "rejected": []
+  }
+}
