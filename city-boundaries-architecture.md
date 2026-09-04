@@ -244,6 +244,50 @@ checked directly; US ADM2 "Counties," 3,233 units, no city-level reach) — conf
 with the hand-verified findings already on file, not a reason to trust the other 187 countries' numbers to
 the same depth yet.
 
+### Fourth pass: direct OSM checks for Botswana, Libya, South Sudan (2026-09-04)
+
+Real per-country investigation (area-contained Overpass queries scanning `admin_level` 3-10, same technique
+as Jordan/Kuwait — not name search) for the three countries the third-pass survey flagged as too coarse.
+**Unlike Jordan, none of these three resolved to "geoBoundaries mislabeled a level, OSM has the real finer
+one."** Three different shapes instead:
+
+- **Botswana — no usable finer source, real gap.** OSM `admin_level=4` (16 relations: South-East District,
+  Kgatleng District, Central District, ...) is the district level, coarser than geoBoundaries' own ADM2.
+  `admin_level=6` — the real sub-district tier (Wikipedia: 23 sub-districts) — exists in OSM's tagging scheme
+  but is almost entirely untagged: only 2 of 23 sub-districts have a real relation (Tsabong, Hukuntsi).
+  `admin_level=8` (village) has exactly 1 relation nationwide (Gweta). geoBoundaries' own ADM2 (25 units, 691
+  km² min — already essentially the sub-district level, just more complete than OSM's 2-of-23) remains the
+  best available source. No city-scale boundary source currently exists for Botswana from either geoBoundaries
+  or OSM — a real, unresolved gap, not a technique problem to solve by querying differently.
+- **Libya — baladiyat really is the finest *official* tier; this isn't a hidden-level case like Jordan.**
+  OSM `admin_level=4` (23 relations: بنغازي/Benghazi, درنة/Derna, الكفرة/Kufra, ...) matches geoBoundaries'
+  own 22-23 baladiyat count almost exactly — OSM and geoBoundaries agree on where the ladder stops. `admin_level`
+  6/9/10 are all empty — no hidden finer government tier exists to discover, confirmed by a source outside
+  either dataset: Libya's baladiyat replaced the governorate system and a further governorate layer was
+  proposed but never actually implemented (Wikipedia's Baladiyat/Subdivisions-of-Libya articles), so there's
+  no real administrative unit between "baladiyah" (a district that can span an entire city like Benghazi plus
+  its surrounding area) and individual named places. Getting a real Tripoli- or Benghazi-scale polygon would
+  need a fundamentally different technique than "walk the admin hierarchy deeper" — a place/landuse-tagged
+  urban-extent polygon instead of an administrative boundary — which is a different investigation, not
+  attempted in this pass.
+- **South Sudan — the same shape as Botswana, plus one real exception.** OSM `admin_level=5` (80 relations:
+  Maban, Rumbek Centre, Cueibet, ...) is the county tier, matching geoBoundaries' own 78 counties — not
+  finer. `admin_level=7` (payam, the real next tier down — 540 real payams per Wikipedia) is essentially
+  unmapped: 2 relations nationwide. **The one real exception: `admin_level=8` has 37 relations, all genuine
+  Juba neighborhoods** (Munuki West, Hai Juba Nabari, Juba Quarter Council, Hai Orselim, ...) — real
+  city-scale data, but capital-only, not a nationwide tier the way Jordan's `admin_level=6` was. A future
+  per-feature join could use this for Juba specifically; every other South Sudanese town/city still has
+  nothing finer than its 755 km²-minimum county.
+
+**Net effect:** Jordan and Kuwait remain the only two countries where a real per-country OSM/geoBoundaries
+check produced a usable *nationwide* finer source. Botswana, Libya, and South Sudan are now confirmed
+(not just suspected) real coverage gaps rather than open questions — each investigated the same real,
+skeptical way this project's country-code-join bugs (the South Sudan `SSD`/`SDS` alias mixup earlier in this
+doc, among others) established the need for: every ISO2 code queried here (BW/LY/SS) was confirmed directly
+against `ISO3166-1` alpha-2 before use, not assumed from the country name. South Sudan gets a partial win
+(Juba); Botswana and Libya get none. All three stay logged as unresolved in `BACKLOG.md` rather than silently
+accepting the coarse geoBoundaries level as "good enough" for their capitals.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**

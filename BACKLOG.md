@@ -10,6 +10,36 @@ this file describe features that already exist.
 Grouped by theme, not priority. Each item says *why* it's here, not just
 *what*, per this repo's usual convention (see `LOGBOOK.md`).
 
+## Cross-cutting: South Sudan's `SSD`/`SDS` alias breaks 5 build scripts' World Bank lookups
+
+**Confirmed 2026-09-04, not yet fixed.** `scripts/lib/iso3166.mjs`'s `ALPHA3_TO_NUMERIC` deliberately maps
+South Sudan to two alpha-3 codes — `SSD` (the real ISO code) and `SDS` (a non-standard code Natural Earth's
+admin-1 layer uses, added 2026-08-17 specifically for `buildStatesProvincesTopology.mjs`'s benefit — see that
+file's own comment). Every script that builds a numeric-id → alpha3 reverse lookup from this table with a
+naive last-write-wins assignment (`map[num] = a3` for every entry, no dedup) silently resolves South Sudan to
+`SDS` instead of `SSD` — and World Bank's API 400s on `SDS` outright (verified live:
+`.../country/SDS/indicator/SP.POP.TOTL` → `"Invalid value"`; `.../country/SSD/...` returns real data).
+
+Confirmed present in, and already shipping wrong data via:
+- `scripts/buildTechnology.mjs` — South Sudan's Technology score is `null`/`unavailable`, 0 of 4 components.
+- `scripts/buildMilitary.mjs` — personnel/%GDP both null (1 of 3 components; only the SIPRI-by-name
+  expenditure figure survives, since that match is by literal country name, not this table).
+- `scripts/buildEconomy.mjs` — Economy score `null`/`unavailable`, 0 of 5 components, every `sourceUrl`
+  literally embeds the invalid `SDS` code.
+- `scripts/buildCurrentStatus.mjs` — South Sudan's `ethnicGroups` field is missing entirely (the Factbook
+  fallback path shares the same broken alias).
+- `scripts/buildGovCapitalPopGdp.mjs` — not currently broken (`countryEconomics.ts` was last regenerated
+  2026-08-14, before the `SDS` alias existed) but will break the same way next run.
+
+Fix is mechanical and small — same shape as the one already applied in `researchCityAdminLevels.mjs`: make
+each reversal keep the first/canonical alias instead of whichever iterates last, or centralize a single
+correct `NUMERIC_TO_ALPHA3` export in `iso3166.mjs` itself so five scripts stop reimplementing the same
+reversal (and the same bug) independently. `scripts/buildStatesProvincesTopology.mjs`/
+`scripts/buildCitiesData.mjs` do a forward (`alpha3 → numeric`) lookup only, so they're unaffected by this
+specific bug shape. Not fixed in this pass — found via an investigation fork while working on
+`city-boundaries-architecture.md`'s own, unrelated `SSD`/`SDS` mixup; logged here rather than fixed
+opportunistically, since it touches shipped `main` behavior outside this branch's actual scope.
+
 ## Data sourcing (`buildTechnology.mjs`)
 
 <!-- BEGIN buildTechnology.mjs gap report -->
@@ -751,6 +781,24 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
   touching the core country/states pipeline) and was explicitly deferred as
   too large a change for the pass that added lakes. See `CHANGELOG.md`'s
   v5.2.0 entry and `scene/Lakes.tsx`'s own header comment.
+- **Botswana, Libya, and South Sudan have no usable city-scale boundary
+  source, from either geoBoundaries or OSM (found 2026-09-04, direct
+  per-country Overpass checks — see `city-boundaries-architecture.md`'s
+  "Fourth pass").** Real, confirmed gaps, not unverified assumptions:
+  - Botswana: OSM's real sub-district tier (`admin_level=6`) is almost
+    entirely untagged (2 of 23 real sub-districts); geoBoundaries' own ADM2
+    (25 units, 691 km² min) is the best available and it's still coarser
+    than city-scale.
+  - Libya: confirmed its baladiyat tier (~22-23 units) really is the finest
+    *official* administrative division — both geoBoundaries and OSM agree,
+    and no proposed-but-unimplemented governorate layer exists to find. A
+    real Tripoli/Benghazi-scale polygon would need a place/landuse-based
+    urban-extent technique instead of walking the admin hierarchy deeper —
+    not attempted yet.
+  - South Sudan: real county-level data (matches geoBoundaries' 78
+    counties) but its real payam tier is essentially unmapped in OSM (2 of
+    540). One partial win: Juba itself has real OSM neighborhood-level data
+    (37 relations) — usable for the capital specifically, not nationwide.
 
 ## Visualization
 
