@@ -10,7 +10,47 @@ this file describe features that already exist.
 Grouped by theme, not priority. Each item says *why* it's here, not just
 *what*, per this repo's usual convention (see `LOGBOOK.md`).
 
-## Cross-cutting: South Sudan's `SSD`/`SDS` alias breaks 5 build scripts' World Bank lookups
+## Cross-cutting: every country-code/name join needs a real audit, not just the one bug found so far
+
+**Scope note (2026-09-04): the confirmed finding below (South Sudan's `SSD`/`SDS` alias) is one instance of
+a general class, not the whole problem.** This codebase joins country-keyed data across a lot of
+independent code/name-matching mechanisms, and this pass has only checked one of them — the same "verify
+before trusting a per-entity gap" discipline needs to be applied to *every entity* (not just South Sudan)
+in *every dataset* that does a country-code or country-name join, not just the five scripts already found.
+Known mechanisms that haven't been audited this way yet, each a candidate for the same kind of silent
+mismatch:
+
+- `data/registry/geoEntities.ts`'s own separate, deliberately-partial `ISO_ALPHA3_TO_NUMERIC` table (distinct
+  from `scripts/lib/iso3166.mjs`'s — two tables that could disagree).
+- `UNSD_NAME_ALIASES` / `ARDA_NAME_ALIASES` in `buildCurrentStatus.mjs` (~11 / ~13 hand-bridged name
+  mismatches for ethnicity/religion sourcing) — free-text name matching, not code-based, so its failure mode
+  is different (a silently-unmatched name) but the same "did we actually check every entity, not just the
+  ones that happened to surface a visible gap" question applies.
+- `scripts/lib/gleditschWard.mjs` (UCDP's Gleditsch-Ward numeric codes → this project's UN-193 topology
+  names, for Current Status conflict matching).
+- GeoNames' own alpha-2 → alpha-3 bridge (`countryInfo.txt`, used by `buildGlobalCitiesData.mjs` and
+  `buildCitiesData.mjs`).
+- Natural Earth's `adm0_a3` field, wherever it's matched against `iso3166.mjs` (`buildStatesProvincesTopology.mjs`,
+  `buildCountryTopology.mjs`) — the same dataset whose South-Sudan-specific quirk (`SDS`) caused the
+  confirmed bug below; worth checking whether any *other* country has a similar quirky/non-standard code in
+  this same source that hasn't been noticed yet.
+- SIPRI's literal-name matching for Taiwan (`findYearSeriesForLiteralName()` in `buildMilitary.mjs`) and UN
+  Comtrade's reporter code 490 for Taiwan (`buildTechnology.mjs`) — both bypass the normal topology-based
+  matcher entirely for one specific entity; worth checking no other entity silently needs the same kind of
+  bypass and isn't getting it.
+- `scripts/lib/gecCrossReference.mjs` (Factbook's GEC code cross-reference, used by the demographics
+  fallback path).
+- `scripts/researchCityAdminLevels.mjs`'s own alpha3 usage against geoBoundaries' API (the script this bug
+  was originally found in) — fixed for the one duplicate found, but not independently re-verified entity-by-
+  entity beyond the spot-checks already in `city-boundaries-architecture.md`.
+
+None of these has been confirmed broken the way the `SSD`/`SDS` case below has — this is a list of where to
+look, not a list of known bugs. The actual next step is picking one mechanism at a time and checking it
+against every entity it's supposed to cover (not just the ones that already look wrong), the same way the
+South Sudan case was only found by querying it directly rather than trusting a script's own "0 coverage"
+report.
+
+### Confirmed instance: South Sudan's `SSD`/`SDS` alias breaks 5 build scripts' World Bank lookups
 
 **Confirmed 2026-09-04, not yet fixed.** `scripts/lib/iso3166.mjs`'s `ALPHA3_TO_NUMERIC` deliberately maps
 South Sudan to two alpha-3 codes — `SSD` (the real ISO code) and `SDS` (a non-standard code Natural Earth's
