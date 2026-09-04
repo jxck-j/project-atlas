@@ -5,6 +5,46 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-03 (cont. x5) — Boundary source decision reframed per-feature; Jordan terminology corrected; US gets its own answer for free
+
+Direct correction, from someone with real regional/administrative knowledge: "if we're doing cities the US
+should go past counties" and "for Jordan a city/village cluster is a Qada or Manatiq." Both checked before
+acting on them, same discipline as every other finding this session — and both real.
+
+**Jordan**: geoBoundaries' Jordan ADM2, labeled "Nahias" in their own metadata, is actually mislabeled — cross-
+checked against Wikipedia's Districts of Jordan (independently: "52 alwiya/districts," matching feature count,
+matching names — Al-Jiza/Wadi al-Sayr/Sahab appear in both) confirms it's really the Liwa/District level. The
+real Qada/sub-district level (a genuine city-plus-surrounding-villages cluster, per the correction) is *finer*
+than anything geoBoundaries exposes for Jordan — no ADM3 in their metadata at all. Found it directly in OSM:
+`admin_level=6` resolves to 89 real, correctly-tagged sub-districts (`قضاء ماركا` = Qada Marka, `ناحية عمان` =
+Nahia Amman, `Sahab Sub-District`) — median area 342 km² vs. the Liwa level's 784 km², Amman itself tightening
+to 76 km² from ~325 km². Real, verified improvement — but Qada Al-Jafr is still 50,353 km² and Qada Al-Azraq
+9,368 km², correctly-named real sub-districts that are still vast desert. Confirms (again, independently) that
+even the *correct* administrative level doesn't cleanly separate "city" from "not" — jurisdiction and
+population density aren't the same axis. This reinforces rather than replaces the per-feature filtering idea
+below.
+
+**US**: the obvious answer once said out loud — `buildUsCitiesData.mjs` already produces real, official Census
+Places boundaries (32,608 of them), strictly better than anything OSM/geoBoundaries would derive. No new
+sourcing needed at all; just feed the existing output into the unified per-country shard shape at
+implementation time.
+
+**This also forced abandoning the "per-country source pick" framing itself**, independent of either
+correction: tried building a classifier (is this country's finest level city-scale, on average) and it failed
+immediately — Jordan's finest-level *mean* area (3,281 km², pre-correction) is bigger than the US county
+level's *median* (2,273 km²), even though Jordan's own Amman feature is genuinely city-scale. A country-level
+scalar can't separate a file that mixes small urban jurisdictions with enormous empty desert ones. **The real
+design: per-feature, not per-country** — for every real GeoNames city, find the containing polygon from
+whatever source that country needs, keep it only if its own area is plausibly city-sized, fall back per-*city*
+when it's not, never per-country.
+
+**Handoff state — nothing built against this design yet.** `city-boundaries-architecture.md`'s "Second
+refinement" section has the full writeup. Three countries have a verified real answer (US: reuse Census, no
+new work; Jordan: OSM `admin_level=6`; Kuwait: geoBoundaries ADM2, from the earlier investigation) — the other
+190 are unverified and need the same real-data check, not an assumption, before being trusted. Next session
+should implement the per-feature join as a proof of concept against just these three before scaling to the
+rest.
+
 ## 2026-09-03 (cont. x4) — First data-attribution UI, built but deliberately not mounted yet
 
 Resolves the other open item from the entry below: GeoNames (CC BY 4.0) and OSM/geoBoundaries (mostly ODbL)

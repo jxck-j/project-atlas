@@ -139,6 +139,58 @@ The area-containment-not-name-search lesson is still real and still
 applies to whichever direct OSM queries the US (and any other
 geoBoundaries-insufficient country) still needs.
 
+## Second refinement: per-feature, not per-country — and two real per-country findings
+
+**The "pick one source per country" framing above still doesn't survive contact with real data.** Tried
+building a per-country classifier (does this country's finest level read as city-scale, on average?) and it
+failed immediately: Jordan's finest geoBoundaries level has a *mean* feature area (3,281 km²) bigger than the
+US county level's *median* (2,273 km²) — even though Jordan's own Amman feature is genuinely city-scale
+(~325 km²). The reason: a single administrative level can mix small urban jurisdictions with enormous, nearly
+empty desert ones in the same file. No per-country scalar (mean, median, whatever) separates that.
+
+**The real algorithm has to be per-feature, matched against real cities, not a blanket per-country source
+pick.** For every real GeoNames city point, find whichever boundary polygon (at whatever source/level a
+country uses) actually contains that point, and check *that one polygon's* area. If it's plausibly city-sized,
+keep it as that city's boundary. If not (a whole desert sub-district, a whole US county), that specific city
+doesn't get a boundary from that source — only *that city* needs a fallback, not its whole country. This is
+still not implemented — it's the corrected design, replacing the per-country framing above.
+
+**Two real per-country findings, from actually checking rather than assuming:**
+
+- **Jordan: the right level is Qada/Nahia (OSM `admin_level=6`), not geoBoundaries' offering.**
+  geoBoundaries' Jordan ADM2 (labeled "Nahias" in their own metadata) is actually mislabeled — it's the
+  Liwa/District level (52 features, matching Wikipedia's independently-stated "52 alwiya"; names cross-verify
+  directly, e.g. "Al-Jiza"/"Wadi al-Sayr"/"Sahab" appear in both). The real Qada/sub-district level (a genuine
+  city-plus-surrounding-villages cluster, per direct correction) is *finer* than what geoBoundaries exposes for
+  Jordan at all — checked their metadata, no ADM3 exists. Found it directly in OSM instead:
+  `admin_level=6` resolves to 89 real, correctly-tagged sub-districts (`قضاء ماركا` = Qada Marka, `ناحية عمان` =
+  Nahia Amman, `Sahab Sub-District`, ...) — median area 342 km² (vs. the Liwa level's 784 km²), and Amman's own
+  entry tightens to 76 km² (vs. ~325 km² at the Liwa level). Real improvement, not just relabeling — but
+  **doesn't eliminate the per-feature filter**: Qada Al-Jafr is still 50,353 km² and Qada Al-Azraq 9,368 km²,
+  correctly-named real sub-districts that are still vast desert, not a city cluster. Jordan's admin_level=6 is
+  better raw material, not a clean solved case.
+- **The US doesn't need OSM or geoBoundaries at all.** `buildUsCitiesData.mjs` already produces real, official
+  Census Places boundaries (32,608 of them) — more authoritative than anything OSM/geoBoundaries would give,
+  and already built/working. The right move is to feed that *existing* output into the unified per-country
+  shard format directly, not re-derive similar data from OSM. Simpler and higher-fidelity than the original
+  plan.
+
+**Net effect on the per-country source table**: US = reuse existing Census pipeline (no new sourcing needed).
+Jordan = OSM `admin_level=6`, verified. Kuwait = geoBoundaries ADM2, verified (from the investigation above).
+The other 190 countries are **unverified** — each needs the same real-data check (not an assumption) before
+being trusted: does geoBoundaries reach a plausible level, and if not, what does OSM actually call the right
+tier in that specific country's own tagging. This is real, unfinished work — nothing beyond these three
+countries has been checked.
+
+**Status at handoff: design only, nothing built yet against this refined model.** The two-tier GeoNames
+index (migration plan step 1) and the attribution UI are the only things actually implemented so far. The
+boundary extraction script itself (step 2) has not been started — a fresh session picking this up should:
+(1) implement the per-feature point-in-polygon + area-check join described above, (2) wire in the three known
+sources (Census reuse for US, OSM `admin_level=6` for Jordan, geoBoundaries ADM2 for Kuwait) as a first
+real, working proof of concept limited to those three countries, verify it in-browser/output before scaling,
+then (3) work through the remaining 190 countries the same investigate-before-trusting way — not in one blind
+193-country batch.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -155,12 +207,19 @@ geoBoundaries-insufficient country) still needs.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. Build the boundary extraction: geoBoundaries' finest available ADM
-   level per country by default, falling back to a direct, area-contained
-   OSM query only where geoBoundaries doesn't reach city-level granularity
-   (the US today) or has no coverage for that country at all — producing
-   the same per-city lazy-fetch file shape `us-cities/*.json` already
-   established.
+2. **Not started — see "Second refinement" section above for the current
+   design, superseding this step's original per-country-source framing.**
+   Build the boundary extraction as a per-feature join: for every real
+   GeoNames city, find the containing polygon from whatever source that
+   country actually needs (US: reuse `buildUsCitiesData.mjs`'s existing
+   Census output directly, no new sourcing; Jordan: OSM `admin_level=6`,
+   verified; Kuwait: geoBoundaries ADM2, verified), keep it only if its
+   area is plausibly city-sized, and fall back per-*city* (not per-country)
+   otherwise. Producing the same per-city lazy-fetch file shape
+   `us-cities/*.json` already established. Start with just these three
+   verified countries as a real proof of concept before working through
+   the other 190 — each of which needs the same investigate-before-
+   trusting treatment, not a blind batch run.
 3. Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.
