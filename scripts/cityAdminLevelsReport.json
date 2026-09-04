@@ -1,0 +1,5843 @@
+{
+  "generatedAt": "2026-09-04T00:49:04.681Z",
+  "cityPlausibleMaxMinAreaSqKm": 500,
+  "countries": [
+    {
+      "id": "004",
+      "name": "Afghanistan",
+      "alpha3": "AFG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Wilayat",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 18951.3840016042,
+          "minAreaSqKm": 2263.463281797879,
+          "maxAreaSqKm": 59942.64204500234
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "wuleswali",
+          "admUnitCount": 398,
+          "meanAreaSqKm": 1612.7345191649663,
+          "minAreaSqKm": 25.829733767853835,
+          "maxAreaSqKm": 21643.737829034635
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 398,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 25.829733767853835
+    },
+    {
+      "id": "008",
+      "name": "Albania",
+      "alpha3": "ALB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Qarqet",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 2386.338275831697,
+          "minAreaSqKm": 751.2434999713408,
+          "maxAreaSqKm": 3530.613035024821
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "rrethe",
+          "admUnitCount": 37,
+          "meanAreaSqKm": 787.8013770319238,
+          "minAreaSqKm": 5.450932096321472,
+          "maxAreaSqKm": 1781.233428444281
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 373,
+          "meanAreaSqKm": 75.94617049592183,
+          "minAreaSqKm": 0.724180294879785,
+          "maxAreaSqKm": 359.81566657925697
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 373,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.724180294879785
+    },
+    {
+      "id": "012",
+      "name": "Algeria",
+      "alpha3": "DZA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 48,
+          "meanAreaSqKm": 48125.36860802312,
+          "minAreaSqKm": 772.3077255462827,
+          "maxAreaSqKm": 601903.1247037956
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "the People's Democratic Republic of Algeria",
+          "admUnitCount": 48,
+          "meanAreaSqKm": 48173.72284810918,
+          "minAreaSqKm": 1143.150241340752,
+          "maxAreaSqKm": 578537.6744786755
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Communes",
+          "admUnitCount": 1540,
+          "meanAreaSqKm": 1499.786569248973,
+          "minAreaSqKm": 1.1059809265769065,
+          "maxAreaSqKm": 124777.00024460904
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1540,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.1059809265769065
+    },
+    {
+      "id": "020",
+      "name": "Andorra",
+      "alpha3": "AND",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parish",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 67.16766341008862,
+          "minAreaSqKm": 25.37588143109289,
+          "maxAreaSqKm": 104.537577802582
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 7,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 25.37588143109289
+    },
+    {
+      "id": "024",
+      "name": "Angola",
+      "alpha3": "AGO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 69301.17669739896,
+          "minAreaSqKm": 6990.237838433679,
+          "maxAreaSqKm": 199954.2679369335
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 158,
+          "meanAreaSqKm": 7897.78601830581,
+          "minAreaSqKm": 233.08480387562423,
+          "maxAreaSqKm": 46083.3045590951
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Communes",
+          "admUnitCount": 558,
+          "meanAreaSqKm": 2235.5215982849872,
+          "minAreaSqKm": 6.1412364347866335,
+          "maxAreaSqKm": 19012.802268385407
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 558,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 6.1412364347866335
+    },
+    {
+      "id": "028",
+      "name": "Antigua and Barbuda",
+      "alpha3": "ATG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parish and Dependency",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 52.66940643345336,
+          "minAreaSqKm": 0.59158215629614,
+          "maxAreaSqKm": 143.76526377126774
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 8,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 0.59158215629614
+    },
+    {
+      "id": "032",
+      "name": "Argentina",
+      "alpha3": "ARG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 23,
+          "meanAreaSqKm": 120719.47866608929,
+          "minAreaSqKm": 947.5279761442018,
+          "maxAreaSqKm": 382939.8281008096
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "departments",
+          "admUnitCount": 526,
+          "meanAreaSqKm": 5290.271707570279,
+          "minAreaSqKm": 6.335526859488534,
+          "maxAreaSqKm": 63132.15304742775
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 526,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 6.335526859488534
+    },
+    {
+      "id": "051",
+      "name": "Armenia",
+      "alpha3": "ARM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province and City",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 2661.2929249515214,
+          "minAreaSqKm": 210.952359258644,
+          "maxAreaSqKm": 5147.72284794478
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipal Communities",
+          "admUnitCount": 39,
+          "meanAreaSqKm": 730.037083976903,
+          "minAreaSqKm": 155.3335979162749,
+          "maxAreaSqKm": 1706.208548097985
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 39,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 155.3335979162749
+    },
+    {
+      "id": "036",
+      "name": "Australia",
+      "alpha3": "AUS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "States and Territories",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 854232.7835134714,
+          "minAreaSqKm": 255.7422304500232,
+          "maxAreaSqKm": 2526632.50247428
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Local Government Areas",
+          "admUnitCount": 547,
+          "meanAreaSqKm": 14055.018375903514,
+          "minAreaSqKm": 0.7447997236174267,
+          "maxAreaSqKm": 619430.4072286466
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 547,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.7447997236174267
+    },
+    {
+      "id": "040",
+      "name": "Austria",
+      "alpha3": "AUT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Bundesländer",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 9327.432752731494,
+          "minAreaSqKm": 414.96739809434473,
+          "maxAreaSqKm": 19199.543190128054
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 94,
+          "meanAreaSqKm": 893.0520720700276,
+          "minAreaSqKm": 20.00900968164593,
+          "maxAreaSqKm": 3320.0482262684504
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2097,
+          "meanAreaSqKm": 40.031900226320445,
+          "minAreaSqKm": 0.1127395349236771,
+          "maxAreaSqKm": 467.1699590504488
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7850,
+          "meanAreaSqKm": 10.693871945806702,
+          "minAreaSqKm": 0.0043777370678528,
+          "maxAreaSqKm": 467.1699590504488
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 7850,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0043777370678528
+    },
+    {
+      "id": "031",
+      "name": "Azerbaijan",
+      "alpha3": "AZE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Contiguous Regions",
+          "admUnitCount": 2,
+          "meanAreaSqKm": 49535.72379176038,
+          "minAreaSqKm": 5317.185481663512,
+          "maxAreaSqKm": 93754.26210185724
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 79,
+          "meanAreaSqKm": 1091.9853129644132,
+          "minAreaSqKm": 11.714116809545247,
+          "maxAreaSqKm": 2860.688228977595
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 79,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 11.714116809545247
+    },
+    {
+      "id": "044",
+      "name": "Bahamas",
+      "alpha3": "BHS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 32,
+          "meanAreaSqKm": 418.3774990528444,
+          "minAreaSqKm": 3.3801077819963314,
+          "maxAreaSqKm": 2863.480589347696
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Second Schedule Districts & Third Schedule Districts",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 406.164425031418,
+          "minAreaSqKm": 2.764438757460938,
+          "maxAreaSqKm": 2553.366590751473
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 34,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.764438757460938
+    },
+    {
+      "id": "048",
+      "name": "Bahrain",
+      "alpha3": "BHR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 190.35510169348936,
+          "minAreaSqKm": 60.14947326025475,
+          "maxAreaSqKm": 483.6719646350157
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 4,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 60.14947326025475
+    },
+    {
+      "id": "050",
+      "name": "Bangladesh",
+      "alpha3": "BGD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Division",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 17527.808168800242,
+          "minAreaSqKm": 9557.77295751372,
+          "maxAreaSqKm": 30503.04705273207
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "district",
+          "admUnitCount": 64,
+          "meanAreaSqKm": 2185.18782135994,
+          "minAreaSqKm": 703.5466912980207,
+          "maxAreaSqKm": 5762.959329346892
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "subdistricts",
+          "admUnitCount": 544,
+          "meanAreaSqKm": 257.08092015999284,
+          "minAreaSqKm": 0.7612923614373596,
+          "maxAreaSqKm": 1616.122750646574
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Union Councils / Municipal Corporations / City Corporations",
+          "admUnitCount": 5160,
+          "meanAreaSqKm": 27.10310476105074,
+          "minAreaSqKm": 0.0268386481315229,
+          "maxAreaSqKm": 1230.9646630093637
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 5160,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0268386481315229
+    },
+    {
+      "id": "052",
+      "name": "Barbados",
+      "alpha3": "BRB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parish",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 39.3264992449771,
+          "minAreaSqKm": 23.16127478774405,
+          "maxAreaSqKm": 62.39941999508404
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 11,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 23.16127478774405
+    },
+    {
+      "id": "112",
+      "name": "Belarus",
+      "alpha3": "BLR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Oblast",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 29676.680987906115,
+          "minAreaSqKm": 217.49923021946515,
+          "maxAreaSqKm": 40355.54574639016
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Raion",
+          "admUnitCount": 118,
+          "meanAreaSqKm": 1761.9803707338583,
+          "minAreaSqKm": 217.49923021946515,
+          "maxAreaSqKm": 3371.208901071388
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 118,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 217.49923021946515
+    },
+    {
+      "id": "056",
+      "name": "Belgium",
+      "alpha3": "BEL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 3,
+          "meanAreaSqKm": 10251.659925705422,
+          "minAreaSqKm": 158.87793049499973,
+          "maxAreaSqKm": 16935.722398129434
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 2787.7519031053225,
+          "minAreaSqKm": 162.49613005396247,
+          "maxAreaSqKm": 4459.754813035219
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Arrondissements",
+          "admUnitCount": 43,
+          "meanAreaSqKm": 713.1375677479421,
+          "minAreaSqKm": 102.10720046973633,
+          "maxAreaSqKm": 2010.000733075402
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 589,
+          "meanAreaSqKm": 52.05622438571927,
+          "minAreaSqKm": 1.1565150120800674,
+          "maxAreaSqKm": 215.52080121603703
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 589,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 1.1565150120800674
+    },
+    {
+      "id": "084",
+      "name": "Belize",
+      "alpha3": "BLZ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 3698.5249320260496,
+          "minAreaSqKm": 1959.1823416534992,
+          "maxAreaSqKm": 5281.614667446458
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Constituencies",
+          "admUnitCount": 31,
+          "meanAreaSqKm": 706.3956473884924,
+          "minAreaSqKm": 0.3373108517605818,
+          "maxAreaSqKm": 3975.299567686773
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 31,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.3373108517605818
+    },
+    {
+      "id": "204",
+      "name": "Benin",
+      "alpha3": "BEN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departments",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 9628.88534937134,
+          "minAreaSqKm": 188.61499065838495,
+          "maxAreaSqKm": 26517.350127726277
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Commune",
+          "admUnitCount": 77,
+          "meanAreaSqKm": 1501.2962907805377,
+          "minAreaSqKm": 49.71941689501329,
+          "maxAreaSqKm": 6771.139047412915
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Arrondissements",
+          "admUnitCount": 546,
+          "meanAreaSqKm": 210.52499410939853,
+          "minAreaSqKm": 1.6951791730247694,
+          "maxAreaSqKm": 4732.197608524635
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 546,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.6951791730247694
+    },
+    {
+      "id": "064",
+      "name": "Bhutan",
+      "alpha3": "BTN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Dzongdeys",
+          "admUnitCount": 20,
+          "meanAreaSqKm": 1997.2474927588223,
+          "minAreaSqKm": 538.3065625552792,
+          "maxAreaSqKm": 4614.591051090209
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Gewog",
+          "admUnitCount": 205,
+          "meanAreaSqKm": 189.08790030867343,
+          "minAreaSqKm": 10.23823250710271,
+          "maxAreaSqKm": 1731.2431323722274
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 205,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 10.23823250710271
+    },
+    {
+      "id": "068",
+      "name": "Bolivia",
+      "alpha3": "BOL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 118753.72119818088,
+          "minAreaSqKm": 37259.18585201941,
+          "maxAreaSqKm": 368778.7494083783
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 110,
+          "meanAreaSqKm": 9716.213552578429,
+          "minAreaSqKm": 188.9700100674264,
+          "maxAreaSqKm": 83470.86150835073
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 339,
+          "meanAreaSqKm": 3152.753660128694,
+          "minAreaSqKm": 12.918844889992227,
+          "maxAreaSqKm": 70954.12578048409
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 339,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 12.918844889992227
+    },
+    {
+      "id": "070",
+      "name": "Bosnia and Herzegovina",
+      "alpha3": "BIH",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 3,
+          "meanAreaSqKm": 17149.04093129619,
+          "minAreaSqKm": 486.7049008956808,
+          "maxAreaSqKm": 25845.56926175679
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 4287.260232763701,
+          "minAreaSqKm": 330.5429768935735,
+          "maxAreaSqKm": 25114.848630379067
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 142,
+          "meanAreaSqKm": 362.3036816259149,
+          "minAreaSqKm": 9.78325431193984,
+          "maxAreaSqKm": 1213.1837607756336
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 142,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 9.78325431193984
+    },
+    {
+      "id": "072",
+      "name": "Botswana",
+      "alpha3": "BWA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "districts",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 57814.5595629924,
+          "minAreaSqKm": 1749.326974276526,
+          "maxAreaSqKm": 146665.41934059738
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 25,
+          "meanAreaSqKm": 23123.24235689805,
+          "minAreaSqKm": 691.287572439086,
+          "maxAreaSqKm": 114408.5784369336
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 25,
+      "cityPlausibleLevel": null,
+      "cityPlausibleLevelMinAreaSqKm": null
+    },
+    {
+      "id": "076",
+      "name": "Brazil",
+      "alpha3": "BRA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "State",
+          "admUnitCount": 27,
+          "meanAreaSqKm": 315694.88051689614,
+          "minAreaSqKm": 5340.829172403348,
+          "maxAreaSqKm": 1576601.2946255084
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "municipality",
+          "admUnitCount": 5570,
+          "meanAreaSqKm": 1525.5265065969395,
+          "minAreaSqKm": 3.397999698838788,
+          "maxAreaSqKm": 159534.13982841358
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 5570,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.397999698838788
+    },
+    {
+      "id": "096",
+      "name": "Brunei",
+      "alpha3": "BRN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 1467.7929744867452,
+          "minAreaSqKm": 557.0327266072696,
+          "maxAreaSqKm": 2796.5501389622978
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Mukim",
+          "admUnitCount": 38,
+          "meanAreaSqKm": 155.7207017624115,
+          "minAreaSqKm": 0.3645808094457913,
+          "maxAreaSqKm": 803.690617051109
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 38,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.3645808094457913
+    },
+    {
+      "id": "100",
+      "name": "Bulgaria",
+      "alpha3": "BGR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 28,
+          "meanAreaSqKm": 3962.671046432926,
+          "minAreaSqKm": 1340.6387861879346,
+          "maxAreaSqKm": 7673.579027233526
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 265,
+          "meanAreaSqKm": 418.697318173603,
+          "minAreaSqKm": 32.122589274290895,
+          "maxAreaSqKm": 1367.9585299483683
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 265,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 32.122589274290895
+    },
+    {
+      "id": "854",
+      "name": "Burkina Faso",
+      "alpha3": "BFA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 21028.964056520177,
+          "minAreaSqKm": 2869.189937177217,
+          "maxAreaSqKm": 46560.9358136482
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Province",
+          "admUnitCount": 45,
+          "meanAreaSqKm": 6075.034060772499,
+          "minAreaSqKm": 1596.1278529909257,
+          "maxAreaSqKm": 15462.07773841884
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 351,
+          "meanAreaSqKm": 778.8502125123792,
+          "minAreaSqKm": 34.077603384347526,
+          "maxAreaSqKm": 4977.612078263421
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 351,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 34.077603384347526
+    },
+    {
+      "id": "108",
+      "name": "Burundi",
+      "alpha3": "BDI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 1391.67728701509,
+          "minAreaSqKm": 110.47352729854649,
+          "maxAreaSqKm": 2252.986791630631
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 119,
+          "meanAreaSqKm": 210.91882375620608,
+          "minAreaSqKm": 16.427120485963147,
+          "maxAreaSqKm": 564.2751542279393
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Collines",
+          "admUnitCount": 2615,
+          "meanAreaSqKm": 9.146183367613,
+          "minAreaSqKm": 0.4647811702493372,
+          "maxAreaSqKm": 102.91487566191972
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2615,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.4647811702493372
+    },
+    {
+      "id": "132",
+      "name": "Cabo Verde",
+      "alpha3": "CPV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 184.5663168520713,
+          "minAreaSqKm": 25.550162664469337,
+          "maxAreaSqKm": 631.6729870221556
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "freguesia",
+          "admUnitCount": 32,
+          "meanAreaSqKm": 126.88693016942987,
+          "minAreaSqKm": 14.176620358253626,
+          "maxAreaSqKm": 441.3035154330361
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 32,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 14.176620358253626
+    },
+    {
+      "id": "116",
+      "name": "Cambodia",
+      "alpha3": "KHM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 25,
+          "meanAreaSqKm": 7268.049912463861,
+          "minAreaSqKm": 151.952393209931,
+          "maxAreaSqKm": 14042.697005418346
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 197,
+          "meanAreaSqKm": 909.320729443739,
+          "minAreaSqKm": 2.2012299873220056,
+          "maxAreaSqKm": 5371.647220728754
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 1633,
+          "meanAreaSqKm": 109.69759959957132,
+          "minAreaSqKm": 0.0488720906873484,
+          "maxAreaSqKm": 2252.2700585494404
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1633,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0488720906873484
+    },
+    {
+      "id": "120",
+      "name": "Cameroon",
+      "alpha3": "CMR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 46573.59628195167,
+          "minAreaSqKm": 13993.73088647121,
+          "maxAreaSqKm": 109024.23813805994
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "department",
+          "admUnitCount": 60,
+          "meanAreaSqKm": 7771.577290163515,
+          "minAreaSqKm": 1.291117371581476,
+          "maxAreaSqKm": 37017.14331408771
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 360,
+          "meanAreaSqKm": 1295.477923512917,
+          "minAreaSqKm": 11.367004544922208,
+          "maxAreaSqKm": 15689.180501301184
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 360,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 11.367004544922208
+    },
+    {
+      "id": "124",
+      "name": "Canada",
+      "alpha3": "CAN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 759512.8893868559,
+          "minAreaSqKm": 5735.936428210744,
+          "maxAreaSqKm": 2092820.6727698585
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Divisions",
+          "admUnitCount": 76,
+          "meanAreaSqKm": 129981.37400266356,
+          "minAreaSqKm": 245.92894456642887,
+          "maxAreaSqKm": 2093556.8246163584
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5162,
+          "meanAreaSqKm": 1913.7369770712253,
+          "minAreaSqKm": 0.0003106500342616,
+          "maxAreaSqKm": 1039201.5874692271
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 5162,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0003106500342616
+    },
+    {
+      "id": "140",
+      "name": "Central African Republic",
+      "alpha3": "CAF",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Prefecture and Commune",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 36455.24129049195,
+          "minAreaSqKm": 267.7881583109446,
+          "maxAreaSqKm": 86468.47806276864
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Sub-Prefectures",
+          "admUnitCount": 72,
+          "meanAreaSqKm": 8578.338736373833,
+          "minAreaSqKm": 69.12942836398491,
+          "maxAreaSqKm": 41423.23566133018
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 175,
+          "meanAreaSqKm": 3544.5941486566508,
+          "minAreaSqKm": 5.291480335354525,
+          "maxAreaSqKm": 41332.30880004169
+        },
+        {
+          "level": "ADM5",
+          "canonicalName": "quartiers",
+          "admUnitCount": 202,
+          "meanAreaSqKm": 0.5049904424824555,
+          "minAreaSqKm": 0.0252980647020791,
+          "maxAreaSqKm": 15.988176101930913
+        }
+      ],
+      "finestLevel": "ADM5",
+      "finestLevelUnitCount": 202,
+      "cityPlausibleLevel": "ADM5",
+      "cityPlausibleLevelMinAreaSqKm": 0.0252980647020791
+    },
+    {
+      "id": "148",
+      "name": "Chad",
+      "alpha3": "TCD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 23,
+          "meanAreaSqKm": 55387.06021363736,
+          "minAreaSqKm": 386.8966617966129,
+          "maxAreaSqKm": 217185.33185038363
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Departments",
+          "admUnitCount": 70,
+          "meanAreaSqKm": 18068.8108924647,
+          "minAreaSqKm": 424.8781456244412,
+          "maxAreaSqKm": 124789.01871033869
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 70,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 424.8781456244412
+    },
+    {
+      "id": "152",
+      "name": "Chile",
+      "alpha3": "CHL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 47173.12493690122,
+          "minAreaSqKm": 13091.46436351454,
+          "maxAreaSqKm": 132963.87056062478
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 56,
+          "meanAreaSqKm": 13470.72717634686,
+          "minAreaSqKm": 163.37081582393577,
+          "maxAreaSqKm": 67707.84792754964
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Communes",
+          "admUnitCount": 345,
+          "meanAreaSqKm": 2187.739126047935,
+          "minAreaSqKm": 6.275044666657016,
+          "maxAreaSqKm": 51399.20182560934
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 345,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 6.275044666657016
+    },
+    {
+      "id": "156",
+      "name": "China",
+      "alpha3": "CHN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "People’s Republic of China",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 279093.7455887184,
+          "minAreaSqKm": 96.08712126422836,
+          "maxAreaSqKm": 1624826.8947916185
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "County Level",
+          "admUnitCount": 2391,
+          "meanAreaSqKm": 3960.94933452176,
+          "minAreaSqKm": 22.18066805291908,
+          "maxAreaSqKm": 197223.14589666863
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "County, City",
+          "admUnitCount": 2867,
+          "meanAreaSqKm": 3300.965499888889,
+          "minAreaSqKm": 3.065411592033493,
+          "maxAreaSqKm": 198329.1373019805
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2867,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 3.065411592033493
+    },
+    {
+      "id": "170",
+      "name": "Colombia",
+      "alpha3": "COL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departments",
+          "admUnitCount": 33,
+          "meanAreaSqKm": 34471.9794007358,
+          "minAreaSqKm": 48.61636153194704,
+          "maxAreaSqKm": 108891.15055452468
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 1122,
+          "meanAreaSqKm": 1014.4970136045896,
+          "minAreaSqKm": 15.82471826697094,
+          "maxAreaSqKm": 65164.35507242662
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 1122,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 15.82471826697094
+    },
+    {
+      "id": "174",
+      "name": "Comoros",
+      "alpha3": "COM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3,
+          "meanAreaSqKm": 549.7139850868803,
+          "minAreaSqKm": 207.55902808383703,
+          "maxAreaSqKm": 1015.3470726056628
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Prefecture",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 97.26344165541404,
+          "minAreaSqKm": 5.458475614785485,
+          "maxAreaSqKm": 176.03350143740386
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Commune",
+          "admUnitCount": 55,
+          "meanAreaSqKm": 30.063245602582512,
+          "minAreaSqKm": 5.340410255942517,
+          "maxAreaSqKm": 72.65210298589736
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 55,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 5.340410255942517
+    },
+    {
+      "id": "178",
+      "name": "Congo",
+      "alpha3": "COG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Départements",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 28606.23002598925,
+          "minAreaSqKm": 80.85184430128498,
+          "maxAreaSqKm": 66513.8368916218
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 46,
+          "meanAreaSqKm": 7428.455918776533,
+          "minAreaSqKm": 346.32695785827565,
+          "maxAreaSqKm": 37636.77500845552
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 46,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 346.32695785827565
+    },
+    {
+      "id": "188",
+      "name": "Costa Rica",
+      "alpha3": "CRI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 7298.203807246957,
+          "minAreaSqKm": 2671.4574860017533,
+          "maxAreaSqKm": 11351.725589707628
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Cantons",
+          "admUnitCount": 83,
+          "meanAreaSqKm": 618.8974158369535,
+          "minAreaSqKm": 6.760403951406345,
+          "maxAreaSqKm": 3357.0676314794223
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 472,
+          "meanAreaSqKm": 105.12826299940188,
+          "minAreaSqKm": 0.5745572043312781,
+          "maxAreaSqKm": 2121.2233058904208
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 472,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.5745572043312781
+    },
+    {
+      "id": "384",
+      "name": "Côte d'Ivoire",
+      "alpha3": "CIV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "districts de Côte d’Ivoire",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 22972.006255632947,
+          "minAreaSqKm": 2069.362436366036,
+          "maxAreaSqKm": 40092.4240671352
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "régions de Côte d'Ivoire",
+          "admUnitCount": 33,
+          "meanAreaSqKm": 9745.699623601866,
+          "minAreaSqKm": 2069.362436366036,
+          "maxAreaSqKm": 22078.228670448232
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Departments",
+          "admUnitCount": 510,
+          "meanAreaSqKm": 630.6040932918858,
+          "minAreaSqKm": 34.11263124206119,
+          "maxAreaSqKm": 9079.723908953089
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 510,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 34.11263124206119
+    },
+    {
+      "id": "191",
+      "name": "Croatia",
+      "alpha3": "HRV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Croatia",
+          "admUnitCount": 21,
+          "meanAreaSqKm": 2685.980994698034,
+          "minAreaSqKm": 642.5749194135981,
+          "maxAreaSqKm": 5351.870941975919
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities and Towns",
+          "admUnitCount": 560,
+          "meanAreaSqKm": 100.98084231730384,
+          "minAreaSqKm": 1.0486500657781566,
+          "maxAreaSqKm": 980.1359799246314
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 560,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.0486500657781566
+    },
+    {
+      "id": "192",
+      "name": "Cuba",
+      "alpha3": "CUB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 6930.048996131874,
+          "minAreaSqKm": 732.0899304058395,
+          "maxAreaSqKm": 15824.69340835669
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 168,
+          "meanAreaSqKm": 655.3624495422122,
+          "minAreaSqKm": 3.4274638033487093,
+          "maxAreaSqKm": 4122.678835790716
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 168,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.4274638033487093
+    },
+    {
+      "id": "196",
+      "name": "Cyprus",
+      "alpha3": "CYP",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 1497.0539011448675,
+          "minAreaSqKm": 682.1167870075489,
+          "maxAreaSqKm": 2713.941975237244
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 612,
+          "meanAreaSqKm": 15.20399673968887,
+          "minAreaSqKm": 0.300915409859589,
+          "maxAreaSqKm": 153.97323675136138
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 612,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.300915409859589
+    },
+    {
+      "id": "203",
+      "name": "Czechia",
+      "alpha3": "CZE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "regions",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 5633.856795158419,
+          "minAreaSqKm": 496.267886993502,
+          "maxAreaSqKm": 10930.145943830614
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 77,
+          "meanAreaSqKm": 1023.4575103912748,
+          "minAreaSqKm": 223.47108906481876,
+          "maxAreaSqKm": 1982.0021781178891
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 6257,
+          "meanAreaSqKm": 12.605736129372833,
+          "minAreaSqKm": 0.4229508152261605,
+          "maxAreaSqKm": 496.2674115728733
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 13090,
+          "meanAreaSqKm": 6.025352917820458,
+          "minAreaSqKm": 0.0023372209888085,
+          "maxAreaSqKm": 87.32215412886178
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 13090,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0023372209888085
+    },
+    {
+      "id": "180",
+      "name": "Democratic Republic of the Congo",
+      "alpha3": "COD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Provinces",
+          "admUnitCount": 26,
+          "meanAreaSqKm": 88800.29888509739,
+          "minAreaSqKm": 10132.669108601853,
+          "maxAreaSqKm": 194537.57624352287
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "territory, city",
+          "admUnitCount": 189,
+          "meanAreaSqKm": 12329.86262700922,
+          "minAreaSqKm": 2.6159653460849555,
+          "maxAreaSqKm": 48803.59295354783
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 189,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.6159653460849555
+    },
+    {
+      "id": "208",
+      "name": "Denmark",
+      "alpha3": "DNK",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 8579.213524294271,
+          "minAreaSqKm": 2506.9033748329744,
+          "maxAreaSqKm": 13160.465797400988
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "kommune",
+          "admUnitCount": 98,
+          "meanAreaSqKm": 445.4170653631125,
+          "minAreaSqKm": 7.500198634916647,
+          "maxAreaSqKm": 1498.7927739271693
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 98,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 7.500198634916647
+    },
+    {
+      "id": "262",
+      "name": "Djibouti",
+      "alpha3": "DJI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 3641.3264992236714,
+          "minAreaSqKm": 179.28389219883593,
+          "maxAreaSqKm": 6814.80728450364
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 1970.594518047752,
+          "minAreaSqKm": 780.3316383163685,
+          "maxAreaSqKm": 4104.730938730592
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 11,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 179.28389219883593
+    },
+    {
+      "id": "212",
+      "name": "Dominica",
+      "alpha3": "DMA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parish",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 75.22739166870042,
+          "minAreaSqKm": 7.894153040309731,
+          "maxAreaSqKm": 181.2323204365481
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 10,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 7.894153040309731
+    },
+    {
+      "id": "214",
+      "name": "Dominican Republic",
+      "alpha3": "DOM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 32,
+          "meanAreaSqKm": 1513.7461114600776,
+          "minAreaSqKm": 77.81438620765198,
+          "maxAreaSqKm": 3325.0490581983936
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 155,
+          "meanAreaSqKm": 310.27157571374033,
+          "minAreaSqKm": 18.578567559833377,
+          "maxAreaSqKm": 2052.286313103604
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 155,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 18.578567559833377
+    },
+    {
+      "id": "218",
+      "name": "Ecuador",
+      "alpha3": "ECU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 24,
+          "meanAreaSqKm": 10664.627630843805,
+          "minAreaSqKm": 3236.202096953221,
+          "maxAreaSqKm": 29928.939951342167
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Cantons",
+          "admUnitCount": 224,
+          "meanAreaSqKm": 1141.6225602735428,
+          "minAreaSqKm": 18.775668740075744,
+          "maxAreaSqKm": 19835.17133740353
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 224,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 18.775668740075744
+    },
+    {
+      "id": "818",
+      "name": "Egypt",
+      "alpha3": "EGY",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 27,
+          "meanAreaSqKm": 37037.23779259684,
+          "minAreaSqKm": 1016.4718765562748,
+          "maxAreaSqKm": 439086.4258935523
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "marakiz and aqsam",
+          "admUnitCount": 365,
+          "meanAreaSqKm": 2724.803990823988,
+          "minAreaSqKm": 0.630214967905556,
+          "maxAreaSqKm": 267979.0370235587
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 365,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.630214967905556
+    },
+    {
+      "id": "222",
+      "name": "El Salvador",
+      "alpha3": "SLV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departments",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 1497.59744045073,
+          "minAreaSqKm": 745.4734311948305,
+          "maxAreaSqKm": 2142.12915078458
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 272,
+          "meanAreaSqKm": 74.97539001044336,
+          "minAreaSqKm": 0.0007933363172627,
+          "maxAreaSqKm": 695.4723617379002
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 272,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0007933363172627
+    },
+    {
+      "id": "226",
+      "name": "Equatorial Guinea",
+      "alpha3": "GNQ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 3861.785523343816,
+          "minAreaSqKm": 20.250488299847305,
+          "maxAreaSqKm": 8415.92375377901
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 31,
+          "meanAreaSqKm": 868.0764942613217,
+          "minAreaSqKm": 0.2075895074136003,
+          "maxAreaSqKm": 2754.982570409653
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 31,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.2075895074136003
+    },
+    {
+      "id": "232",
+      "name": "Eritrea",
+      "alpha3": "ERI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 20065.564881212787,
+          "minAreaSqKm": 1238.1738236265387,
+          "maxAreaSqKm": 33577.61721794024
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "districts",
+          "admUnitCount": 58,
+          "meanAreaSqKm": 2087.0537655317944,
+          "minAreaSqKm": 7.056247806746715,
+          "maxAreaSqKm": 9810.499093596083
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 58,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 7.056247806746715
+    },
+    {
+      "id": "233",
+      "name": "Estonia",
+      "alpha3": "EST",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 15,
+          "meanAreaSqKm": 2898.1382963630103,
+          "minAreaSqKm": 1028.3131842270932,
+          "maxAreaSqKm": 4812.315162475603
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 215,
+          "meanAreaSqKm": 202.40548105434468,
+          "minAreaSqKm": 1.791726435443966,
+          "maxAreaSqKm": 867.9407199838729
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Villages",
+          "admUnitCount": 4797,
+          "meanAreaSqKm": 9.09816029452113,
+          "minAreaSqKm": 0.0580918177229112,
+          "maxAreaSqKm": 173.115512101299
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 4797,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0580918177229112
+    },
+    {
+      "id": "748",
+      "name": "Eswatini",
+      "alpha3": "SWZ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 4340.783949236889,
+          "minAreaSqKm": 3657.7030154271024,
+          "maxAreaSqKm": 5835.579166778036
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 53,
+          "meanAreaSqKm": 327.6063357914629,
+          "minAreaSqKm": 27.26997379791203,
+          "maxAreaSqKm": 759.730433474902
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 53,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 27.26997379791203
+    },
+    {
+      "id": "231",
+      "name": "Ethiopia",
+      "alpha3": "ETH",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "kilil and astedader",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 102396.30657123732,
+          "minAreaSqKm": 370.7497569415977,
+          "maxAreaSqKm": 322993.6282924947
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 74,
+          "meanAreaSqKm": 15221.072598427156,
+          "minAreaSqKm": 309.5338481495317,
+          "maxAreaSqKm": 62044.02712980186
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 690,
+          "meanAreaSqKm": 1632.4048873675497,
+          "minAreaSqKm": 7.338459082903495,
+          "maxAreaSqKm": 22248.030078522515
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 690,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 7.338459082903495
+    },
+    {
+      "id": "242",
+      "name": "Fiji",
+      "alpha3": "FJI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Divisions",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 4843.911409017412,
+          "minAreaSqKm": 1612.9982914398847,
+          "maxAreaSqKm": 6623.276380160096
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Provinces",
+          "admUnitCount": 15,
+          "meanAreaSqKm": 1393.211782829742,
+          "minAreaSqKm": 44.18628144370604,
+          "maxAreaSqKm": 3246.9738069460127
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Tikina",
+          "admUnitCount": 86,
+          "meanAreaSqKm": 243.10862749881093,
+          "minAreaSqKm": 2.232791221403921,
+          "maxAreaSqKm": 884.7609029889109
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Enumeration Areas",
+          "admUnitCount": 1602,
+          "meanAreaSqKm": 13.045322311156806,
+          "minAreaSqKm": 0.0132169294321061,
+          "maxAreaSqKm": 286.0473579251307
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 1602,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0132169294321061
+    },
+    {
+      "id": "246",
+      "name": "Finland",
+      "alpha3": "FIN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 19,
+          "meanAreaSqKm": 17760.033289725,
+          "minAreaSqKm": 1364.8253466315157,
+          "maxAreaSqKm": 98950.41824192557
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 70,
+          "meanAreaSqKm": 4820.318714064939,
+          "minAreaSqKm": 11.17511748900931,
+          "maxAreaSqKm": 35122.35674722364
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 313,
+          "meanAreaSqKm": 1077.4943720856547,
+          "minAreaSqKm": 0.115773148508356,
+          "maxAreaSqKm": 17316.619150882336
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 313,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.115773148508356
+    },
+    {
+      "id": "250",
+      "name": "France",
+      "alpha3": "FRA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 42242.50941846597,
+          "minAreaSqKm": 8721.373115656008,
+          "maxAreaSqKm": 85183.83789479267
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Department",
+          "admUnitCount": 96,
+          "meanAreaSqKm": 5720.339817083943,
+          "minAreaSqKm": 105.45408608181852,
+          "maxAreaSqKm": 10378.387771124337
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Arrondissement",
+          "admUnitCount": 320,
+          "meanAreaSqKm": 1716.1019451251836,
+          "minAreaSqKm": 36.59310895415981,
+          "maxAreaSqKm": 6140.681037694427
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2054,
+          "meanAreaSqKm": 269.20615680359793,
+          "minAreaSqKm": 1.6955926705949742,
+          "maxAreaSqKm": 2458.7155944193964
+        },
+        {
+          "level": "ADM5",
+          "canonicalName": "Arrondissement municipal, Commune simple, Préfecture, Préfecture de région,Sous-préfrecture",
+          "admUnitCount": 35010,
+          "meanAreaSqKm": 18.232813376769496,
+          "minAreaSqKm": 0.0283891545736757,
+          "maxAreaSqKm": 18617.622276748527
+        }
+      ],
+      "finestLevel": "ADM5",
+      "finestLevelUnitCount": 35010,
+      "cityPlausibleLevel": "ADM5",
+      "cityPlausibleLevelMinAreaSqKm": 0.0283891545736757
+    },
+    {
+      "id": "266",
+      "name": "Gabon",
+      "alpha3": "GAB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Provinces",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 28788.122127994782,
+          "minAreaSqKm": 17975.189375009686,
+          "maxAreaSqKm": 42428.43106845386
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Department",
+          "admUnitCount": 49,
+          "meanAreaSqKm": 5354.520474658172,
+          "minAreaSqKm": 184.69784579030585,
+          "maxAreaSqKm": 17145.270785339628
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 49,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 184.69784579030585
+    },
+    {
+      "id": "270",
+      "name": "Gambia",
+      "alpha3": "GMB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Local Government Areas",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 1321.0359561256728,
+          "minAreaSqKm": 9.367968559098006,
+          "maxAreaSqKm": 2207.9757318965912
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 48,
+          "meanAreaSqKm": 220.17265935427864,
+          "minAreaSqKm": 0.7762599700239815,
+          "maxAreaSqKm": 698.6107130129192
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Ward",
+          "admUnitCount": 120,
+          "meanAreaSqKm": 88.06906374171146,
+          "minAreaSqKm": 0.1291182458824402,
+          "maxAreaSqKm": 441.5926897349985
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 120,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.1291182458824402
+    },
+    {
+      "id": "268",
+      "name": "Georgia",
+      "alpha3": "GEO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Autonomous Republic, Region, City",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 5819.130141702607,
+          "minAreaSqKm": 248.79169119314105,
+          "maxAreaSqKm": 11477.89319389959
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 68,
+          "meanAreaSqKm": 1030.6128035184754,
+          "minAreaSqKm": 292.12526991116823,
+          "maxAreaSqKm": 3238.605592565894
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 68,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 292.12526991116823
+    },
+    {
+      "id": "276",
+      "name": "Germany",
+      "alpha3": "DEU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Länder",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 22358.378690584486,
+          "minAreaSqKm": 420.25794181888233,
+          "maxAreaSqKm": 70544.91744252724
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Government District",
+          "admUnitCount": 38,
+          "meanAreaSqKm": 9414.054185509252,
+          "minAreaSqKm": 420.25794181888233,
+          "maxAreaSqKm": 29654.067581181764
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Independent City or District",
+          "admUnitCount": 428,
+          "meanAreaSqKm": 835.8272407695018,
+          "minAreaSqKm": 0.0995041736744977,
+          "maxAreaSqKm": 5495.412923643806
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 428,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0995041736744977
+    },
+    {
+      "id": "288",
+      "name": "Ghana",
+      "alpha3": "GHA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 14921.690837183553,
+          "minAreaSqKm": 3203.1070227339405,
+          "maxAreaSqKm": 35066.40350127644
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 260,
+          "meanAreaSqKm": 921.0570561270184,
+          "minAreaSqKm": 1.556765182956466,
+          "maxAreaSqKm": 7558.215177152616
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 260,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.556765182956466
+    },
+    {
+      "id": "300",
+      "name": "Greece",
+      "alpha3": "GRC",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Decentralized administration",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 16475.538139544853,
+          "minAreaSqKm": 336.5981073913783,
+          "maxAreaSqKm": 33006.44187994358
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 9414.593222597065,
+          "minAreaSqKm": 336.5981073913783,
+          "maxAreaSqKm": 18827.48442919233
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "municipality",
+          "admUnitCount": 326,
+          "meanAreaSqKm": 403.3990691499069,
+          "minAreaSqKm": 1.927948597868064,
+          "maxAreaSqKm": 1807.5258310888469
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 326,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.927948597868064
+    },
+    {
+      "id": "308",
+      "name": "Grenada",
+      "alpha3": "GRD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parish",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 50.02041364273835,
+          "minAreaSqKm": 23.159613663357504,
+          "maxAreaSqKm": 95.02295642765812
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 7,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 23.159613663357504
+    },
+    {
+      "id": "320",
+      "name": "Guatemala",
+      "alpha3": "GTM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 4906.4227633547935,
+          "minAreaSqKm": 534.4844629352839,
+          "maxAreaSqKm": 35830.3013085162
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipio",
+          "admUnitCount": 342,
+          "meanAreaSqKm": 316.4659847498053,
+          "minAreaSqKm": 4.729872892632018,
+          "maxAreaSqKm": 8035.489721795455
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 342,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 4.729872892632018
+    },
+    {
+      "id": "324",
+      "name": "Guinea",
+      "alpha3": "GIN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Administrative regions and governate",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 30598.182659732844,
+          "minAreaSqKm": 436.0541027104872,
+          "maxAreaSqKm": 71735.4300287951
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "prefecture",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 7199.572390525377,
+          "minAreaSqKm": 436.0541027104872,
+          "maxAreaSqKm": 17648.518152602803
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "sub-prefecture",
+          "admUnitCount": 340,
+          "meanAreaSqKm": 719.9572390525378,
+          "minAreaSqKm": 6.216684022641183,
+          "maxAreaSqKm": 3624.0886944924328
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 340,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 6.216684022641183
+    },
+    {
+      "id": "624",
+      "name": "Guinea-Bissau",
+      "alpha3": "GNB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regiões",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 3918.899000964439,
+          "minAreaSqKm": 188.16294999113396,
+          "maxAreaSqKm": 9100.134259756443
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 39,
+          "meanAreaSqKm": 904.3613079148708,
+          "minAreaSqKm": 168.50028625791302,
+          "maxAreaSqKm": 2826.226740923067
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 39,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 168.50028625791302
+    },
+    {
+      "id": "328",
+      "name": "Guyana",
+      "alpha3": "GUY",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 21072.79401535431,
+          "minAreaSqKm": 2061.379302838109,
+          "maxAreaSqKm": 54483.2083488054
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Neighbourhood Councils",
+          "admUnitCount": 27,
+          "meanAreaSqKm": 7794.046208151401,
+          "minAreaSqKm": 229.71741180616667,
+          "maxAreaSqKm": 33159.99176060078
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 27,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 229.71741180616667
+    },
+    {
+      "id": "332",
+      "name": "Haiti",
+      "alpha3": "HTI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departments",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 2691.980796671793,
+          "minAreaSqKm": 1210.2269217497285,
+          "maxAreaSqKm": 4976.91635395811
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 42,
+          "meanAreaSqKm": 640.9478087309574,
+          "minAreaSqKm": 171.53923491271726,
+          "maxAreaSqKm": 1939.107982801338
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Communes",
+          "admUnitCount": 140,
+          "meanAreaSqKm": 192.90226636393075,
+          "minAreaSqKm": 8.935482288804183,
+          "maxAreaSqKm": 642.1622233615625
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 140,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 8.935482288804183
+    },
+    {
+      "id": "340",
+      "name": "Honduras",
+      "alpha3": "HND",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departments",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 6222.968921180126,
+          "minAreaSqKm": 223.4796294120277,
+          "maxAreaSqKm": 24046.21144895876
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 299,
+          "meanAreaSqKm": 373.5853167010189,
+          "minAreaSqKm": 22.536114736445946,
+          "maxAreaSqKm": 7265.382283205427
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 299,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 22.536114736445946
+    },
+    {
+      "id": "348",
+      "name": "Hungary",
+      "alpha3": "HUN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "County",
+          "admUnitCount": 20,
+          "meanAreaSqKm": 4632.061958865971,
+          "minAreaSqKm": 523.265532728057,
+          "maxAreaSqKm": 8086.227925016795
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 198,
+          "meanAreaSqKm": 469.76145098816176,
+          "minAreaSqKm": 2.092264364431851,
+          "maxAreaSqKm": 1590.7069999062996
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3357,
+          "meanAreaSqKm": 27.70689261833227,
+          "minAreaSqKm": 0.0667089328832914,
+          "maxAreaSqKm": 482.9349912628695
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 3357,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0667089328832914
+    },
+    {
+      "id": "352",
+      "name": "Iceland",
+      "alpha3": "ISL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 11501.429179584278,
+          "minAreaSqKm": 882.3417964413527,
+          "maxAreaSqKm": 21561.564163145704
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 74,
+          "meanAreaSqKm": 1388.029451407937,
+          "minAreaSqKm": 2.1090084315639954,
+          "maxAreaSqKm": 8885.006117503512
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 74,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.1090084315639954
+    },
+    {
+      "id": "356",
+      "name": "India",
+      "alpha3": "IND",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "State / Union Territory",
+          "admUnitCount": 1,
+          "meanAreaSqKm": 3270089.9977705004,
+          "minAreaSqKm": 3270089.9977705004,
+          "maxAreaSqKm": 3270089.9977705004
+        },
+        {
+          "level": "ADM1",
+          "canonicalName": "State / Union Territory",
+          "admUnitCount": 36,
+          "meanAreaSqKm": 90835.83327140144,
+          "minAreaSqKm": 29.90223802178997,
+          "maxAreaSqKm": 342169.5548314523
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 736,
+          "meanAreaSqKm": 4449.7088250729,
+          "minAreaSqKm": 8.884805375450998,
+          "maxAreaSqKm": 85793.49211691093
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Sub-District",
+          "admUnitCount": 6836,
+          "meanAreaSqKm": 479.4245844821178,
+          "minAreaSqKm": 0.3113844124314663,
+          "maxAreaSqKm": 85051.81277335284
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "CD Block",
+          "admUnitCount": 7152,
+          "meanAreaSqKm": 457.7293627809244,
+          "minAreaSqKm": 0.5841936331032249,
+          "maxAreaSqKm": 116006.32658564966
+        },
+        {
+          "level": "ADM5",
+          "canonicalName": "village",
+          "admUnitCount": 649771,
+          "meanAreaSqKm": 4.0818502133205214,
+          "minAreaSqKm": 0.0003557499440373,
+          "maxAreaSqKm": 3883.543425473381
+        }
+      ],
+      "finestLevel": "ADM5",
+      "finestLevelUnitCount": 649771,
+      "cityPlausibleLevel": "ADM5",
+      "cityPlausibleLevelMinAreaSqKm": 0.0003557499440373
+    },
+    {
+      "id": "360",
+      "name": "Indonesia",
+      "alpha3": "IDN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 55592.12108359943,
+          "minAreaSqKm": 648.3546168210809,
+          "maxAreaSqKm": 315905.2418546028
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "regency, city",
+          "admUnitCount": 519,
+          "meanAreaSqKm": 3643.688352591525,
+          "minAreaSqKm": 10.783104526832211,
+          "maxAreaSqKm": 44014.03200064065
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 519,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 10.783104526832211
+    },
+    {
+      "id": "364",
+      "name": "Iran",
+      "alpha3": "IRN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "ostānhā / provinces",
+          "admUnitCount": 33,
+          "meanAreaSqKm": 49192.37213829091,
+          "minAreaSqKm": 229.69231625523784,
+          "maxAreaSqKm": 179206.6728361918
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Shahrestan",
+          "admUnitCount": 432,
+          "meanAreaSqKm": 3745.6637022574887,
+          "minAreaSqKm": 54.4770868489742,
+          "maxAreaSqKm": 55179.89194217936
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Bakhsh",
+          "admUnitCount": 1076,
+          "meanAreaSqKm": 1504.5185835670277,
+          "minAreaSqKm": 0.00005217271829243691,
+          "maxAreaSqKm": 29447.753613487715
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Dehestan",
+          "admUnitCount": 2815,
+          "meanAreaSqKm": 601.5998945261975,
+          "minAreaSqKm": 0.0248220691809532,
+          "maxAreaSqKm": 20350.277427646823
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 2815,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0248220691809532
+    },
+    {
+      "id": "368",
+      "name": "Iraq",
+      "alpha3": "IRQ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Governorates (muḥāfaẓāt)",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 24436.881824923606,
+          "minAreaSqKm": 912.922315016782,
+          "maxAreaSqKm": 137663.05217826166
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 101,
+          "meanAreaSqKm": 4319.5019996918045,
+          "minAreaSqKm": 78.62260253987807,
+          "maxAreaSqKm": 80044.61238698974
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 101,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 78.62260253987807
+    },
+    {
+      "id": "372",
+      "name": "Ireland",
+      "alpha3": "IRL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 17571.177595520654,
+          "minAreaSqKm": 8087.132444843897,
+          "maxAreaSqKm": 24113.84702484956
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Local Electoral Areas",
+          "admUnitCount": 166,
+          "meanAreaSqKm": 423.3940171726439,
+          "minAreaSqKm": 4.63255027095538,
+          "maxAreaSqKm": 1865.4581170398133
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 166,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 4.63255027095538
+    },
+    {
+      "id": "376",
+      "name": "Israel",
+      "alpha3": "ISR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 3484.4022022260856,
+          "minAreaSqKm": 174.97051114539423,
+          "maxAreaSqKm": 14532.902856753104
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Subdistrict",
+          "admUnitCount": 15,
+          "meanAreaSqKm": 1474.3497403040835,
+          "minAreaSqKm": 176.64148783572955,
+          "maxAreaSqKm": 13213.689217872685
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 15,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 176.64148783572955
+    },
+    {
+      "id": "380",
+      "name": "Italy",
+      "alpha3": "ITA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 60279.964134362745,
+          "minAreaSqKm": 49836.98871271305,
+          "maxAreaSqKm": 73266.553411257
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 20,
+          "meanAreaSqKm": 15069.991033590715,
+          "minAreaSqKm": 3262.1604255734537,
+          "maxAreaSqKm": 25718.86228324904
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 107,
+          "meanAreaSqKm": 2816.82075394219,
+          "minAreaSqKm": 211.95505366370023,
+          "maxAreaSqKm": 7697.709193186737
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7901,
+          "meanAreaSqKm": 38.14704729424307,
+          "minAreaSqKm": 0.1200421296789392,
+          "maxAreaSqKm": 1285.6569027367684
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 7901,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.1200421296789392
+    },
+    {
+      "id": "388",
+      "name": "Jamaica",
+      "alpha3": "JAM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "parish",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 783.5629988360308,
+          "minAreaSqKm": 16.464195866181417,
+          "maxAreaSqKm": 1248.0785571693002
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "community",
+          "admUnitCount": 827,
+          "meanAreaSqKm": 13.246628508375434,
+          "minAreaSqKm": 0.0985379150694868,
+          "maxAreaSqKm": 144.9266252383488
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 829,
+          "meanAreaSqKm": 13.218146882247712,
+          "minAreaSqKm": 0.0985379150694868,
+          "maxAreaSqKm": 144.9266252383488
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 829,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0985379150694868
+    },
+    {
+      "id": "392",
+      "name": "Japan",
+      "alpha3": "JPN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Prefectures",
+          "admUnitCount": 47,
+          "meanAreaSqKm": 7929.184708773243,
+          "minAreaSqKm": 1859.2203612996668,
+          "maxAreaSqKm": 78415.80363574364
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Subprefectures",
+          "admUnitCount": 1745,
+          "meanAreaSqKm": 213.59002581342293,
+          "minAreaSqKm": 0.0012239630761394,
+          "maxAreaSqKm": 2177.5557342044717
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 1745,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0012239630761394
+    },
+    {
+      "id": "400",
+      "name": "Jordan",
+      "alpha3": "JOR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Governorate",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 7450.94799387426,
+          "minAreaSqKm": 372.1770325282105,
+          "maxAreaSqKm": 33587.79101695538
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Nahias",
+          "admUnitCount": 52,
+          "meanAreaSqKm": 1714.478190307438,
+          "minAreaSqKm": 9.791300382779632,
+          "maxAreaSqKm": 30809.42620316186
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 52,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 9.791300382779632
+    },
+    {
+      "id": "398",
+      "name": "Kazakhstan",
+      "alpha3": "KAZ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 169167.78454378108,
+          "minAreaSqKm": 704.0259098358467,
+          "maxAreaSqKm": 427701.989370161
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 174,
+          "meanAreaSqKm": 15692.742931103465,
+          "minAreaSqKm": 282.7134404702427,
+          "maxAreaSqKm": 128664.20059359372
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 174,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 282.7134404702427
+    },
+    {
+      "id": "404",
+      "name": "Kenya",
+      "alpha3": "KEN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Counties",
+          "admUnitCount": 47,
+          "meanAreaSqKm": 12572.304483011549,
+          "minAreaSqKm": 226.4819538269366,
+          "maxAreaSqKm": 75925.18087289555
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Sub-Counties",
+          "admUnitCount": 290,
+          "meanAreaSqKm": 2039.914617052316,
+          "minAreaSqKm": 2.9028357640515274,
+          "maxAreaSqKm": 40557.27319192823
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Ward",
+          "admUnitCount": 1452,
+          "meanAreaSqKm": 404.6884542327409,
+          "minAreaSqKm": 0.1807395822291565,
+          "maxAreaSqKm": 12235.12747225996
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1452,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.1807395822291565
+    },
+    {
+      "id": "296",
+      "name": "Kiribati",
+      "alpha3": "KIR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3,
+          "meanAreaSqKm": 295.9381181521306,
+          "minAreaSqKm": 47.415476966716064,
+          "maxAreaSqKm": 591.1267548990664
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 24,
+          "meanAreaSqKm": 36.99226476901613,
+          "minAreaSqKm": 1.6739095346533015,
+          "maxAreaSqKm": 539.1421361844693
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 24,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.6739095346533015
+    },
+    {
+      "id": "414",
+      "name": "Kuwait",
+      "alpha3": "KWT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 2869.07790413018,
+          "minAreaSqKm": 83.4739348521946,
+          "maxAreaSqKm": 12231.46261603975
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Areas",
+          "admUnitCount": 138,
+          "meanAreaSqKm": 118.1685215366598,
+          "minAreaSqKm": 0.6365835635158938,
+          "maxAreaSqKm": 6739.427029112768
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 138,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.6365835635158938
+    },
+    {
+      "id": "417",
+      "name": "Kyrgyzstan",
+      "alpha3": "KGZ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 28380.70880742552,
+          "minAreaSqKm": 11447.135061185374,
+          "maxAreaSqKm": 49255.99937256761
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Raions",
+          "admUnitCount": 41,
+          "meanAreaSqKm": 4699.194676332116,
+          "minAreaSqKm": 32.9596014978366,
+          "maxAreaSqKm": 17065.28379443149
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 41,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 32.9596014978366
+    },
+    {
+      "id": "418",
+      "name": "Laos",
+      "alpha3": "LAO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 12762.9381267976,
+          "minAreaSqKm": 3562.439730169815,
+          "maxAreaSqKm": 21367.07085678718
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 148,
+          "meanAreaSqKm": 1556.791334140282,
+          "minAreaSqKm": 25.968117995865217,
+          "maxAreaSqKm": 4407.758261061421
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 148,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 25.968117995865217
+    },
+    {
+      "id": "428",
+      "name": "Latvia",
+      "alpha3": "LVA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Administratīvās teritorijas",
+          "admUnitCount": 43,
+          "meanAreaSqKm": 1502.181174122486,
+          "minAreaSqKm": 17.5047076043038,
+          "maxAreaSqKm": 3591.268002037837
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "pilsētās un pagastos",
+          "admUnitCount": 589,
+          "meanAreaSqKm": 109.6668768884074,
+          "minAreaSqKm": 2.0214234124237622,
+          "maxAreaSqKm": 558.6751193581338
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 589,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.0214234124237622
+    },
+    {
+      "id": "422",
+      "name": "Lebanon",
+      "alpha3": "LBN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Governorates / Muhafazah",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 1130.6689323412038,
+          "minAreaSqKm": 21.54096595604418,
+          "maxAreaSqKm": 2784.772045353371
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts (Aqdya)",
+          "admUnitCount": 26,
+          "meanAreaSqKm": 393.7965947247131,
+          "minAreaSqKm": 19.48628922945677,
+          "maxAreaSqKm": 2316.128586195049
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 26,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 19.48628922945677
+    },
+    {
+      "id": "426",
+      "name": "Lesotho",
+      "alpha3": "LSO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 3054.9233067164,
+          "minAreaSqKm": 1787.5092506520728,
+          "maxAreaSqKm": 4814.596364466926
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "constituencies",
+          "admUnitCount": 78,
+          "meanAreaSqKm": 391.8520029850621,
+          "minAreaSqKm": 30.62590179449525,
+          "maxAreaSqKm": 1326.4460884712546
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 78,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 30.62590179449525
+    },
+    {
+      "id": "430",
+      "name": "Liberia",
+      "alpha3": "LBR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Counties",
+          "admUnitCount": 15,
+          "meanAreaSqKm": 6389.652291287204,
+          "minAreaSqKm": 1857.0416981504704,
+          "maxAreaSqKm": 11426.626510571508
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 136,
+          "meanAreaSqKm": 704.7410615390297,
+          "minAreaSqKm": 20.04158352342567,
+          "maxAreaSqKm": 3127.305426980562
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 136,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 20.04158352342567
+    },
+    {
+      "id": "434",
+      "name": "Libya",
+      "alpha3": "LBY",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 73807.22403635607,
+          "minAreaSqKm": 1332.9090700842116,
+          "maxAreaSqKm": 422896.38485165854
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 22,
+      "cityPlausibleLevel": null,
+      "cityPlausibleLevelMinAreaSqKm": null
+    },
+    {
+      "id": "438",
+      "name": "Liechtenstein",
+      "alpha3": "LIE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 14.59273154426474,
+          "minAreaSqKm": 3.55599500084039,
+          "maxAreaSqKm": 29.74929226288738
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 11,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 3.55599500084039
+    },
+    {
+      "id": "440",
+      "name": "Lithuania",
+      "alpha3": "LTU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Counties",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 6489.78902748286,
+          "minAreaSqKm": 4349.272818651008,
+          "maxAreaSqKm": 9744.111134498466
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 60,
+          "meanAreaSqKm": 1081.6312186515258,
+          "minAreaSqKm": 39.41232331547432,
+          "maxAreaSqKm": 2207.0662026395826
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 544,
+          "meanAreaSqKm": 119.24687529553232,
+          "minAreaSqKm": 1.8371224249467808,
+          "maxAreaSqKm": 594.2460688368365
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 544,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.8371224249467808
+    },
+    {
+      "id": "442",
+      "name": "Luxembourg",
+      "alpha3": "LUX",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 216.08329973438163,
+          "minAreaSqKm": 78.4261127214714,
+          "maxAreaSqKm": 343.239819981984
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 105,
+          "meanAreaSqKm": 24.708289246416246,
+          "minAreaSqKm": 5.283482157928356,
+          "maxAreaSqKm": 113.80222238059076
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 102,
+          "meanAreaSqKm": 25.419986856936998,
+          "minAreaSqKm": 5.109326054638798,
+          "maxAreaSqKm": 113.79720116447253
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 102,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 5.109326054638798
+    },
+    {
+      "id": "450",
+      "name": "Madagascar",
+      "alpha3": "MDG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 26752.730064514828,
+          "minAreaSqKm": 6680.784876882134,
+          "maxAreaSqKm": 66106.55146881286
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "districts",
+          "admUnitCount": 119,
+          "meanAreaSqKm": 4976.408259536604,
+          "minAreaSqKm": 7.003626769699311,
+          "maxAreaSqKm": 17191.4532020254
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "commune",
+          "admUnitCount": 1579,
+          "meanAreaSqKm": 375.04280106704,
+          "minAreaSqKm": 1.2496779352958942,
+          "maxAreaSqKm": 4171.198067178656
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "fokontany",
+          "admUnitCount": 17465,
+          "meanAreaSqKm": 33.90739094672939,
+          "minAreaSqKm": 0.0081901216003474,
+          "maxAreaSqKm": 1651.957301266649
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 17465,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0081901216003474
+    },
+    {
+      "id": "454",
+      "name": "Malawi",
+      "alpha3": "MWI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3,
+          "meanAreaSqKm": 31940.20331720773,
+          "minAreaSqKm": 27188.77420314032,
+          "maxAreaSqKm": 35676.428384968895
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "district",
+          "admUnitCount": 28,
+          "meanAreaSqKm": 3420.63175027098,
+          "minAreaSqKm": 20.266547177513463,
+          "maxAreaSqKm": 10628.746778626144
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Traditional Authorities",
+          "admUnitCount": 245,
+          "meanAreaSqKm": 456.4773249496044,
+          "minAreaSqKm": 0.1017478625557305,
+          "maxAreaSqKm": 16118.707347709087
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 245,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.1017478625557305
+    },
+    {
+      "id": "458",
+      "name": "Malaysia",
+      "alpha3": "MYS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 20603.33696311561,
+          "minAreaSqKm": 48.583174352871495,
+          "maxAreaSqKm": 123769.30669347847
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 160,
+          "meanAreaSqKm": 2065.4564636626324,
+          "minAreaSqKm": 35.095067599104176,
+          "maxAreaSqKm": 16162.635611594958
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Mukim",
+          "admUnitCount": 1859,
+          "meanAreaSqKm": 137.7807378633406,
+          "minAreaSqKm": 0.0006132809847283,
+          "maxAreaSqKm": 4099.946416981701
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1859,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0006132809847283
+    },
+    {
+      "id": "462",
+      "name": "Maldives",
+      "alpha3": "MDV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 21,
+          "meanAreaSqKm": 1437.9390011452288,
+          "minAreaSqKm": 1.068819926088417,
+          "maxAreaSqKm": 7522.255125328531
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Administrative Atolls",
+          "admUnitCount": 21,
+          "meanAreaSqKm": 1080.644093784959,
+          "minAreaSqKm": 1.8633910627741312,
+          "maxAreaSqKm": 2300.782472008292
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 21,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.8633910627741312
+    },
+    {
+      "id": "466",
+      "name": "Mali",
+      "alpha3": "MLI",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region or Capital District",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 139367.46925829045,
+          "minAreaSqKm": 245.6744280437728,
+          "maxAreaSqKm": 499273.8882641518
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Cercle",
+          "admUnitCount": 50,
+          "meanAreaSqKm": 25086.144466492293,
+          "minAreaSqKm": 245.6744280437728,
+          "maxAreaSqKm": 330997.52438789874
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Commune",
+          "admUnitCount": 701,
+          "meanAreaSqKm": 1789.3113028881803,
+          "minAreaSqKm": 4.991974395778085,
+          "maxAreaSqKm": 292807.56199778133
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 701,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 4.991974395778085
+    },
+    {
+      "id": "470",
+      "name": "Malta",
+      "alpha3": "MLT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Local Council",
+          "admUnitCount": 68,
+          "meanAreaSqKm": 4.662342761050674,
+          "minAreaSqKm": 0.1412106741907485,
+          "maxAreaSqKm": 26.531624229993984
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 68,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 0.1412106741907485
+    },
+    {
+      "id": "584",
+      "name": "Marshall Islands",
+      "alpha3": "MHL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 24,
+          "meanAreaSqKm": 271.7274708301637,
+          "minAreaSqKm": 1.0450133487041195,
+          "maxAreaSqKm": 3302.569408363614
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 24,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 1.0450133487041195
+    },
+    {
+      "id": "478",
+      "name": "Mauritania",
+      "alpha3": "MRT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Wilya",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 80090.18049627193,
+          "minAreaSqKm": 1497.430524380333,
+          "maxAreaSqKm": 261546.74036680235
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Mauritania",
+          "admUnitCount": 57,
+          "meanAreaSqKm": 18159.92073761998,
+          "minAreaSqKm": 16.63887240660256,
+          "maxAreaSqKm": 167265.16794391573
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 57,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 16.63887240660256
+    },
+    {
+      "id": "480",
+      "name": "Mauritius",
+      "alpha3": "MUS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts and Outer Islands of Mauritius",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 166.49278034687424,
+          "minAreaSqKm": 1.317863020288052,
+          "maxAreaSqKm": 296.9333955527809
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 12,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 1.317863020288052
+    },
+    {
+      "id": "484",
+      "name": "Mexico",
+      "alpha3": "MEX",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 32,
+          "meanAreaSqKm": 60938.19393611162,
+          "minAreaSqKm": 1494.593632529444,
+          "maxAreaSqKm": 247393.61875173447
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "municipios",
+          "admUnitCount": 2457,
+          "meanAreaSqKm": 799.8571740550497,
+          "minAreaSqKm": 2.212457344637895,
+          "maxAreaSqKm": 53122.737100883074
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 2457,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.212457344637895
+    },
+    {
+      "id": "583",
+      "name": "Micronesia",
+      "alpha3": "FSM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "State",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 171.9903228273526,
+          "minAreaSqKm": 106.8067656013694,
+          "maxAreaSqKm": 364.4798016277505
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 75,
+          "meanAreaSqKm": 9.17281721780657,
+          "minAreaSqKm": 0.1033033158842034,
+          "maxAreaSqKm": 118.45231308360776
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 75,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.1033033158842034
+    },
+    {
+      "id": "498",
+      "name": "Moldova",
+      "alpha3": "MDA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Districts",
+          "admUnitCount": 37,
+          "meanAreaSqKm": 915.0265669833929,
+          "minAreaSqKm": 38.04780634894745,
+          "maxAreaSqKm": 3348.67497812274
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 37,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 38.04780634894745
+    },
+    {
+      "id": "492",
+      "name": "Monaco",
+      "alpha3": "MCO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 1,
+          "meanAreaSqKm": 2.030257870434085,
+          "minAreaSqKm": 2.030257870434085,
+          "maxAreaSqKm": 2.030257870434085
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 0.2596726380583183,
+          "minAreaSqKm": 0.0202436541192816,
+          "maxAreaSqKm": 0.523051514593271
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 9,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0202436541192816
+    },
+    {
+      "id": "496",
+      "name": "Mongolia",
+      "alpha3": "MNG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 71145.17608811887,
+          "minAreaSqKm": 735.7180941034261,
+          "maxAreaSqKm": 164138.67769135704
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "soum, düüregs",
+          "admUnitCount": 339,
+          "meanAreaSqKm": 4616.155502934506,
+          "minAreaSqKm": 19.34708820248096,
+          "maxAreaSqKm": 28012.58055640852
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 339,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 19.34708820248096
+    },
+    {
+      "id": "499",
+      "name": "Montenegro",
+      "alpha3": "MNE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 23,
+          "meanAreaSqKm": 603.7397541318121,
+          "minAreaSqKm": 42.39362713280579,
+          "maxAreaSqKm": 2022.4618912747228
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 23,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 42.39362713280579
+    },
+    {
+      "id": "504",
+      "name": "Morocco",
+      "alpha3": "MAR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Region",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 56896.29565050628,
+          "minAreaSqKm": 16165.644894565456,
+          "maxAreaSqKm": 144152.47515231348
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 75,
+          "meanAreaSqKm": 9104.15301469802,
+          "minAreaSqKm": 113.15078175000626,
+          "maxAreaSqKm": 67766.2024069419
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 75,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 113.15078175000626
+    },
+    {
+      "id": "508",
+      "name": "Mozambique",
+      "alpha3": "MOZ",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 78726.92730770465,
+          "minAreaSqKm": 23396.98993312465,
+          "maxAreaSqKm": 129508.69028649318
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "districts",
+          "admUnitCount": 159,
+          "meanAreaSqKm": 4950.221477548264,
+          "minAreaSqKm": 8.392365395745616,
+          "maxAreaSqKm": 18015.45049760738
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Administrative Postos Administrativos",
+          "admUnitCount": 411,
+          "meanAreaSqKm": 1915.0491847449632,
+          "minAreaSqKm": 8.392365395745616,
+          "maxAreaSqKm": 12079.678956943246
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 411,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 8.392365395745616
+    },
+    {
+      "id": "104",
+      "name": "Myanmar",
+      "alpha3": "MMR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "State",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 47753.96098710685,
+          "minAreaSqKm": 9788.12537428324,
+          "maxAreaSqKm": 155718.5920445803
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 74,
+          "meanAreaSqKm": 9034.533159750825,
+          "minAreaSqKm": 71.57984423753628,
+          "maxAreaSqKm": 35019.46205396511
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Township",
+          "admUnitCount": 330,
+          "meanAreaSqKm": 2025.9256176348608,
+          "minAreaSqKm": 0.6034277824178252,
+          "maxAreaSqKm": 12340.049668821144
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 330,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.6034277824178252
+    },
+    {
+      "id": "516",
+      "name": "Namibia",
+      "alpha3": "NAM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Administrative Division",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 58765.24757842941,
+          "minAreaSqKm": 0.0003255359651704,
+          "maxAreaSqKm": 160194.1730401284
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 109,
+          "meanAreaSqKm": 7561.679407826968,
+          "minAreaSqKm": 0.4258694955638958,
+          "maxAreaSqKm": 50456.5518714087
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 109,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.4258694955638958
+    },
+    {
+      "id": "520",
+      "name": "Nauru",
+      "alpha3": "NRU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "District",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 1.5322481024254864,
+          "minAreaSqKm": 0.3892124509077251,
+          "maxAreaSqKm": 3.1712763436477567
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 14,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 0.3892124509077251
+    },
+    {
+      "id": "524",
+      "name": "Nepal",
+      "alpha3": "NPL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Provinces",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 21093.21436464336,
+          "minAreaSqKm": 9590.805125292529,
+          "maxAreaSqKm": 30719.585096957897
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 75,
+          "meanAreaSqKm": 1966.362770426933,
+          "minAreaSqKm": 97.60217099199502,
+          "maxAreaSqKm": 8109.827432086035
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Nagarpalika and Gāunpālikā",
+          "admUnitCount": 774,
+          "meanAreaSqKm": 190.80874524476377,
+          "minAreaSqKm": 1.331494431375585,
+          "maxAreaSqKm": 2454.308259300823
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 774,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.331494431375585
+    },
+    {
+      "id": "528",
+      "name": "Netherlands",
+      "alpha3": "NLD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 12,
+          "meanAreaSqKm": 3462.168764951913,
+          "minAreaSqKm": 1560.3231213481877,
+          "maxAreaSqKm": 5753.310673670922
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 344,
+          "meanAreaSqKm": 120.77332900995052,
+          "minAreaSqKm": 7.84024043464739,
+          "maxAreaSqKm": 907.9369996952933
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 344,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 7.84024043464739
+    },
+    {
+      "id": "554",
+      "name": "New Zealand",
+      "alpha3": "NZL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 15758.707111575306,
+          "minAreaSqKm": 424.7397143648343,
+          "maxAreaSqKm": 45220.48879807705
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Territorial Authorities",
+          "admUnitCount": 88,
+          "meanAreaSqKm": 3044.474806572327,
+          "minAreaSqKm": 18.721838253676097,
+          "maxAreaSqKm": 30103.272132393977
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 245,
+          "meanAreaSqKm": 1093.461309782776,
+          "minAreaSqKm": 3.4717973109200733,
+          "maxAreaSqKm": 17860.168740795492
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 245,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 3.4717973109200733
+    },
+    {
+      "id": "558",
+      "name": "Nicaragua",
+      "alpha3": "NIC",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Departamentos",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 7558.290929709671,
+          "minAreaSqKm": 634.0757009252434,
+          "maxAreaSqKm": 32675.22489043648
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 153,
+          "meanAreaSqKm": 839.8095378186543,
+          "minAreaSqKm": 2.9041709382601693,
+          "maxAreaSqKm": 8901.75321366469
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 153,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.9041709382601693
+    },
+    {
+      "id": "562",
+      "name": "Niger",
+      "alpha3": "NER",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 196667.5215514008,
+          "minAreaSqKm": 472.50577756204274,
+          "maxAreaSqKm": 723319.4258295548
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Department",
+          "admUnitCount": 67,
+          "meanAreaSqKm": 17606.76738562399,
+          "minAreaSqKm": 75.96967788972725,
+          "maxAreaSqKm": 275873.2252659572
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Communes",
+          "admUnitCount": 266,
+          "meanAreaSqKm": 4438.058659204925,
+          "minAreaSqKm": 8.447783253432585,
+          "maxAreaSqKm": 159621.59995797512
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 266,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 8.447783253432585
+    },
+    {
+      "id": "566",
+      "name": "Nigeria",
+      "alpha3": "NGA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "State",
+          "admUnitCount": 37,
+          "meanAreaSqKm": 24668.1687059566,
+          "minAreaSqKm": 3762.6170922909178,
+          "maxAreaSqKm": 72152.19743085669
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Local Government Areas",
+          "admUnitCount": 774,
+          "meanAreaSqKm": 1178.956986535945,
+          "minAreaSqKm": 5.048226126834884,
+          "maxAreaSqKm": 10752.279189794415
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 774,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 5.048226126834884
+    },
+    {
+      "id": "408",
+      "name": "North Korea",
+      "alpha3": "PRK",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Provinces",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 11142.574623018378,
+          "minAreaSqKm": 1135.2946726576508,
+          "maxAreaSqKm": 18682.97298372759
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "county, city, special city",
+          "admUnitCount": 179,
+          "meanAreaSqKm": 684.7392226435875,
+          "minAreaSqKm": 6.9418143538981845,
+          "maxAreaSqKm": 1978.4046321706307
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 179,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 6.9418143538981845
+    },
+    {
+      "id": "807",
+      "name": "North Macedonia",
+      "alpha3": "MKD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Statistical Region",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 3179.2685382082327,
+          "minAreaSqKm": 1813.6234402200816,
+          "maxAreaSqKm": 4909.859326438735
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Opštini",
+          "admUnitCount": 84,
+          "meanAreaSqKm": 297.0581538378566,
+          "minAreaSqKm": 3.482738601644075,
+          "maxAreaSqKm": 1198.771617530344
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 84,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.482738601644075
+    },
+    {
+      "id": "578",
+      "name": "Norway",
+      "alpha3": "NOR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Fylke",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 29370.64031978457,
+          "minAreaSqKm": 451.3391317990712,
+          "maxAreaSqKm": 74888.46488541592
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 431,
+          "meanAreaSqKm": 749.5968603036234,
+          "minAreaSqKm": 0.0032390110016607,
+          "maxAreaSqKm": 9707.1425038178
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 431,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0032390110016607
+    },
+    {
+      "id": "512",
+      "name": "Oman",
+      "alpha3": "OMN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 44022.60822803652,
+          "minAreaSqKm": 4051.516608767826,
+          "maxAreaSqKm": 99169.85606521052
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Wilayaf",
+          "admUnitCount": 61,
+          "meanAreaSqKm": 5055.849365399672,
+          "minAreaSqKm": 77.72399130202494,
+          "maxAreaSqKm": 53244.08598565943
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 61,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 77.72399130202494
+    },
+    {
+      "id": "586",
+      "name": "Pakistan",
+      "alpha3": "PAK",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 125151.31442103352,
+          "minAreaSqKm": 892.940727303033,
+          "maxAreaSqKm": 352520.8735483109
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 126,
+          "meanAreaSqKm": 6952.850798785284,
+          "minAreaSqKm": 727.0270127206826,
+          "maxAreaSqKm": 47392.7544668222
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Tehsil",
+          "admUnitCount": 554,
+          "meanAreaSqKm": 1770.8806029647697,
+          "minAreaSqKm": 4.997719409277938,
+          "maxAreaSqKm": 104689.58637299236
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 554,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 4.997719409277938
+    },
+    {
+      "id": "585",
+      "name": "Palau",
+      "alpha3": "PLW",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 72.54301980177901,
+          "minAreaSqKm": 1.2028310166368026,
+          "maxAreaSqKm": 720.9921508926587
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Hamlets",
+          "admUnitCount": 77,
+          "meanAreaSqKm": 5.918016185322255,
+          "minAreaSqKm": 0.1155967254733696,
+          "maxAreaSqKm": 54.46504074779281
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 77,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.1155967254733696
+    },
+    {
+      "id": "591",
+      "name": "Panama",
+      "alpha3": "PAN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 5753.633868996486,
+          "minAreaSqKm": 2335.5559864219917,
+          "maxAreaSqKm": 12037.280086541565
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 76,
+          "meanAreaSqKm": 976.917134363945,
+          "minAreaSqKm": 11.773005107144654,
+          "maxAreaSqKm": 7065.803329456863
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 633,
+          "meanAreaSqKm": 117.26382982979126,
+          "minAreaSqKm": 0.000008481885794836598,
+          "maxAreaSqKm": 2065.8657688740573
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 633,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.000008481885794836598
+    },
+    {
+      "id": "598",
+      "name": "Papua New Guinea",
+      "alpha3": "PNG",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Provinces",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 20997.141714506557,
+          "minAreaSqKm": 266.47296803687,
+          "maxAreaSqKm": 98135.88771348834
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 87,
+          "meanAreaSqKm": 5309.622042748792,
+          "minAreaSqKm": 103.27076644261405,
+          "maxAreaSqKm": 51568.30904550783
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Local Government Areas",
+          "admUnitCount": 326,
+          "meanAreaSqKm": 1416.985023678358,
+          "minAreaSqKm": 1.103298573041862,
+          "maxAreaSqKm": 23143.93220939014
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 326,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 1.103298573041862
+    },
+    {
+      "id": "600",
+      "name": "Paraguay",
+      "alpha3": "PRY",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 22203.67738534146,
+          "minAreaSqKm": 128.41900666425525,
+          "maxAreaSqKm": 88290.2319391088
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 247,
+          "meanAreaSqKm": 1618.081752776855,
+          "minAreaSqKm": 0.1522747562155951,
+          "maxAreaSqKm": 72210.59695396265
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 247,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.1522747562155951
+    },
+    {
+      "id": "604",
+      "name": "Peru",
+      "alpha3": "PER",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 26,
+          "meanAreaSqKm": 49679.29504564578,
+          "minAreaSqKm": 174.2799036402724,
+          "maxAreaSqKm": 375744.9949385629
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Provinces",
+          "admUnitCount": 196,
+          "meanAreaSqKm": 6565.323286974201,
+          "minAreaSqKm": 140.34299231434966,
+          "maxAreaSqKm": 76186.60153563281
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 196,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 140.34299231434966
+    },
+    {
+      "id": "608",
+      "name": "Philippines",
+      "alpha3": "PHL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 17318.25042585244,
+          "minAreaSqKm": 598.6501027731671,
+          "maxAreaSqKm": 26797.817616770997
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Provinces",
+          "admUnitCount": 87,
+          "meanAreaSqKm": 3382.0880945917124,
+          "minAreaSqKm": 41.96317479295767,
+          "maxAreaSqKm": 14394.724884145717
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 1647,
+          "meanAreaSqKm": 178.20354862474807,
+          "minAreaSqKm": 0.3998143958855597,
+          "maxAreaSqKm": 2341.425972126926
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1647,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.3998143958855597
+    },
+    {
+      "id": "616",
+      "name": "Poland",
+      "alpha3": "POL",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 16,
+          "meanAreaSqKm": 19499.347265392564,
+          "minAreaSqKm": 9411.949189285586,
+          "maxAreaSqKm": 35558.60987967451
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 380,
+          "meanAreaSqKm": 821.0251166404831,
+          "minAreaSqKm": 13.346630613817348,
+          "maxAreaSqKm": 2976.537572922348
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Gminas",
+          "admUnitCount": 2480,
+          "meanAreaSqKm": 125.88153397005216,
+          "minAreaSqKm": 3.318258079733349,
+          "maxAreaSqKm": 634.4292735553308
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2480,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 3.318258079733349
+    },
+    {
+      "id": "620",
+      "name": "Portugal",
+      "alpha3": "PRT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 20,
+          "meanAreaSqKm": 4610.995303524501,
+          "minAreaSqKm": 801.479633156699,
+          "maxAreaSqKm": 10262.904725864351
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "gbOpen",
+          "admUnitCount": 311,
+          "meanAreaSqKm": 295.0428028437933,
+          "minAreaSqKm": 7.431201915465574,
+          "maxAreaSqKm": 1655.9109127795937
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Freguesias",
+          "admUnitCount": 2905,
+          "meanAreaSqKm": 31.745234019133218,
+          "minAreaSqKm": 0.2037349770713918,
+          "maxAreaSqKm": 888.3256592915588
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2905,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.2037349770713918
+    },
+    {
+      "id": "634",
+      "name": "Qatar",
+      "alpha3": "QAT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 1444.3203289535477,
+          "minAreaSqKm": 169.34207235534345,
+          "maxAreaSqKm": 3322.242716476389
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 79,
+          "meanAreaSqKm": 146.26031092011178,
+          "minAreaSqKm": 0.233377152031908,
+          "maxAreaSqKm": 898.8649473013777
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 79,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.233377152031908
+    },
+    {
+      "id": "642",
+      "name": "Romania",
+      "alpha3": "ROU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Counties",
+          "admUnitCount": 42,
+          "meanAreaSqKm": 5675.6540731573405,
+          "minAreaSqKm": 235.50474389463608,
+          "maxAreaSqKm": 8698.699037583208
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "municipalities",
+          "admUnitCount": 3235,
+          "meanAreaSqKm": 73.6920219545561,
+          "minAreaSqKm": 0.0042189523952101,
+          "maxAreaSqKm": 813.8439869098141
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 3235,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0042189523952101
+    },
+    {
+      "id": "643",
+      "name": "Russia",
+      "alpha3": "RUS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 83,
+          "meanAreaSqKm": 203738.58175174077,
+          "minAreaSqKm": 1440.8769606438254,
+          "maxAreaSqKm": 3069596.454597766
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Raion",
+          "admUnitCount": 2328,
+          "meanAreaSqKm": 7261.973032138653,
+          "minAreaSqKm": 3.086476702259405,
+          "maxAreaSqKm": 844741.4081495039
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 2328,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.086476702259405
+    },
+    {
+      "id": "646",
+      "name": "Rwanda",
+      "alpha3": "RWA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 5060.879881636201,
+          "minAreaSqKm": 729.3876768129107,
+          "maxAreaSqKm": 9466.21146170837
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 30,
+          "meanAreaSqKm": 843.8799773007969,
+          "minAreaSqKm": 132.4628382962791,
+          "maxAreaSqKm": 1931.9231599735836
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 416,
+          "meanAreaSqKm": 58.4281910693347,
+          "minAreaSqKm": 1.0268185499121034,
+          "maxAreaSqKm": 647.8533372631898
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2148,
+          "meanAreaSqKm": 11.315701808595946,
+          "minAreaSqKm": 0.1234839503140786,
+          "maxAreaSqKm": 470.5290657043948
+        },
+        {
+          "level": "ADM5",
+          "canonicalName": "Villages",
+          "admUnitCount": 14815,
+          "meanAreaSqKm": 1.6397397339408557,
+          "minAreaSqKm": 0.006017891662508,
+          "maxAreaSqKm": 444.5519698027297
+        }
+      ],
+      "finestLevel": "ADM5",
+      "finestLevelUnitCount": 14815,
+      "cityPlausibleLevel": "ADM5",
+      "cityPlausibleLevelMinAreaSqKm": 0.006017891662508
+    },
+    {
+      "id": "659",
+      "name": "Saint Kitts and Nevis",
+      "alpha3": "KNA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "parish",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 18.72372517583179,
+          "minAreaSqKm": 3.549280207214617,
+          "maxAreaSqKm": 31.250162431324537
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 14,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 3.549280207214617
+    },
+    {
+      "id": "662",
+      "name": "Saint Lucia",
+      "alpha3": "LCA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "District",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 60.98378974034208,
+          "minAreaSqKm": 25.31011824972413,
+          "maxAreaSqKm": 108.98324445890609
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Communities",
+          "admUnitCount": 547,
+          "meanAreaSqKm": 1.1024208841751044,
+          "minAreaSqKm": 0.0086091602952137,
+          "maxAreaSqKm": 50.17358946556388
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 547,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0086091602952137
+    },
+    {
+      "id": "670",
+      "name": "Saint Vincent and the Grenadines",
+      "alpha3": "VCT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Parishes",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 64.56258896021889,
+          "minAreaSqKm": 30.892906288689037,
+          "maxAreaSqKm": 139.41566779409263
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 6,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 30.892906288689037
+    },
+    {
+      "id": "882",
+      "name": "Samoa",
+      "alpha3": "WSM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 11,
+          "meanAreaSqKm": 257.7129816422354,
+          "minAreaSqKm": 22.800186350921724,
+          "maxAreaSqKm": 538.1853095479607
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 43,
+          "meanAreaSqKm": 65.8935324253815,
+          "minAreaSqKm": 5.538893437005729,
+          "maxAreaSqKm": 290.23152411633873
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 43,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 5.538893437005729
+    },
+    {
+      "id": "674",
+      "name": "San Marino",
+      "alpha3": "SMR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 6.791172644085596,
+          "minAreaSqKm": 3.0948079408960067,
+          "maxAreaSqKm": 10.043561382200693
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 9,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 3.0948079408960067
+    },
+    {
+      "id": "678",
+      "name": "Sao Tome and Principe",
+      "alpha3": "STP",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2,
+          "meanAreaSqKm": 495.0837705238888,
+          "minAreaSqKm": 138.75404849962442,
+          "maxAreaSqKm": 851.413492548153
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 141.4376582270542,
+          "minAreaSqKm": 22.35722372013748,
+          "maxAreaSqKm": 264.0359547871099
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 7,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 22.35722372013748
+    },
+    {
+      "id": "682",
+      "name": "Saudi Arabia",
+      "alpha3": "SAU",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 148083.89198584243,
+          "minAreaSqKm": 10316.04593769633,
+          "maxAreaSqKm": 558142.3071342683
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Governorate",
+          "admUnitCount": 147,
+          "meanAreaSqKm": 13081.749077547644,
+          "minAreaSqKm": 128.7548820013272,
+          "maxAreaSqKm": 241186.05907332103
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 147,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 128.7548820013272
+    },
+    {
+      "id": "686",
+      "name": "Senegal",
+      "alpha3": "SEN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "region",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 14049.370925483614,
+          "minAreaSqKm": 544.0479780089397,
+          "maxAreaSqKm": 42624.70879887685
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "department",
+          "admUnitCount": 45,
+          "meanAreaSqKm": 4370.915399039344,
+          "minAreaSqKm": 14.125066345777142,
+          "maxAreaSqKm": 16020.343951846076
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "arrondissement",
+          "admUnitCount": 121,
+          "meanAreaSqKm": 1625.5470492295096,
+          "minAreaSqKm": 14.125066345777142,
+          "maxAreaSqKm": 14410.773821716692
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 121,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 14.125066345777142
+    },
+    {
+      "id": "688",
+      "name": "Serbia",
+      "alpha3": "SRB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "district",
+          "admUnitCount": 25,
+          "meanAreaSqKm": 3103.842177256312,
+          "minAreaSqKm": 1243.0058041545296,
+          "maxAreaSqKm": 6141.593228656912
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 145,
+          "meanAreaSqKm": 535.2099717714325,
+          "minAreaSqKm": 50.793532423179975,
+          "maxAreaSqKm": 3242.631777981976
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 145,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 50.793532423179975
+    },
+    {
+      "id": "690",
+      "name": "Seychelles",
+      "alpha3": "SYC",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 26,
+          "meanAreaSqKm": 17.78589367147985,
+          "minAreaSqKm": 1.1538728812720098,
+          "maxAreaSqKm": 216.16786244429036
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Regions",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 56.00085551281266,
+          "minAreaSqKm": 9.312328191366891,
+          "maxAreaSqKm": 237.79088644723572
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Districts",
+          "admUnitCount": 27,
+          "meanAreaSqKm": 16.592846077870618,
+          "minAreaSqKm": 0.9409629329834102,
+          "maxAreaSqKm": 237.79088644723572
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 27,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.9409629329834102
+    },
+    {
+      "id": "694",
+      "name": "Sierra Leone",
+      "alpha3": "SLE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 18153.181353531523,
+          "minAreaSqKm": 686.9301518900476,
+          "maxAreaSqKm": 36061.404099094194
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 5186.626830693227,
+          "minAreaSqKm": 73.91079771482558,
+          "maxAreaSqKm": 12361.77381027729
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Chiefdoms",
+          "admUnitCount": 165,
+          "meanAreaSqKm": 440.0770894274885,
+          "minAreaSqKm": 0.7931496407197292,
+          "maxAreaSqKm": 2458.9026529407324
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Counties",
+          "admUnitCount": 1322,
+          "meanAreaSqKm": 54.92641745944864,
+          "minAreaSqKm": 0.0997036485529905,
+          "maxAreaSqKm": 832.9179858996663
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 1322,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0997036485529905
+    },
+    {
+      "id": "702",
+      "name": "Singapore",
+      "alpha3": "SGP",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 156.38829290818552,
+          "minAreaSqKm": 112.96906972450329,
+          "maxAreaSqKm": 257.1086755654216
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Divisions",
+          "admUnitCount": 55,
+          "meanAreaSqKm": 14.217117536614486,
+          "minAreaSqKm": 0.8302730121694896,
+          "maxAreaSqKm": 69.74784482405144
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 55,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.8302730121694896
+    },
+    {
+      "id": "703",
+      "name": "Slovakia",
+      "alpha3": "SVK",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 6128.135705899633,
+          "minAreaSqKm": 2051.674087268201,
+          "maxAreaSqKm": 9454.538531003898
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Okres",
+          "admUnitCount": 79,
+          "meanAreaSqKm": 620.5707190435943,
+          "minAreaSqKm": 9.587809011148822,
+          "maxAreaSqKm": 1550.8919879480698
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2941,
+          "meanAreaSqKm": 16.69352501797953,
+          "minAreaSqKm": 0.3547324792575648,
+          "maxAreaSqKm": 359.98365342066
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3695,
+          "meanAreaSqKm": 13.444208963217063,
+          "minAreaSqKm": 0.0066650459046554,
+          "maxAreaSqKm": 193.63836334261217
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 3695,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0066650459046554
+    },
+    {
+      "id": "705",
+      "name": "Slovenia",
+      "alpha3": "SVN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Macroregions",
+          "admUnitCount": 2,
+          "meanAreaSqKm": 10072.95983054131,
+          "minAreaSqKm": 7840.780660510829,
+          "maxAreaSqKm": 12305.13900057179
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 213,
+          "meanAreaSqKm": 96.26446328748554,
+          "minAreaSqKm": 6.939716181388344,
+          "maxAreaSqKm": 555.4978432919988
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 213,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 6.939716181388344
+    },
+    {
+      "id": "090",
+      "name": "Solomon Islands",
+      "alpha3": "SLB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 2719.8825103342124,
+          "minAreaSqKm": 30.301411353243477,
+          "maxAreaSqKm": 5316.590404722419
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Constituency",
+          "admUnitCount": 50,
+          "meanAreaSqKm": 562.1419947829684,
+          "minAreaSqKm": 5.821306818404138,
+          "maxAreaSqKm": 2710.8403108561915
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Wards",
+          "admUnitCount": 183,
+          "meanAreaSqKm": 153.59070885859586,
+          "minAreaSqKm": 0.0715121332847449,
+          "maxAreaSqKm": 1055.51856836471
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Wards",
+          "admUnitCount": 1344,
+          "meanAreaSqKm": 20.91302062583556,
+          "minAreaSqKm": 0.00427040109344,
+          "maxAreaSqKm": 385.0212079619941
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 1344,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.00427040109344
+    },
+    {
+      "id": "706",
+      "name": "Somalia",
+      "alpha3": "SOM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 18,
+          "meanAreaSqKm": 35297.42288239506,
+          "minAreaSqKm": 208.65864728325303,
+          "maxAreaSqKm": 68225.8504587327
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 118,
+          "meanAreaSqKm": 5406.349843008743,
+          "minAreaSqKm": 0.5797005437899856,
+          "maxAreaSqKm": 22860.11334943507
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 118,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.5797005437899856
+    },
+    {
+      "id": "710",
+      "name": "South Africa",
+      "alpha3": "ZAF",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 135645.92536054473,
+          "minAreaSqKm": 18178.30810222541,
+          "maxAreaSqKm": 372889.37837173446
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District municipality",
+          "admUnitCount": 52,
+          "meanAreaSqKm": 23477.17938932505,
+          "minAreaSqKm": 1644.9310936000022,
+          "maxAreaSqKm": 126836.33319419772
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Local municipality",
+          "admUnitCount": 213,
+          "meanAreaSqKm": 5731.517972980774,
+          "minAreaSqKm": 545.4813798711891,
+          "maxAreaSqKm": 44231.22640471353
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Ward",
+          "admUnitCount": 4392,
+          "meanAreaSqKm": 277.9629618043954,
+          "minAreaSqKm": 0.1546636289370276,
+          "maxAreaSqKm": 27812.25153981452
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 4392,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.1546636289370276
+    },
+    {
+      "id": "410",
+      "name": "South Korea",
+      "alpha3": "KOR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 17,
+          "meanAreaSqKm": 5796.700453996686,
+          "minAreaSqKm": 133.0237106818151,
+          "maxAreaSqKm": 19171.038611090447
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Si, Kun (districts and city districts)",
+          "admUnitCount": 229,
+          "meanAreaSqKm": 435.4374563849334,
+          "minAreaSqKm": 4.264345881358635,
+          "maxAreaSqKm": 1835.2861469168276
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "submunicipalities",
+          "admUnitCount": 3504,
+          "meanAreaSqKm": 28.7295407187905,
+          "minAreaSqKm": 0.1655839848288847,
+          "maxAreaSqKm": 448.214915375095
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 3504,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.1655839848288847
+    },
+    {
+      "id": "728",
+      "name": "South Sudan",
+      "alpha3": "SSD",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "states",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 63249.48763746403,
+          "minAreaSqKm": 30851.927630393435,
+          "maxAreaSqKm": 121974.14263453314
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "counties",
+          "admUnitCount": 78,
+          "meanAreaSqKm": 8108.908671469751,
+          "minAreaSqKm": 754.6821906864726,
+          "maxAreaSqKm": 62018.647583524194
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 78,
+      "cityPlausibleLevel": null,
+      "cityPlausibleLevelMinAreaSqKm": null
+    },
+    {
+      "id": "724",
+      "name": "Spain",
+      "alpha3": "ESP",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 19,
+          "meanAreaSqKm": 26632.598556382167,
+          "minAreaSqKm": 14.24279949285315,
+          "maxAreaSqKm": 94223.1523290963
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Province",
+          "admUnitCount": 52,
+          "meanAreaSqKm": 9730.175666358124,
+          "minAreaSqKm": 13.251093712934964,
+          "maxAreaSqKm": 21768.27265682082
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "MUNICIPIOS",
+          "admUnitCount": 8205,
+          "meanAreaSqKm": 61.67207580798527,
+          "minAreaSqKm": 0.0258163567687757,
+          "maxAreaSqKm": 1750.229151845789
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 8205,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0258163567687757
+    },
+    {
+      "id": "144",
+      "name": "Sri Lanka",
+      "alpha3": "LKA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 9,
+          "meanAreaSqKm": 7340.989240936138,
+          "minAreaSqKm": 3712.965058663033,
+          "maxAreaSqKm": 10642.237141987567
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 25,
+          "meanAreaSqKm": 2642.7561269285243,
+          "minAreaSqKm": 683.3785382327816,
+          "maxAreaSqKm": 7202.982372416755
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Divisional Secretariat",
+          "admUnitCount": 330,
+          "meanAreaSqKm": 200.05811760305545,
+          "minAreaSqKm": 1.81347943657487,
+          "maxAreaSqKm": 1060.132508597628
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Grama Niladhari Divisions",
+          "admUnitCount": 14044,
+          "meanAreaSqKm": 4.700881430433514,
+          "minAreaSqKm": 0.0087983981815527,
+          "maxAreaSqKm": 518.8410908461041
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 14044,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 0.0087983981815527
+    },
+    {
+      "id": "729",
+      "name": "Sudan",
+      "alpha3": "SDN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Wilayat/State",
+          "admUnitCount": 19,
+          "meanAreaSqKm": 98501.45109359258,
+          "minAreaSqKm": 10536.838245615125,
+          "maxAreaSqKm": 364120.22127410886
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 189,
+          "meanAreaSqKm": 9902.262270280562,
+          "minAreaSqKm": 118.59216683910309,
+          "maxAreaSqKm": 194634.1666803108
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 189,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 118.59216683910309
+    },
+    {
+      "id": "740",
+      "name": "Suriname",
+      "alpha3": "SUR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 14536.226643892314,
+          "minAreaSqKm": 177.28279843105008,
+          "maxAreaSqKm": 111937.92090260133
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Ressorten",
+          "admUnitCount": 62,
+          "meanAreaSqKm": 2319.6282870804507,
+          "minAreaSqKm": 3.483380625533828,
+          "maxAreaSqKm": 37696.18907412537
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 62,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.483380625533828
+    },
+    {
+      "id": "752",
+      "name": "Sweden",
+      "alpha3": "SWE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "County",
+          "admUnitCount": 21,
+          "meanAreaSqKm": 21353.424869351256,
+          "minAreaSqKm": 3120.3195140221574,
+          "maxAreaSqKm": 105655.15437793694
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipality",
+          "admUnitCount": 290,
+          "meanAreaSqKm": 1549.6585772432109,
+          "minAreaSqKm": 7.622279660450457,
+          "maxAreaSqKm": 20479.796377862676
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2652,
+          "meanAreaSqKm": 175.43392398514584,
+          "minAreaSqKm": 0.0952266013387267,
+          "maxAreaSqKm": 14694.421057399257
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2652,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0952266013387267
+    },
+    {
+      "id": "756",
+      "name": "Switzerland",
+      "alpha3": "CHE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Canton",
+          "admUnitCount": 26,
+          "meanAreaSqKm": 1587.978682627391,
+          "minAreaSqKm": 36.94896374648768,
+          "maxAreaSqKm": 7104.951853617494
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 169,
+          "meanAreaSqKm": 244.05735577688608,
+          "minAreaSqKm": 4.210603660411403,
+          "maxAreaSqKm": 1349.9716492507405
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Municipality",
+          "admUnitCount": 2286,
+          "meanAreaSqKm": 18.135691591244704,
+          "minAreaSqKm": 0.0027888334565285,
+          "maxAreaSqKm": 438.5966644832715
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2286,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0027888334565285
+    },
+    {
+      "id": "760",
+      "name": "Syria",
+      "alpha3": "SYR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Governorate",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 13438.458469355726,
+          "minAreaSqKm": 116.67842798312756,
+          "maxAreaSqKm": 43231.35501893992
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 61,
+          "meanAreaSqKm": 3084.236370015973,
+          "minAreaSqKm": 96.26741958991886,
+          "maxAreaSqKm": 30827.95434296573
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "sub-district",
+          "admUnitCount": 272,
+          "meanAreaSqKm": 691.685362220941,
+          "minAreaSqKm": 0.2302810982860246,
+          "maxAreaSqKm": 17169.870454180913
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 272,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.2302810982860246
+    },
+    {
+      "id": "762",
+      "name": "Tajikistan",
+      "alpha3": "TJK",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 28258.077206854457,
+          "minAreaSqKm": 366.1052507825161,
+          "maxAreaSqKm": 62764.90069928326
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 58,
+          "meanAreaSqKm": 2435.368307216187,
+          "minAreaSqKm": 273.9973005760491,
+          "maxAreaSqKm": 37035.431330995336
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 58,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 273.9973005760491
+    },
+    {
+      "id": "834",
+      "name": "Tanzania",
+      "alpha3": "TZA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 30,
+          "meanAreaSqKm": 31326.441643920283,
+          "minAreaSqKm": 184.68273452291933,
+          "maxAreaSqKm": 75593.75279250013
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 170,
+          "meanAreaSqKm": 5199.329461715738,
+          "minAreaSqKm": 15.456586493008626,
+          "maxAreaSqKm": 34313.71776839311
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 3644,
+          "meanAreaSqKm": 243.06320071127968,
+          "minAreaSqKm": 0.0732877137934865,
+          "maxAreaSqKm": 11394.500737059872
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 3644,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0732877137934865
+    },
+    {
+      "id": "764",
+      "name": "Thailand",
+      "alpha3": "THA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 77,
+          "meanAreaSqKm": 6687.471304675163,
+          "minAreaSqKm": 415.8026511172183,
+          "maxAreaSqKm": 22682.08410666522
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "districts",
+          "admUnitCount": 928,
+          "meanAreaSqKm": 555.4047292056011,
+          "minAreaSqKm": 1.4087992374309997,
+          "maxAreaSqKm": 4831.436427505538
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 928,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.4087992374309997
+    },
+    {
+      "id": "626",
+      "name": "Timor-Leste",
+      "alpha3": "TLS",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 13,
+          "meanAreaSqKm": 1145.3249931260707,
+          "minAreaSqKm": 345.66161266531384,
+          "maxAreaSqKm": 1952.558002196224
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Administrative Posts",
+          "admUnitCount": 65,
+          "meanAreaSqKm": 229.11277627227736,
+          "minAreaSqKm": 5.131836622219308,
+          "maxAreaSqKm": 621.32307775753
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 65,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 5.131836622219308
+    },
+    {
+      "id": "768",
+      "name": "Togo",
+      "alpha3": "TGO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 11379.75822880225,
+          "minAreaSqKm": 6318.695622641051,
+          "maxAreaSqKm": 17190.332023834828
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Prefectures",
+          "admUnitCount": 37,
+          "meanAreaSqKm": 1534.2330972897512,
+          "minAreaSqKm": 129.89354601592208,
+          "maxAreaSqKm": 4417.078777764401
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 37,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 129.89354601592208
+    },
+    {
+      "id": "776",
+      "name": "Tonga",
+      "alpha3": "TON",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 5,
+          "meanAreaSqKm": 136.4545006727083,
+          "minAreaSqKm": 70.45206131120199,
+          "maxAreaSqKm": 258.9750149175184
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "district",
+          "admUnitCount": 23,
+          "meanAreaSqKm": 22.75235746835579,
+          "minAreaSqKm": 1.5535462597677685,
+          "maxAreaSqKm": 79.40559072732871
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 23,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.5535462597677685
+    },
+    {
+      "id": "780",
+      "name": "Trinidad and Tobago",
+      "alpha3": "TTO",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 367.0739622625734,
+          "minAreaSqKm": 13.885997173462346,
+          "maxAreaSqKm": 943.2919292956282
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 14,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 13.885997173462346
+    },
+    {
+      "id": "788",
+      "name": "Tunisia",
+      "alpha3": "TUN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 24,
+          "meanAreaSqKm": 6467.380100701623,
+          "minAreaSqKm": 287.2926153781792,
+          "maxAreaSqKm": 38483.11101060952
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 264,
+          "meanAreaSqKm": 585.4844032408064,
+          "minAreaSqKm": 1.503881971878194,
+          "maxAreaSqKm": 27596.14990176601
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 2083,
+          "meanAreaSqKm": 74.18806016385601,
+          "minAreaSqKm": 0.0625852673970894,
+          "maxAreaSqKm": 10946.323705111756
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 2083,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0625852673970894
+    },
+    {
+      "id": "792",
+      "name": "Turkey",
+      "alpha3": "TUR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "province",
+          "admUnitCount": 81,
+          "meanAreaSqKm": 9630.166322684514,
+          "minAreaSqKm": 787.030419144507,
+          "maxAreaSqKm": 40820.61043914075
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 999,
+          "meanAreaSqKm": 780.7761445089125,
+          "minAreaSqKm": 0.0009339661134837,
+          "maxAreaSqKm": 4226.243367060757
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 999,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.0009339661134837
+    },
+    {
+      "id": "795",
+      "name": "Turkmenistan",
+      "alpha3": "TKM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Regions (Welayat)",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 81952.86184501414,
+          "minAreaSqKm": 284.44485989992586,
+          "maxAreaSqKm": 137402.45893167844
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Unknown",
+          "admUnitCount": 66,
+          "meanAreaSqKm": 7476.531583496197,
+          "minAreaSqKm": 18.50696419327061,
+          "maxAreaSqKm": 70444.8202837985
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 66,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 18.50696419327061
+    },
+    {
+      "id": "798",
+      "name": "Tuvalu",
+      "alpha3": "TUV",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 8,
+          "meanAreaSqKm": 2.734941338672972,
+          "minAreaSqKm": 1.358869398052547,
+          "maxAreaSqKm": 5.499481416819672
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "village",
+          "admUnitCount": 34,
+          "meanAreaSqKm": 0.495429686402903,
+          "minAreaSqKm": 0.0343741563926144,
+          "maxAreaSqKm": 2.4003796332456475
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 69,
+          "meanAreaSqKm": 0.1884005015816051,
+          "minAreaSqKm": 0.0151227137600858,
+          "maxAreaSqKm": 2.4038974719873893
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 69,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0151227137600858
+    },
+    {
+      "id": "800",
+      "name": "Uganda",
+      "alpha3": "UGA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 52251.384305650514,
+          "minAreaSqKm": 31815.23842440912,
+          "maxAreaSqKm": 85255.05449419066
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Counties",
+          "admUnitCount": 151,
+          "meanAreaSqKm": 1401.8965637764034,
+          "minAreaSqKm": 141.6772067830781,
+          "maxAreaSqKm": 7287.101204377636
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "District",
+          "admUnitCount": 137,
+          "meanAreaSqKm": 1746.301892438728,
+          "minAreaSqKm": 245.4440377221403,
+          "maxAreaSqKm": 28426.42768644139
+        },
+        {
+          "level": "ADM4",
+          "canonicalName": "Sub-counties",
+          "admUnitCount": 1521,
+          "meanAreaSqKm": 158.78782117107826,
+          "minAreaSqKm": 1.347890856499606,
+          "maxAreaSqKm": 3457.3461746727144
+        }
+      ],
+      "finestLevel": "ADM4",
+      "finestLevelUnitCount": 1521,
+      "cityPlausibleLevel": "ADM4",
+      "cityPlausibleLevelMinAreaSqKm": 1.347890856499606
+    },
+    {
+      "id": "804",
+      "name": "Ukraine",
+      "alpha3": "UKR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 27,
+          "meanAreaSqKm": 23706.12660698949,
+          "minAreaSqKm": 825.4741195749012,
+          "maxAreaSqKm": 41699.51425669727
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Raions",
+          "admUnitCount": 495,
+          "meanAreaSqKm": 1214.789102952543,
+          "minAreaSqKm": 234.41570252261317,
+          "maxAreaSqKm": 3474.821053338728
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Village Councils",
+          "admUnitCount": 10375,
+          "meanAreaSqKm": 57.80368047314524,
+          "minAreaSqKm": 0.4568438781344202,
+          "maxAreaSqKm": 1738.798181090183
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 10375,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.4568438781344202
+    },
+    {
+      "id": "784",
+      "name": "United Arab Emirates",
+      "alpha3": "ARE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 7,
+          "meanAreaSqKm": 10144.520714014763,
+          "minAreaSqKm": 247.1662114518344,
+          "maxAreaSqKm": 59448.66645420476
+        }
+      ],
+      "finestLevel": "ADM1",
+      "finestLevelUnitCount": 7,
+      "cityPlausibleLevel": "ADM1",
+      "cityPlausibleLevelMinAreaSqKm": 247.1662114518344
+    },
+    {
+      "id": "826",
+      "name": "United Kingdom",
+      "alpha3": "GBR",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Country",
+          "admUnitCount": 4,
+          "meanAreaSqKm": 61129.37910096191,
+          "minAreaSqKm": 14156.422701977132,
+          "maxAreaSqKm": 130722.21061640844
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Counties and Unitary Authorities",
+          "admUnitCount": 216,
+          "meanAreaSqKm": 1133.492023827668,
+          "minAreaSqKm": 2.506707074463347,
+          "maxAreaSqKm": 26292.33857049508
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Counties and Unitary Authorities",
+          "admUnitCount": 216,
+          "meanAreaSqKm": 1133.4946884154133,
+          "minAreaSqKm": 2.506802661683204,
+          "maxAreaSqKm": 26292.215450850483
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 216,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 2.506802661683204
+    },
+    {
+      "id": "840",
+      "name": "United States of America",
+      "alpha3": "USA",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "States",
+          "admUnitCount": 56,
+          "meanAreaSqKm": 167051.82016912085,
+          "minAreaSqKm": 176.92992294183617,
+          "maxAreaSqKm": 1522647.4030532858
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Counties",
+          "admUnitCount": 3233,
+          "meanAreaSqKm": 2897.1533621620965,
+          "minAreaSqKm": 3.544545242092387,
+          "maxAreaSqKm": 383020.8965249841
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 3233,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 3.544545242092387
+    },
+    {
+      "id": "858",
+      "name": "Uruguay",
+      "alpha3": "URY",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 19,
+          "meanAreaSqKm": 9306.490933774092,
+          "minAreaSqKm": 528.1077834601418,
+          "maxAreaSqKm": 15980.102300283485
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 124,
+          "meanAreaSqKm": 509.8344947209601,
+          "minAreaSqKm": 9.153127459474645,
+          "maxAreaSqKm": 2401.8169266292284
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 124,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 9.153127459474645
+    },
+    {
+      "id": "860",
+      "name": "Uzbekistan",
+      "alpha3": "UZB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 14,
+          "meanAreaSqKm": 31691.540663294123,
+          "minAreaSqKm": 337.32604145719904,
+          "maxAreaSqKm": 163303.69404680107
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Tuman",
+          "admUnitCount": 199,
+          "meanAreaSqKm": 2266.036853524378,
+          "minAreaSqKm": 0.1207857576366549,
+          "maxAreaSqKm": 75278.99924916013
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 199,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 0.1207857576366549
+    },
+    {
+      "id": "548",
+      "name": "Vanuatu",
+      "alpha3": "VUT",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 6,
+          "meanAreaSqKm": 2033.6513465002145,
+          "minAreaSqKm": 856.0279950551419,
+          "maxAreaSqKm": 4229.803725625912
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipalities",
+          "admUnitCount": 65,
+          "meanAreaSqKm": 186.2020738640812,
+          "minAreaSqKm": 0.9456631002298432,
+          "maxAreaSqKm": 1023.4557226730656
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Unknown",
+          "admUnitCount": 621,
+          "meanAreaSqKm": 19.67495507120304,
+          "minAreaSqKm": 0.0287673198708392,
+          "maxAreaSqKm": 328.23763261240447
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 621,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.0287673198708392
+    },
+    {
+      "id": "862",
+      "name": "Venezuela",
+      "alpha3": "VEN",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Estados",
+          "admUnitCount": 25,
+          "meanAreaSqKm": 36552.40480194087,
+          "minAreaSqKm": 343.2107768865667,
+          "maxAreaSqKm": 250723.7950666953
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Municipios",
+          "admUnitCount": 335,
+          "meanAreaSqKm": 3156.193517929715,
+          "minAreaSqKm": 11.59524683434717,
+          "maxAreaSqKm": 141688.1876119162
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 335,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 11.59524683434717
+    },
+    {
+      "id": "704",
+      "name": "Vietnam",
+      "alpha3": "VNM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Municipalities and Provinces",
+          "admUnitCount": 64,
+          "meanAreaSqKm": 5157.947089775418,
+          "minAreaSqKm": 102.39775527943604,
+          "maxAreaSqKm": 16546.94377392751
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 708,
+          "meanAreaSqKm": 472.5408582406968,
+          "minAreaSqKm": 2.163623106229997,
+          "maxAreaSqKm": 4074.27599773748
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 708,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 2.163623106229997
+    },
+    {
+      "id": "887",
+      "name": "Yemen",
+      "alpha3": "YEM",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Unknown",
+          "admUnitCount": 22,
+          "meanAreaSqKm": 20584.80648697942,
+          "minAreaSqKm": 534.3203810235635,
+          "maxAreaSqKm": 162555.47298131074
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 335,
+          "meanAreaSqKm": 1352.432738743299,
+          "minAreaSqKm": 1.794194793058404,
+          "maxAreaSqKm": 31701.50655894746
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 335,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 1.794194793058404
+    },
+    {
+      "id": "894",
+      "name": "Zambia",
+      "alpha3": "ZMB",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 75108.39966114266,
+          "minAreaSqKm": 23480.64316730282,
+          "maxAreaSqKm": 127392.74697664766
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "Districts",
+          "admUnitCount": 116,
+          "meanAreaSqKm": 6474.862039011392,
+          "minAreaSqKm": 418.8531506041268,
+          "maxAreaSqKm": 21877.138027817564
+        }
+      ],
+      "finestLevel": "ADM2",
+      "finestLevelUnitCount": 116,
+      "cityPlausibleLevel": "ADM2",
+      "cityPlausibleLevelMinAreaSqKm": 418.8531506041268
+    },
+    {
+      "id": "716",
+      "name": "Zimbabwe",
+      "alpha3": "ZWE",
+      "levels": [
+        {
+          "level": "ADM1",
+          "canonicalName": "Province",
+          "admUnitCount": 10,
+          "meanAreaSqKm": 39077.22900036267,
+          "minAreaSqKm": 545.7720521666565,
+          "maxAreaSqKm": 75455.49627364209
+        },
+        {
+          "level": "ADM2",
+          "canonicalName": "District",
+          "admUnitCount": 91,
+          "meanAreaSqKm": 4294.2009890508425,
+          "minAreaSqKm": 2.7676950009711367,
+          "maxAreaSqKm": 26973.724385146583
+        },
+        {
+          "level": "ADM3",
+          "canonicalName": "Ward",
+          "admUnitCount": 1961,
+          "meanAreaSqKm": 199.2719479874515,
+          "minAreaSqKm": 0.1657784544140423,
+          "maxAreaSqKm": 20394.84867666926
+        }
+      ],
+      "finestLevel": "ADM3",
+      "finestLevelUnitCount": 1961,
+      "cityPlausibleLevel": "ADM3",
+      "cityPlausibleLevelMinAreaSqKm": 0.1657784544140423
+    }
+  ],
+  "noCoverage": [],
+  "errors": []
+}

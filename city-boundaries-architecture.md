@@ -191,6 +191,59 @@ real, working proof of concept limited to those three countries, verify it in-br
 then (3) work through the remaining 190 countries the same investigate-before-trusting way — not in one blind
 193-country batch.
 
+### Third pass: a per-country admin-level survey, for all 193 countries (2026-09-03)
+
+Step (3) above — working through the other 190 countries — starts with a cheaper first pass than a real
+per-feature join: `scripts/researchCityAdminLevels.mjs` (`npm run research:city-admin-levels`) queries
+geoBoundaries' own metadata API (`geoboundaries.org/api/current/gbOpen/{ISO3}/ALL/`) for every UN-193
+country and records, per ADM level, its local term (`boundaryCanonical`), unit count, and min/mean/max
+area in km². **This is reconnaissance, not the per-feature join itself** — it can't replace the real
+point-in-polygon-against-actual-cities check the Second refinement section above establishes is necessary
+(a level's small *minimum* area, the signal this script filters on, is exactly the trap that made Jordan's
+ADM2 look plausible before the real per-feature/per-country check found it was mislabeled Liwas, not
+Nahias). What it *does* give: a real, per-country read of what geoBoundaries actually has on offer, so the
+190-country walk isn't starting from zero. Report-only, same discipline as
+`buildGeoEntityEconomics.mjs` — writes `scripts/cityAdminLevelsReport.json`, never touches curated data.
+Full results browsable at the "What Each Country Calls a City" artifact (published 2026-09-03; ask if the
+link is needed again — it's not re-derivable from the repo alone since it also embeds the run's output).
+
+**Results:** 190 of 193 countries have at least one ADM level whose smallest feature is ≤ 500 km²
+(the same "worth a closer look" bar, not a validation) — reachable via geoBoundaries in principle, pending
+the real per-feature filter. Three don't:
+
+- **Botswana** — finest available level (ADM2, 25 units) has a 691 km² minimum. No level geoBoundaries
+  offers gets close to city-scale.
+- **Libya** — finest available level (ADM1 "Districts," 22 units) has a 1,333 km² minimum — coarser than
+  Botswana's, and it's Libya's *only* level below the country as a whole (no ADM2 exists in geoBoundaries
+  for Libya at all).
+- **South Sudan** — finest available level (ADM2 "counties," 78 units) has a 755 km² minimum. Real,
+  genuine geoBoundaries coverage (states down to counties, sourced from South Sudan's own National Bureau
+  of Statistics/OCHA) — it's just coarser than the city-scale bar, the same shape as Botswana/Libya, not a
+  missing-data case.
+
+  **First run of this script misreported South Sudan as having zero `gbOpen` coverage at all — a real bug
+  in the script, caught by direct spot-check (2026-09-04), not a geoBoundaries gap.** Cause: `iso3166.mjs`'s
+  `ALPHA3_TO_NUMERIC` deliberately aliases both `SSD` (the real ISO code) and `SDS` (a non-standard code
+  Natural Earth's admin-1 layer uses for South Sudan specifically — see that file's own comment) to the same
+  numeric id, for `buildStatesProvincesTopology.mjs`'s benefit. This script's naive numeric-id → alpha3
+  reversal (`NUMERIC_TO_ALPHA3[num] = a3` for every entry) let whichever alias iterates last silently win —
+  `SDS`, which isn't a real ISO 3166-1 code and 404s against geoBoundaries' API — misreporting a real 200-with-
+  data response as "no coverage." Fixed by making the reversal keep the first (canonical) alias instead of the
+  last; verified this is the only duplicated numeric id in the table today. Worth remembering for **any** future
+  script built on `NUMERIC_TO_ALPHA3`, not just this one — the underlying alias is correct and intentional,
+  but a naive reversal isn't.
+
+These three are the confirmed next candidates for the same kind of direct-OSM-query investigation that
+resolved Jordan — unverified beyond "geoBoundaries alone won't get there," exactly the same status Jordan
+and Kuwait had before their own real checks.
+
+**Kept for cross-reference, not as new findings:** re-running this survey reproduced the already-known Jordan/
+Kuwait/US numbers (Jordan ADM2 "Nahias," 52 units, 9.8 km² min — the same mislabeled level the Second
+refinement section above already found; Kuwait ADM2 "Areas," 138 units — matching the 137 previously spot-
+checked directly; US ADM2 "Counties," 3,233 units, no city-level reach) — confirms the script's numbers agree
+with the hand-verified findings already on file, not a reason to trust the other 187 countries' numbers to
+the same depth yet.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
