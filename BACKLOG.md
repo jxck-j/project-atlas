@@ -842,6 +842,21 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 ## Visualization
 
+- **Max zoom (`CAMERA_MIN_DISTANCE`, `scene/constants.ts` — currently 2.5, ~265km altitude) may be too
+  far out to usefully show individual city-scale boundaries once the city-boundaries work
+  (`city-boundaries-architecture.md`) actually gets a consumer component.** Raised 2026-09-04 while
+  checking why Kuwait's other towns weren't visible in the running app (they aren't wired in yet — a
+  separate, already-understood reason; this is a distinct, forward-looking concern). This constant is
+  not an oversight — its own comment documents a real prior attempt at ~32km altitude that "broke
+  badly in practice" (the core sphere/country-fill/border/atmosphere shells packed into too thin a
+  margin, grazing camera angles looking through surface geometry instead of at it), pulled back to the
+  current, more conservative range. Even the existing, shipped US city fly-to
+  (`US_CITY_FOCUS_DISTANCE`) stops farther out than this minimum, so the shipped city-zoom feature was
+  designed around today's ceiling, not against it. Worth a real decision before or alongside building
+  `CityLabels.tsx`/`CityOutlineHighlight.tsx` (migration plan step 3): does a real neighborhood-scale
+  city boundary actually read as useful at ~265km altitude, or does making that data genuinely useful
+  require the same kind of rendering-engine work (widening the fill/border/atmosphere shell separation)
+  that was tried and reverted once already. Explicitly deferred, not attempted, in this pass.
 - **Claims overlay's dashed border is a real dash, but the "hatching"
   described in the original spec is still an approximation.** A true
   diagonal cross-hatch fill needs a custom shader/texture —
