@@ -288,6 +288,45 @@ against `ISO3166-1` alpha-2 before use, not assumed from the country name. South
 (Juba); Botswana and Libya get none. All three stay logged as unresolved in `BACKLOG.md` rather than silently
 accepting the coarse geoBoundaries level as "good enough" for their capitals.
 
+### Fifth pass: the real per-feature join, proven end to end for Jordan and Kuwait (2026-09-04)
+
+Built and ran the actual per-feature point-in-polygon + area-check join the Second refinement section design
+called for — not just metadata triage this time, real geometry. Method: fetch real candidate polygons
+(Jordan: OSM `admin_level=6` via Overpass `out geom;`, assembled from way segments into rings — 89 relations,
+0 with holes, all closed; Kuwait: geoBoundaries' own ADM2 GeoJSON, downloaded directly, 137 features), then
+for every real GeoNames point already in `public/geo/global-cities-headline.json`/`global-cities/{id}.json`
+(no new city sourcing — reused the already-shipped output), find the containing polygon via ray-casting and
+keep it only if its spherical area (Chamberlain & Duquette approximation, the same one Turf.js's `area` module
+uses) is ≤ 2,000 km². No production code changed — this lived in a scratch script, not `scripts/`.
+
+**Jordan: 148/148 points matched (100%), 135 kept, 13 rejected.** Every rejection was a real desert
+qada — Umm ar Raşāş, the Azraq qadas, Al Jafr (28,170 km²), Ruwayshid (21,523 km²) — exactly the shape the
+Second refinement section predicted ("Qada Al-Jafr is still 50,353 km²... correctly-named real sub-districts
+that are still vast desert"). All 5 headline-tier cities kept, including Amman (277.5 km², matched to Qada
+Marka specifically — not the same figure as the ~76 km² noted in the Third refinement pass, because that
+earlier number came from matching a qada *named* "Amman," while this join correctly finds whichever qada
+actually *contains* Amman's real coordinate, which is Marka — a real demonstration of why per-feature beats
+name-matching). **One genuine edge case the threshold is responsible for, not a bug:** Aqaba (95,048
+population, a real port city) landed in a 2,042 km² qada — 42 km² over the cutoff — and got rejected. The
+2,000 km² figure is a placeholder, not a validated constant; this is exactly the kind of tuning call a real
+build script needs to make deliberately (e.g. combine the area check with population density, or raise the
+ceiling and accept some real deserts alongside it) rather than something this proof of concept should have
+silently gotten right.
+
+**Kuwait: 25/28 matched, 24 kept, 1 rejected, 3 unmatched.** The 1 rejection (Al Wafrah → 3,501 km²) is real
+farmland/desert near the Saudi border. **The 3 unmatched points are a different, real finding: geoBoundaries'
+137 ADM2 polygons have actual gaps between them** — Al Mahbūlah, Al Funayţīs, Al Finţās (real, populated
+coastal towns south of Kuwait City: 18,178 / 1,878 / 23,071 population) fall in no polygon at all. Not a join
+bug — geoBoundaries' Kuwait coverage isn't contiguous. Both headline cities (Kuwait City, Al Aḩmadī) matched
+and kept correctly.
+
+**What this validates:** the core architecture works end to end for both verified countries, using data
+already in the repo. **What it doesn't resolve yet:** the plausibility threshold is still a placeholder
+(Aqaba's near-miss shows it needs real thought, not just a round number), Kuwait's polygon gaps mean even a
+"verified" source needs a per-city fallback path (not just a per-country one), and this hasn't touched the US
+Census-reuse path, output-file format, or the `CityLabels.tsx`/`CityOutlineHighlight.tsx` consumer side yet —
+migration plan steps 2 (formalize into a real script + fold in US), 3, and 4 below are all still open.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
