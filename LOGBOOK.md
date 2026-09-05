@@ -5,6 +5,42 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-05 (cont.) — Canada/Mexico: the old per-country vendored plan formally retired; a third "huge flat file" bug, same fix as the second
+
+The project's own memory still carried an older plan predating `city-boundaries-architecture.md`: vendor
+each country's own statistics agency (StatCan for Canada, then Mexico), one bespoke parser per country.
+That's exactly the pattern this doc's Decision section already rejected in favor of geoBoundaries/OSM — a
+leftover from it, `scripts/vendor/canada/` (155MB, hand-downloaded, never wired to anything), was still
+sitting untracked. Rather than silently pick a direction, this got surfaced and resolved explicitly:
+Canada and Mexico were investigated the same way as every prior country, and the vendored StatCan file was
+checked directly against geoBoundaries' own copy before deciding between them, not assumed either way.
+
+**Both real, no per-country exceptions**: Canada's geoBoundaries ADM3 is, per its own `boundarySourceURL`,
+literally the same StatCan Census Subdivision dataset the vendored zip is a newer copy of — 5,162 units
+(geoBoundaries, 2016) vs. 5,161 (vendored, 2021), same field richness. Given the user's own tie-breaker
+rule ("whichever source has more data; if the same, use the general source, not bespoke"), geoBoundaries
+won outright — no shapefile parser needed for a currency difference the per-feature join doesn't care about.
+Mexico's ADM2 is genuinely municipios, Wikipedia-confirmed, same shape as Central America's precedent.
+
+**A real bug, caught the same way as the Sixth pass's US-mega-file and the Eighth pass's Panama/Honduras
+vertex-density bugs — checking the actual output, not trusting the design**: Mexico's per-feature join
+(14,545 kept features) produced a single flat file at 69.9MB, bigger than the exact merged-US-file mistake
+already caught once. This is the third time this project has hit "one file is too big to eager-fetch, even
+lazily" at a different layer (global cities index → US per-country file → now Mexico per-country file) —
+worth remembering as a *recurring shape*, not a one-off: any country/dataset large enough for a real
+per-feature join to keep thousands of features is a candidate for this same bug, and should have its
+output size checked before being called done, not after something downstream complains. Fixed with a new
+`shardByState()` — a real spatial join against Natural Earth's already-vendored admin-1 polygons (not a
+name/code guess), generalizing the pre-existing US-only sharding path (`useCityOutline.ts`'s
+`STATE_SHARDED_COUNTRIES`) rather than inventing a second mechanism. Residual, logged not fixed: Mexico's
+largest shard (Veracruz, 11.9MB) is still over 3x the largest US shard — sharding by state fixed the
+"one giant file" problem, not "every shard is small."
+
+See `city-boundaries-architecture.md`'s "Ninth pass" for the full investigation trail (including the
+Overpass mirror going unresponsive mid-session — a real, transient operational finding, not a data bug)
+and `BACKLOG.md` for the two residual open items (Veracruz's shard size, and the pending decision on
+whether to delete `scripts/vendor/canada/` now that it's confirmed to add nothing).
+
 ## 2026-09-03 (cont. x5) — Boundary source decision reframed per-feature; Jordan terminology corrected; US gets its own answer for free
 
 Direct correction, from someone with real regional/administrative knowledge: "if we're doing cities the US

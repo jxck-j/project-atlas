@@ -537,6 +537,104 @@ verification of the finest level's real identity → geoBoundaries as default, O
 where geoBoundaries has nothing usable → real per-feature join → check real output file size before calling
 it done) is the template for the next batch, not just a Central-America-specific one-off.
 
+### Ninth pass: Canada and Mexico (2026-09-05) — the old per-country vendored plan formally retired
+
+This project's memory carried an older plan from before this doc existed: vendor each country's own
+statistics agency data (StatCan for Canada, then a Mexico equivalent), one bespoke parser per country. That
+plan is exactly what this doc's Decision section already rejected — a leftover from it, `scripts/vendor/canada/`
+(a 155MB StatCan census-subdivision shapefile, fetched by hand, never wired to any build script), was still
+sitting untracked in the repo. This pass resolved Canada and Mexico the same investigate-before-trusting way
+as every other country, confirmed the vendored data added nothing over the general pipeline, and formally
+retired it.
+
+**Both verified clean, no per-country exceptions needed** (recon reused from the Third pass's
+`cityAdminLevelsReport.json`, then independently cross-checked against the live geoBoundaries API, each
+level's real per-feature names, and Wikipedia — not just geoBoundaries' own metadata, per this doc's
+standing discipline):
+
+- **Canada — ADM3 (5,162 units) is, per geoBoundaries' own `boundarySourceURL`, literally Statistics
+  Canada's Census Subdivision (CSD) file, 2016 vintage.** Wikipedia confirms CSD is Canada's real
+  municipality-equivalent tier (also covering reserves/unorganized territories, which is why its area
+  spread runs from 0.0003 km² to over 1,000,000 km² — the same "tiny + huge in one tier" shape Jordan's
+  qadas already established the area-plausibility filter needs to handle, not a new problem). Real,
+  per-feature names confirmed directly (e.g. "Riverhead," a real Newfoundland CSD).
+  **The vendored `scripts/vendor/canada/lcsd000b21a_e.zip` turned out to be a newer (2021) copy of this
+  exact same StatCan CSD dataset** — 5,161 records (vs. geoBoundaries' 5,162) with the same field
+  richness (CSDUID/name/type/land area/province — nothing beyond what geoBoundaries' own
+  `shapeName`/`shapeID` already gives the join). Given the choice, the user's own instruction was direct:
+  use whichever source has more data, and if they're the same, use the general source over a bespoke one.
+  They're the same. **geoBoundaries wins — zero new parsing code, same download-and-join pattern already
+  proven for Kuwait/Central America**, rather than writing a shapefile parser for a 5-year currency
+  difference the join doesn't actually need.
+- **Mexico — ADM2 (2,457 units) is genuinely municipios**, Wikipedia-confirmed (2,462 today, same
+  count-drifts-by-vintage pattern as Costa Rica/Panama) — real per-feature names confirmed (e.g. "Jesús
+  María" in Aguascalientes). **One real, logged-not-fixed finding**: Mexico City's 16 alcaldías are
+  included in this ADM2 set, and some of their names collide with unrelated municipios elsewhere in the
+  country (checked directly: "Cuauhtémoc" appears 4 times, "Benito Juárez" 7 times, across CDMX and
+  several other states) — harmless for the actual join, which is point-in-polygon against real geometry
+  and never name-based, but worth knowing before any future name-keyed lookup against this data.
+
+**Real per-country join results** (`npm run build:geo:city-boundaries`, same threshold policy as every
+prior pass):
+
+| Country | Points | Kept | Rejected (too large) | Unmatched (no polygon) |
+|---|---|---|---|---|
+| Canada | 3,296 | 3,036 | 232 | 28 |
+| Mexico | 16,880 | 14,545 | 2,335 | 0 |
+
+**A real bug, caught the same way the Sixth/Eighth passes' file-size bugs were — by checking the actual
+output, not assuming the design was sufficient:** Mexico's join produced a single flat
+`city-boundaries/484.json` at **69.9MB — bigger than the exact merged-US-file mistake the Sixth pass
+already caught and fixed once** (49MB, fixed by sharding by state). Nothing about the per-feature join
+itself was wrong; a country large enough to need 14,545 kept features can also be large enough that ONE
+country file is itself the "huge eager-shaped file" problem this project has now hit three times at three
+different layers (the original 28MB global-cities file, the US's 49MB merged file, now Mexico's 70MB one).
+**Fixed the same way**: `scripts/buildCityBoundaries.mjs`'s new `shardByState()` does a real per-feature
+point-in-polygon match of each kept municipio's centroid against Mexico's own admin-1 polygons (reusing
+`scripts/vendor/ne_10m_admin_1_states_provinces.geojson`, already vendored for `buildStatesProvincesTopology.mjs`
+— no new source needed), grouped into `public/geo/city-boundaries/484/{postal}.json` (32 files, one per
+state, matching the two-letter postal codes Natural Earth already carries — same shape as
+`us-cities/{state}.json`). 47 of 14,545 features (mostly small coastal/island fragments) matched no state
+polygon directly and fell back to nearest-state-by-centroid, logged not silent. Result: 68.3MB combined
+across 32 files, avg 2.2MB/state — **still a real, logged residual**: the largest single shard (Veracruz,
+212 municipios, 11.9MB) is over 3x the largest existing US state shard (Texas, 3.7MB), so "sharded" here
+doesn't yet mean "uniformly small" the way it does for the US. Not fixed further in this pass — flagged for
+whoever next tunes `SIMPLIFY_EPSILON_DEG` or considers a second sharding axis.
+
+`useCityOutline.ts`'s previously-US-only state-sharding path (`STATE_SHARDED_COUNTRIES`, was a bare `'840'`
+check) generalized to a small set including Mexico's `'484'`; `buildCityBoundariesIndex.mjs` gained a
+Mexico-specific loader reading the sharded directory and stamping each entry's `stateAbbrev` from the
+shard's own filename (mirroring the pre-existing US block). No changes needed to `SearchBar.tsx` — it
+already renders `${name}, ${stateAbbrev}` generically whenever `stateAbbrev` is present, so Mexican search
+results now read "Guadalajara, JA" the same way US ones read "Chicago, IL," with zero new code.
+
+**A real, transient operational finding, not a data bug**: the Overpass mirror this script depends on for
+Jordan/Belize (`overpass.private.coffee`, working as of the Fourth/Fifth/Eighth passes) accepted a TCP
+connection but never responded during this pass (confirmed directly with `curl -v`, not assumed from the
+build script hanging). Added `SKIP_OSM=1` as an escape hatch so a re-run needing only the
+geoBoundaries-sourced countries (Kuwait, Central America, Canada, Mexico, US) isn't blocked on an
+unrelated, unreachable endpoint — Jordan/Belize's own already-committed output is untouched by a
+`SKIP_OSM=1` run.
+
+**Verified live in-browser** (dev server, Chrome, with network-request inspection, not just a visual
+glance): searching "Toronto" surfaces the real Canadian city (CITY BOUNDARY, unqualified — Canada isn't
+state-sharded, so no province suffix, matching Jordan/Kuwait's existing unqualified display) and flies to
+a clearly visible, correctly-shaped Census Subdivision boundary right on Lake Ontario's shore, fetched from
+`city-boundaries/124.json` (200). Searching "Guadalajara" surfaces "Guadalajara, JA" (CITY BOUNDARY,
+state-qualified, distinct from the states/provinces layer's own "Guadalajara" ADMIN DIVISION result) and
+correctly fetches `city-boundaries/484/ja.json` (200) — confirming the new state-sharding path resolves
+end to end. Guadalajara's own boundary renders at the same barely-perceptible scale as Kuwait's
+already-logged max-zoom-ceiling finding (BACKLOG.md) — reproduces the known gap, not a new one.
+
+**`scripts/vendor/canada/` is now confirmed, not just asserted, to be safe to delete** — its data doesn't
+beat geoBoundaries' own copy of the same StatCan dataset on either count or field richness, and nothing in
+the shipped pipeline reads from it. Left in place pending an explicit decision on deleting 155MB of
+hand-downloaded local data (a call for whoever's driving, not assumed here).
+
+**Net effect on scope**: 12 countries now have real city-boundary data (Jordan, Kuwait, US, Costa Rica, El
+Salvador, Guatemala, Honduras, Nicaragua, Panama, Belize, Canada, Mexico) — 181 UN members still
+unstarted. `public/geo/city-boundaries-index.json` now carries 52,358 entries (8.1 MB) across all twelve.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -553,19 +651,23 @@ it done) is the template for the next batch, not just a Central-America-specific
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 10 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 12 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
-   and the Eighth pass for the Central America batch + the vertex-density/simplification bug that
-   batch surfaced). Real per-feature join for Jordan (OSM `admin_level=6`), Kuwait/Costa Rica/El
-   Salvador/Guatemala/Honduras/Nicaragua/Panama (geoBoundaries, each level independently verified —
-   see the Eighth pass), and Belize (OSM, hand-curated 9-municipality name list) against the
-   already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census output
-   directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/`.
-   **Not done: the other 183 countries** — each needs the same investigate-before-trusting treatment
+   the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
+   surfaced, and the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix).
+   Real per-feature join for Jordan (OSM `admin_level=6`), Kuwait/Costa Rica/El
+   Salvador/Guatemala/Honduras/Nicaragua/Panama/Canada/Mexico (geoBoundaries, each level independently
+   verified — see the Eighth/Ninth passes), and Belize (OSM, hand-curated 9-municipality name list)
+   against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census
+   output directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/`
+   (Mexico sharded by state too, as of the Ninth pass — see `shardByState()`).
+   **Not done: the other 181 countries** — each needs the same investigate-before-trusting treatment
    (Fourth/Eighth pass) before its own join can run, not a blind batch extension of this script. Also
-   not done: a per-*city* fallback for Kuwait's 3 and Panama's 17/Honduras's 11/Costa Rica's 6
+   not done: a per-*city* fallback for Kuwait's 3 and Panama's 17/Honduras's 11/Costa Rica's 6/Canada's 28
    unmatched towns (a per-country source can still leave individual cities with nothing — Belize's
-   127 unmatched are a different, structural case, not a fallback candidate — see the Eighth pass).
+   127 unmatched are a different, structural case, not a fallback candidate — see the Eighth pass), and
+   further tuning Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent —
+   see the Ninth pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.~~ — **done** (Seventh pass), and confirmed to need
@@ -643,7 +745,7 @@ it done) is the template for the next batch, not just a Central-America-specific
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 10 countries with real boundary data (Seventh/Eighth passes),
+  scoped to the 12 countries with real boundary data (Seventh/Eighth/Ninth passes),
   not this 193-country GeoNames index. Wiring the label/reveal layer up to
   this file for the other 183 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data

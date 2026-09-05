@@ -1,12 +1,12 @@
 // Build-time asset generator: real per-city boundary polygons, for the
 // countries city-boundaries-architecture.md's investigation has actually
-// verified a real source for so far (Jordan, Kuwait, US, plus the 2026-09-04
+// verified a real source for so far (Jordan, Kuwait, US, the 2026-09-04
 // Central America pass: Costa Rica, El Salvador, Guatemala, Honduras,
-// Nicaragua, Panama, Belize) — NOT the other 183 UN members yet. See that
-// doc's "Fifth pass" section for the original proof-of-concept this
-// formalizes, and its migration plan step 2/3 for what's still open after
-// this (the plausibility threshold is a real, logged judgment call below,
-// not a settled constant).
+// Nicaragua, Panama, Belize, plus the 2026-09-05 Canada/Mexico pass) — NOT
+// the other 181 UN members yet. See that doc's "Fifth pass" section for the
+// original proof-of-concept this formalizes, and its migration plan step 2/3
+// for what's still open after this (the plausibility threshold is a real,
+// logged judgment call below, not a settled constant).
 //
 // NOT part of `npm run build:geo` — run by hand via
 // `npm run build:geo:city-boundaries` (then
@@ -45,7 +45,7 @@
 // the "report, don't silently drop" discipline buildGeoEntityEconomics.mjs
 // and researchCityAdminLevels.mjs already established in this repo.
 import fs from 'node:fs'
-import { pointInGeometry, geometryAreaSqKm, simplifyGeometry } from './lib/sphericalGeometry.mjs'
+import { pointInGeometry, geometryAreaSqKm, geometryCentroid, simplifyGeometry } from './lib/sphericalGeometry.mjs'
 import { relationToGeometry } from './lib/osmRelationToGeometry.mjs'
 
 const HEADLINE_INDEX = 'public/geo/global-cities-headline.json'
@@ -58,7 +58,12 @@ const REPORT_OUTPUT = 'scripts/cityBoundariesReport.json'
 // overpass-api.de/overpass.kumi.systems are unreachable from this
 // environment (connection timeout — see city-boundaries-architecture.md's
 // "Fourth pass"); overpass.openstreetmap.fr is reachable but
-// whitelist-gated (403). This mirror works with a real User-Agent.
+// whitelist-gated (403). This mirror worked with a real User-Agent as of the
+// Fourth/Fifth/Eighth passes, but connected-and-then-never-responded (curl
+// confirmed a TCP connection with zero bytes back after 20s) during the
+// Ninth pass (2026-09-05) — real mirror flakiness, not a query bug. SKIP_OSM
+// below exists specifically to let a re-run skip the two countries that
+// depend on this endpoint (Jordan, Belize) without blocking on it.
 const OVERPASS = 'https://overpass.private.coffee/api/interpreter'
 const OVERPASS_USER_AGENT = 'project-atlas-city-boundary-build/1.0 (github.com project-atlas, one-off build script)'
 
@@ -191,25 +196,32 @@ function writeCountryOutput(countryId, features) {
 
 const report = {}
 
-// --- Jordan (numeric id 400, alpha3 JOR) ---
-console.log('\n=== Jordan ===')
-const jordanRaw = await fetchWithRetry(() =>
-  fetchOverpass(`[out:json][timeout:180];
+// SKIP_OSM=1 skips the two Overpass-dependent countries (Jordan, Belize) —
+// useful for re-running just the geoBoundaries-sourced countries when the
+// Overpass mirror this script depends on (see its own comment above) is
+// temporarily unreachable, without touching Jordan/Belize's already-committed
+// output.
+if (!process.env.SKIP_OSM) {
+  // --- Jordan (numeric id 400, alpha3 JOR) ---
+  console.log('\n=== Jordan ===')
+  const jordanRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
 area["ISO3166-1"="JO"][admin_level=2];
 relation(area)["boundary"="administrative"]["admin_level"="6"];
 out geom;`),
-)
-let unclosedCount = 0
-const jordanCandidates = jordanRaw.elements.map((rel) => {
-  const { geometry, closed } = relationToGeometry(rel)
-  if (!closed) unclosedCount++
-  return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6' }
-})
-if (unclosedCount > 0) console.log(`  [warn] ${unclosedCount} Jordan relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
-const jordanCities = loadCityPoints('400')
-const jordanJoin = joinCityPointsToPolygons('Jordan', jordanCities, jordanCandidates)
-writeCountryOutput('400', jordanJoin.kept)
-report.jordan = jordanJoin.report
+  )
+  let unclosedCount = 0
+  const jordanCandidates = jordanRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) unclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6' }
+  })
+  if (unclosedCount > 0) console.log(`  [warn] ${unclosedCount} Jordan relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const jordanCities = loadCityPoints('400')
+  const jordanJoin = joinCityPointsToPolygons('Jordan', jordanCities, jordanCandidates)
+  writeCountryOutput('400', jordanJoin.kept)
+  report.jordan = jordanJoin.report
+}
 
 // Real per-feature join against a single geoBoundaries ADM level's own
 // GeoJSON — the pattern Kuwait's Fifth/Sixth pass established. Reused for
@@ -220,7 +232,7 @@ report.jordan = jordanJoin.report
 // settlement-scale hierarchy (municipio/distrito/corregimiento), not
 // something that looks small on paper but isn't (Jordan's mislabeled Liwa,
 // Belize's electoral constituencies).
-async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel }) {
+async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOutput }) {
   console.log(`\n=== ${name} ===`)
   const meta = await fetchWithRetry(async () => {
     const res = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${alpha3}/ALL/`)
@@ -241,8 +253,62 @@ async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel }) {
   }))
   const cities = loadCityPoints(numericId)
   const join = joinCityPointsToPolygons(name, cities, candidates)
-  writeCountryOutput(numericId, join.kept)
+  if (onOutput) onOutput(join.kept)
+  else writeCountryOutput(numericId, join.kept)
   return join.report
+}
+
+// Shards a country's kept features by first-level admin unit (state/province)
+// instead of one flat file — the same fix the US's own output already needed
+// (see that block's own comment) for the same reason: a country large enough
+// to need this join can also be large enough that ONE country file is itself
+// the "huge eager-shaped file" problem the two-tier GeoNames index and the US
+// sharding were both built to avoid. Reuses the existing Natural Earth admin-1
+// vendor file (scripts/vendor/ne_10m_admin_1_states_provinces.geojson, already
+// used by buildStatesProvincesTopology.mjs) rather than a new source — a
+// real per-feature point-in-polygon match against each state's own geometry,
+// not a name/code guess. Falls back to nearest-state-by-centroid only for a
+// feature whose centroid lands outside every state polygon (island/coastline
+// simplification artifacts) — logged, not silent.
+function shardByState(countryId, features, { adm0A3, abbrevField }) {
+  const ne = JSON.parse(fs.readFileSync('scripts/vendor/ne_10m_admin_1_states_provinces.geojson', 'utf8'))
+  const states = ne.features
+    .filter((f) => f.properties.adm0_a3 === adm0A3 && f.properties[abbrevField])
+    .map((f) => ({ abbrev: f.properties[abbrevField], geometry: f.geometry, centroid: geometryCentroid(f.geometry) }))
+
+  const byState = new Map()
+  let fallbackCount = 0
+  for (const feature of features) {
+    const { lat, lng } = geometryCentroid(feature.geometry)
+    let match = states.find((s) => {
+      try {
+        return pointInGeometry([lng, lat], s.geometry)
+      } catch {
+        return false
+      }
+    })
+    if (!match) {
+      fallbackCount++
+      match = states.reduce((closest, s) => {
+        const d = (s.centroid.lat - lat) ** 2 + (s.centroid.lng - lng) ** 2
+        const closestD = (closest.centroid.lat - lat) ** 2 + (closest.centroid.lng - lng) ** 2
+        return d < closestD ? s : closest
+      })
+    }
+    if (!byState.has(match.abbrev)) byState.set(match.abbrev, [])
+    byState.get(match.abbrev).push(feature)
+  }
+  if (fallbackCount > 0) console.log(`  [warn] ${fallbackCount} features matched no state polygon directly — assigned to nearest state by centroid`)
+
+  const outputDir = `${OUTPUT_DIR}/${countryId}`
+  fs.mkdirSync(outputDir, { recursive: true })
+  let totalKB = 0
+  for (const [abbrev, feats] of byState) {
+    const outputPath = `${outputDir}/${abbrev.toLowerCase()}.json`
+    fs.writeFileSync(outputPath, JSON.stringify({ type: 'FeatureCollection', features: feats }))
+    totalKB += fs.statSync(outputPath).size / 1024
+  }
+  console.log(`  sharded into ${byState.size} state files in ${outputDir}/ (${(totalKB / 1024).toFixed(1)} MB combined, avg ${(totalKB / byState.size).toFixed(0)} KB/state)`)
 }
 
 // --- Kuwait (numeric id 414, alpha3 KWT) ---
@@ -279,39 +345,84 @@ report.panama = await runGeoBoundariesCountry({ name: 'Panama', numericId: '591'
 // municipalities to find, a hand-curated name list (verified against the
 // real query results, not assumed) is simpler and more correct than trying
 // to infer "real municipality vs. informal village" from tags alone.
-console.log('\n=== Belize ===')
-const BELIZE_MUNICIPALITY_NAMES = new Set([
-  'Belize City',
-  'Belmopan',
-  'San Ignacio & Santa Elena',
-  'Orange Walk Town',
-  'Corozal Town',
-  'Dangriga Town',
-  'San Pedro Town',
-  'Benque Viejo del Carmen',
-  'Punta Gorda Town',
-])
-const belizeRaw = await fetchWithRetry(() =>
-  fetchOverpass(`[out:json][timeout:180];
+if (!process.env.SKIP_OSM) {
+  console.log('\n=== Belize ===')
+  const BELIZE_MUNICIPALITY_NAMES = new Set([
+    'Belize City',
+    'Belmopan',
+    'San Ignacio & Santa Elena',
+    'Orange Walk Town',
+    'Corozal Town',
+    'Dangriga Town',
+    'San Pedro Town',
+    'Benque Viejo del Carmen',
+    'Punta Gorda Town',
+  ])
+  const belizeRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
 area["ISO3166-1"="BZ"][admin_level=2];
 relation(area)["boundary"="administrative"]["admin_level"~"^(7|8)$"];
 out geom;`),
-)
-const belizeCandidates = belizeRaw.elements
-  .filter((rel) => BELIZE_MUNICIPALITY_NAMES.has(rel.tags?.name))
-  .map((rel) => {
-    const { geometry } = relationToGeometry(rel)
-    return { name: rel.tags.name, geometry, source: 'osm-municipality' }
-  })
-if (belizeCandidates.length !== BELIZE_MUNICIPALITY_NAMES.size) {
-  console.log(
-    `  [warn] expected ${BELIZE_MUNICIPALITY_NAMES.size} Belize municipalities, found ${belizeCandidates.length} — OSM tagging may have changed since this list was curated (2026-09-04)`,
   )
+  const belizeCandidates = belizeRaw.elements
+    .filter((rel) => BELIZE_MUNICIPALITY_NAMES.has(rel.tags?.name))
+    .map((rel) => {
+      const { geometry } = relationToGeometry(rel)
+      return { name: rel.tags.name, geometry, source: 'osm-municipality' }
+    })
+  if (belizeCandidates.length !== BELIZE_MUNICIPALITY_NAMES.size) {
+    console.log(
+      `  [warn] expected ${BELIZE_MUNICIPALITY_NAMES.size} Belize municipalities, found ${belizeCandidates.length} — OSM tagging may have changed since this list was curated (2026-09-04)`,
+    )
+  }
+  const belizeCities = loadCityPoints('084')
+  const belizeJoin = joinCityPointsToPolygons('Belize', belizeCities, belizeCandidates)
+  writeCountryOutput('084', belizeJoin.kept)
+  report.belize = belizeJoin.report
 }
-const belizeCities = loadCityPoints('084')
-const belizeJoin = joinCityPointsToPolygons('Belize', belizeCities, belizeCandidates)
-writeCountryOutput('084', belizeJoin.kept)
-report.belize = belizeJoin.report
+
+// --- Canada / Mexico pass (2026-09-05) ---
+// Both independently verified against the live geoBoundaries API + real
+// per-feature names + an outside source (Wikipedia), not just the recon
+// script's own canonicalName — see city-boundaries-architecture.md's Ninth
+// pass for the full trail:
+//   - Canada ADM3 (5,162 units) is, per geoBoundaries' own boundarySourceURL,
+//     literally Statistics Canada's Census Subdivision (CSD) file (2016
+//     vintage) — Wikipedia confirms CSD is Canada's real municipality-
+//     equivalent tier (also covering reserves/unorganized territories, which
+//     is why its area spread runs from 0.0003 km² to over 1,000,000 km²,
+//     the same "tiny + huge in one tier" shape the area-plausibility filter
+//     already exists to handle). A newer (2021) StatCan CSD shapefile sits
+//     vendored at scripts/vendor/canada/ with an almost-identical unit count
+//     (5,161) and no richer fields — no real data advantage over
+//     geoBoundaries' copy, so this uses the general geoBoundaries path
+//     rather than writing a bespoke shapefile parser for marginally fresher
+//     data. maxVertices there is 210,014 (comparable to Panama's "Arco Iris"
+//     outlier) — handled by the same SIMPLIFY_EPSILON_DEG pass every other
+//     country already goes through, no special-casing needed.
+//   - Mexico ADM2 (2,457 units) is genuinely municipios (Wikipedia: 2,462
+//     today, same count-drifts-by-vintage pattern as Costa Rica/Panama) —
+//     real per-feature names confirmed (e.g. "Jesús María" in Aguascalientes).
+//     One real, logged-not-fixed finding: Mexico City's 16 alcaldías are
+//     included in this ADM2 set, and some of their names collide with
+//     unrelated municipios elsewhere in the country (e.g. "Cuauhtémoc" and
+//     "Benito Juárez" each appear multiple times) — harmless here since the
+//     join is point-in-polygon against real geometry, never name-based, but
+//     worth knowing before any future name-keyed lookup against this file.
+report.canada = await runGeoBoundariesCountry({ name: 'Canada', numericId: '124', alpha3: 'CAN', admLevel: 'ADM3' })
+// Mexico's real per-feature join produces 14,545 kept features — checking
+// the actual output file size (this project's own established discipline;
+// see the Sixth/Eighth pass's US-mega-file and Panama/Honduras vertex-density
+// bugs) found a single flat file lands at ~70MB, bigger than the exact
+// merged-US-file mistake already caught and fixed once. Sharded by state
+// instead — see shardByState()'s own comment.
+report.mexico = await runGeoBoundariesCountry({
+  name: 'Mexico',
+  numericId: '484',
+  alpha3: 'MEX',
+  admLevel: 'ADM2',
+  onOutput: (kept) => shardByState('484', kept, { adm0A3: 'MEX', abbrevField: 'postal' }),
+})
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

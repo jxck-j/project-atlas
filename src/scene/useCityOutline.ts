@@ -6,12 +6,16 @@ import { useSelection } from '../hud/selectionStore'
 // scripts/buildCityBoundaries.mjs's per-country output — only once a city
 // is actually searched for/selected (see hud/SearchBar.tsx's flyToCity()).
 // Cached per shard so re-selecting a different city in the same shard
-// doesn't re-fetch. Generalizes what was useUsCityOutline.ts: the US (840)
-// stays sharded by state (public/geo/city-boundaries/840/{state}.json,
-// matching us-cities/{state}.json's existing per-state granularity — see
-// buildCityBoundaries.mjs's own comment for why merging it into one file
-// was tried and reverted); every other verified country (Jordan, Kuwait) is
-// small enough to ship as one file per country.
+// doesn't re-fetch. Generalizes what was useUsCityOutline.ts: a country
+// large enough that even its per-country file is itself a "huge eager-
+// shaped file" (US, then Mexico — see buildCityBoundaries.mjs's own
+// shardByState() comment) stays sharded by state
+// (public/geo/city-boundaries/{countryId}/{state}.json, matching
+// us-cities/{state}.json's existing per-state granularity); every other
+// verified country (Jordan, Kuwait, Central America) is small enough to
+// ship as one file per country.
+const STATE_SHARDED_COUNTRIES = new Set(['840', '484'])
+
 const shardCache = new Map<string, Feature[]>()
 const inFlight = new Map<string, Promise<void>>()
 const listeners = new Set<() => void>()
@@ -21,15 +25,15 @@ function notify() {
 }
 
 function shardUrl(countryId: string, stateAbbrev?: string): string {
-  if (countryId === '840') {
-    if (!stateAbbrev) throw new Error('US city outline lookup requires a stateAbbrev')
-    return `/geo/city-boundaries/840/${stateAbbrev.toLowerCase()}.json`
+  if (STATE_SHARDED_COUNTRIES.has(countryId)) {
+    if (!stateAbbrev) throw new Error(`City outline lookup for country ${countryId} requires a stateAbbrev`)
+    return `/geo/city-boundaries/${countryId}/${stateAbbrev.toLowerCase()}.json`
   }
   return `/geo/city-boundaries/${countryId}.json`
 }
 
 function shardKey(countryId: string, stateAbbrev?: string): string {
-  return countryId === '840' ? `840:${(stateAbbrev ?? '').toLowerCase()}` : countryId
+  return STATE_SHARDED_COUNTRIES.has(countryId) ? `${countryId}:${(stateAbbrev ?? '').toLowerCase()}` : countryId
 }
 
 function ensureShardFetch(countryId: string, stateAbbrev?: string) {

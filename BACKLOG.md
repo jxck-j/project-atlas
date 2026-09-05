@@ -886,6 +886,19 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   geoBoundaries-sourced country, not just these two — nothing about Jordan/Kuwait/the other four Central
   American countries' own geometry signaled this problem in advance; it only showed up because Panama/
   Honduras's source data happened to be far denser than every country checked before them.
+- **Mexico's largest per-state city-boundary shard (Veracruz, 212 municipios) is 11.9MB — over 3x the
+  largest existing US state shard (Texas, 3.7MB)** (found 2026-09-05, `city-boundaries-architecture.md`'s
+  "Ninth pass"). Sharding by state (`scripts/buildCityBoundaries.mjs`'s `shardByState()`) fixed the much
+  worse problem — a single 69.9MB flat file, bigger than the Sixth pass's already-caught-once US-mega-file
+  mistake — but didn't make every shard uniformly small the way the US's own state shards are. Not
+  tuned further in this pass (flagged, not fixed): a future pass could try a tighter
+  `SIMPLIFY_EPSILON_DEG` for this specific case, or a second sharding axis for Mexico's densest states.
+- **`scripts/vendor/canada/` (a 155MB hand-downloaded 2021 StatCan census-subdivision shapefile) is now
+  confirmed, not just suspected, to be safe to delete** (`city-boundaries-architecture.md`'s "Ninth pass").
+  Its data doesn't beat geoBoundaries' own 2016 copy of the same StatCan dataset on either unit count
+  (5,161 vs. 5,162) or field richness, and nothing in the shipped pipeline reads from it — Canada's real
+  city-boundary source is geoBoundaries' direct download instead. Left in place pending an explicit
+  deletion decision (untracked local data, not something to remove without confirmation).
 
 ## Visualization
 
