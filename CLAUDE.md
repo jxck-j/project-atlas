@@ -413,6 +413,27 @@ was tried, including the two attempts that turned out insufficient once
 actually checked in the browser, and `BACKLOG.md` for whether this is
 confirmed fully resolved.
 
+**2026-09-05: `StatesProvinces` stopped being a Layer Engine layer at
+all** — direct request that it always be on with no user-facing way to
+disable it, the same as `Countries.tsx`/`GeoEntities.tsx`. Removed
+`layers/geoOverlays/StatesProvincesLayer.tsx`'s `registerLayer()` call
+entirely (deleted the file, dropped its import from `geoOverlays/index.ts`)
+and mounted `<StatesProvinces />` directly from `Globe.tsx` instead, right
+alongside `<Countries />`/`<GeoEntities />`. It keeps its own LOD gate
+unchanged (`useIsLodLevelActive('states')` — see the LOD Engine section
+below) — "always on" means no *toggle*, not no zoom-gating; thousands of
+province polygons still don't render at the default global view. The LOD
+Engine's `'states'` tier's `revealDistance` was already `2.85`, identical to
+`'metro-areas'`' own `2.85` (a 2026-08-20 decision, see `lodLevels.ts`) — this
+pass made that coupling explicit via a shared `LARGEST_CITY_TIER_REVEAL_DISTANCE`
+constant instead of two independent literals, so a future change to one
+can't silently drift from the other the way two same-valued but
+independently-declared numbers could. `SelectionController.ts`'s
+`useEntityNavigation()` had an enabled-layer gate specifically to stop
+arrow-key navigation from reaching a state/province that wasn't actually
+rendered (see "Input Layer" below) — with the layer gone, states/provinces
+are unconditional candidates now, the same as countries/GeoEntities.
+
 `GeoEntities.tsx` deliberately does **only** primary selection (hover,
 click, highlight the one clicked entity) — no parent-overlay or
 claims-overlay logic lives here. Those are `src/layers/geoOverlays/`'s job
@@ -749,13 +770,11 @@ selection concept.
   `bearingBetween`, kept only within a ±90° cone of the requested
   direction) then great-circle distance (`angularDistance`) among what's
   left. `useEntityNavigation()` builds the live candidate list from
-  `useCountryFeatures()` + `useGeoEntityFeatures()` (centroids via
-  `scene/countryGeometry.ts`'s `geometryToCentroid`) unconditionally, plus
-  `useStatesProvincesFeatures()` only while the `'states-provinces'` Layer
-  Engine layer is actually enabled (that layer is off by default — see
-  `layers/geoOverlays/StatesProvincesLayer.tsx` — and without this gate,
-  arrow-key navigation could select and fly to a state/province that isn't
-  rendered on the globe at all). Cities are excluded entirely, regardless of
+  `useCountryFeatures()` + `useGeoEntityFeatures()` + (since 2026-09-05, see
+  "Rendering Engine" below) `useStatesProvincesFeatures()`, all
+  unconditionally — states/provinces render directly from `Globe.tsx` now,
+  the same as countries/GeoEntities, so no Layer Engine enabled-check is
+  needed here any more. Cities are excluded entirely, regardless of
   whether the `'cities'` layer is on — reported directly that arrow-key
   navigation shouldn't reach cities; they stay selectable by click or search,
   just never a keyboard-navigation candidate. Calls the *existing*

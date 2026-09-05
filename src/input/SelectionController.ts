@@ -21,7 +21,6 @@ import { angularDistance, bearingBetween, latLngToVector3, normalizeAngle } from
 import { resolveEntity } from '../entities/EntityResolver'
 import { ENTITY_GEOMETRY_IDS } from '../entities/entityGeometryIds'
 import { selectEntity, useSelection } from '../hud/selectionStore'
-import { useLayerEnabledMap } from '../layers'
 import { getEntity } from '../data'
 import type { GeoEntity, GeoEntityType } from '../data'
 import type { NavigationDirection } from './types'
@@ -145,21 +144,16 @@ export function useEntityNavigation() {
   const geoEntityFeatures = useGeoEntityFeatures()
   const provinceFeatures = useStatesProvincesFeatures()
   const { selected } = useSelection()
-  // Countries and GeoEntities render unconditionally (Globe.tsx mounts
-  // <Countries />/<GeoEntities /> directly), but states/provinces are an
-  // ordinary Layer Engine layer (off by default — see
-  // StatesProvincesLayer.tsx) mounted only while enabled. Without this
-  // check, arrow-key/Tab navigation could select — and fly the camera to —
-  // a state/province that isn't actually rendered on the globe, because
-  // useStatesProvincesFeatures() fetches the same geometry regardless of
-  // whether its layer is toggled on.
+  // Countries, GeoEntities, and (as of the states-provinces-always-on
+  // change) states/provinces all render unconditionally (Globe.tsx mounts
+  // <Countries />/<GeoEntities />/<StatesProvinces /> directly, LOD-gated
+  // only) — so no enabled-layer gate is needed here for any of them.
   //
   // Cities have no equivalent gate here at all — reported directly that
   // arrow-key navigation shouldn't reach cities, full stop, not "only while
   // the cities layer happens to be on" the way states/provinces works.
   // Cities stay selectable by click or search either way; this file just
   // never builds candidates for them.
-  const enabledLayers = useLayerEnabledMap()
 
   const candidates = useMemo<NavigableEntity[]>(() => {
     const countryEntries = countryFeatures.map((f, index) => {
@@ -193,11 +187,7 @@ export function useEntityNavigation() {
     // States/provinces: same shape as geoEntityEntries above, but every
     // feature's geometry id already equals its entity id (see
     // useStatesProvincesFeatures.ts) — no ENTITY_GEOMETRY_IDS lookup needed.
-    // Gated on the 'states-provinces' layer actually being enabled (see the
-    // comment on enabledLayers above) — StatesProvincesLayer.tsx registers
-    // it with defaultEnabled: false, so this is empty until the user turns
-    // it on.
-    const provinceEntries = !(enabledLayers['states-provinces'] ?? false) ? [] : provinceFeatures.flatMap((f) => {
+    const provinceEntries = provinceFeatures.flatMap((f) => {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (!id) return []
       const registryEntity = getEntity(id)
@@ -214,7 +204,7 @@ export function useEntityNavigation() {
     })
 
     return [...countryEntries, ...geoEntityEntries, ...provinceEntries]
-  }, [countryFeatures, geoEntityFeatures, provinceFeatures, enabledLayers])
+  }, [countryFeatures, geoEntityFeatures, provinceFeatures])
 
   function goTo(candidate: NavigableEntity) {
     const resolved = resolveEntity(candidate.id)

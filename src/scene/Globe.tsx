@@ -9,6 +9,7 @@ import { AtmosphereMaterial } from './AtmosphereMaterial'
 import { Countries } from './Countries'
 import { Equator } from './Equator'
 import { GeoEntities } from './GeoEntities'
+import { StatesProvinces } from './StatesProvinces'
 import { PointerMarker } from './PointerMarker'
 import { CityOutlineHighlight } from './CityOutlineHighlight'
 import { CityLabels } from './CityLabels'
@@ -258,6 +259,7 @@ export function Globe() {
       <Countries />
       <Equator />
       <GeoEntities />
+      <StatesProvinces />
       <CapitalMarker />
       <CountryLabels />
       <GeoEntityLabels />

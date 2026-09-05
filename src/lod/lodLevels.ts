@@ -16,6 +16,15 @@ import type { LodLevel, LodLevelId } from './types'
 // camera-safety tweak silently retune this level's product behavior the
 // last time CAMERA_MIN_DISTANCE moved; keeping them separate means each
 // can change for its own reason without touching the other.
+// Shared by 'states' and 'metro-areas' below — direct request (2026-08-20,
+// then made explicit 2026-09-05 once 'states' stopped being an optional
+// Layer Engine layer) that states/provinces reveal at the same zoom level as
+// the largest city tier, not independently tuned to the same number by
+// coincidence. Change this one constant to move both together; giving them
+// separate literals again would silently reintroduce the drift risk this
+// constant exists to prevent.
+const LARGEST_CITY_TIER_REVEAL_DISTANCE = 2.85
+
 export const LOD_LEVELS: LodLevel[] = [
   {
     id: 'earth',
@@ -59,9 +68,13 @@ export const LOD_LEVELS: LodLevel[] = [
     // WHEN a tier activates, not where it sits in resolveActiveLevels()'s
     // returned array — that's fixed by this list's own declaration order, so
     // 'states' always reports right after 'countries' regardless of which
-    // number is here.)
-    description: 'Admin-1 boundaries — nearly every country, revealed at the same distance as major (metro-area) cities.',
-    revealDistance: 2.85,
+    // number is here.) 2026-09-05: this tier also stopped being an optional
+    // Layer Engine layer (always mounted from Globe.tsx now — see
+    // scene/StatesProvinces.tsx) — the distance-matches-metro-areas coupling
+    // is now a shared constant (LARGEST_CITY_TIER_REVEAL_DISTANCE above)
+    // rather than two independently-tunable literals that happened to agree.
+    description: 'Admin-1 boundaries — nearly every country, always on, revealed at the same distance as major (metro-area) cities.',
+    revealDistance: LARGEST_CITY_TIER_REVEAL_DISTANCE,
     implemented: true,
   },
   {
@@ -82,7 +95,7 @@ export const LOD_LEVELS: LodLevel[] = [
     id: 'metro-areas',
     label: 'Major Metropolitan Areas',
     description: 'US cities scored (by population, capitals floored) at 700,000+.',
-    revealDistance: 2.85,
+    revealDistance: LARGEST_CITY_TIER_REVEAL_DISTANCE,
     implemented: true,
   },
   {

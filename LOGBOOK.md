@@ -5,6 +5,44 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-05 (cont. x2) — States/provinces stopped being an optional layer; its reveal-distance match to major cities made a real invariant instead of a coincidence
+
+Direct instruction: states/provinces shouldn't have an on/off toggle at all — always on, revealed at the
+same threshold as the largest city tier. Two separate things to check before touching anything: was there
+already a toggle to remove, and was the reveal-distance-matches-cities part already true or still needed?
+
+**The toggle**: yes, a real one — `layers/geoOverlays/StatesProvincesLayer.tsx` registered states/provinces
+as an ordinary Layer Engine layer, `defaultEnabled: false`, browsable/toggleable from `LayerPanel.tsx` under
+a `'political'` category that existed for no other layer. Removed the registration (deleted the file,
+dropped its import from `geoOverlays/index.ts`) and mounted `<StatesProvinces />` directly from `Globe.tsx`
+instead, the same unconditional way `<Countries />`/`<GeoEntities />` already are — `StatesProvinces.tsx`
+itself needed zero internal changes, since its own LOD gate (`useIsLodLevelActive('states')`) already
+controls when it actually renders anything. This left one real, non-obvious loose end:
+`SelectionController.ts`'s `useEntityNavigation()` had an explicit `enabledLayers['states-provinces']` check
+specifically because arrow-key navigation could otherwise fly to a province that wasn't rendered at all —
+now that states/provinces are always rendered, that check is not just unnecessary but stale (it would
+silently and permanently return `false` once the layer id stopped existing in the registry, quietly
+breaking arrow-key navigation to every province instead of leaving it working). Removed the gate along with
+the now-fully-unused `useLayerEnabledMap()` import.
+
+**The reveal-distance match**: already true, not something this pass needed to newly tune —
+`lodLevels.ts`'s own comment trail shows a 2026-08-20 decision that set `'states'`'s `revealDistance` to
+`2.85`, explicitly matching `'metro-areas'` (the largest city tier) for exactly this reason. But the two
+were two independent literals that happened to hold the same value, not one enforced relationship — a
+future edit to either number could have silently drifted them apart with no signal. Extracted
+`LARGEST_CITY_TIER_REVEAL_DISTANCE` as a single shared constant both entries reference, so the coupling the
+2026-08-20 decision already wanted is now structurally guaranteed rather than a coincidence two comments
+happen to describe the same way.
+
+Verified: typecheck/lint/tests all pass; live in-browser check confirmed the "STATES / PROVINCES" toggle row
+is gone from `LayerPanel.tsx` (its `'political'` category has no other member, so it disappears entirely
+rather than showing empty) and no `[LayerEngine] "states-provinces" mounted` console log appears anymore.
+Could not force an in-browser zoom deep enough through this session's browser automation to visually
+confirm province boundaries render post-refactor (a tool limitation — scroll/key-repeat didn't reach
+`OrbitControls` in this environment) — relying instead on `StatesProvinces.tsx`'s internal rendering logic
+being completely unchanged, and the same direct-mount pattern already working correctly for
+`Countries`/`GeoEntities`.
+
 ## 2026-09-05 (cont.) — Canada/Mexico: the old per-country vendored plan formally retired; a third "huge flat file" bug, same fix as the second
 
 The project's own memory still carried an older plan predating `city-boundaries-architecture.md`: vendor

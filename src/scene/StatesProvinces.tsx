@@ -64,16 +64,17 @@ function BoundaryMesh() {
   )
 }
 
-// Renders the 'administrative-division' GeoEntityType (states/provinces) as
-// a Layer Engine layer — off by default (see StatesProvincesLayer.tsx), and
-// (as of 2026-08-15, see below) further gated behind LOD zoom so thousands
-// of province polygons never clutter the default global view even once the
-// layer's toggled on. Kept its own component rather than folding into
-// GeoEntities.tsx itself: provinces are conditionally rendered (toggled) in
-// a way the other five GeoEntityType classifications aren't, and (as of
-// 2026-08-16, see below) render through a states/provinces-specific fill
-// layer rather than the shared EntityRenderLayer Countries.tsx/
-// GeoEntities.tsx still use.
+// Renders the 'administrative-division' GeoEntityType (states/provinces).
+// Mounted directly and unconditionally from Globe.tsx (2026-09-05, replacing
+// the Layer Engine toggle StatesProvincesLayer.tsx used to register) — direct
+// request that this always be on with no user-facing way to disable it, same
+// as Countries.tsx/GeoEntities.tsx. Gated behind LOD zoom only (see below), so
+// thousands of province polygons still never clutter the default global view.
+// Kept its own component rather than folding into GeoEntities.tsx itself:
+// provinces render through a states/provinces-specific fill layer rather than
+// the shared EntityRenderLayer Countries.tsx/GeoEntities.tsx use (see
+// 2026-08-16 below), a real enough difference to justify its own file even
+// though it's no longer conditionally toggled the other five aren't.
 //
 // buildGeoEntityEntries() (scene/geoEntityEntries.ts) already works
 // unchanged here — it looks up geometryId in ENTITY_GEOMETRY_IDS and falls

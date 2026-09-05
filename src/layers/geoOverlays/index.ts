@@ -7,7 +7,6 @@
 import './ParentOverlayLayer'
 import './ClaimsOverlayLayer'
 import './CategoryHighlightLayer'
-import './StatesProvincesLayer'
 import './CitiesLayer'
 import './LakesLayer'
 import './RiversLayer'
