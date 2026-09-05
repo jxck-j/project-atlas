@@ -1,4 +1,4 @@
-// Public barrel for the LOD Engine. Consumers (current: UsCityLabels.tsx;
+// Public barrel for the LOD Engine. Consumers (current: CityLabels.tsx;
 // future: any Roads/Rail/Rivers/Airports/Ports/Military Bases/
 // Infrastructure layer) should import from here rather than reaching into
 // individual files — mirrors layers/index.ts's role for the Layer Engine.

@@ -27,7 +27,7 @@ import { GLOBE_RADIUS } from './constants'
 // and passive background labels are different concerns" split
 // WaterLabels/CapitalMarker already established.
 //
-// No population/zoom-tier eligibility gate the way UsCityLabels needs one
+// No population/zoom-tier eligibility gate the way CityLabels needs one
 // (32,608 candidates vs. 193) — every registered country is always a
 // candidate, ranked by geometryToAngularExtent (this file's existing
 // "is this country big enough on screen for an inline label" measure,

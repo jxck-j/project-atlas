@@ -74,7 +74,7 @@ const COLOR_SELECTED = HIGHLIGHT_COLORS.selected.hex
 // (fontSizePx there is already meant to BE the final on-screen size), so
 // as long as this one still had it, the two could never actually match at
 // any camera distance except by coincidence. Dropped here for the same
-// reason Globe.tsx's WaterLabels, Lakes.tsx, and UsCityLabels.tsx already
+// reason Globe.tsx's WaterLabels, Lakes.tsx, and CityLabels.tsx already
 // dropped it: a label sized off apparent screen size shouldn't also get
 // an extra unbounded distance-based scale on top.
 //

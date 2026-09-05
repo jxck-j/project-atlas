@@ -23,6 +23,7 @@
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "research:city-admin-levels": "node scripts/researchCityAdminLevels.mjs",
     "build:geo:city-boundaries": "node scripts/buildCityBoundaries.mjs",
+    "build:geo:city-boundaries-index": "node scripts/buildCityBoundariesIndex.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",
     "preview": "vite preview",

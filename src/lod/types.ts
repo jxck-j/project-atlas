@@ -7,7 +7,7 @@
 // only required change is: give it a real `revealDistance` in
 // lodLevels.ts and flip `implemented` to true (see that file) — never a
 // second camera/LOD redesign, never a new locally-duplicated distance
-// table the way UsCityLabels.tsx's old REVEAL_TIERS was before this.
+// table the way CityLabels.tsx's old REVEAL_TIERS was before this.
 //
 // 'lakes' (2026-08-08) wasn't part of that original reserved list — it's
 // added directly as implemented alongside 'rivers' (the first of the seven

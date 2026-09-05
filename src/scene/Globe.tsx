@@ -10,8 +10,8 @@ import { Countries } from './Countries'
 import { Equator } from './Equator'
 import { GeoEntities } from './GeoEntities'
 import { PointerMarker } from './PointerMarker'
-import { UsCityOutlineHighlight } from './UsCityOutlineHighlight'
-import { UsCityLabels } from './UsCityLabels'
+import { CityOutlineHighlight } from './CityOutlineHighlight'
+import { CityLabels } from './CityLabels'
 import { CountryLabels } from './CountryLabels'
 import { GeoEntityLabels } from './GeoEntityLabels'
 import { LayerEngine } from '../layers'
@@ -105,7 +105,7 @@ interface WaterLabelEntry {
 // compute an apparent size from the way CountryLabels.tsx/
 // PassiveEntityLabels.tsx can) — reported directly as "extremely too big,"
 // with the Strait of Hormuz's label overlapping the Persian Gulf's once
-// zoomed in close enough to read either. UsCityLabels.tsx already
+// zoomed in close enough to read either. CityLabels.tsx already
 // documents the identical fix for the identical reason ("deliberately NO
 // distanceFactor... this label set is shown down to this app's closest
 // zoom, where [distanceFactor's] growth becomes unbounded"). Without it,
@@ -261,8 +261,8 @@ export function Globe() {
       <CapitalMarker />
       <CountryLabels />
       <GeoEntityLabels />
-      <UsCityOutlineHighlight />
-      <UsCityLabels />
+      <CityOutlineHighlight />
+      <CityLabels />
       <WaterLabels />
       <LayerEngine />
 

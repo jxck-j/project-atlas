@@ -809,6 +809,31 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   unflagged with no explanation (which would misrepresent it as an
   oversight the way South Sudan/Nauru's gap above actually is). Worth a
   deliberate, logged decision before this index ships — not resolved here.
+- **The global city index is sourced from GeoNames' `cities500.zip` — population ≥ 500 (or any
+  administrative seat), not GeoNames' full `allCountries` export — so a real, named, populated place can be
+  completely absent from this app's data with no boundary-join or per-country-sourcing work able to fix it**
+  (found 2026-09-06, reported directly: El Naranjo, Petén, Guatemala doesn't appear anywhere in the app).
+  Verified directly against the vendored source, not just this app's filtered output: `El Naranjo` does not
+  exist anywhere in `scripts/vendor/geonames/cities500.zip`'s Guatemala rows at all (340 total GT entries,
+  zero mentioning "Naranjo" except the unrelated "Santa Cruz Naranjo"). **Root cause pinned down exactly, not
+  just inferred** — fetched GeoNames' own full, unfiltered `GT.zip` per-country export directly
+  (`download.geonames.org/export/dump/GT.zip`, not the vendored cities500 subset) and found the real record:
+  geoname id `3596710`, feature code `PPL` (an ordinary populated place, not any kind of administrative
+  seat), **recorded population: `0`** — not "a small nonzero population under 500," genuinely unset. GeoNames
+  has the place, with correct coordinates; nobody ever populated its population field. This is a common
+  GeoNames data-quality gap for smaller Latin American towns specifically, not unique to this one place.
+  **This is a fundamentally different kind of gap than every city-boundaries finding logged elsewhere in
+  this section** (Botswana/Libya/South Sudan/Belize are all missing *boundary polygons* for known places) —
+  this is a place missing its *point* in the index, which means it can never show as a label or a search
+  result in any country, independent of whether that country's boundary work is done at all. **Switching to
+  GeoNames' full `allCountries.zip` would NOT fully fix this on its own** — a population-based floor applied
+  to that fuller source would still exclude a population=0 entry the same way cities500 does; closing this
+  specific gap needs a floor shaped like "population > 0 OR any populated place at all," not just "a lower
+  population number," alongside the much larger source (every populated place regardless of recorded
+  population — likely still needs its own new inclusion rule to keep output size sane, since it's several
+  million `P`-class rows globally vs. this app's current ~234K). A real scope decision, not a quick patch,
+  and not attempted here (direct call: log it and keep working through the city-boundaries country list
+  rather than swap the underlying index source right now).
 - **Rivers (v5.2.0) only render `scalerank <= 3` — 116 of the source's 462
   features.** Deliberately partial, same pilot-scope reasoning as
   states/provinces above: raising the constant in
@@ -839,24 +864,50 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
     counties) but its real payam tier is essentially unmapped in OSM (2 of
     540). One partial win: Juba itself has real OSM neighborhood-level data
     (37 relations) — usable for the capital specifically, not nationwide.
+- **Belize has real city-boundary data for only its 9 actual municipalities — the other ~92% of its
+  populated places have no containing polygon at all, and that's correct, not a coverage gap to close**
+  (found 2026-09-05, `city-boundaries-architecture.md`'s "Eighth pass"). geoBoundaries' only sub-national
+  level for Belize is electoral constituencies (not settlement boundaries — confirmed against independent
+  sources before use); Belize's real local-government layer is a hand-curated 9-municipality OSM name list
+  instead (`scripts/buildCityBoundaries.mjs`'s `BELIZE_MUNICIPALITY_NAMES`). The per-feature join found and
+  kept all 9 real municipalities correctly, then left 127 of 138 GeoNames points unmatched — because most of
+  Belize's land area genuinely has no municipal government at all, not because the join or the source missed
+  something. A distinct third outcome alongside "full coverage" (Jordan/Kuwait/Costa Rica/El Salvador/
+  Guatemala/Honduras/Nicaragua/Panama/US) and "no coverage" (Botswana/Libya/South Sudan above) — worth
+  tracking as its own category in any future per-country source table, not collapsed into either.
+- **Two of geoBoundaries' Central America downloads (Panama, Honduras) turned out to be unsimplified
+  full-resolution source shapefiles, not pre-simplified data** (found 2026-09-05 by checking the real output
+  file size after the first join run — same discipline that caught the Sixth pass's US-mega-file bug). One
+  Panama corregimiento ("Arco Iris") alone had 631,536 points; the unfixed output was 291MB (Panama)/159MB
+  (Honduras) for a single country. Fixed with a plain-JS Douglas-Peucker simplifier applied to every kept
+  feature (`scripts/lib/sphericalGeometry.mjs`'s `simplifyGeometry`, `SIMPLIFY_EPSILON_DEG = 0.001` ≈ 111m),
+  verified against real area-distortion numbers before picking the tolerance (typical feature: <0.2%
+  distortion; the worst outlier: <1%) rather than guessed. Worth remembering for **every** future
+  geoBoundaries-sourced country, not just these two — nothing about Jordan/Kuwait/the other four Central
+  American countries' own geometry signaled this problem in advance; it only showed up because Panama/
+  Honduras's source data happened to be far denser than every country checked before them.
 
 ## Visualization
 
-- **Max zoom (`CAMERA_MIN_DISTANCE`, `scene/constants.ts` — currently 2.5, ~265km altitude) may be too
-  far out to usefully show individual city-scale boundaries once the city-boundaries work
-  (`city-boundaries-architecture.md`) actually gets a consumer component.** Raised 2026-09-04 while
-  checking why Kuwait's other towns weren't visible in the running app (they aren't wired in yet — a
-  separate, already-understood reason; this is a distinct, forward-looking concern). This constant is
-  not an oversight — its own comment documents a real prior attempt at ~32km altitude that "broke
-  badly in practice" (the core sphere/country-fill/border/atmosphere shells packed into too thin a
-  margin, grazing camera angles looking through surface geometry instead of at it), pulled back to the
-  current, more conservative range. Even the existing, shipped US city fly-to
-  (`US_CITY_FOCUS_DISTANCE`) stops farther out than this minimum, so the shipped city-zoom feature was
-  designed around today's ceiling, not against it. Worth a real decision before or alongside building
-  `CityLabels.tsx`/`CityOutlineHighlight.tsx` (migration plan step 3): does a real neighborhood-scale
-  city boundary actually read as useful at ~265km altitude, or does making that data genuinely useful
-  require the same kind of rendering-engine work (widening the fill/border/atmosphere shell separation)
-  that was tried and reverted once already. Explicitly deferred, not attempted, in this pass.
+- **Max zoom (`CAMERA_MIN_DISTANCE`, `scene/constants.ts` — currently 2.5, ~265km altitude) confirmed too
+  far out to usefully show a neighborhood-scale city boundary, now that `CityLabels.tsx`/
+  `CityOutlineHighlight.tsx` (migration plan step 3) actually ship as a consumer (2026-09-04).** This
+  entry originally raised the concern hypothetically, before those components existed; wiring them in
+  this pass turned it into a real, directly-observed finding, not just a worry: Jordan's Amman (Qada
+  Marka, ~277 km²) and a US city (Chicago's real Census Place) both render as a clearly visible fill/
+  border at the fly-to-city camera distance, but Kuwait City's matched geoBoundaries ADM2 district (real
+  neighborhood scale — see `city-boundaries-architecture.md`'s Fifth pass, e.g. Qibla/Sharq/Dasman) reads
+  as barely perceptible at the same distance — confirmed via a live in-browser check with the network
+  fetch (`city-boundaries/414.json`) succeeding and the correct feature matched, so this is a genuine
+  zoom-ceiling/rendering-scale gap, not a data or wiring bug. `CAMERA_MIN_DISTANCE` is still not an
+  oversight — its own comment documents a real prior attempt at ~32km altitude that "broke badly in
+  practice" (the core sphere/country-fill/border/atmosphere shells packed into too thin a margin, grazing
+  camera angles looking through surface geometry instead of at it), pulled back to the current, more
+  conservative range. Real decision still needed: whether a real neighborhood-scale boundary needs the
+  same rendering-engine work (widening the fill/border/atmosphere shell separation) that was tried and
+  reverted once already, or whether a smaller/different visual treatment (a filled dot instead of a thin
+  polygon outline, below some real-world-area threshold) reads better at this zoom ceiling without
+  touching camera bounds at all. Not attempted in this pass — flagged, not fixed.
 - **Claims overlay's dashed border is a real dash, but the "hatching"
   described in the original spec is still an approximation.** A true
   diagonal cross-hatch fill needs a custom shader/texture —

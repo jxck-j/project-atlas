@@ -175,7 +175,7 @@ interface LakeCandidate {
 // Sorted major-first (declutterLabels reads its input as already
 // priority-ordered) — a small lake losing its spot to a bigger one nearby
 // is the same "let zoom, not a zoom-tier table, be what unlocks more
-// labels" behavior UsCityLabels.tsx already established for cities.
+// labels" behavior CityLabels.tsx already established for cities.
 function buildLakeCandidates(features: Feature[]): LakeCandidate[] {
   const candidates = features.flatMap((f) => {
     const name = (f.properties?.name as string | null) ?? null
@@ -195,11 +195,11 @@ function buildLakeCandidates(features: Feature[]): LakeCandidate[] {
 // as tanking FPS, and (since Html billboards independently of the 3D scene)
 // reading as a swarm of text "swimming" around rather than calm, sparse
 // labels the way WaterLabels' 27 hand-curated water bodies do. Rebuilt on
-// UsCityLabels.tsx's existing labelDeclutter.ts machinery instead of a
+// CityLabels.tsx's existing labelDeclutter.ts machinery instead of a
 // bespoke fix — the exact same "many candidates, show only a small,
 // spaced-out, currently-on-screen subset" problem this app already solved
 // once, tested, for 32,608 city candidates. A far smaller MAX_VISIBLE_LABELS
-// than UsCityLabels' 120 (lake names are a sparse detail layer, not a
+// than CityLabels' 120 (lake names are a sparse detail layer, not a
 // primary map feature) is what actually gives the "just a couple of names
 // near where you're looking" feel that was being asked for.
 const OCCLUDER_RADIUS = GLOBE_RADIUS * 0.98 // matches Globe.tsx's core sphere
@@ -225,7 +225,7 @@ function LakeLabels({ visible }: { visible: LakeCandidate[] }) {
           // (LABEL_REVEAL_DISTANCE, barely above CAMERA_MIN_DISTANCE).
           // With distanceFactor still set, even a 3px CSS size rendered as
           // text spanning most of the screen — confirmed directly in a
-          // live browser. UsCityLabels.tsx already solved exactly this:
+          // live browser. CityLabels.tsx already solved exactly this:
           // its own comment says almost word for word "deliberately NO
           // distanceFactor... this label set is shown down to this app's
           // closest zoom," for the identical reason. Fixed pixel sizes

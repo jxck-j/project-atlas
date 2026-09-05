@@ -379,6 +379,164 @@ already-committed `public/geo/us-cities/*.json` (47 MB), regenerable in seconds 
 checking in a second ~50 MB copy of the same underlying data would only double repo size for nothing. Run
 `npm run build:geo:city-boundaries` to regenerate it locally.
 
+### Seventh pass: wired into the app for the three verified countries (2026-09-04)
+
+Migration plan step 3 (below) is now done, scoped to exactly Jordan/Kuwait/US — the same three countries
+the Sixth pass's build script covers, not the other 190. `scene/UsCityLabels.tsx`/
+`UsCityOutlineHighlight.tsx`/`useUsCityOutline.ts`/`useUsCitiesIndex.ts` (US-only) were replaced outright
+(not kept alongside) by `scene/CityLabels.tsx`/`CityOutlineHighlight.tsx`/`useCityOutline.ts`/
+`useCityIndex.ts` — same population-scored/LOD-gated label reveal and on-demand boundary-fetch-on-select
+logic, generalized to read a country-tagged index/shard instead of a hardcoded US one.
+
+**New build step**: `scripts/buildCityBoundariesIndex.mjs` (`npm run build:geo:city-boundaries-index`)
+derives the small, always-eager-fetched `public/geo/city-boundaries-index.json` (32,771 entries: Jordan
+138, Kuwait 25, US 32,608) from the already-written per-country boundary files
+(`city-boundaries/{400,414}.json` + `us-cities-index.json`) — pure local file reads, deliberately NOT
+re-hitting Overpass/geoBoundaries, so it can be re-run any time those (sometimes-unreachable) sources
+aren't. Centroids for Jordan/Kuwait use a new, simpler `geometryCentroid()` in
+`scripts/lib/sphericalGeometry.mjs` (largest-ring average, no antimeridian unwrap — safe for these two
+countries, would need the same unwrap treatment `scene/countryGeometry.ts`'s `geometryToCentroid` has
+before ever reusing this for a country that crosses the dateline).
+
+**`hud/selectionStore.ts`/`hud/SearchBar.tsx` generalized alongside the rendering components**:
+`usCityOutline`/`flyToUsCity` → `cityOutline`/`flyToCity`, both now carrying a `countryId` (plus the
+US-only `stateAbbrev`) instead of assuming US/state always. Search's `'us-city-boundary'` entry kind
+became `'city-boundary'` (label: CITY BOUNDARY) and its dedup-against-cities.json check
+(`SAME_PLACE_RADIUS_RAD`) now runs against the generalized index instead of the US-only one — Amman and
+Kuwait City's `cities.json` "major world city" entries correctly get suppressed as duplicates of their
+own city-boundary entries, the same as US capitals already were.
+
+**`hud/AttributionCredit.tsx` mounted in `App.tsx` for the first time** — this pass is the point real
+OSM- (Jordan) and geoBoundaries- (Kuwait) sourced polygons, plus GeoNames-sourced points, actually render
+on screen; the component already existed (built alongside the Sixth pass) but was deliberately held
+unmounted until something on screen actually needed crediting. Added OpenStreetMap and geoBoundaries
+entries alongside the existing GeoNames one.
+
+**Verified live in-browser** (dev server, Chrome): search finds "Amman" (CITY BOUNDARY, distinct from the
+states/provinces layer's own "Amman" ADMIN DIVISION result), "Kuwait City" (CITY BOUNDARY), and
+"Chicago, IL" (CITY BOUNDARY, state-qualified) — each flies the camera in and draws its real boundary via
+`CityOutlineHighlight`. Jordan's Amman and Chicago's Census Place both render as a clearly visible fill/
+border at the fly-to-city distance; Kuwait City's matched geoBoundaries district is real (the fetch
+succeeds, the correct feature matches) but barely perceptible at the same camera distance — a genuine
+zoom-ceiling/rendering-scale finding, not a wiring bug, now logged in `BACKLOG.md`'s "Max zoom" entry
+(originally raised hypothetically before this pass; now a confirmed, observed gap).
+
+**Not done in this pass**: the other 190 countries (still needs the same investigate-before-trusting
+per-country work the Fourth/Fifth passes did for Jordan/Kuwait/Botswana/Libya/South Sudan), the 3 Kuwait
+towns with no containing polygon (per-city fallback, still open), and migration plan steps 4-6
+(validating the US output against Census as ground truth, then retiring `buildUsCitiesData.mjs`'s raw
+inputs/`us-cities-index.json`/`us-cities/*.json`/`scripts/vendor/canada/` — those stay as-is since
+`buildCityBoundaries.mjs`/`buildCityBoundariesIndex.mjs` still read from them directly, not from a
+fully-independent US pipeline).
+
+### Eighth pass: Central America (2026-09-05) — the first real batch beyond the original three
+
+The first test of the "how do we tackle the other 190" question the Seventh pass left open. Central
+America (Belize, Costa Rica, El Salvador, Guatemala, Honduras, Nicaragua, Panama — the 7 UN members,
+per this project's own North America/Central America/Caribbean split) was picked as the next scope,
+prompted directly by the Kuwait finding above: **not every country has a "city" tier at all — some
+only have regions/districts, and the pipeline needs to tell the difference before trusting a source,
+not after.**
+
+**Recon reused, not redone**: `scripts/cityAdminLevelsReport.json` (the Third pass's all-193-country
+geoBoundaries survey) already had a finest-level candidate for all 7 — but its `canonicalName` field is
+sometimes blank ("Unknown") or, worse, technically present but wrong, exactly the trap that made
+Jordan's mislabeled Liwa level look plausible before. **Real independent-source verification (Wikipedia/
+Local Government History wiki, not geoBoundaries' own metadata) before trusting any of them:**
+
+- **Costa Rica** — ADM3, 472-492 units (source count varies by year; geoBoundaries' own snapshot is
+  slightly dated), confirmed as real **Distritos** (Provincia → Cantón → Distrito).
+- **El Salvador / Guatemala / Honduras** — ADM2, confirmed as real **Municipios**, geoBoundaries' own
+  canonicalName was already correct and unambiguous for all three.
+- **Nicaragua** — ADM2 (153 units, canonicalName blank in the metadata), confirmed as real **Municipios**
+  (Departamento → Municipio, 153 municipios nested in 17 first-level units — matches geoBoundaries' own
+  ADM1 count exactly).
+- **Panama** — ADM3 (633 units, canonicalName blank), confirmed as real **Corregimientos** (Provincia/
+  Comarca → Distrito → Corregimiento) — independent sources cite 640-702 depending on year, same "count
+  drifts, identity doesn't" pattern as Costa Rica.
+- **Belize — the one real "geoBoundaries has nothing" case, found before it wasted a network round-trip
+  on a bad source.** geoBoundaries' only sub-national level for Belize is **"Constituencies"** — Belize's
+  31 electoral constituencies, used solely for electing National Assembly members. Real, but cross-cutting
+  political geography, not nested settlement boundaries — confirmed against Belize's Local Government
+  History wiki and the 2021 municipal elections article. Using it directly would have joined GeoNames
+  points against electoral geometry with no relationship to actual town/city footprints. Belize's real
+  local-government layer — **9 municipalities** (2 cities, 7 towns, each with an elected council) — has
+  no equivalent in geoBoundaries at all.
+
+**Belize's real data exists in OSM, but the "admin_level isn't consistent enough to hardcode" lesson
+Kuwait already taught applies again, worse this time.** A direct area-contained Overpass query
+(`admin_level=7|8`, same technique as every prior direct-OSM check) found Belize City, Belmopan, and the
+combined "San Ignacio & Santa Elena" twin-town council at `admin_level=7`, while the other 6 real towns
+(Corozal Town, Orange Walk Town, Dangriga Town, San Pedro Town, Benque Viejo del Carmen, Punta Gorda
+Town) sit at `admin_level=8` — **mixed in at that same level with unrelated unincorporated villages**
+(Spanish Lookout, Ladyville, Bella Vista, Blue Creek, Hopkins Village, Roseville Mennonite Community, ...)
+that OSM tags identically. No flat `admin_level` filter separates "real municipality" from "informal
+village" here. With only 9 real municipalities to find, a **hand-curated name list** (verified against
+the actual query results, not assumed) was simpler and more correct than trying to infer the distinction
+from tags alone — see `scripts/buildCityBoundaries.mjs`'s `BELIZE_MUNICIPALITY_NAMES` set.
+
+**A second, unrelated real bug found by actually running the join against real data:** Panama and
+Honduras's geoBoundaries downloads turned out to be **unsimplified full-resolution source shapefiles**,
+not pre-simplified data — one Panama corregimiento ("Arco Iris") alone had 631,536 points, and the first
+real run produced a 291MB Panama output file and a 159MB Honduras one (Jordan/Kuwait's own geometry never
+had anywhere near this vertex density, so this went unnoticed until a country with denser source data hit
+the pipeline). The same "check the real output file size, don't assume" discipline that caught the
+Sixth pass's US-mega-file bug caught this too. Fixed with a plain-JS Douglas-Peucker simplifier
+(`scripts/lib/sphericalGeometry.mjs`'s `simplifyGeometry`, `SIMPLIFY_EPSILON_DEG = 0.001` ≈ 111m at the
+equator, applied to every kept feature regardless of country) — verified before picking the constant, not
+guessed: a typical Panama feature dropped from ~12,850 points to ~342 with <0.2% area distortion, and even
+the "Arco Iris" outlier dropped to ~9,200 points at <1% distortion. Real result: Panama 291MB → 2.6MB,
+Honduras 159MB → 1.5MB (Jordan/Kuwait's already-modest files shrank too, from 1.2MB/58KB to 245KB/16KB,
+confirming the fix is harmless on geometry that never needed it).
+
+**Final per-country join results** (`npm run build:geo:city-boundaries`, GeoNames points → kept/rejected/
+unmatched, same threshold policy as Jordan/Kuwait):
+
+| Country | Points | Kept | Rejected (too large) | Unmatched (no polygon) |
+|---|---|---|---|---|
+| Costa Rica | 137 | 131 | 0 | 6 |
+| El Salvador | 102 | 102 | 0 | 0 |
+| Guatemala | 340 | 335 | 5 | 0 |
+| Honduras | 544 | 487 | 46 | 11 |
+| Nicaragua | 168 | 157 | 11 | 0 |
+| Panama | 801 | 783 | 1 | 17 |
+| Belize | 138 | 11 | 0 | **127** |
+
+Every rejected/unmatched entry was spot-checked for plausibility, not just counted: Honduras's rejections
+are real small villages (population ~900-1,600) landing in genuinely huge municipios (2,000-7,300 km²);
+Panama's unmatched are real Guna Yala (San Blas) archipelago communities (Ustupo, Tubualá, Narganá, ...) —
+an indigenous comarca whose settlements don't cleanly fall inside the standard corregimiento layer, a real
+coverage gap rather than a join bug.
+
+**Belize's 127/138 unmatched is a different, real shape worth naming on its own — not "low coverage," but
+"coverage genuinely doesn't exist outside actual incorporated places."** Every one of Belize's 9 real
+municipalities was found and kept; the other ~92% of GeoNames points are villages/rural communities that
+sit entirely outside any of the 9 municipal boundaries, because Belize's local-government system simply
+doesn't cover most of the country's land area — there is no enclosing polygon for those points to fall
+into, unlike a join failure where a real containing unit exists but got rejected or missed. This is the
+concrete version of the plan's "region-only" classification: Belize isn't a Botswana/Libya/South-Sudan-
+style total gap (it has real, usable city data for its actual cities), but it's also not
+"full national coverage" the way Jordan/Kuwait/the Central America six otherwise are — a third, distinct
+outcome the per-country source table should track explicitly going forward, not collapse into either of
+the other two.
+
+**Wired in immediately, not left as a standalone script this time** — `scripts/buildCityBoundariesIndex.mjs`
+extended to fold in all 7 new countries (34,777 combined index entries, 5.4MB), no frontend code changes
+needed: `scene/useCityIndex.ts`/`useCityOutline.ts`/`CityLabels.tsx`/`CityOutlineHighlight.tsx` are already
+country-generic (see the Seventh pass), so a brand-new country just needs its two files
+(`city-boundaries-index.json` regenerated, `city-boundaries/{id}.json` written) to work — verified live in
+the browser for Panama City and Belize City, both correctly search as CITY BOUNDARY, fly the camera in, and
+fetch their real boundary file (`591.json`/`084.json`, both 200). The already-logged max-zoom-ceiling
+finding (BACKLOG.md) reproduces here too, unsurprisingly — Panama's corregimientos are similar scale to
+Kuwait's districts.
+
+**Net effect on scope**: 9 countries now have real city-boundary data (Jordan, Kuwait, US, Costa Rica, El
+Salvador, Guatemala, Honduras, Nicaragua, Panama) plus Belize's partial-by-nature 9-municipality set — 10
+total, 183 UN members still unstarted. The approach validated here (recon reuse → independent-source
+verification of the finest level's real identity → geoBoundaries as default, OSM/hand-curated fallback only
+where geoBoundaries has nothing usable → real per-feature join → check real output file size before calling
+it done) is the template for the next batch, not just a Central-America-specific one-off.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -395,19 +553,24 @@ checking in a second ~50 MB copy of the same underlying data would only double r
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for the 3 verified countries** (`scripts/buildCityBoundaries.mjs`,
-   `npm run build:geo:city-boundaries`; see the Sixth pass section above for the two real bugs
-   caught building it). Real per-feature join for Jordan (OSM `admin_level=6`) and Kuwait
-   (geoBoundaries ADM2) against the already-shipped GeoNames city index; US reused
-   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by
-   state. Output in `public/geo/city-boundaries/`. **Not done: the other 190 countries** — each
-   needs the same investigate-before-trusting treatment (Fourth pass) before its own join can run,
-   not a blind batch extension of this script. Also not done: a per-*city* fallback for the 3 Kuwait
-   towns this pass found with no containing polygon at all (a per-country source can still leave
-   individual cities with nothing).
-3. Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
+2. ~~Not started~~ — **done for 10 countries** (`scripts/buildCityBoundaries.mjs`,
+   `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
+   and the Eighth pass for the Central America batch + the vertex-density/simplification bug that
+   batch surfaced). Real per-feature join for Jordan (OSM `admin_level=6`), Kuwait/Costa Rica/El
+   Salvador/Guatemala/Honduras/Nicaragua/Panama (geoBoundaries, each level independently verified —
+   see the Eighth pass), and Belize (OSM, hand-curated 9-municipality name list) against the
+   already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census output
+   directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/`.
+   **Not done: the other 183 countries** — each needs the same investigate-before-trusting treatment
+   (Fourth/Eighth pass) before its own join can run, not a blind batch extension of this script. Also
+   not done: a per-*city* fallback for Kuwait's 3 and Panama's 17/Honduras's 11/Costa Rica's 6
+   unmatched towns (a per-country source can still leave individual cities with nothing — Belize's
+   127 unmatched are a different, structural case, not a fallback candidate — see the Eighth pass).
+3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
-   `CityOutlineHighlight.tsx`/`useCityOutline.ts`.
+   `CityOutlineHighlight.tsx`/`useCityOutline.ts`.~~ — **done** (Seventh pass), and confirmed to need
+   zero further changes when 7 more countries were added in the Eighth pass — the generalization
+   held.
 4. Validate the new pipeline's US output against the existing Census data
    as ground truth (does it find the same major cities, comparable
    population figures, reasonable boundary shapes) before cutover.
@@ -439,14 +602,16 @@ checking in a second ~50 MB copy of the same underlying data would only double r
   Bank WDI) is public-domain-equivalent or doesn't require display
   attribution. GeoNames (CC BY 4.0) and OSM/geoBoundaries'
   ODbL-and-mixed-licensed boundaries both do. ~~No attribution UI exists
-  anywhere in `src/hud/` today~~ — **built.** `src/hud/AttributionCredit.tsx`
-  — bottom-right (the one open HUD corner, and the universal web-map
-  attribution convention), small/unobtrusive text links, an extensible
-  `ATTRIBUTIONS` array (GeoNames only so far — add OSM/geoBoundaries once
-  the boundary script ships). **Deliberately NOT mounted in `App.tsx`
-  yet** — wiring it in happens at cutover (migration plan step 5),
-  alongside the data it credits actually going live; crediting a source
-  nothing on screen renders from yet would misrepresent what's showing.
+  anywhere in `src/hud/` today~~ — **built, and mounted** (Seventh pass
+  above). `src/hud/AttributionCredit.tsx` — bottom-right (the one open HUD
+  corner, and the universal web-map attribution convention), small/
+  unobtrusive text links, `ATTRIBUTIONS` now lists GeoNames, OpenStreetMap,
+  and geoBoundaries. Mounted in `App.tsx` as of the Seventh pass, once
+  `CityLabels.tsx`/`CityOutlineHighlight.tsx` actually put OSM- and
+  geoBoundaries-sourced polygons on screen for real — not held for the full
+  cutover (migration plan step 5) after all, since crediting a source that
+  genuinely renders something today (even for only 3 of 193 countries) is
+  accurate, not premature.
 - Exact query technique (which geoBoundaries ADM level per country, and
   what the OSM fallback query looks like for country's geoBoundaries can't
   reach deep enough) still needs real design once the build script is
@@ -475,12 +640,13 @@ checking in a second ~50 MB copy of the same underlying data would only double r
   once. Real output: `global-cities-headline.json` is 3,099 entries, 386 KB
   (down from 28.2 MB eager); 193 per-country detail shards average 148 KB,
   largest (US) ~2.7 MB, median 18 KB — see
-  `scripts/buildGlobalCitiesData.mjs`. The consumer side (which hook
-  fetches which tier, and when — the generalized `CityLabels.tsx`/
-  `CityOutlineHighlight.tsx` work) is migration plan step 3, not done yet;
-  this only produces the two-tier data shape.
-- Attribution UI still genuinely unresolved (see above) — a placement
-  recommendation exists (bottom-right, unobtrusive, matching the HUD's
-  existing thin-line/low-opacity styling — the one open HUD corner, and the
-  universal web-map-attribution convention) but hasn't been built or
-  confirmed.
+  `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
+  `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
+  `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
+  scoped to the 10 countries with real boundary data (Seventh/Eighth passes),
+  not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 183 countries (once each has its own verified
+  boundary source) is still open — this only produces the two-tier data
+  shape a future pass would consume.
+- ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,
+  see above.

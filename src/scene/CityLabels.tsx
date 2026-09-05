@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import { Vector3 } from 'three'
-import { useUsCitiesIndex, type UsCityIndexEntry } from './useUsCitiesIndex'
+import { useCityIndex, type CityIndexEntry } from './useCityIndex'
 import { useSelection } from '../hud/selectionStore'
 import { latLngToVector3 } from '../utils/geo'
 import { getGlobeRotationY } from './globeRotation'
@@ -10,24 +10,22 @@ import { declutterLabels, isCandidateVisible, type DeclutterCandidate } from './
 import { GLOBE_RADIUS } from './constants'
 import { resolveDeepestLevel, type LodLevelId } from '../lod'
 
-// Google-Maps-style progressive label reveal for the 32,608 US cities/places
-// this branch already has boundary data for (see UsCityOutlineHighlight.tsx)
-// — names only, positioned at each city's centroid, no polygon (the
-// polygon-on-search behavior is unchanged and unrelated to this). Ranked by
-// real 2023 city-proper population (scripts/buildUsCitiesData.mjs, joined
-// from a separate Census population-estimates product — see that script's
-// comments for why land area and Natural Earth's populated-places dataset
-// were both tried and rejected as ranking signals first).
+// Google-Maps-style progressive label reveal for every city this app has
+// real boundary data for — see useCityOutline.ts — generalized (2026-09-04)
+// from what was UsCityLabels.tsx (US-only) to also cover Jordan/Kuwait, per
+// city-boundaries-architecture.md's migration plan step 3. Names only,
+// positioned at each city's centroid, no polygon (the polygon-on-search
+// behavior is unchanged and unrelated to this).
 //
-// State capitals get a synthetic population floor (STATE_CAPITAL_FLOOR)
+// National capitals get a synthetic population floor (CAPITAL_POPULATION_FLOOR)
 // rather than a separate parallel filter, so a single sort-by-score handles
-// both "big city" and "notable small capital" (Montpelier, VT; Pierre, SD)
-// in one pass — see usStateCapitals.mjs for why population data can't
-// identify these on its own.
-const STATE_CAPITAL_FLOOR = 350_000
+// both "big city" and "notable small capital" (Montpelier, VT; Kuwait City)
+// in one pass — see useCityIndex.ts's `isCapital` field for why population
+// data can't identify these on its own.
+const CAPITAL_POPULATION_FLOOR = 350_000
 
-function scoreOf(city: UsCityIndexEntry): number {
-  return city.isStateCapital ? Math.max(city.population, STATE_CAPITAL_FLOOR) : city.population
+function scoreOf(city: CityIndexEntry): number {
+  return city.isCapital ? Math.max(city.population, CAPITAL_POPULATION_FLOOR) : city.population
 }
 
 // Population floor to show at each city-relevant LOD level once the LOD
@@ -49,10 +47,11 @@ const CITY_POPULATION_FLOOR: Partial<Record<LodLevelId, number>> = {
   'medium-cities': 100_000,
   'small-cities': 30_000,
   // Strictly greater than 0, not "no floor at all" — this level is "every
-  // INCORPORATED city," and population 0 in this dataset means an
+  // INCORPORATED city," and population 0 in the US dataset means an
   // unincorporated Census-Designated Place this Census program doesn't
   // estimate (see buildUsCitiesData.mjs), not a real incorporated city
-  // with zero residents.
+  // with zero residents. Jordan/Kuwait entries are always real cities with
+  // a real GeoNames population, so this floor never excludes one of theirs.
   'every-incorporated-city': 1,
 }
 
@@ -137,13 +136,13 @@ const DECLUTTER_INTERVAL_MS = 150 // throttled recompute — every frame would b
 // rotation once, naturally) — passing the already-rotated worldPosition
 // there would double-apply it.
 interface CityCandidate extends DeclutterCandidate {
-  city: UsCityIndexEntry
+  city: CityIndexEntry
   localPosition: Vector3
 }
 
-export function UsCityLabels() {
-  const allCities = useUsCitiesIndex()
-  const { selected, usCityOutline } = useSelection()
+export function CityLabels() {
+  const allCities = useCityIndex()
+  const { selected, cityOutline } = useSelection()
   const { camera, size } = useThree()
   const [visible, setVisible] = useState<CityCandidate[]>([])
   const lastRun = useRef(0)
@@ -155,7 +154,7 @@ export function UsCityLabels() {
     if (now - lastRun.current < DECLUTTER_INTERVAL_MS) return
     lastRun.current = now
 
-    if (selected || usCityOutline) {
+    if (selected || cityOutline) {
       if (visible.length > 0) setVisible([])
       return
     }
@@ -198,7 +197,7 @@ export function UsCityLabels() {
           // Html's own raycast-based occlusion to do.
           //
           // Deliberately NO distanceFactor, unlike every other Html label in
-          // this app (WaterLabels/CapitalMarker/UsCityOutlineHighlight all
+          // this app (WaterLabels/CapitalMarker/CityOutlineHighlight all
           // use one) — those never operate this close to their own anchor
           // point, so the perspective growth distanceFactor introduces stays
           // unnoticed. This label set is shown down to this app's closest

@@ -10,20 +10,22 @@
 // while something's selected) — and it's the universal web-map
 // attribution convention (Leaflet/Mapbox/Google Maps all default there).
 //
-// NOT mounted in App.tsx yet, deliberately — wiring this in is meant to
-// happen at cutover (city-boundaries-architecture.md's migration plan step
-// 5), alongside the data it credits actually going live. Crediting a
-// source nothing on screen yet renders from would misrepresent what's
-// actually showing.
+// Mounted in App.tsx as of 2026-09-04, alongside migration plan step 3
+// (CityLabels.tsx/CityOutlineHighlight.tsx going live for Jordan/Kuwait/US)
+// — that's the point real OSM- and geoBoundaries-sourced polygons, plus
+// GeoNames-sourced points, first actually render on screen. Add a fourth
+// entry here (or widen scope, not license, on these three) if the other
+// 190-country pass introduces a new source.
 interface AttributionEntry {
   label: string
   url: string
 }
 
-// Add an entry here per attribution-requiring source as it goes live —
-// e.g. OpenStreetMap/geoBoundaries once the boundary extraction script
-// (migration plan step 2) ships. GeoNames is the only one built so far.
-const ATTRIBUTIONS: AttributionEntry[] = [{ label: 'GeoNames', url: 'https://www.geonames.org/' }]
+const ATTRIBUTIONS: AttributionEntry[] = [
+  { label: 'GeoNames', url: 'https://www.geonames.org/' },
+  { label: 'OpenStreetMap', url: 'https://www.openstreetmap.org/copyright' },
+  { label: 'geoBoundaries', url: 'https://www.geoboundaries.org/' },
+]
 
 export function AttributionCredit() {
   if (ATTRIBUTIONS.length === 0) return null

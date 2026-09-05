@@ -32,7 +32,7 @@ export function useCameraFlight(controlsRef: RefObject<OrbitControlsImpl | null>
 
   // Shared by both triggers below — same cinematic swoop either way, just
   // aimed at a bare direction instead of `selected.direction` and to a
-  // caller-chosen focus distance, since flyToUsCity() deliberately never
+  // caller-chosen focus distance, since flyToCity() deliberately never
   // touches `selected` (see selectionStore.ts) and lands much closer
   // (US_CITY_FOCUS_DISTANCE, city-block scale) than a country/GeoEntity
   // selection (CAMERA_FOCUS_DISTANCE, country scale) does.
@@ -85,7 +85,7 @@ export function useCameraFlight(controlsRef: RefObject<OrbitControlsImpl | null>
   }, [selected, flightSeq, startFlightTo])
 
   // Same flight, triggered independently by a US city search result
-  // (hud/SearchBar.tsx's flyToUsCity()) — flyToTarget/flyToTargetSeq exist
+  // (hud/SearchBar.tsx's flyToCity()) — flyToTarget/flyToTargetSeq exist
   // specifically because that path leaves `selected` null (no highlight, no
   // Intelligence Panel entry), so it can't reuse the effect above. Before
   // this, flyToTarget/flyToTargetSeq were written by the store but never

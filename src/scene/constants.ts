@@ -34,7 +34,7 @@ export const CAMERA_FOCUS_DISTANCE = GLOBE_RADIUS * 2.0
 // flights) but with real margin above CAMERA_MIN_DISTANCE this time (not
 // landing on the hard zoom clamp, which is exactly what broke at 1.01
 // alongside the CAMERA_MIN_DISTANCE experiment above). Only used by
-// flyToUsCity() (US city search results, hud/SearchBar.tsx).
+// flyToCity() (city-boundary search results, hud/SearchBar.tsx).
 export const US_CITY_FOCUS_DISTANCE = GLOBE_RADIUS * 1.1
 export const CAMERA_IDLE_AUTOROTATE_SPEED = 0.35
 // Matches Scene.tsx's initial <Canvas camera={{ position: [0, 0, 6.5] }} /> —

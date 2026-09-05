@@ -2,11 +2,11 @@ import { Vector3 } from 'three'
 import type { Camera } from 'three'
 
 // Google Maps-style label decluttering, shared by every "many passive
-// labels at once" layer (UsCityLabels.tsx today, CountryLabels.tsx next) —
+// labels at once" layer (CityLabels.tsx today, CountryLabels.tsx next) —
 // the actual mechanism that keeps labels from reading as jumbled/
 // overwhelming, as opposed to just tuning population/zoom thresholds
 // tighter and tighter (tried first for US cities; still wasn't enough on
-// its own — see UsCityLabels.tsx's history). Real Google Maps doesn't just
+// its own — see CityLabels.tsx's history). Real Google Maps doesn't just
 // gate labels by zoom level, it actively refuses to draw a lower-priority
 // label if it would crowd a higher-priority one already placed. This is a
 // simplified version of that: candidates are checked in priority order
@@ -22,7 +22,7 @@ export interface DeclutterCandidate {
   // Half of this candidate's own required clearance in px. The final
   // required separation between any two accepted candidates is the SUM of
   // their two radii, not one shared constant — needed once a layer's
-  // candidates span a wide range of label sizes (UsCityLabels.tsx: 6px
+  // candidates span a wide range of label sizes (CityLabels.tsx: 6px
   // town names up to 11px bold metro names), where a single fixed spacing
   // is either too loose for the smallest labels or too tight for the
   // biggest ones. Two real, adjacent small cities (Gulfport/Biloxi, MS,
@@ -127,9 +127,9 @@ export function apparentSizePx(
 }
 
 // Exported so callers that build a candidate pool BEFORE calling
-// declutterLabels (UsCityLabels.tsx's population/zoom-tier prefilter) can
+// declutterLabels (CityLabels.tsx's population/zoom-tier prefilter) can
 // use the same real "is this on screen" test instead of a cheaper but
-// wrong approximation — see UsCityLabels.tsx for why that pool-filtering
+// wrong approximation — see CityLabels.tsx for why that pool-filtering
 // step needs this too, not just the declutter pass itself.
 export function isCandidateVisible(
   worldPosition: Vector3,

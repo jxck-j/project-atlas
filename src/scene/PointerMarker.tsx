@@ -24,7 +24,7 @@
 // both well under the distanceFactor of 8 that was set here, so the label
 // was scaled UP by up to ~3.2x at min zoom instead of staying at its base
 // text-[8px]. Dropped, for the same reason `WaterLabels`/`Lakes.tsx`/
-// `UsCityLabels.tsx`/`EntityRenderLayer.tsx`'s `HoverLabel` already
+// `CityLabels.tsx`/`EntityRenderLayer.tsx`'s `HoverLabel` already
 // dropped it elsewhere in this codebase — see CLAUDE.md's "Frame loop"
 // section and LOGBOOK.md's v5.2.8 entry for the identical bug found there.
 import { useRef } from 'react'

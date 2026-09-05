@@ -2,7 +2,7 @@ import type { LodLevel, LodLevelId } from './types'
 
 // The ordered zoom ladder, shallowest (least detail) first. Distance
 // thresholds for the implemented city tiers are the same values
-// UsCityLabels.tsx's old REVEAL_TIERS already tuned by eye across this
+// CityLabels.tsx's old REVEAL_TIERS already tuned by eye across this
 // session (Hattiesburg's off-screen-candidate bug, then the Gulfport/
 // Biloxi spacing-collision fix) — carried forward rather than re-guessed,
 // since they were already validated in the browser. `every-incorporated-

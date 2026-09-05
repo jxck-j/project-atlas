@@ -6,7 +6,7 @@ import type { LodLevel, LodLevelId } from './types'
 // level, same role as globeRotation.ts/telemetryStore.ts — for consumers
 // that don't have their own convenient per-frame camera access (a HUD
 // panel, a future layer mounted outside the Canvas). A component that
-// already reads `camera` via useThree() every frame (UsCityLabels.tsx
+// already reads `camera` via useThree() every frame (CityLabels.tsx
 // today) should call lodLevels.ts's pure resolveDeepestLevel()/
 // isLodLevelActive() directly with its own locally-computed distance
 // instead of round-tripping through this store — this store exists for

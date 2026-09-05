@@ -9,6 +9,7 @@ import { AlliancesPanel } from './hud/AlliancesPanel'
 import { LegendPanel } from './hud/LegendPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
 import { AnalyticsPanel } from './hud/AnalyticsPanel'
+import { AttributionCredit } from './hud/AttributionCredit'
 import { InputManager } from './input/InputManager'
 
 function App() {
@@ -37,6 +38,7 @@ function App() {
       <LayerPresetsPanel />
       <AlliancesPanel />
       <IntelligencePanel />
+      <AttributionCredit />
       {/* v3.2.0 — no visual output, wires up the global keyboard listener. */}
       <InputManager />
     </div>

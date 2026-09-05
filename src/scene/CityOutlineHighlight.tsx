@@ -2,18 +2,20 @@ import { useMemo } from 'react'
 import { FrontSide } from 'three'
 import { BufferGeometry, Float32BufferAttribute } from 'three'
 import { Html } from '@react-three/drei'
-import { useUsCityOutlineGeometry } from './useUsCityOutline'
+import { useCityOutlineGeometry } from './useCityOutline'
 import { geometryToBorderSegments, geometryToFillMesh, geometryToCentroid } from './countryGeometry'
 import { latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from './constants'
 import { HIGHLIGHT_COLORS } from './highlightColors'
 
-// Draws exactly one US city's boundary outline — the one currently set via
-// selectionStore.ts's showUsCityOutline(), from a search result
+// Draws exactly one city's boundary outline — the one currently set via
+// selectionStore.ts's flyToCity(), from a search result
 // (hud/SearchBar.tsx). Always mounted (see scene/Globe.tsx, alongside
 // CapitalMarker — same "renders nothing most of the time" pattern), not a
 // toggleable Layer Engine layer: this isn't a layer a user turns on, it's a
-// direct consequence of searching for a specific city.
+// direct consequence of searching for a specific city. Generalized
+// (2026-09-04) from what was UsCityOutlineHighlight.tsx (US-only) to draw
+// whichever verified country's boundary is active — see useCityOutline.ts.
 //
 // Client-side geometryToBorderSegments/geometryToFillMesh calls, unlike
 // every polygon layer that renders many features at once (Countries.tsx,
@@ -26,8 +28,8 @@ const BORDER_RADIUS = GLOBE_RADIUS * 1.006
 const FILL_RADIUS = GLOBE_RADIUS * 1.0
 const COLOR = HIGHLIGHT_COLORS.selected.hex
 
-export function UsCityOutlineHighlight() {
-  const active = useUsCityOutlineGeometry()
+export function CityOutlineHighlight() {
+  const active = useCityOutlineGeometry()
 
   const geometries = useMemo(() => {
     if (!active) return null
@@ -56,8 +58,8 @@ export function UsCityOutlineHighlight() {
           <meshBasicMaterial color={COLOR} transparent opacity={0.2} side={FrontSide} depthWrite={false} />
         </mesh>
       )}
-      {/* No distanceFactor — see UsCityLabels.tsx for the full story, but
-          the short version here is worse: flyToUsCity() centers the camera
+      {/* No distanceFactor — see CityLabels.tsx for the full story, but
+          the short version here is worse: flyToCity() centers the camera
           exactly on this label, and drei's Html only recomputes its
           distanceFactor scale when the label's PROJECTED SCREEN position
           moves by more than a small epsilon (see Html.js's useFrame — the

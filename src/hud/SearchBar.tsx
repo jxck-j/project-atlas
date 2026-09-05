@@ -4,12 +4,12 @@ import { useCountryFeatures } from '../scene/useCountryFeatures'
 import { useGeoEntityFeatures } from '../scene/useGeoEntityFeatures'
 import { useStatesProvincesFeatures } from '../scene/useStatesProvincesFeatures'
 import { useCitiesFeatures } from '../scene/useCitiesFeatures'
-import { useUsCitiesIndex } from '../scene/useUsCitiesIndex'
+import { useCityIndex } from '../scene/useCityIndex'
 import { geometryToCentroid } from '../scene/countryGeometry'
 import { angularDistance, latLngToVector3 } from '../utils/geo'
 import { GLOBE_RADIUS } from '../scene/constants'
 import { getGlobeRotationY } from '../scene/globeRotation'
-import { flyToSelectedCountry, flyToUsCity, selectEntity } from './selectionStore'
+import { flyToSelectedCountry, flyToCity, selectEntity } from './selectionStore'
 import { useHudPanel } from './hudPanelStore'
 import { getEntities, getEntity } from '../data'
 import type { GeoEntityType } from '../data'
@@ -21,18 +21,18 @@ import { ICONS } from './iconPaths'
 const UP_AXIS = new Vector3(0, 1, 0)
 const MAX_RESULTS = 8
 
-// A handful of cities.json's "major world city" entries for the USA
-// (Washington D.C., New York, Chicago, ...) name the exact same real-world
-// place as one specific record in the much larger us-cities Census index —
-// e.g. cities.json's "Washington,  D.C." and dc.json's single place,
+// A handful of cities.json's "major world city" entries (Washington D.C.,
+// New York, Chicago, Amman, Kuwait City, ...) name the exact same real-world
+// place as one specific record in the much larger city-boundary index —
+// e.g. cities.json's "Washington,  D.C." and the US index's single place,
 // "Washington", ~0.5km apart. Both datasets still need to exist for their
 // own render paths (Cities.tsx's always-on capital marker vs
-// UsCityLabels.tsx's population-scored zoom labels/outline highlight — see
+// CityLabels.tsx's population-scored zoom labels/outline highlight — see
 // CLAUDE.md), but search should only ever surface one result for a place a
 // user would type once. ~50km (0.5deg at the equator, as radians) is
 // generous enough to cover the centroid-vs-downtown-point gap between the
 // two datasets' coordinates for the same city, while still being far
-// smaller than the distance between two different US places that happen to
+// smaller than the distance between two different places that happen to
 // share a name (e.g. Boston, MA vs Boston, GA).
 const SAME_PLACE_RADIUS_RAD = (0.5 * Math.PI) / 180
 
@@ -51,26 +51,32 @@ function baseCityName(name: string): string {
 // one more block like `geoEntityEntries` below plus one more `kind` union
 // member — see CLAUDE.md for the full walkthrough.
 //
-// 'us-city-boundary' is deliberately NOT a GeoEntityType — US city
+// 'city-boundary' is deliberately NOT a GeoEntityType — these city
 // boundaries have no GeoEntityRegistry entry at all (see
-// scene/UsCityOutlineHighlight.tsx), so `selectEntry()` below branches on
-// this kind specifically to fly the camera there via flyToUsCity()
+// scene/CityOutlineHighlight.tsx), so `selectEntry()` below branches on
+// this kind specifically to fly the camera there via flyToCity()
 // instead of resolveEntity()/selectEntity(), which would have nothing to
-// resolve.
+// resolve. Covers exactly the three countries useCityIndex.ts's index
+// covers today (Jordan, Kuwait, US) — see city-boundaries-architecture.md.
 interface SearchEntry {
   id: string
-  // "City, ST" for 'us-city-boundary' entries (e.g. "Austin, TX") — many
+  // "City, ST" for a US 'city-boundary' entry (e.g. "Austin, TX") — many
   // US cities share a name across different states (there are 7 different
   // "Austin"s in this dataset alone), so the state qualifier is baked
   // directly into `name` rather than shown separately, the same way a
-  // human would disambiguate them in conversation.
+  // human would disambiguate them in conversation. Jordan/Kuwait entries
+  // have no such qualifier — their names are already unambiguous.
   name: string
-  kind: 'country' | GeoEntityType | 'us-city-boundary'
+  kind: 'country' | GeoEntityType | 'city-boundary'
   lat: number
   lng: number
-  // Only meaningful for 'us-city-boundary' — which state shard
-  // (public/geo/us-cities/{stateAbbrev}.json) to fetch for this city's
-  // on-demand outline. See useUsCityOutline.ts.
+  // Only meaningful for 'city-boundary' — which country's boundary file
+  // (public/geo/city-boundaries/{countryId}.json) this city's outline
+  // lives in. See useCityOutline.ts.
+  countryId?: string
+  // Only meaningful for a US 'city-boundary' entry — which state shard
+  // (public/geo/city-boundaries/840/{stateAbbrev}.json) to fetch for this
+  // city's on-demand outline. See useCityOutline.ts.
   stateAbbrev?: string
 }
 
@@ -83,7 +89,7 @@ const ENTITY_TYPE_LABEL: Record<SearchEntry['kind'], string> = {
   'geographic-region': 'REGION',
   'administrative-division': 'ADMIN DIVISION',
   city: 'CITY',
-  'us-city-boundary': 'US CITY',
+  'city-boundary': 'CITY BOUNDARY',
 }
 
 export function SearchBar() {
@@ -92,7 +98,7 @@ export function SearchBar() {
   const geoFeatures = useGeoEntityFeatures()
   const provinceFeatures = useStatesProvincesFeatures()
   const cityFeatures = useCitiesFeatures()
-  const usCitiesIndex = useUsCitiesIndex()
+  const cityIndex = useCityIndex()
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -160,15 +166,15 @@ export function SearchBar() {
   // geometryToCentroid assumes Polygon/MultiPolygon and would silently
   // return {lat:0,lng:0} for a Point, so it's deliberately not reused here.
   //
-  // Skips any entry that's really the same US place as one already in
-  // usCitiesIndex (see SAME_PLACE_RADIUS_RAD above) — keeping the
-  // us-city-boundary entry instead of this one. cities.json's world-city
+  // Skips any entry that's really the same place as one already in
+  // cityIndex (see SAME_PLACE_RADIUS_RAD above) — keeping the
+  // city-boundary entry instead of this one. cities.json's world-city
   // dataset has no state qualifier at all, so e.g. Atlanta/GA and
   // Washington/D.C. would otherwise show up as bare "Atlanta"/"Washington,
   // D.C." here, indistinguishable from same-named places in other states;
   // and selecting this entry flies the camera there with no boundary
-  // outline (see UsCityOutlineHighlight.tsx), which read as a worse,
-  // silently-broken result for the exact same query a US city search
+  // outline (see CityOutlineHighlight.tsx), which read as a worse,
+  // silently-broken result for the exact same query a city-boundary search
   // already answers properly.
   const cityEntries = useMemo<SearchEntry[]>(() => {
     return cityFeatures.flatMap((f) => {
@@ -178,10 +184,10 @@ export function SearchBar() {
       const registryEntity = getEntity(id)
       const name = registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown'
       const entryName = baseCityName(name)
-      const duplicatesUsCity = usCitiesIndex.some(
+      const duplicatesIndexedCity = cityIndex.some(
         (c) => baseCityName(c.name) === entryName && angularDistance({ lat, lng }, c) < SAME_PLACE_RADIUS_RAD
       )
-      if (duplicatesUsCity) return []
+      if (duplicatesIndexedCity) return []
       return [
         {
           id,
@@ -192,23 +198,26 @@ export function SearchBar() {
         },
       ]
     })
-  }, [cityFeatures, usCitiesIndex])
+  }, [cityFeatures, cityIndex])
 
-  // US city boundaries: not a GeoEntityRegistry lookup at all — the index
-  // entry itself already has everything a search result needs (id/name/
-  // lat/lng). See the 'us-city-boundary' kind's doc comment above. Always
-  // included, unfiltered — cityEntries above is the one that skips a
-  // duplicate, so this list doesn't need to know cityEntries exists.
-  const usCityEntries = useMemo<SearchEntry[]>(() => {
-    return usCitiesIndex.map((entry) => ({
+  // City boundaries (Jordan, Kuwait, US): not a GeoEntityRegistry lookup at
+  // all — the index entry itself already has everything a search result
+  // needs (id/name/lat/lng/countryId). See the 'city-boundary' kind's doc
+  // comment above. Always included, unfiltered — cityEntries above is the
+  // one that skips a duplicate, so this list doesn't need to know
+  // cityEntries exists. Only US entries get a state-qualified name — Jordan/
+  // Kuwait names are already unambiguous within their own country.
+  const cityBoundaryEntries = useMemo<SearchEntry[]>(() => {
+    return cityIndex.map((entry) => ({
       id: entry.id,
-      name: `${entry.name}, ${entry.stateAbbrev}`,
-      kind: 'us-city-boundary' as const,
+      name: entry.stateAbbrev ? `${entry.name}, ${entry.stateAbbrev}` : entry.name,
+      kind: 'city-boundary' as const,
       lat: entry.lat,
       lng: entry.lng,
+      countryId: entry.countryId,
       stateAbbrev: entry.stateAbbrev,
     }))
-  }, [usCitiesIndex])
+  }, [cityIndex])
 
   // GeoEntityRegistry entries with no rendered geometry (currently only
   // Crimea — see entityGeometryIds.ts) fall back to their own `location`
@@ -241,9 +250,9 @@ export function SearchBar() {
       ...provinceEntries,
       ...cityEntries,
       ...geoEntityLocationOnlyEntries,
-      ...usCityEntries,
+      ...cityBoundaryEntries,
     ],
-    [countryEntries, geoEntityGeometryEntries, provinceEntries, cityEntries, geoEntityLocationOnlyEntries, usCityEntries],
+    [countryEntries, geoEntityGeometryEntries, provinceEntries, cityEntries, geoEntityLocationOnlyEntries, cityBoundaryEntries],
   )
 
   // Ranked, not just filtered: exact name matches first, then
@@ -279,13 +288,13 @@ export function SearchBar() {
     const local = latLngToVector3(entry.lat, entry.lng, GLOBE_RADIUS)
     const direction = local.applyAxisAngle(UP_AXIS, getGlobeRotationY()).normalize()
 
-    // US city boundaries have no GeoEntityRegistry entry to resolve — see
-    // this file's 'us-city-boundary' kind doc comment. Fly there directly,
-    // skipping selection entirely, so nothing highlights and the
-    // Intelligence Panel doesn't open — just its boundary outline appears
-    // (scene/UsCityOutlineHighlight.tsx).
-    if (entry.kind === 'us-city-boundary' && entry.stateAbbrev) {
-      flyToUsCity(direction, { id: entry.id, stateAbbrev: entry.stateAbbrev, name: entry.name })
+    // City boundaries have no GeoEntityRegistry entry to resolve — see this
+    // file's 'city-boundary' kind doc comment. Fly there directly, skipping
+    // selection entirely, so nothing highlights and the Intelligence Panel
+    // doesn't open — just its boundary outline appears
+    // (scene/CityOutlineHighlight.tsx).
+    if (entry.kind === 'city-boundary' && entry.countryId) {
+      flyToCity(direction, { id: entry.id, countryId: entry.countryId, stateAbbrev: entry.stateAbbrev, name: entry.name })
       setQuery('')
       return
     }

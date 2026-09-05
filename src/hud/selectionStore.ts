@@ -44,23 +44,26 @@ interface SelectionState {
   // (Home key, double-click on ocean, or the toolbar's globe button). See
   // useCameraReset.
   resetSeq: number
-  // World-space direction for flyToUsCity() below — deliberately NOT
-  // reusing `selected`/`flightSeq`. US city search results (see
+  // World-space direction for flyToCity() below — deliberately NOT
+  // reusing `selected`/`flightSeq`. City-boundary search results (see
   // hud/SearchBar.tsx) need "fly the camera there" without the highlight,
   // Intelligence Panel entry, or Tab-cycling membership every other
-  // selectable thing gets, because US city boundaries have no
-  // GeoEntityRegistry entry at all — see scene/UsCityOutlineHighlight.tsx.
+  // selectable thing gets, because these city boundaries have no
+  // GeoEntityRegistry entry at all — see scene/CityOutlineHighlight.tsx.
   flyToTarget: Vector3 | null
   flyToTargetSeq: number
-  // Which US city (if any) should currently draw its boundary outline —
-  // the "Google Maps approach" this layer settled on after the always-on
-  // 32,608-polygon layer read as visual noise: names/search only by
+  // Which city (if any) should currently draw its boundary outline — the
+  // "Google Maps approach" this layer settled on after the always-on
+  // 32,608-polygon US-only layer read as visual noise: names/search only by
   // default, one city's real outline appears only once it's actually
-  // searched for. Cleared by selectEntity/clearSelection/resetView so it
-  // doesn't linger once the user moves on to a normal selection — see
-  // flyToUsCity below, which is the only setter (set together with
-  // flyToTarget in one atomic update, never on its own).
-  usCityOutline: { id: string; stateAbbrev: string; name: string } | null
+  // searched for. `countryId` picks which per-country boundary file to
+  // read (`scene/useCityOutline.ts`); `stateAbbrev` is only meaningful for
+  // the US (840), which stays sharded by state. Cleared by
+  // selectEntity/clearSelection/resetView so it doesn't linger once the
+  // user moves on to a normal selection — see flyToCity below, which is the
+  // only setter (set together with flyToTarget in one atomic update, never
+  // on its own).
+  cityOutline: { id: string; countryId: string; stateAbbrev?: string; name: string } | null
 }
 
 const useSelectionStore = create<SelectionState>(() => ({
@@ -70,7 +73,7 @@ const useSelectionStore = create<SelectionState>(() => ({
   resetSeq: 0,
   flyToTarget: null,
   flyToTargetSeq: 0,
-  usCityOutline: null,
+  cityOutline: null,
 }))
 
 export interface SelectEntityOptions {
@@ -101,7 +104,7 @@ export function selectEntity(entity: ResolvedEntity, direction: Vector3, options
   useSelectionStore.setState((state) => ({
     selected: { entity, id: entity.id, name: entity.name, direction },
     inspectorOpen: shouldOpen ? true : state.inspectorOpen,
-    usCityOutline: null,
+    cityOutline: null,
   }))
 }
 
@@ -129,7 +132,7 @@ export function selectCountry(country: { id: string; name: string; direction: Ve
 }
 
 export function clearSelection() {
-  useSelectionStore.setState({ selected: null, inspectorOpen: false, usCityOutline: null })
+  useSelectionStore.setState({ selected: null, inspectorOpen: false, cityOutline: null })
 }
 
 // v3.2.0. Opening does nothing without a selection to show — there's
@@ -155,25 +158,25 @@ export function flyToSelectedCountry() {
   useSelectionStore.setState((state) => ({ flightSeq: state.flightSeq + 1 }))
 }
 
-// Flies to a US city search result AND sets its boundary outline in one
-// atomic update — `selected` stays untouched, so nothing highlights and the
-// Intelligence Panel doesn't open. Deliberately one function/one notify()
-// rather than two sequential setters (a "fly the camera" call followed by a
-// separate "show this outline" call) — two sequential state updates leave a
-// window where a subscriber could re-render on the first update before the
-// second lands, briefly observing flyToTarget set but usCityOutline still
-// null (or vice versa). scene/CameraControls.tsx's idle-rotation-resume
-// effect reads both via `isFocused = selected != null || usCityOutline !=
-// null` — an inconsistent intermediate read there is exactly the kind of
-// thing that wouldn't reproduce in an automated/scripted test's tighter
-// timing but could on a real, human-timed interaction. One update removes
-// the window entirely rather than relying on React's batching to paper
-// over it.
-export function flyToUsCity(direction: Vector3, target: { id: string; stateAbbrev: string; name: string }) {
+// Flies to a city-boundary search result AND sets its boundary outline in
+// one atomic update — `selected` stays untouched, so nothing highlights and
+// the Intelligence Panel doesn't open. Deliberately one function/one
+// notify() rather than two sequential setters (a "fly the camera" call
+// followed by a separate "show this outline" call) — two sequential state
+// updates leave a window where a subscriber could re-render on the first
+// update before the second lands, briefly observing flyToTarget set but
+// cityOutline still null (or vice versa). scene/CameraControls.tsx's
+// idle-rotation-resume effect reads both via `isFocused = selected != null
+// || cityOutline != null` — an inconsistent intermediate read there is
+// exactly the kind of thing that wouldn't reproduce in an automated/
+// scripted test's tighter timing but could on a real, human-timed
+// interaction. One update removes the window entirely rather than relying
+// on React's batching to paper over it.
+export function flyToCity(direction: Vector3, target: { id: string; countryId: string; stateAbbrev?: string; name: string }) {
   useSelectionStore.setState((state) => ({
     flyToTarget: direction,
     flyToTargetSeq: state.flyToTargetSeq + 1,
-    usCityOutline: target,
+    cityOutline: target,
   }))
 }
 
@@ -184,7 +187,7 @@ export function resetView() {
     selected: null,
     inspectorOpen: false,
     resetSeq: state.resetSeq + 1,
-    usCityOutline: null,
+    cityOutline: null,
   }))
 }
 
