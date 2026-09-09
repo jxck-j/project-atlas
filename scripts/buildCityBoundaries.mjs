@@ -2,11 +2,13 @@
 // countries city-boundaries-architecture.md's investigation has actually
 // verified a real source for so far (Jordan, Kuwait, US, the 2026-09-04
 // Central America pass: Costa Rica, El Salvador, Guatemala, Honduras,
-// Nicaragua, Panama, Belize, plus the 2026-09-05 Canada/Mexico pass) — NOT
-// the other 181 UN members yet. See that doc's "Fifth pass" section for the
-// original proof-of-concept this formalizes, and its migration plan step 2/3
-// for what's still open after this (the plausibility threshold is a real,
-// logged judgment call below, not a settled constant).
+// Nicaragua, Panama, Belize, the 2026-09-05 Canada/Mexico pass, plus the
+// 2026-09-05 South America pass: Argentina, Bolivia, Brazil, Chile,
+// Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname, Uruguay, Venezuela)
+// — NOT the other 169 UN members yet. See that doc's "Fifth pass" section
+// for the original proof-of-concept this formalizes, and its migration plan
+// step 2/3 for what's still open after this (the plausibility threshold is
+// a real, logged judgment call below, not a settled constant).
 //
 // NOT part of `npm run build:geo` — run by hand via
 // `npm run build:geo:city-boundaries` (then
@@ -55,16 +57,21 @@ const US_SHARD_DIR = 'public/geo/us-cities'
 const OUTPUT_DIR = 'public/geo/city-boundaries'
 const REPORT_OUTPUT = 'scripts/cityBoundariesReport.json'
 
-// overpass-api.de/overpass.kumi.systems are unreachable from this
-// environment (connection timeout — see city-boundaries-architecture.md's
-// "Fourth pass"); overpass.openstreetmap.fr is reachable but
-// whitelist-gated (403). This mirror worked with a real User-Agent as of the
-// Fourth/Fifth/Eighth passes, but connected-and-then-never-responded (curl
-// confirmed a TCP connection with zero bytes back after 20s) during the
-// Ninth pass (2026-09-05) — real mirror flakiness, not a query bug. SKIP_OSM
-// below exists specifically to let a re-run skip the two countries that
-// depend on this endpoint (Jordan, Belize) without blocking on it.
-const OVERPASS = 'https://overpass.private.coffee/api/interpreter'
+// overpass.private.coffee (used through the Fourth/Fifth/Eighth/Ninth
+// passes) was itself a fallback from overpass-api.de/overpass.kumi.systems,
+// logged back then as unreachable from this environment (connection
+// timeout) — overpass.openstreetmap.fr is reachable but whitelist-gated
+// (403). private.coffee then went flaky in the other direction during the
+// Ninth pass (connected-and-never-responded) and again during this South
+// America pass (repeated 504s on Jordan's own query — unchanged from every
+// prior successful run — not a query regression). Re-checked overpass-api.de
+// directly this pass and found it reachable, fast, and able to handle even
+// Peru's ~1,900-relation nationwide query (~9s for a full out-geom fetch) —
+// switched to it as the one Overpass endpoint this script uses, rather than
+// keep alternating mirrors per-country. SKIP_OSM below exists specifically
+// to let a re-run skip the OSM-dependent countries (Jordan, Belize, Guyana,
+// Peru) without blocking on Overpass at all.
+const OVERPASS = 'https://overpass-api.de/api/interpreter'
 const OVERPASS_USER_AGENT = 'project-atlas-city-boundary-build/1.0 (github.com project-atlas, one-off build script)'
 
 // Below this, a matched polygon is kept unconditionally.
@@ -125,8 +132,8 @@ async function fetchWithRetry(fn, attempts = 6) {
   throw lastErr
 }
 
-async function fetchOverpass(query) {
-  const res = await fetch(OVERPASS, {
+async function fetchOverpass(query, endpoint = OVERPASS) {
+  const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': OVERPASS_USER_AGENT },
     body: 'data=' + encodeURIComponent(query),
@@ -153,13 +160,22 @@ function joinCityPointsToPolygons(countryName, cities, candidates) {
 
   for (const city of cities) {
     const point = [city.lng, city.lat]
-    const hit = withArea.find((c) => {
+    // Smallest containing polygon wins, not just the first one found — a
+    // no-op for every single-admin-level source (Jordan's admin_level=6,
+    // Peru's =8, every geoBoundaries ADM level: a clean partition, so at
+    // most one candidate ever contains a given point), but load-bearing for
+    // Argentina's admin_level 7|8 mix below, where a real city's own
+    // admin_level=7 polygon can sit inside or overlap a much larger
+    // encompassing admin_level=8 relation — picking whichever the Overpass
+    // response happened to list first would be arbitrary.
+    let hit
+    for (const c of withArea) {
       try {
-        return pointInGeometry(point, c.geometry)
+        if (pointInGeometry(point, c.geometry) && (!hit || c.areaSqKm < hit.areaSqKm)) hit = c
       } catch {
-        return false
+        // ignore malformed candidate geometry
       }
-    })
+    }
     if (!hit) {
       unmatched.push({ name: city.name, population: city.population, lat: city.lat, lng: city.lng })
       continue
@@ -194,14 +210,34 @@ function writeCountryOutput(countryId, features) {
   console.log(`  wrote ${output}: ${features.length} features, ${kb.toFixed(0)} KB`)
 }
 
-const report = {}
+// Seeded from any existing report rather than starting empty — a scoped
+// ONLY= run only ever populates the countries it actually re-ran, and
+// writing that partial object straight to REPORT_OUTPUT would silently wipe
+// every other country's already-good report data (a real bug: the Argentina
+// ONLY=032 re-run during the Tenth pass did exactly this before it was
+// caught). A full, unscoped run still overwrites everything, which is
+// correct — every country really did just get re-verified.
+const report = fs.existsSync(REPORT_OUTPUT) ? JSON.parse(fs.readFileSync(REPORT_OUTPUT, 'utf8')) : {}
 
-// SKIP_OSM=1 skips the two Overpass-dependent countries (Jordan, Belize) —
-// useful for re-running just the geoBoundaries-sourced countries when the
-// Overpass mirror this script depends on (see its own comment above) is
-// temporarily unreachable, without touching Jordan/Belize's already-committed
-// output.
-if (!process.env.SKIP_OSM) {
+// ONLY=032,218 restricts a run to just those numeric country ids — added
+// after the South America pass needed a real re-fetch for Argentina alone
+// (a source swap, not a first build) and the script's default behavior
+// (always processing all 19 countries top to bottom) would otherwise have
+// re-downloaded Mexico/Canada/Brazil/etc.'s already-good, already-committed
+// output for no reason. Every country block below checks this before doing
+// any network work; omit ONLY entirely for a full run (the original,
+// unchanged default).
+const ONLY = process.env.ONLY ? new Set(process.env.ONLY.split(',')) : null
+function shouldRun(numericId) {
+  return !ONLY || ONLY.has(numericId)
+}
+
+// SKIP_OSM=1 skips the Overpass-dependent countries (Jordan, Belize, Guyana,
+// Peru) — useful for re-running just the geoBoundaries-sourced countries
+// when the Overpass endpoint this script depends on (see its own comment
+// above) is temporarily unreachable, without touching their
+// already-committed output.
+if (!process.env.SKIP_OSM && shouldRun('400')) {
   // --- Jordan (numeric id 400, alpha3 JOR) ---
   console.log('\n=== Jordan ===')
   const jordanRaw = await fetchWithRetry(() =>
@@ -312,7 +348,7 @@ function shardByState(countryId, features, { adm0A3, abbrevField }) {
 }
 
 // --- Kuwait (numeric id 414, alpha3 KWT) ---
-report.kuwait = await runGeoBoundariesCountry({ name: 'Kuwait', numericId: '414', alpha3: 'KWT', admLevel: 'ADM2' })
+if (shouldRun('414')) report.kuwait = await runGeoBoundariesCountry({ name: 'Kuwait', numericId: '414', alpha3: 'KWT', admLevel: 'ADM2' })
 
 // --- Central America pass (2026-09-04) ---
 // Six of the seven Central American UN members have a real, independently-
@@ -323,12 +359,12 @@ report.kuwait = await runGeoBoundariesCountry({ name: 'Kuwait', numericId: '414'
 // (ADM2), Panama's Corregimientos (ADM3). Belize is the seventh and is
 // handled separately below — its geoBoundaries ADM2 is electoral
 // constituencies, not settlements, so it needs a real OSM source instead.
-report.costaRica = await runGeoBoundariesCountry({ name: 'Costa Rica', numericId: '188', alpha3: 'CRI', admLevel: 'ADM3' })
-report.elSalvador = await runGeoBoundariesCountry({ name: 'El Salvador', numericId: '222', alpha3: 'SLV', admLevel: 'ADM2' })
-report.guatemala = await runGeoBoundariesCountry({ name: 'Guatemala', numericId: '320', alpha3: 'GTM', admLevel: 'ADM2' })
-report.honduras = await runGeoBoundariesCountry({ name: 'Honduras', numericId: '340', alpha3: 'HND', admLevel: 'ADM2' })
-report.nicaragua = await runGeoBoundariesCountry({ name: 'Nicaragua', numericId: '558', alpha3: 'NIC', admLevel: 'ADM2' })
-report.panama = await runGeoBoundariesCountry({ name: 'Panama', numericId: '591', alpha3: 'PAN', admLevel: 'ADM3' })
+if (shouldRun('188')) report.costaRica = await runGeoBoundariesCountry({ name: 'Costa Rica', numericId: '188', alpha3: 'CRI', admLevel: 'ADM3' })
+if (shouldRun('222')) report.elSalvador = await runGeoBoundariesCountry({ name: 'El Salvador', numericId: '222', alpha3: 'SLV', admLevel: 'ADM2' })
+if (shouldRun('320')) report.guatemala = await runGeoBoundariesCountry({ name: 'Guatemala', numericId: '320', alpha3: 'GTM', admLevel: 'ADM2' })
+if (shouldRun('340')) report.honduras = await runGeoBoundariesCountry({ name: 'Honduras', numericId: '340', alpha3: 'HND', admLevel: 'ADM2' })
+if (shouldRun('558')) report.nicaragua = await runGeoBoundariesCountry({ name: 'Nicaragua', numericId: '558', alpha3: 'NIC', admLevel: 'ADM2' })
+if (shouldRun('591')) report.panama = await runGeoBoundariesCountry({ name: 'Panama', numericId: '591', alpha3: 'PAN', admLevel: 'ADM3' })
 
 // --- Belize (numeric id 084, alpha3 BLZ) ---
 // geoBoundaries' only sub-national level for Belize is electoral
@@ -345,7 +381,7 @@ report.panama = await runGeoBoundariesCountry({ name: 'Panama', numericId: '591'
 // municipalities to find, a hand-curated name list (verified against the
 // real query results, not assumed) is simpler and more correct than trying
 // to infer "real municipality vs. informal village" from tags alone.
-if (!process.env.SKIP_OSM) {
+if (!process.env.SKIP_OSM && shouldRun('084')) {
   console.log('\n=== Belize ===')
   const BELIZE_MUNICIPALITY_NAMES = new Set([
     'Belize City',
@@ -409,7 +445,8 @@ out geom;`),
 //     "Benito Juárez" each appear multiple times) — harmless here since the
 //     join is point-in-polygon against real geometry, never name-based, but
 //     worth knowing before any future name-keyed lookup against this file.
-report.canada = await runGeoBoundariesCountry({ name: 'Canada', numericId: '124', alpha3: 'CAN', admLevel: 'ADM3' })
+if (shouldRun('124')) report.canada = await runGeoBoundariesCountry({ name: 'Canada', numericId: '124', alpha3: 'CAN', admLevel: 'ADM3' })
+if (shouldRun('484'))
 // Mexico's real per-feature join produces 14,545 kept features — checking
 // the actual output file size (this project's own established discipline;
 // see the Sixth/Eighth pass's US-mega-file and Panama/Honduras vertex-density
@@ -423,6 +460,248 @@ report.mexico = await runGeoBoundariesCountry({
   admLevel: 'ADM2',
   onOutput: (kept) => shardByState('484', kept, { adm0A3: 'MEX', abbrevField: 'postal' }),
 })
+
+// --- South America pass (2026-09-05) ---
+// Independently verified the same way as every prior pass (geoBoundaries'
+// own canonicalName cross-checked against Wikipedia/an outside source, real
+// per-feature names spot-checked, not just metadata trusted) — see
+// city-boundaries-architecture.md's Tenth pass section for the full trail.
+//
+// Six of twelve confirmed as genuine municipality/commune-level divisions,
+// with counts matching (within the usual vintage drift) their real,
+// independently-sourced totals: Bolivia's Municipios (ADM3, 339 — exact
+// match), Brazil's Municipios (ADM2, 5,570 — exact match), Chile's Comunas
+// (ADM3, 345 vs 346), Colombia's Municipios (ADM2, 1,122 — exact match),
+// Paraguay's Distritos (ADM2, 247 vs 267 — geoBoundaries' own metadata
+// mislabels the source as "barrios y localidades," but the actual feature
+// names returned — Aregua, Atyra, Asuncion, ... — are real Paraguayan
+// distrito names, confirmed by spot-checking the live download, not the
+// metadata label), and Venezuela's Municipios (ADM2, 335 — exact match).
+// Uruguay's Municipios (ADM2, 124 vs. 125) also confirmed clean on the
+// first check but was REPLACED below after a real, reported gap — see that
+// block's own comment.
+if (shouldRun('068')) report.bolivia = await runGeoBoundariesCountry({ name: 'Bolivia', numericId: '068', alpha3: 'BOL', admLevel: 'ADM3' })
+if (shouldRun('152')) report.chile = await runGeoBoundariesCountry({ name: 'Chile', numericId: '152', alpha3: 'CHL', admLevel: 'ADM3' })
+if (shouldRun('170')) report.colombia = await runGeoBoundariesCountry({ name: 'Colombia', numericId: '170', alpha3: 'COL', admLevel: 'ADM2' })
+if (shouldRun('600')) report.paraguay = await runGeoBoundariesCountry({ name: 'Paraguay', numericId: '600', alpha3: 'PRY', admLevel: 'ADM2' })
+if (shouldRun('862')) report.venezuela = await runGeoBoundariesCountry({ name: 'Venezuela', numericId: '862', alpha3: 'VEN', admLevel: 'ADM2' })
+// Suriname's Ressorten (real Dutch term for its actual sub-district local-
+// government tier — 62 vs. Wikipedia's 63, the usual vintage-count drift).
+if (shouldRun('740')) report.suriname = await runGeoBoundariesCountry({ name: 'Suriname', numericId: '740', alpha3: 'SUR', admLevel: 'ADM2' })
+
+// Brazil: same identity confirmation as the six above (Municipios, ADM2,
+// exact 5,570-unit match), but pre-emptively sharded by state from the
+// start rather than checked-then-fixed — Brazil has more municipios than
+// Mexico (5,570 vs 2,457), the country whose single flat output file
+// already hit 70MB and needed the same shardByState() fix (see the Ninth
+// pass). Running it flat first here would just reproduce a bug this
+// project has already found and fixed twice.
+if (shouldRun('076'))
+  report.brazil = await runGeoBoundariesCountry({
+    name: 'Brazil',
+    numericId: '076',
+    alpha3: 'BRA',
+    admLevel: 'ADM2',
+    onOutput: (kept) => shardByState('076', kept, { adm0A3: 'BRA', abbrevField: 'postal' }),
+  })
+
+// Ecuador: Cantones (ADM2, 224 vs 221-222) — coarser than the ten confirmed
+// above, but not mislabeled the way Jordan's Liwa was: geoBoundaries has no
+// finer level for Ecuador (confirmed directly against the live API), and a
+// cantón is genuinely the base local-government unit there (every one has
+// its own elected mayor). Same accepted fidelity trade as the Jordan qadas/
+// Panama corregimientos — a real city can still land inside an oversized
+// rural cantón (Amazon/Galápagos cantones spanning multiple islands or vast
+// rainforest) and get rejected by the area filter — 441/542 (81%) kept,
+// spot-checked: every rejection is a genuine small town/village in a large
+// cantón (Puerto Francisco de Orellana pop. 48,144 in a 7,078 km² cantón,
+// Puyo pop. 24,881 in a 19,924 km² one), not a systematic failure.
+if (shouldRun('218')) report.ecuador = await runGeoBoundariesCountry({ name: 'Ecuador', numericId: '218', alpha3: 'ECU', admLevel: 'ADM2' })
+
+// Argentina: geoBoundaries' Departamentos/Partidos (ADM2, 526 units, a real,
+// correctly-identified tier — 378 departamentos + 135 partidos + 15 CABA
+// comunas, matching the real ~528 total) turned out NOT to be the same kind
+// of "coarser but workable" trade Ecuador's cantones are — a real first run
+// (South America pass, 2026-09-05) rejected 762/1204 points (63%), and
+// unlike every other coarse-tier rejection logged in this file, the
+// rejected list is dominated by genuine provincial-capital cities, not
+// villages in empty rural land: Paraná (pop. 247,139), Neuquén (231,198),
+// Formosa (222,226), San Luis (169,947), Comodoro Rivadavia (140,850), San
+// Rafael, Río Gallegos, Bariloche — every one of these departamentos is
+// simply larger than even LOOSE_MAX_SQKM (5,000) in real, populated
+// (non-desert) Argentine provinces, because Argentina's real population
+// density outside Buenos Aires is low enough that a departamento built
+// around one substantial city can still span several thousand km². Raising
+// the ceiling to fit Río Gallegos's 33,525 km² departamento would also
+// admit Jordan's actual empty deserts (Qada Al-Jafr 28,170 km², Ruwayshid
+// 21,523 km²) as "kept," defeating the point of the ceiling — this needed a
+// different source, not a different threshold.
+//
+// Confirmed a real, comprehensive OSM admin_level=8 locality tier instead:
+// a direct query returned 2,025 relations nationwide with genuine city/town
+// names (Buenos Aires, Resistencia, and real surrounding towns like Fontana/
+// Puerto Vilelas/Barranqueras), and specifically confirmed the four
+// wrongly-rejected capitals above (Paraná, Neuquén, Formosa, San Luis) each
+// have their own real, city-scale admin_level=8 relation distinct from
+// their much larger same-named departamento/province. Same technique as
+// Peru/Guyana above — this is now the third country in this file where
+// geoBoundaries' offering was real but a live per-feature Overpass check
+// found something meaningfully better underneath it.
+//
+// admin_level=8 alone still left 417/1204 points unmatched on the first
+// real run — spot-checked the largest one (San Miguel de Tucumán, pop.
+// 548,866, Argentina's 5th-largest city) directly against Overpass and
+// found it tagged admin_level=7, not 8 — the same "admin_level isn't
+// consistent enough to hardcode, even within one country" lesson
+// Kuwait/Belize already taught, recurring a third time. Broadened to 7|8
+// (Belize's own precedent for exactly this), which is what motivated
+// joinCityPointsToPolygons() above to pick the smallest containing
+// candidate rather than the first one found — a real city's admin_level=7
+// polygon and a larger enclosing admin_level=8 relation can both contain
+// the same point once two levels are queried together.
+if (!process.env.SKIP_OSM && shouldRun('032')) {
+  console.log('\n=== Argentina ===')
+  const argentinaRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:400];
+area["ISO3166-1"="AR"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(7|8)$"];
+out geom;`),
+  )
+  let argentinaUnclosedCount = 0
+  const argentinaCandidates = argentinaRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) argentinaUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+  })
+  if (argentinaUnclosedCount > 0) console.log(`  [warn] ${argentinaUnclosedCount} Argentina relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const argentinaCities = loadCityPoints('032')
+  const argentinaJoin = joinCityPointsToPolygons('Argentina', argentinaCities, argentinaCandidates)
+  shardByState('032', argentinaJoin.kept, { adm0A3: 'ARG', abbrevField: 'postal' })
+  report.argentina = argentinaJoin.report
+}
+
+// Guyana: geoBoundaries' own ADM2 ("Neighbourhood Councils," 27 units) turned
+// out to be a false lead on inspection — its real feature names
+// ("III-1 Essequibo Islands", "X-1 Right Bank Essequibo", ...) are
+// electoral sub-region codes, not Guyana's actual 70 Neighbourhood
+// Democratic Councils + 10 municipalities (80 real local-government areas
+// per the Department of Public Information/Wikipedia) — the same
+// "geoBoundaries' own canonicalName/metadata can be wrong, verify the real
+// feature names" lesson Belize's electoral-constituency finding already
+// taught. A direct area-contained Overpass query (same technique as every
+// prior OSM check) found the real thing instead: admin_level=6 resolves to
+// 115 relations with genuine local names — "City of Georgetown",
+// "New Amsterdam", and real NDC-style combined-village names ("Aberdeen -
+// Zorg-en-Vlygt", "Good Hope - Pomona", ...) matching Guyana's real NDC
+// naming convention of joining the villages a single council covers.
+// 115 vs. 80 official LAAs is the same "count doesn't match exactly, but
+// the names are real and the join threshold sorts out plausibility per
+// feature" shape every geoBoundaries-sourced country above already has.
+if (!process.env.SKIP_OSM && shouldRun('328')) {
+  console.log('\n=== Guyana ===')
+  const guyanaRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="GY"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="6"];
+out geom;`),
+  )
+  let guyanaUnclosedCount = 0
+  const guyanaCandidates = guyanaRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) guyanaUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6' }
+  })
+  if (guyanaUnclosedCount > 0) console.log(`  [warn] ${guyanaUnclosedCount} Guyana relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const guyanaCities = loadCityPoints('328')
+  const guyanaJoin = joinCityPointsToPolygons('Guyana', guyanaCities, guyanaCandidates)
+  writeCountryOutput('328', guyanaJoin.kept)
+  report.guyana = guyanaJoin.report
+}
+
+// Uruguay: geoBoundaries' Municipios (ADM2, 124 units) is a real,
+// correctly-identified tier — but a direct user report (2026-09-05: "the
+// Flores region... there are no cities, not even the capital, Trinidad")
+// confirmed the structural gap this file already logged in BACKLOG.md is
+// worse in practice than "18 departmental capitals missing" reads in the
+// abstract: Flores department has essentially no other town, so losing
+// just its own capital means the ENTIRE department shows zero cities.
+// Uruguay's municipio law leaves departmental capitals under direct
+// departmental (Intendencia) governance rather than requiring them to form
+// their own municipio, so there is no fix available within that source —
+// this needed a different one, the same conclusion Argentina/Guyana/Peru's
+// OSM fixes above already reached for their own reasons.
+//
+// A direct area-contained Overpass query for admin_level=8 found real,
+// comprehensive coverage instead: 628 relations nationwide, tagged
+// place=city/town/village (not administrative subdivisions at all — a
+// populated-place layer, not a local-government one), including every
+// departmental capital (Trinidad, Salto, Rivera, Fray Bentos, Colonia del
+// Sacramento, Melo, Tacuarembó, ...) alongside hundreds of smaller towns
+// and beach resorts. This is a different kind of source than every other
+// country in this file (a real settlement footprint, not an administrative
+// unit), but the same per-feature join/threshold logic applies unchanged —
+// see the real kept/rejected/unmatched counts this produces before trusting
+// it blindly the way every other country here was checked.
+if (!process.env.SKIP_OSM && shouldRun('858')) {
+  console.log('\n=== Uruguay ===')
+  const uruguayRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="UY"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`),
+  )
+  let uruguayUnclosedCount = 0
+  const uruguayCandidates = uruguayRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) uruguayUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+  })
+  if (uruguayUnclosedCount > 0) console.log(`  [warn] ${uruguayUnclosedCount} Uruguay relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const uruguayCities = loadCityPoints('858')
+  const uruguayJoin = joinCityPointsToPolygons('Uruguay', uruguayCities, uruguayCandidates)
+  writeCountryOutput('858', uruguayJoin.kept)
+  report.uruguay = uruguayJoin.report
+}
+
+// Peru: geoBoundaries' finest level (Provincias, ADM2, 196 units, mean area
+// 6,565 km²) is real but far too coarse — Peru's actual municipal-equivalent
+// tier is the Distrito (1,873 of them, per Wikipedia), one level deeper than
+// anything geoBoundaries exposes for this country. Confirmed directly, not
+// assumed: a live area-contained Overpass query for admin_level=8 returned
+// 1,891 relations with genuine distrito names (Alto de la Alianza, Cairani,
+// Calana, Candarave, Coronel Gregorio Albarracín Lanchipa, ...) — matching
+// Peru's real district count almost exactly, the same identity-confirmation
+// bar as every other country above.
+//
+// This query is ~21x the size of Jordan's (89 relations) — the original
+// motivation for switching this script's one OVERPASS endpoint to
+// overpass-api.de (see that constant's own comment): the previous mirror
+// reliably 504-timed-out on this query, even a tags-only version with no
+// geometry, while overpass-api.de resolved the full out-geom fetch in ~9s.
+//
+// Sharded by region from the start, same reasoning as Brazil above: 1,891
+// kept features nationwide is comfortably past the scale that already
+// forced Mexico/Brazil into shardByState().
+if (!process.env.SKIP_OSM && shouldRun('604')) {
+  console.log('\n=== Peru ===')
+  const peruRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:300];
+area["ISO3166-1"="PE"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`),
+  )
+  let peruUnclosedCount = 0
+  const peruCandidates = peruRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) peruUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+  })
+  if (peruUnclosedCount > 0) console.log(`  [warn] ${peruUnclosedCount} Peru relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const peruCities = loadCityPoints('604')
+  const peruJoin = joinCityPointsToPolygons('Peru', peruCities, peruCandidates)
+  shardByState('604', peruJoin.kept, { adm0A3: 'PER', abbrevField: 'postal' })
+  report.peru = peruJoin.report
+}
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are
@@ -441,37 +720,39 @@ report.mexico = await runGeoBoundariesCountry({
 // regression, not a simplification, caught by checking the actual output
 // file size rather than assuming "reuse the existing data" meant "reuse it
 // as a single file."
-console.log('\n=== United States (reused from existing Census pipeline, kept sharded by state) ===')
-const usIndex = JSON.parse(fs.readFileSync(US_INDEX, 'utf8'))
-const usIndexById = new Map(usIndex.map((e) => [e.id, e]))
-const usOutputDir = `${OUTPUT_DIR}/840`
-fs.mkdirSync(usOutputDir, { recursive: true })
-let usFeatureTotal = 0
-let usTotalKB = 0
-for (const stateFile of fs.readdirSync(US_SHARD_DIR)) {
-  const fc = JSON.parse(fs.readFileSync(`${US_SHARD_DIR}/${stateFile}`, 'utf8'))
-  const features = fc.features.map((feature) => {
-    const indexEntry = usIndexById.get(feature.id)
-    return {
-      type: 'Feature',
-      id: feature.id,
-      geometry: feature.geometry,
-      properties: {
-        name: feature.properties.name,
-        population: indexEntry?.population ?? null,
-        isCapital: Boolean(indexEntry?.isStateCapital),
-        areaSqKm: null, // not computed for US - Census Places are trusted as-is, no plausibility filter applied
-        source: 'census-places',
-        matchedAdminUnit: null,
-      },
-    }
-  })
-  const outputPath = `${usOutputDir}/${stateFile}`
-  fs.writeFileSync(outputPath, JSON.stringify({ type: 'FeatureCollection', features }))
-  usFeatureTotal += features.length
-  usTotalKB += fs.statSync(outputPath).size / 1024
+if (shouldRun('840')) {
+  console.log('\n=== United States (reused from existing Census pipeline, kept sharded by state) ===')
+  const usIndex = JSON.parse(fs.readFileSync(US_INDEX, 'utf8'))
+  const usIndexById = new Map(usIndex.map((e) => [e.id, e]))
+  const usOutputDir = `${OUTPUT_DIR}/840`
+  fs.mkdirSync(usOutputDir, { recursive: true })
+  let usFeatureTotal = 0
+  let usTotalKB = 0
+  for (const stateFile of fs.readdirSync(US_SHARD_DIR)) {
+    const fc = JSON.parse(fs.readFileSync(`${US_SHARD_DIR}/${stateFile}`, 'utf8'))
+    const features = fc.features.map((feature) => {
+      const indexEntry = usIndexById.get(feature.id)
+      return {
+        type: 'Feature',
+        id: feature.id,
+        geometry: feature.geometry,
+        properties: {
+          name: feature.properties.name,
+          population: indexEntry?.population ?? null,
+          isCapital: Boolean(indexEntry?.isStateCapital),
+          areaSqKm: null, // not computed for US - Census Places are trusted as-is, no plausibility filter applied
+          source: 'census-places',
+          matchedAdminUnit: null,
+        },
+      }
+    })
+    const outputPath = `${usOutputDir}/${stateFile}`
+    fs.writeFileSync(outputPath, JSON.stringify({ type: 'FeatureCollection', features }))
+    usFeatureTotal += features.length
+    usTotalKB += fs.statSync(outputPath).size / 1024
+  }
+  console.log(`  ${usFeatureTotal} Census Places carried over unchanged across ${fs.readdirSync(US_SHARD_DIR).length} per-state files in ${usOutputDir}/ (${(usTotalKB / 1024).toFixed(1)} MB combined, avg ${(usTotalKB / fs.readdirSync(US_SHARD_DIR).length).toFixed(0)} KB/state)`)
 }
-console.log(`  ${usFeatureTotal} Census Places carried over unchanged across ${fs.readdirSync(US_SHARD_DIR).length} per-state files in ${usOutputDir}/ (${(usTotalKB / 1024).toFixed(1)} MB combined, avg ${(usTotalKB / fs.readdirSync(US_SHARD_DIR).length).toFixed(0)} KB/state)`)
 
 fs.writeFileSync(REPORT_OUTPUT, JSON.stringify(report, null, 2))
 console.log(`\nWrote ${REPORT_OUTPUT} (unmatched/rejected detail for every joined country — US has no join to report on).`)

@@ -635,6 +635,161 @@ hand-downloaded local data (a call for whoever's driving, not assumed here).
 Salvador, Guatemala, Honduras, Nicaragua, Panama, Belize, Canada, Mexico) — 181 UN members still
 unstarted. `public/geo/city-boundaries-index.json` now carries 52,358 entries (8.1 MB) across all twelve.
 
+### Tenth pass: South America, all twelve UN members (2026-09-05)
+
+Recon reused from the Third pass's `cityAdminLevelsReport.json`, then every country independently verified
+the same way as every prior pass — geoBoundaries' own `canonicalName` cross-checked against Wikipedia/an
+outside source, real per-feature names spot-checked (not just metadata trusted), consistent with the
+standing "geoBoundaries' own labels can be wrong" lesson from Belize's constituencies and Guyana's finding
+below.
+
+**Six confirmed clean on the first check, and staying on geoBoundaries** — real, correctly-identified
+municipality/commune-level divisions with counts matching (within the usual vintage drift) their
+independently-sourced totals: Bolivia's Municipios (ADM3, 339 — exact match against Wikipedia), Brazil's
+Municipios (ADM2, 5,570 — exact match), Chile's Comunas (ADM3, 345 vs. 346), Colombia's Municipios (ADM2,
+1,122 — exact match), Paraguay's Distritos (ADM2, 247 vs. 267 — geoBoundaries' own metadata mislabels the
+source as "barrios y localidades," but the actual feature names in the live download — Aregua, Atyra,
+Asuncion, ... — are real Paraguayan distrito names, confirmed by inspecting the download itself, not the
+metadata label), and Venezuela's Municipios (ADM2, 335 — exact match). Brazil was pre-emptively sharded by
+state from the start (`shardByState()`, 26 files, 23 MB combined) rather than checked-then-fixed — it has
+more municipios than Mexico (5,570 vs. 2,457), the country whose flat output already hit 70MB once.
+**Suriname's Ressorten (ADM2, 62 vs. 63)** also confirmed clean and stayed on geoBoundaries.
+**Uruguay's Municipios (ADM2, 124 vs. 125) also confirmed clean at this stage** — real, correctly-identified,
+count matching — but was replaced after shipping anyway; see the correction below.
+
+**Four real per-country findings, from actually running the join against real data — not from the recon
+alone:**
+
+- **Guyana: geoBoundaries' own ADM2 ("Neighbourhood Councils," 27 units) turned out to be a false lead.**
+  Its real feature names ("III-1 Essequibo Islands", "X-1 Right Bank Essequibo", ...) are electoral
+  sub-region codes, not Guyana's actual 70 Neighbourhood Democratic Councils + 10 municipalities (80 real
+  local-government areas per Guyana's own Department of Public Information/Wikipedia) — the same
+  "geoBoundaries' metadata can be wrong, verify the real feature names" lesson Belize's constituencies
+  already taught. A direct area-contained Overpass query found the real thing instead: `admin_level=6`
+  resolves to 115 relations with genuine names ("City of Georgetown", "New Amsterdam", and real NDC-style
+  combined-village names like "Aberdeen - Zorg-en-Vlygt" matching Guyana's actual NDC naming convention).
+  23/23 GeoNames points matched with real per-feature names, 21 kept.
+- **Peru: geoBoundaries' finest level (Provincias, ADM2, 196 units, mean area 6,565 km²) is real but far too
+  coarse.** Peru's actual municipal-equivalent tier is the Distrito (1,873 of them, per Wikipedia) — one
+  level deeper than anything geoBoundaries exposes for this country. A live Overpass query for
+  `admin_level=8` returned 1,891 relations with genuine distrito names (Alto de la Alianza, Cairani, Calana,
+  Candarave, Coronel Gregorio Albarracín Lanchipa, ...), matching Peru's real district count almost exactly.
+  This query is ~21x the size of Jordan's (89 relations) and reliably 504-timed-out against
+  `overpass.private.coffee` — even a tags-only version with no geometry — which is what prompted checking
+  `overpass-api.de` directly (previously logged as unreachable from this environment, back in the Fourth
+  pass) and finding it reachable, fast, and able to resolve the full out-geom fetch in ~9s. **This became the
+  one Overpass endpoint the whole script uses now** — `overpass.private.coffee` also 504-timed-out on
+  Jordan's own unchanged query partway through this pass (real mirror flakiness recurring a second time,
+  not a query regression), and re-running everything against `overpass-api.de` instead reproduced Jordan's
+  exact prior numbers (138/148 kept). 2,149/2,296 (94%) kept, sharded by region (25 files, 5.9 MB combined).
+- **Argentina: geoBoundaries' Departamentos/Partidos (ADM2, 526 units, a real, correctly-identified tier —
+  378 departamentos + 135 partidos + 15 CABA comunas, matching the real ~528 total) is NOT the same kind of
+  "coarser but workable" trade Ecuador's cantones turned out to be.** The first real join rejected 762/1,204
+  points (63%) — and unlike every other coarse-tier rejection logged in this file, the rejected list was
+  dominated by genuine provincial-capital cities, not villages in empty rural land: Paraná (pop. 247,139),
+  Neuquén (231,198), Formosa (222,226), San Luis (169,947), Comodoro Rivadavia (140,850), San Rafael, Río
+  Gallegos, Bariloche. Every one of these departamentos is simply larger than even `LOOSE_MAX_SQKM` (5,000
+  km²) in real, populated (non-desert) Argentine provinces — Argentina's population density outside Buenos
+  Aires is low enough that a departamento built around one substantial city can still span several thousand
+  km². Raising the ceiling to fit Río Gallegos's 33,525 km² departamento would also admit Jordan's actual
+  empty deserts (Qada Al-Jafr 28,170 km², Ruwayshid 21,523 km²) as "kept," defeating the point of the
+  ceiling — this needed a different source, not a different threshold. A direct OSM check found a real,
+  comprehensive `admin_level=8` locality tier instead (2,025 relations nationwide, including real names like
+  Buenos Aires, Resistencia, and real surrounding towns), which specifically fixed all four wrongly-rejected
+  capitals above. **`admin_level=8` alone still left 417/1,204 unmatched** — spot-checked the largest
+  (San Miguel de Tucumán, pop. 548,866, Argentina's 5th-largest city) directly against Overpass and found it
+  tagged `admin_level=7`, not 8 — the same "admin_level isn't consistent enough to hardcode, even within one
+  country" lesson Kuwait/Belize already taught, recurring a third time. Broadened to `7|8` (Belize's own
+  precedent), which also required changing `joinCityPointsToPolygons()` itself: with two levels queried
+  together, a real city's `admin_level=7` polygon can sit inside or overlap a larger enclosing
+  `admin_level=8` relation, both containing the same point, so the join now keeps the **smallest** containing
+  candidate rather than the first one `Array.find()` happened to return — a no-op for every single-level
+  source already in this file (a clean partition has at most one containing candidate per point), but
+  load-bearing for Argentina. Final result: 1,038/1,204 kept (86%), sharded by province (23 files, 1.5 MB
+  combined). **134 remain unmatched, clustered specifically in Buenos Aires and San Juan provinces**
+  (Ciudad de Las Heras, San Rafael, San Juan, Zárate, Luján, Olavarría, Berisso, Campana, ... — all real,
+  substantial cities) — those two provinces' OSM admin boundaries likely follow a different tagging
+  convention than the `admin_level=7` "Municipio de X" pattern that resolved most other provinces cleanly.
+  Not investigated further in this pass (logged, not chased) — a real residual gap the same shape as
+  Kuwait's 3 or Panama's 17 unmatched towns, just larger in absolute count.
+
+- **Uruguay: geoBoundaries' Municipios (ADM2, 124 units) is real and correctly identified, but has a genuine
+  structural gap that a real user report caught in production, not this pass's own review.** First real join:
+  103/154 kept, 49 unmatched (32%) — spot-checking the unmatched list found it was, with almost no exception,
+  every one of Uruguay's 18 departmental capital cities (Salto, Rivera, Paysandú, Tacuarembó, Melo, Artigas,
+  Mercedes, Durazno, Minas, Florida, San José de Mayo, Colonia del Sacramento, Rocha, Fray Bentos, Treinta y
+  Tres, Trinidad, ...) — confirmed directly against the live geoBoundaries download, none of these names
+  appear anywhere in the 124-feature municipio file. Uruguay's municipio law leaves departmental capitals
+  under direct departmental (Intendencia) governance rather than requiring them to form their own municipio,
+  so there was no municipio polygon for these cities to match — logged in `BACKLOG.md` as a real structural
+  gap, the opposite shape of Belize's (Belize covers its few actual cities and has nothing for the rest of
+  the country; Uruguay covers most of the country but has a real carve-out for its most important cities
+  specifically), and shipped as-is pending a source that could actually reach them.
+  **A direct user report the same day** ("looking at Flores... there are no cities, not even the capital,
+  Trinidad") turned out to be the sharpest possible illustration of exactly this gap: Flores department has
+  essentially no other town, so losing only its own capital meant the entire department showed nothing.
+  Confirmed Trinidad was real in the source (GeoNames, population 22,897) and simply absent from every kept/
+  rejected/unmatched bucket for the wrong reason (unmatched, not rejected) — the same root cause already
+  logged, now with a concrete, visible consequence. A direct area-contained Overpass query for
+  `admin_level=8` found real, comprehensive coverage instead: 628 relations nationwide tagged
+  `place=city/town/village` — a populated-place layer, not an administrative-subdivision one, genuinely
+  different in kind from every other source in this file — including every departmental capital alongside
+  hundreds of smaller towns and beach resorts. Replaced geoBoundaries with this source entirely (not merged):
+  144/154 kept (94%, up from 103), 0 rejected, 10 unmatched (small towns only, largest 7,235 population — no
+  capitals). Trinidad itself now resolves to a real 6.7 km² polygon. The general lesson already emerging from
+  Guyana/Peru/Argentina above — "a country's real settlement geometry can live in OSM under a populated-place
+  tag with no administrative-subdivision equivalent at all, not just under a different `admin_level` number
+  or a differently-named tier" — is worth carrying into the next 169-country walk as its own thing to check
+  for, not only "does a finer administrative level exist."
+
+**Final per-country join results** (`npm run build:geo:city-boundaries`, same threshold policy as every
+prior pass):
+
+| Country | Points | Kept | Rejected (too large) | Unmatched (no polygon) |
+|---|---|---|---|---|
+| Argentina | 1,204 | 1,038 | 32 | 134 |
+| Bolivia | 183 | 124 | 59 | 0 |
+| Brazil | 5,897 | 5,367 | 528 | 2 |
+| Chile | 315 | 262 | 52 | 1 |
+| Colombia | 1,179 | 1,116 | 60 | 3 |
+| Ecuador | 542 | 441 | 100 | 1 |
+| Guyana | 23 | 21 | 2 | 0 |
+| Paraguay | 173 | 154 | 19 | 0 |
+| Peru | 2,296 | 2,149 | 146 | 1 |
+| Suriname | 35 | 32 | 3 | 0 |
+| Uruguay | 154 | 144 | 0 | 10 |
+| Venezuela | 414 | 320 | 83 | 11 |
+
+(Uruguay's row is its final, post-fix OSM result — see the finding above; its first geoBoundaries-sourced
+run was 103 kept/2 rejected/49 unmatched.)
+
+Ecuador's 100 rejections were spot-checked the same way as every prior pass, not just counted: real small
+towns in genuinely large cantones (Puerto Francisco de Orellana, pop. 48,144, in a 7,078 km² cantón; Puyo,
+pop. 24,881, in a 19,924 km² one) — the same accepted "coarse tier, real fidelity trade" shape as Jordan's
+qadas and Panama's corregimientos, not a systematic failure the way Argentina's first run was.
+
+**`ONLY=<comma-separated numeric ids>` added to `buildCityBoundaries.mjs`** — the Argentina fix needed a
+second real network round-trip after the rest of South America was already committed-quality, and the
+script's original design (always processes all countries top to bottom, one file, no way to target a subset)
+would have re-downloaded Mexico/Canada/Brazil/etc.'s already-good output for nothing. Every country block now
+checks `shouldRun(numericId)` before doing any network work; omitting `ONLY` entirely reproduces the original
+full-run behavior unchanged. Worth keeping for the remaining 169-country walk, where a single-country
+re-fetch (a source swap, a bug fix) is going to keep being more common than a fresh full run.
+
+**A real bug in `ONLY` itself, caught immediately by the Uruguay fix needing a second scoped run**: the first
+`ONLY=032` (Argentina) re-run silently overwrote `scripts/cityBoundariesReport.json` with only Argentina's
+entry, discarding every other country's already-good report data — the report object started empty on every
+run regardless of scope, so a partial run produced a partial file. Fixed by seeding `report` from the
+existing file on disk when present; a full, unscoped run still overwrites everything correctly, since every
+country really did just get re-verified in that case. No effect on the actual boundary data (`city-boundaries/
+*.json`), only on this diagnostic-only report file — but worth remembering that `ONLY` needs this treatment
+for any other file this script writes cumulatively across countries, not just the report.
+
+**Net effect on scope**: 24 countries now have real city-boundary data (Jordan, Kuwait, US, the 7 Central
+American UN members, Canada, Mexico, and all 12 South American UN members) — 169 UN members still
+unstarted. `public/geo/city-boundaries-index.json` now carries 63,485 entries (9.8 MB) across all
+twenty-four. Verified in-browser is still pending as of this write-up — see the Open Items section.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -651,23 +806,28 @@ unstarted. `public/geo/city-boundaries-index.json` now carries 52,358 entries (8
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 12 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 24 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
-   surfaced, and the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix).
-   Real per-feature join for Jordan (OSM `admin_level=6`), Kuwait/Costa Rica/El
-   Salvador/Guatemala/Honduras/Nicaragua/Panama/Canada/Mexico (geoBoundaries, each level independently
-   verified — see the Eighth/Ninth passes), and Belize (OSM, hand-curated 9-municipality name list)
-   against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census
-   output directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/`
-   (Mexico sharded by state too, as of the Ninth pass — see `shardByState()`).
-   **Not done: the other 181 countries** — each needs the same investigate-before-trusting treatment
-   (Fourth/Eighth pass) before its own join can run, not a blind batch extension of this script. Also
-   not done: a per-*city* fallback for Kuwait's 3 and Panama's 17/Honduras's 11/Costa Rica's 6/Canada's 28
-   unmatched towns (a per-country source can still leave individual cities with nothing — Belize's
-   127 unmatched are a different, structural case, not a fallback candidate — see the Eighth pass), and
-   further tuning Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent —
-   see the Ninth pass).
+   surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, and the
+   Tenth pass for all 12 South American UN members + the Guyana/Peru/Argentina/Uruguay
+   OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag).
+   Real per-feature join for Jordan/Argentina (OSM `admin_level` 6 / 7|8), Guyana/Peru/Uruguay (OSM
+   `admin_level` 6 / 8 / 8), Kuwait/Costa Rica/El Salvador/Guatemala/Honduras/Nicaragua/Panama/Canada/
+   Mexico/Bolivia/Brazil/Chile/Colombia/Ecuador/Paraguay/Suriname/Venezuela (geoBoundaries, each level
+   independently verified — see the Eighth/Ninth/Tenth passes), and Belize (OSM, hand-curated
+   9-municipality name list) against the already-shipped GeoNames city index; US reused
+   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by state.
+   Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, and Argentina all sharded by
+   state/province — see `shardByState()`).
+   **Not done: the other 169 countries** — each needs the same investigate-before-trusting treatment
+   (Fourth/Eighth/Tenth pass) before its own join can run, not a blind batch extension of this script. Also
+   not done: a per-*city* fallback for every country's own residual unmatched towns (Kuwait's 3, Panama's
+   17, Honduras's 11, Costa Rica's 6, Canada's 28, Colombia's 3, Venezuela's 11, Uruguay's 10, and
+   Argentina's 134 — a per-country source can still leave individual cities with nothing; Belize's 127 is a
+   different, structural case, not a fallback candidate — see the Eighth/Tenth passes), and further tuning
+   Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent — see the Ninth
+   pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
    `useUsCityOutline.ts` into source-agnostic `CityLabels.tsx`/
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.~~ — **done** (Seventh pass), and confirmed to need

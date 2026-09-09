@@ -899,6 +899,46 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   (5,161 vs. 5,162) or field richness, and nothing in the shipped pipeline reads from it — Canada's real
   city-boundary source is geoBoundaries' direct download instead. Left in place pending an explicit
   deletion decision (untracked local data, not something to remove without confirmation).
+- **Argentina's real city-boundary join needed a source swap mid-pass, not just a threshold tweak**
+  (found 2026-09-05, `city-boundaries-architecture.md`'s "Tenth pass"). geoBoundaries' Departamentos/
+  Partidos (ADM2) is a real, correctly-identified tier, but the first real join rejected 762/1,204 points
+  (63%) — including genuine provincial capitals (Paraná, Neuquén, Formosa, San Luis, Comodoro Rivadavia),
+  not just villages in empty desert the way every prior coarse-tier rejection was. Argentina's low
+  population density outside Buenos Aires means a departamento built around one real city can still be
+  several thousand km², past even the existing loose ceiling. Fixed with OSM `admin_level` 7|8 instead
+  (a real, comprehensive locality tier — 2,025 relations nationwide), which pushed kept features from 442
+  to 1,038 (86%). **134 remain unmatched, clustered in Buenos Aires and San Juan provinces specifically**
+  (Ciudad de Las Heras, San Rafael, San Juan, Zárate, Luján, Olavarría, Berisso, Campana, ... — all real,
+  substantial cities) — likely a different OSM admin-boundary tagging convention in those two provinces,
+  not investigated further this pass. A real per-city fallback candidate for a future pass, the same shape
+  as Kuwait's 3/Panama's 17 unmatched towns, just larger in absolute count.
+- ~~Uruguay's 49/154 unmatched (32%) is a real structural gap in the source, not a join failure~~ —
+  **fixed same day (found and fixed 2026-09-05, `city-boundaries-architecture.md`'s "Tenth pass").**
+  Uruguay's geoBoundaries municipio file genuinely had no polygon for any of its 18 departmental capitals
+  (Salto, Rivera, Paysandú, Tacuarembó, Melo, Artigas, Mercedes, Durazno, Minas, Florida, San José de Mayo,
+  Colonia del Sacramento, Rocha, Fray Bentos, Treinta y Tres, Trinidad, ...) — its municipio law historically
+  left departmental capitals under direct departmental (Intendencia) governance instead of requiring them to
+  form their own municipio. **Surfaced concretely by a direct user report**: "looking at Flores... there are
+  no cities, not even the capital, Trinidad" — Flores department has essentially no other town, so the
+  missing capital meant the entire department showed nothing. Confirmed Trinidad was real in the source
+  (GeoNames, population 22,897) and legitimately unmatched, the same root cause already logged. Fixed by
+  replacing geoBoundaries entirely with a direct OSM `admin_level=8` query — a real, comprehensive
+  `place=city/town/village` layer (628 relations nationwide, a populated-place tag, not an
+  administrative-subdivision one) that includes every departmental capital. Result: 144/154 kept (94%, up
+  from 103), 0 rejected, 10 unmatched (small towns only, largest 7,235 population — no capitals left out).
+  The general lesson — a country's real settlement geometry can live in OSM under a populated-place tag with
+  no administrative equivalent at all, not just under a different `admin_level` number — is worth checking
+  for explicitly in the remaining 169-country walk, not just "does a finer administrative level exist."
+- **The Overpass endpoint this pipeline depends on had to be swapped mid-pass** (found 2026-09-05,
+  `city-boundaries-architecture.md`'s "Tenth pass"). `overpass.private.coffee` (working since the Fourth
+  pass) reliably 504-timed-out on Peru's ~1,900-relation nationwide query, then also 504-timed-out on
+  Jordan's own unchanged, previously-working query later in the same pass — real mirror flakiness, not a
+  query regression. `overpass-api.de` (logged unreachable from this environment back in the Fourth pass)
+  was re-checked directly and found reachable, fast, and able to resolve even the full Peru query in ~9s;
+  switched to it as the one Overpass endpoint `buildCityBoundaries.mjs` uses. Re-running Jordan against it
+  reproduced the exact prior numbers (138/148 kept), confirming the swap changed nothing about correctness.
+  Worth remembering if `overpass-api.de` itself ever goes flaky in a future pass — this project has now
+  seen every Overpass mirror it's tried degrade at least once.
 
 ## Visualization
 
