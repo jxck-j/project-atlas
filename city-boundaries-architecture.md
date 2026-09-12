@@ -790,6 +790,57 @@ American UN members, Canada, Mexico, and all 12 South American UN members) — 1
 unstarted. `public/geo/city-boundaries-index.json` now carries 63,485 entries (9.8 MB) across all
 twenty-four. Verified in-browser is still pending as of this write-up — see the Open Items section.
 
+### Eleventh pass: recovering lost diagnostics, and the first real per-city fallback fix (2026-09-12)
+
+**Found first: `scripts/cityBoundariesReport.json` had silently lost its entries for 10 of the 24 done
+countries** (Jordan, Kuwait, Belize, the other 5 Central American countries, Canada, Mexico) — only the 12
+South American countries' entries survived. Root cause, traced through git history rather than guessed: this
+predates the Tenth pass's own documented `ONLY=` overwrite bug. The first `ONLY=032` (Argentina-only) run,
+before the seed-from-disk fix existed, wiped the file down to `{argentina: ...}`; the fix itself was correct,
+but by the time it landed, it could only ever seed from that already-wiped file — so the South America run
+that followed only ever re-added South America's own 12 keys, and the other 10 countries' diagnostic data
+(which specific towns are unmatched, by name/population/coordinates) never came back. This never touched the
+actual boundary output (`public/geo/city-boundaries/*.json`), only the diagnostics file — but it meant this
+project had no record of which towns needed a fallback for 10 of its 24 done countries. Fixed by re-running
+`ONLY=400,414,188,222,320,340,558,591,084,124,484` against the same live sources — every kept/rejected/
+unmatched count reproduced exactly (confirming the sources are stable), restoring the full diagnostic detail
+with zero change to production data.
+
+**With the real per-town data back, tested the open "per-city fallback" item directly against Kuwait's 3
+unmatched towns (Al Mahbūlah, Al Funayţīs, Al Fințās) — and it turned out not to need a bespoke per-city
+mechanism at all.** Querying Overpass's `is_in()` at each exact coordinate (a direct "what areas contain this
+point" lookup, not a guess at which admin_level/tag to search for) found real `admin_level=6` boundaries,
+sourced from Kuwait's own municipal authority (`baladia.gov.kw`), for 2 of the 3 — Al Mahbūlah and Al
+Fințās — that geoBoundaries' ADM2 (137 features) simply doesn't cover. This is the exact same "swap the
+country's source to OSM's own layer" technique already proven for Jordan/Argentina/Guyana/Peru/Uruguay, not a
+new kind of fix. Fetching Kuwait's *entire* `admin_level=6` layer (the same query shape as Jordan's) and
+re-running the full join confirms it: 192 real, named relations (Kuwait's own municipal neighborhoods, not an
+electoral or metadata-mismatched layer — spot-checked several names against real Kuwaiti place names), 27/28
+kept, 0 rejected — up from geoBoundaries' 25/28 kept, 0 rejected, 3 unmatched, with no new rejections
+introduced. **Kuwait switched to this source** (`scripts/buildCityBoundaries.mjs`, same `admin_level=6`
+Overpass query pattern as Jordan).
+
+**The third town, Al Funayţīs, is a genuinely different kind of gap — not a missing-data problem.** Its own
+OSM relation (17935319, also `baladia.gov.kw`-sourced, real name, closes into a valid ~3 km² polygon —
+verified by hand-tracing all 12 outer-way segments end-to-end before trusting `relationToGeometry()`'s own
+"closed: true" report) exists and is correctly matched by name. GeoNames' own point coordinate for Al
+Funayţīs simply lands just outside that polygon's edge — plausible given the polygon is only ~3 km² and
+Kuwait's `admin_level=6` layer packs 192 of these next to each other with no room for a point to drift. A
+strict point-in-polygon join can't fix this; it would need a "snap to nearest candidate within some small
+radius if no exact containment" fallback, which is a real, different kind of change from every fix in this
+file so far (all of them were source swaps, not join-logic changes) and wasn't built here — logged in
+`BACKLOG.md` instead of attempted speculatively.
+
+**Revised takeaway on the open "per-city fallback" migration-plan item**: for most of the 228 individually
+unmatched towns logged across the remaining 12 done countries (Costa Rica 6, Honduras 11, Panama 17, Canada
+28, Argentina 134, and smaller counts elsewhere — Belize's 127 excluded, per the structural-gap distinction
+above), the likely fix is the same one that just worked for Kuwait: check whether OSM's own admin boundary
+layer (fetched country-wide, the same way every OSM-sourced country in this file already is) covers the gap
+geoBoundaries left, before reaching for anything more novel. A real per-point "nearest polygon within radius"
+fallback (for cases shaped like Al Funayţīs, where the real boundary exists but a point sits just outside it)
+is still a distinct, unbuilt idea — worth its own pass once the source-swap approach has been tried on the
+rest of the list.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -822,10 +873,14 @@ twenty-four. Verified in-browser is still pending as of this write-up — see th
    state/province — see `shardByState()`).
    **Not done: the other 169 countries** — each needs the same investigate-before-trusting treatment
    (Fourth/Eighth/Tenth pass) before its own join can run, not a blind batch extension of this script. Also
-   not done: a per-*city* fallback for every country's own residual unmatched towns (Kuwait's 3, Panama's
+   not done: the same source-swap-first check for every country's own residual unmatched towns (Panama's
    17, Honduras's 11, Costa Rica's 6, Canada's 28, Colombia's 3, Venezuela's 11, Uruguay's 10, and
    Argentina's 134 — a per-country source can still leave individual cities with nothing; Belize's 127 is a
-   different, structural case, not a fallback candidate — see the Eighth/Tenth passes), and further tuning
+   different, structural case, not a fallback candidate — see the Eighth/Tenth passes). **Kuwait's own 3 were
+   the first tried, in the Eleventh pass**: switching to OSM's own `admin_level=6` layer fixed 2 (down to 1
+   real remaining case, a coordinate-precision mismatch rather than missing data — see that pass for why a
+   true per-*point* fallback, not just a per-*country* source swap, is still a distinct, unbuilt idea worth
+   its own pass). Also not done: further tuning
    Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent — see the Ninth
    pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/

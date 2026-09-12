@@ -911,7 +911,20 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   (Ciudad de Las Heras, San Rafael, San Juan, Zárate, Luján, Olavarría, Berisso, Campana, ... — all real,
   substantial cities) — likely a different OSM admin-boundary tagging convention in those two provinces,
   not investigated further this pass. A real per-city fallback candidate for a future pass, the same shape
-  as Kuwait's 3/Panama's 17 unmatched towns, just larger in absolute count.
+  as Panama's 17 unmatched towns, just larger in absolute count.
+- ~~Kuwait's 3 unmatched towns (Al Mahbūlah, Al Funayţīs, Al Fințās) needed a per-city fallback~~ — **2 of 3
+  fixed 2026-09-12** (`city-boundaries-architecture.md`'s "Eleventh pass"), and turned out not to need a
+  bespoke per-city mechanism at all: geoBoundaries' ADM2 (137 features) has real gaps between polygons; OSM's
+  own `admin_level=6` layer (192 features, sourced from Kuwait's own municipal authority) doesn't, and
+  covers both. Switched Kuwait's source in `scripts/buildCityBoundaries.mjs`. **Al Funayţīs (population
+  1,878) remains genuinely unmatched** — its own OSM relation (17935319, same source, real name, verified
+  to close into a valid ~3 km² polygon) exists, but GeoNames' point coordinate for it lands just outside that
+  polygon's edge. A strict point-in-polygon join can't fix a case like this; would need a "snap to nearest
+  candidate within some small radius" fallback, a real join-logic change (not a source swap) that hasn't
+  been attempted anywhere in this file yet. Worth building once the source-swap check has been tried against
+  the rest of the countries with unmatched towns (Costa Rica, Honduras, Panama, Canada, Colombia, Venezuela,
+  Argentina), in case more of those turn out to be the same "polygon exists, point just misses it" shape
+  rather than genuinely missing coverage.
 - ~~Uruguay's 49/154 unmatched (32%) is a real structural gap in the source, not a join failure~~ —
   **fixed same day (found and fixed 2026-09-05, `city-boundaries-architecture.md`'s "Tenth pass").**
   Uruguay's geoBoundaries municipio file genuinely had no polygon for any of its 18 departmental capitals

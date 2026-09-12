@@ -233,10 +233,10 @@ function shouldRun(numericId) {
 }
 
 // SKIP_OSM=1 skips the Overpass-dependent countries (Jordan, Belize, Guyana,
-// Peru) — useful for re-running just the geoBoundaries-sourced countries
-// when the Overpass endpoint this script depends on (see its own comment
-// above) is temporarily unreachable, without touching their
-// already-committed output.
+// Peru, Argentina, Uruguay, Kuwait) — useful for re-running just the
+// geoBoundaries-sourced countries when the Overpass endpoint this script
+// depends on (see its own comment above) is temporarily unreachable,
+// without touching their already-committed output.
 if (!process.env.SKIP_OSM && shouldRun('400')) {
   // --- Jordan (numeric id 400, alpha3 JOR) ---
   console.log('\n=== Jordan ===')
@@ -348,7 +348,39 @@ function shardByState(countryId, features, { adm0A3, abbrevField }) {
 }
 
 // --- Kuwait (numeric id 414, alpha3 KWT) ---
-if (shouldRun('414')) report.kuwait = await runGeoBoundariesCountry({ name: 'Kuwait', numericId: '414', alpha3: 'KWT', admLevel: 'ADM2' })
+// Switched from geoBoundaries' ADM2 (137 features) to OSM's own admin_level=6
+// neighborhood layer (192 features, sourced from Kuwait's own municipal
+// authority, baladia.gov.kw) after the per-city fallback investigation below
+// found real, correctly-named OSM boundaries for 2 of geoBoundaries' 3
+// unmatched towns (Al Mahbūlah, Al Fințās) — geoBoundaries' ADM2 has real,
+// literal gaps between its polygons; OSM's own layer doesn't. Re-running the
+// full join against this source: 27/28 kept, 0 rejected, 1 unmatched (down
+// from 25/28 kept, 0 rejected, 3 unmatched). The one remaining case, Al
+// Funayţīs, has a real, correctly-named, correctly-closed OSM polygon
+// (relation 17935319) too — it's a coordinate-precision mismatch, not a
+// missing-data problem: the neighborhood is only ~3 km², and GeoNames' point
+// for it lands just outside that polygon's edge. See city-boundaries-architecture.md's
+// "Eleventh pass" for the full investigation.
+if (!process.env.SKIP_OSM && shouldRun('414')) {
+  console.log('\n=== Kuwait ===')
+  const kuwaitRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="KW"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="6"];
+out geom;`),
+  )
+  let kuwaitUnclosedCount = 0
+  const kuwaitCandidates = kuwaitRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) kuwaitUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6' }
+  })
+  if (kuwaitUnclosedCount > 0) console.log(`  [warn] ${kuwaitUnclosedCount} Kuwait relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const kuwaitCities = loadCityPoints('414')
+  const kuwaitJoin = joinCityPointsToPolygons('Kuwait', kuwaitCities, kuwaitCandidates)
+  writeCountryOutput('414', kuwaitJoin.kept)
+  report.kuwait = kuwaitJoin.report
+}
 
 // --- Central America pass (2026-09-04) ---
 // Six of the seven Central American UN members have a real, independently-

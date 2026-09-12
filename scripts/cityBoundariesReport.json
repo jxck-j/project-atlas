@@ -8710,22 +8710,10 @@
   "kuwait": {
     "unmatched": [
       {
-        "name": "Al Mahbūlah",
-        "population": 18178,
-        "lat": 29.145,
-        "lng": 48.13028
-      },
-      {
         "name": "Al Funayţīs",
         "population": 1878,
         "lat": 29.22528,
         "lng": 48.10167
-      },
-      {
-        "name": "Al Finţās",
-        "population": 23071,
-        "lat": 29.17389,
-        "lng": 48.12111
       }
     ],
     "rejected": []
