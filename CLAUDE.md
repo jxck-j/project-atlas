@@ -149,6 +149,19 @@ check LOGBOOK.md's entries for that area first, so a settled call doesn't
 get re-litigated or silently reversed without knowing it was already
 decided and why.
 
+## Model selection
+
+Default to Sonnet on this repo. Flag — don't silently switch — when a task
+is a genuinely novel architectural call (designing a new engine's shape,
+not extending an existing one), when stuck after two real failed attempts
+at the same problem, or when a decision has real tradeoffs and no clear
+existing precedent to follow (the kind of call the Cesium evaluation
+above was). Routine edits, bug fixes, and features that follow this
+codebase's existing patterns stay on Sonnet regardless of how "important"
+they feel — this project's CLAUDE.md is large enough that most per-request
+cost is cache-read tokens at a fixed price ratio between models, so a
+switch only pays off when the task itself needs the deeper reasoning.
+
 ## Architecture
 
 Since v2.0, Atlas is organized around long-lived **engines** rather than a flat
