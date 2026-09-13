@@ -933,6 +933,118 @@ counts") is what made every one of these five real fixes fast to find — worth 
 countries pick up this same investigation next, over re-deriving country-wide admin-level survey data that a
 per-point check answers more directly.
 
+### Thirteenth pass: all 13 UN Caribbean members, and the snap-to-nearest fallback the Twelfth pass left open (2026-09-12)
+
+The next region after all of North/Central/South America: Antigua and Barbuda, Bahamas, Barbados, Cuba,
+Dominica, Dominican Republic, Grenada, Haiti, Jamaica, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and
+the Grenadines, Trinidad and Tobago. Same investigate-before-trust discipline as every prior batch — recon
+from the Third pass's `cityAdminLevelsReport.json`, then a direct OSM `admin_level` survey for all 13
+countries at once (an area-contained Overpass query per country, counting relations per level) before
+picking a source, since most of these islands are small enough that a parish/district *is* the only real
+local-government tier — no separate municipio/distrito layer exists the way it does on the mainland, so
+"coarser than a mainland municipio" here doesn't mean "not city-scale" the way it would elsewhere.
+
+**Nine straightforward confirmations** (OSM's own admin_level relation count matches geoBoundaries' unit
+count at the same tier, the same bar Bolivia/Brazil/Colombia/Venezuela's exact matches met in the Tenth
+pass): Antigua and Barbuda's Parish and Dependency (ADM1, 8), Barbados's Parish (ADM1, 11), Dominica's Parish
+(ADM1, 10), Grenada's Parish (ADM1, 7), Saint Kitts and Nevis's Parish (ADM1, 14), Saint Vincent and the
+Grenadines's Parishes (ADM1, 6), Bahamas's Second/Third Schedule Districts (ADM2, 33-34 — real feature names
+are island/island-region names: Green Turtle Cay, South Andros, San Salvador, Ragged Island, matching the
+Bahamas' real ~31 local-government districts), Cuba's Municipios (ADM2, 168 — OSM's own `admin_level=6`
+independently sums to the same ~167-168; real names Niquero/Bayamo/Marianao/Cárdenas confirmed against
+Cuba's actual municipio list, Marianao among them as one of Havana's own), and Dominican Republic's
+Municipalities (ADM2, 155 vs. OSM's 156; real names Azua de Compostela/Neyba/Tamayo confirmed).
+
+**Two "communities" layers inspected directly, not trusted from canonicalName alone** — the standing Belize/
+Guyana/Paraguay lesson: Jamaica's ADM2 "community" (827 units, min 0.10 km²) and Saint Lucia's ADM2
+"Communities" (547 units, min 0.01 km²) both turned out to have real named-settlement feature names on direct
+download inspection (Jamaica: Irish Town, Norbrook, Mavis Bank, Kingston itself; Saint Lucia: Jacmel, Vanard,
+Roseau Valley) — genuine fine-grained village/neighborhood polygons, not an electoral or code-based
+mislabeling. No OSM survey found a matching finer tier for either (each country's own OSM admin hierarchy
+stops at its parishes/districts), but the real feature names are confirmation enough on their own, the same
+bar Paraguay's Distritos met when its canonicalName ("barrios y localidades") was wrong but its real feature
+names were right.
+
+**Haiti's Communes (ADM3, 140, OSM `admin_level=8` independently confirms ~143)** is a real, correctly
+identified municipal tier — Port au Prince, Delmas, Carrefour, Petionville all present and correctly named.
+
+**Trinidad and Tobago needed OSM instead of geoBoundaries, not just a confirmation of it** — geoBoundaries'
+ADM1 (14 units) is missing Arima (a real incorporated borough, population ~33,000) entirely, leaving only 13
+of Trinidad's real 14 divisions (2 cities + 5 boroughs + 7 regions, confirmed against Wikipedia) plus Tobago
+as a 14th combined feature. A direct OSM `admin_level=4` query has the real, complete set instead — all 14
+Trinidad divisions including Arima, plus Tobago itself (also tagged `admin_level=4`, in addition to
+`place=island`) as a 15th feature, matching Trinidad and Tobago's real total of 15 administrative divisions
+exactly where geoBoundaries' own download falls one short.
+
+**First full run: 0 unmatched across all 13 countries** — the cleanest batch yet (South America's own First
+run needed the Argentina/Guyana/Peru/Uruguay fixes; Central America needed Belize's hand-curated list).
+2 rejected (too large) in Bahamas (San Andros/Andros Town, real towns in a 2,559 km² island-wide district —
+the same coarse-tier trade every prior batch has accepted) and 2 in Dominican Republic (Oviedo/Juancho, both
+in a 2,059 km² Pedernales municipio). 9 points across 4 countries came back genuinely unmatched on the first
+pass, though — Bahamas (Governor's Harbour, Black Point), Dominican Republic (Palmar de Ocoa), Haiti
+(Saint-Marc, Cité Soleil, Jérémie, Grand Gosier — Port-à-Piment resolved cleanly, see below), and Trinidad and
+Tobago (Mucurapo).
+
+**Haiti's 4 unmatched are what turned this into a general fix, not a per-country one.** All 4 have a real,
+correctly-named containing commune polygon in the geoBoundaries download — confirmed by inspecting the
+download directly, the way every "geoBoundaries' label might be wrong" check in this file already does — and
+a direct `is_in()` check at each exact coordinate independently confirms the same commune via OSM. The
+puzzle: why did the join call these "no containing polygon" when the polygon is right there? Measuring the
+actual distance from each point to its own named polygon's nearest edge answered it — 0.04km (Saint-Marc),
+0.007km (Cité Soleil), 0.008km (Jérémie), 0.313km (Grand Gosier). These aren't the km-scale genuine
+coordinate mismatches Kuwait's Al Funayțis/Costa Rica's Canoas were originally logged as — they're the point
+sitting essentially ON the boundary line, a floating-point ray-casting edge case (a point exactly on an edge
+can be classified either way depending on rounding), not a real gap between two sources' data.
+
+**Built the fix this file's Twelfth pass entry (and `BACKLOG.md`) already flagged as open: a "snap to
+nearest candidate within a small radius" fallback**, now that a real case justified it as a general mechanism
+rather than one-off per-country weirdness. `scripts/lib/sphericalGeometry.mjs`'s `distanceToGeometryKm()`
+(equirectangular point-to-segment distance, planar-projected around the query point's own latitude — the
+same "planar is fine at this scale" call `simplifyGeometry`'s Douglas-Peucker already makes) plus
+`joinCityPointsToPolygons()`'s new `SNAP_MAX_KM = 2` fallback: any point that fails normal containment now
+also checks whether a candidate's edge sits within 2km, and if so keeps it (subject to the same
+rejected/kept area-ceiling logic as a normal match) rather than reporting it unmatched. 2km was picked with
+real headroom above the actual motivating cases (tens of meters to ~300m) specifically so it stays well
+under the distance to a genuine structural gap (Colombia's Puerto Escondido/Nuquí/Necoclí, previously logged
+as having no containing boundary in either source at *any* admin level — meaning the nearest real candidate
+there is typically many km away) — confirmed this holds by re-running every country with a known residual
+after building it, not just assumed from the constant's size (see below).
+
+**A real correctness bug found immediately: nearest-wins isn't always right-wins.** Haiti's Grand Gosier
+snapped to "Thiotte" on the first version of this fallback — a neighboring commune, 0.198km away, genuinely
+closer than Grand Gosier's own polygon (0.314km) — even though OSM's own `is_in()` at that exact point
+resolves to "Commune de Grand Gosier," not Thiotte. Two real communes' boundaries both happened to pass
+close to the same point; picking the globally-nearest one picked the wrong neighbor. Fixed by adding a
+name-preference tie-break (`normalizeName()`, diacritic/case/whitespace-insensitive — GeoNames and
+geoBoundaries/OSM routinely spell the same place differently: Cité Soleil vs. Cite Soleil, Jérémie vs.
+Jeremie, Port-à-Piment vs. Port a Piment): prefer a same-named candidate within SNAP_MAX_KM over a closer
+differently-named one, falling back to pure nearest-wins only when no same-named candidate is in range.
+Re-running confirmed the fix: Grand Gosier → Grand Gosier (0.314km) instead of → Thiotte.
+
+**Re-ran every country with a real logged residual to see how far the general fix reaches** — not assumed
+from Haiti's own numbers alone:
+
+| Country | Before | After | What snapped |
+|---|---|---|---|
+| Kuwait | 1 unmatched | 0 | Al Funayţīs → الفنيطيس (same place, Arabic name), 0.24km |
+| Costa Rica | 1 unmatched | 0 | Canoas → Canoas, 0.018km |
+| Panama | 5 unmatched | 0 | 5 real snaps (2 to differently-named neighboring comarca hamlets — a genuine duplicate-GeoNames-point shape already logged in the Twelfth pass, not a new bug) |
+| Canada | 13 unmatched | 0 | all 13 snapped (Newfoundland outport towns + Montreal-area/northern gaps) |
+| Colombia | 3 unmatched | 0 | Puerto Escondido/Nuquí/Necoclí, all to their own same-named candidate, 0.04-0.44km — **the Twelfth pass's "no boundary in either source" conclusion was too pessimistic**: a same-named polygon exists tens to hundreds of meters away, just not exactly containing the point |
+| Honduras | 11 unmatched | 5 | 5 real snaps (Limón, French Harbor→Roatan, El Porvenir→Puerto Cortes, El Achiotal, Corozal→La Ceiba); 5 genuine remaining gaps (Sambo Creek, Río Esteban, Punta Piedra, Jericó — real coastal/island gaps; Magdalena — confirmed GeoNames country-tag error, actually in El Salvador) |
+| Venezuela | 2 unmatched | 2 | correctly declined — Los Roques (an offshore federal-dependency island) and La Aguada have nothing within 2km in either source, confirming SNAP_MAX_KM doesn't over-reach |
+
+Venezuela's unchanged 2 is as important a result as the other six's fixes — it confirms the 2km radius is
+narrow enough to leave a genuine structural gap alone rather than force-matching it to a distant, wrong
+polygon. Total residual unmatched across all 37 done countries is now 7 (Honduras 5, Venezuela 2) — down from
+33 before this pass.
+
+Net new coverage from this pass alone: 902 real per-city boundary features across the 13 Caribbean countries
+(Antigua and Barbuda 41, Bahamas 26, Barbados 16, Cuba 211, Dominica 20, Dominican Republic 212, Grenada 10,
+Haiti 114, Jamaica 104, Saint Kitts and Nevis 18, Saint Lucia 38, Saint Vincent and the Grenadines 25,
+Trinidad and Tobago 27), plus corrections to the 6 countries in the table above already shipped. 37 of 193 UN
+members now have real city-boundary data; 156 remain.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -949,33 +1061,37 @@ per-point check answers more directly.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 24 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 37 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
-   surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, and the
+   surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
    Tenth pass for all 12 South American UN members + the Guyana/Peru/Argentina/Uruguay
-   OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag).
-   Real per-feature join for Jordan/Argentina (OSM `admin_level` 6 / 7|8), Guyana/Peru/Uruguay (OSM
-   `admin_level` 6 / 8 / 8), Kuwait/Costa Rica/El Salvador/Guatemala/Honduras/Nicaragua/Panama/Canada/
-   Mexico/Bolivia/Brazil/Chile/Colombia/Ecuador/Paraguay/Suriname/Venezuela (geoBoundaries, each level
-   independently verified — see the Eighth/Ninth/Tenth passes), and Belize (OSM, hand-curated
-   9-municipality name list) against the already-shipped GeoNames city index; US reused
+   OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag, and the
+   Thirteenth pass for all 13 UN Caribbean members + the general snap-to-nearest join fallback).
+   Real per-feature join for Jordan/Argentina (OSM `admin_level` 6 / 5|7|8), Guyana/Peru/Uruguay (OSM
+   `admin_level` 6 / 8 / 8), Trinidad and Tobago (OSM `admin_level` 4), Kuwait/Costa Rica (OSM, switched off
+   geoBoundaries entirely — see their own entries), El Salvador/Guatemala/Honduras/Nicaragua/Canada/Mexico/
+   Bolivia/Brazil/Chile/Colombia/Ecuador/Paraguay/Suriname/Antigua and Barbuda/Bahamas/Barbados/Cuba/
+   Dominica/Dominican Republic/Grenada/Haiti/Jamaica/Saint Kitts and Nevis/Saint Lucia/Saint Vincent and the
+   Grenadines (geoBoundaries, each level independently verified — see the Eighth/Ninth/Tenth/Thirteenth
+   passes), Panama/Venezuela (geoBoundaries + a supplemental OSM layer via `extraOsm`), and Belize (OSM,
+   hand-curated 9-municipality name list) against the already-shipped GeoNames city index; US reused
    `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by state.
    Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, and Argentina all sharded by
    state/province — see `shardByState()`).
-   **Not done: the other 169 countries** — each needs the same investigate-before-trusting treatment
-   (Fourth/Eighth/Tenth pass) before its own join can run, not a blind batch extension of this script.
-   **The source-swap-first check against every done country's residual unmatched towns is now finished for
-   all 24 done countries** (Kuwait in the Eleventh pass, Costa Rica/Panama/Canada/Venezuela/Argentina/
-   Honduras/Colombia in the Twelfth pass, Uruguay having already been fixed inline during its own Tenth-pass
-   discovery) — see the Twelfth pass section for the five real fixes and two confirmed-already-correct
-   results this produced. What's left standing, all logged rather than chased further: Kuwait's 1 (Al
-   Funayţīs, a coordinate-precision mismatch), Costa Rica's 1 (Canoas, same shape — a real border town whose
-   point lands across the border in both sources), Panama's 5, Canada's 13, Colombia's 3 (a genuine
-   zero-boundary-anywhere gap), Venezuela's 2, and Honduras's 11 (confirmed already-optimal, not
-   under-verified) — real, structural residuals, not further source-swap candidates. A true per-*point*
-   "snap to nearest candidate within a small radius" fallback (for the Al Funayţīs/Canoas coordinate-mismatch
-   shape specifically) is still a distinct, unbuilt idea. Also not done: further tuning
+   **Not done: the other 156 countries** — each needs the same investigate-before-trusting treatment
+   (Fourth/Eighth/Tenth/Thirteenth pass) before its own join can run, not a blind batch extension of this
+   script.
+   **The join now has a general "snap to nearest candidate within a small radius" fallback**
+   (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
+   Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
+   just not quite containing the point. Re-run against every country with a logged residual: Kuwait, Costa
+   Rica, Panama, Canada, and Colombia all dropped to 0 unmatched; Honduras dropped from 11 to 5 (real
+   remaining coastal/island gaps plus one confirmed GeoNames country-tag error); Venezuela correctly stayed
+   at 2 (confirmed nothing within the 2km radius, so the fallback didn't force a wrong match). See the
+   Thirteenth pass's own table for the full before/after and what each snap actually matched to. Total
+   residual unmatched across all 37 done countries: 7 (Honduras 5, Venezuela 2) — real, structural residuals
+   now, not further-fixable by this mechanism. Also not done: further tuning
    Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent — see the Ninth
    pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
@@ -1055,9 +1171,9 @@ per-point check answers more directly.
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 12 countries with real boundary data (Seventh/Eighth/Ninth passes),
+  scoped to the 37 countries with real boundary data (Seventh/Eighth/Ninth/Tenth/Thirteenth passes),
   not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 183 countries (once each has its own verified
+  this file for the other 156 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

@@ -1550,26 +1550,7 @@
     ]
   },
   "colombia": {
-    "unmatched": [
-      {
-        "name": "Puerto Escondido",
-        "population": 3020,
-        "lat": 9.01811,
-        "lng": -76.26413
-      },
-      {
-        "name": "Nuquí",
-        "population": 2741,
-        "lat": 5.7125,
-        "lng": -77.27083
-      },
-      {
-        "name": "Necoclí",
-        "population": 10835,
-        "lat": 8.42627,
-        "lng": -76.78926
-      }
-    ],
+    "unmatched": [],
     "rejected": [
       {
         "name": "Buenaventura",
@@ -1991,6 +1972,26 @@
         "areaSqKm": 2546.5,
         "isSubstantial": false
       }
+    ],
+    "snapped": [
+      {
+        "name": "Puerto Escondido",
+        "population": 3020,
+        "matchedTo": "Puerto Escondido",
+        "snapDistanceKm": 0.057
+      },
+      {
+        "name": "Nuquí",
+        "population": 2741,
+        "matchedTo": "Nuquí",
+        "snapDistanceKm": 0.435
+      },
+      {
+        "name": "Necoclí",
+        "population": 10835,
+        "matchedTo": "Necoclí",
+        "snapDistanceKm": 0.036
+      }
     ]
   },
   "paraguay": {
@@ -2322,7 +2323,8 @@
         "areaSqKm": 2415.9,
         "isSubstantial": false
       }
-    ]
+    ],
+    "snapped": []
   },
   "suriname": {
     "unmatched": [],
@@ -7905,26 +7907,28 @@
     ]
   },
   "kuwait": {
-    "unmatched": [
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
       {
         "name": "Al Funayţīs",
         "population": 1878,
-        "lat": 29.22528,
-        "lng": 48.10167
+        "matchedTo": "الفنيطيس",
+        "snapDistanceKm": 0.24
       }
-    ],
-    "rejected": []
+    ]
   },
   "costaRica": {
-    "unmatched": [
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
       {
         "name": "Canoas",
         "population": 4573,
-        "lat": 8.53305,
-        "lng": -82.83844
+        "matchedTo": "Canoas",
+        "snapDistanceKm": 0.018
       }
-    ],
-    "rejected": []
+    ]
   },
   "elSalvador": {
     "unmatched": [],
@@ -7991,52 +7995,16 @@
         "lng": -85.28333
       },
       {
-        "name": "Puerto Lempira",
-        "population": 5000,
-        "lat": 15.26566,
-        "lng": -83.77436
-      },
-      {
         "name": "Magdalena",
         "population": 966,
         "lat": 13.86667,
         "lng": -88.3
       },
       {
-        "name": "Limón",
-        "population": 14421,
-        "lat": 15.86667,
-        "lng": -85.5
-      },
-      {
         "name": "Jericó",
         "population": 2364,
         "lat": 15.95,
         "lng": -85.96667
-      },
-      {
-        "name": "French Harbor",
-        "population": 2698,
-        "lat": 16.35,
-        "lng": -86.43333
-      },
-      {
-        "name": "El Porvenir",
-        "population": 2940,
-        "lat": 15.83333,
-        "lng": -87.93333
-      },
-      {
-        "name": "El Achiotal",
-        "population": 1210,
-        "lat": 14.08333,
-        "lng": -88.75
-      },
-      {
-        "name": "Corozal",
-        "population": 2261,
-        "lat": 15.8,
-        "lng": -86.71667
       }
     ],
     "rejected": [
@@ -8143,6 +8111,13 @@
         "population": 1399,
         "matchedTo": "Yoro",
         "areaSqKm": 2274.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Puerto Lempira",
+        "population": 5000,
+        "matchedTo": "Puerto Lempira",
+        "areaSqKm": 7139.9,
         "isSubstantial": false
       },
       {
@@ -8362,6 +8337,38 @@
         "areaSqKm": 2529,
         "isSubstantial": false
       }
+    ],
+    "snapped": [
+      {
+        "name": "Limón",
+        "population": 14421,
+        "matchedTo": "Limon",
+        "snapDistanceKm": 0.197
+      },
+      {
+        "name": "French Harbor",
+        "population": 2698,
+        "matchedTo": "Roatan",
+        "snapDistanceKm": 0.787
+      },
+      {
+        "name": "El Porvenir",
+        "population": 2940,
+        "matchedTo": "Puerto Cortes",
+        "snapDistanceKm": 0.038
+      },
+      {
+        "name": "El Achiotal",
+        "population": 1210,
+        "matchedTo": "La Virtud",
+        "snapDistanceKm": 1.673
+      },
+      {
+        "name": "Corozal",
+        "population": 2261,
+        "matchedTo": "La Ceiba",
+        "snapDistanceKm": 1.292
+      }
     ]
   },
   "nicaragua": {
@@ -8447,38 +8454,7 @@
     ]
   },
   "panama": {
-    "unmatched": [
-      {
-        "name": "Tubualá",
-        "population": 1061,
-        "lat": 9.50959,
-        "lng": -79.04492
-      },
-      {
-        "name": "Palenque",
-        "population": 355,
-        "lat": 9.57353,
-        "lng": -79.35761
-      },
-      {
-        "name": "Narganá",
-        "population": 1090,
-        "lat": 9.44394,
-        "lng": -78.58666
-      },
-      {
-        "name": "Mulatupo",
-        "population": 1303,
-        "lat": 8.94672,
-        "lng": -77.7508
-      },
-      {
-        "name": "Cauchero",
-        "population": 40,
-        "lat": 9.15226,
-        "lng": -82.2645
-      }
-    ],
+    "unmatched": [],
     "rejected": [
       {
         "name": "Icantí",
@@ -8486,6 +8462,38 @@
         "matchedTo": "COMARCA KUNA DE MADUNGANDÍ",
         "areaSqKm": 2074.4,
         "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Tubualá",
+        "population": 1061,
+        "matchedTo": "NARGANÁ",
+        "snapDistanceKm": 0.021
+      },
+      {
+        "name": "Palenque",
+        "population": 355,
+        "matchedTo": "PALENQUE (CAB.)",
+        "snapDistanceKm": 0.029
+      },
+      {
+        "name": "Narganá",
+        "population": 1090,
+        "matchedTo": "Narganá",
+        "snapDistanceKm": 0.016
+      },
+      {
+        "name": "Mulatupo",
+        "population": 1303,
+        "matchedTo": "TUBUALÁ",
+        "snapDistanceKm": 0.155
+      },
+      {
+        "name": "Cauchero",
+        "population": 40,
+        "matchedTo": "Cauchero",
+        "snapDistanceKm": 0.12
       }
     ]
   },
@@ -9257,86 +9265,7 @@
     "rejected": []
   },
   "canada": {
-    "unmatched": [
-      {
-        "name": "Bloomfield",
-        "population": 523,
-        "lat": 48.3832,
-        "lng": -53.8981
-      },
-      {
-        "name": "Burgeo",
-        "population": 1307,
-        "lat": 47.61668,
-        "lng": -57.61516
-      },
-      {
-        "name": "Clarenville-Shoal Harbour",
-        "population": 3478,
-        "lat": 48.1805,
-        "lng": -53.96982
-      },
-      {
-        "name": "Dover",
-        "population": 579,
-        "lat": 48.8666,
-        "lng": -53.9648
-      },
-      {
-        "name": "Gander Bay North",
-        "population": 853,
-        "lat": 49.34992,
-        "lng": -54.48141
-      },
-      {
-        "name": "Isle aux Morts",
-        "population": 578,
-        "lat": 47.58331,
-        "lng": -58.98187
-      },
-      {
-        "name": "North West River",
-        "population": 560,
-        "lat": 53.53346,
-        "lng": -60.13151
-      },
-      {
-        "name": "Point Leamington",
-        "population": 574,
-        "lat": 49.33323,
-        "lng": -55.39818
-      },
-      {
-        "name": "Port au Choix",
-        "population": 742,
-        "lat": 50.71677,
-        "lng": -57.36492
-      },
-      {
-        "name": "Springdale",
-        "population": 2080,
-        "lat": 49.49995,
-        "lng": -56.06492
-      },
-      {
-        "name": "Trout River",
-        "population": 508,
-        "lat": 49.48333,
-        "lng": -58.13165
-      },
-      {
-        "name": "Twillingate",
-        "population": 2121,
-        "lat": 49.64992,
-        "lng": -54.76486
-      },
-      {
-        "name": "Port de Grave",
-        "population": 874,
-        "lat": 47.58678,
-        "lng": -53.21174
-      }
-    ],
+    "unmatched": [],
     "rejected": [
       {
         "name": "Anzac",
@@ -9960,6 +9889,86 @@
         "matchedTo": "Cariboo G",
         "areaSqKm": 2779.6,
         "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Bloomfield",
+        "population": 523,
+        "matchedTo": "Division No.  7, Subd. E",
+        "snapDistanceKm": 0.417
+      },
+      {
+        "name": "Burgeo",
+        "population": 1307,
+        "matchedTo": "Burgeo",
+        "snapDistanceKm": 0.06
+      },
+      {
+        "name": "Clarenville-Shoal Harbour",
+        "population": 3478,
+        "matchedTo": "Clarenville",
+        "snapDistanceKm": 0.003
+      },
+      {
+        "name": "Dover",
+        "population": 579,
+        "matchedTo": "Dover",
+        "snapDistanceKm": 0.019
+      },
+      {
+        "name": "Gander Bay North",
+        "population": 853,
+        "matchedTo": "Division No.  8, Subd. L",
+        "snapDistanceKm": 0.373
+      },
+      {
+        "name": "Isle aux Morts",
+        "population": 578,
+        "matchedTo": "Isle aux Morts",
+        "snapDistanceKm": 0.289
+      },
+      {
+        "name": "North West River",
+        "population": 560,
+        "matchedTo": "North West River",
+        "snapDistanceKm": 0.513
+      },
+      {
+        "name": "Point Leamington",
+        "population": 574,
+        "matchedTo": "Point Leamington",
+        "snapDistanceKm": 0.035
+      },
+      {
+        "name": "Port au Choix",
+        "population": 742,
+        "matchedTo": "Port au Choix",
+        "snapDistanceKm": 0.098
+      },
+      {
+        "name": "Springdale",
+        "population": 2080,
+        "matchedTo": "Springdale",
+        "snapDistanceKm": 0.104
+      },
+      {
+        "name": "Trout River",
+        "population": 508,
+        "matchedTo": "Trout River",
+        "snapDistanceKm": 0.248
+      },
+      {
+        "name": "Twillingate",
+        "population": 2121,
+        "matchedTo": "Twillingate",
+        "snapDistanceKm": 0.018
+      },
+      {
+        "name": "Port de Grave",
+        "population": 874,
+        "matchedTo": "Division No.  1, Subd. L",
+        "snapDistanceKm": 0.002
       }
     ]
   },
@@ -26310,6 +26319,159 @@
         "matchedTo": "Candelaria",
         "areaSqKm": 5687.6,
         "isSubstantial": false
+      }
+    ]
+  },
+  "antiguaAndBarbuda": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "bahamas": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "San Andros",
+        "population": 7800,
+        "matchedTo": "North Andros",
+        "areaSqKm": 2558.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Andros Town",
+        "population": 2455,
+        "matchedTo": "North Andros",
+        "areaSqKm": 2558.8,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Governor’s Harbour",
+        "population": 0,
+        "matchedTo": "Central Eleuthera",
+        "snapDistanceKm": 0.984
+      },
+      {
+        "name": "Black Point",
+        "population": 414,
+        "matchedTo": "Black Point",
+        "snapDistanceKm": 0.61
+      }
+    ]
+  },
+  "barbados": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "cuba": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "dominica": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "dominicanRepublic": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Oviedo",
+        "population": 2671,
+        "matchedTo": "Pedernales",
+        "areaSqKm": 2058.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Juancho",
+        "population": 1623,
+        "matchedTo": "Pedernales",
+        "areaSqKm": 2058.9,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Palmar de Ocoa",
+        "population": 1997,
+        "matchedTo": "Las Charcas",
+        "snapDistanceKm": 0.003
+      }
+    ]
+  },
+  "grenada": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "haiti": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Saint-Marc",
+        "population": 266642,
+        "matchedTo": "Saint-Marc",
+        "snapDistanceKm": 0.04
+      },
+      {
+        "name": "Cité Soleil",
+        "population": 265072,
+        "matchedTo": "Cite Soleil",
+        "snapDistanceKm": 0.007
+      },
+      {
+        "name": "Port-à-Piment",
+        "population": 3819,
+        "matchedTo": "Port a Piment",
+        "snapDistanceKm": 0.036
+      },
+      {
+        "name": "Jérémie",
+        "population": 97503,
+        "matchedTo": "Jeremie",
+        "snapDistanceKm": 0.008
+      },
+      {
+        "name": "Grand Gosier",
+        "population": 17059,
+        "matchedTo": "Grand Gosier",
+        "snapDistanceKm": 0.314
+      }
+    ]
+  },
+  "jamaica": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "saintKittsAndNevis": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "saintLucia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "saintVincentAndTheGrenadines": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "trinidadAndTobago": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Mucurapo",
+        "population": 4342,
+        "matchedTo": "Port of Spain",
+        "snapDistanceKm": 0.032
       }
     ]
   }

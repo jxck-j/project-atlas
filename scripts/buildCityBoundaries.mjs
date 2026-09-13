@@ -2,10 +2,13 @@
 // countries city-boundaries-architecture.md's investigation has actually
 // verified a real source for so far (Jordan, Kuwait, US, the 2026-09-04
 // Central America pass: Costa Rica, El Salvador, Guatemala, Honduras,
-// Nicaragua, Panama, Belize, the 2026-09-05 Canada/Mexico pass, plus the
+// Nicaragua, Panama, Belize, the 2026-09-05 Canada/Mexico pass, the
 // 2026-09-05 South America pass: Argentina, Bolivia, Brazil, Chile,
-// Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname, Uruguay, Venezuela)
-// — NOT the other 169 UN members yet. See that doc's "Fifth pass" section
+// Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname, Uruguay, Venezuela,
+// plus the 2026-09-12 Caribbean pass: Antigua and Barbuda, Bahamas,
+// Barbados, Cuba, Dominica, Dominican Republic, Grenada, Haiti, Jamaica,
+// Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines,
+// Trinidad and Tobago) — NOT the other 156 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -47,7 +50,7 @@
 // the "report, don't silently drop" discipline buildGeoEntityEconomics.mjs
 // and researchCityAdminLevels.mjs already established in this repo.
 import fs from 'node:fs'
-import { pointInGeometry, geometryAreaSqKm, geometryCentroid, simplifyGeometry } from './lib/sphericalGeometry.mjs'
+import { pointInGeometry, geometryAreaSqKm, geometryCentroid, simplifyGeometry, distanceToGeometryKm } from './lib/sphericalGeometry.mjs'
 import { relationToGeometry } from './lib/osmRelationToGeometry.mjs'
 
 const HEADLINE_INDEX = 'public/geo/global-cities-headline.json'
@@ -118,6 +121,18 @@ const LOOSE_MAX_SQKM = 5000
 // near this vertex density to begin with).
 const SIMPLIFY_EPSILON_DEG = 0.001
 
+// Applied only to points that failed the normal containment check — see
+// distanceToGeometryKm's own comment for the real case this was built
+// against (Haiti's Saint-Marc/Cite Soleil/Jeremie/Grand Gosier, all real
+// cities whose correct polygon exists within tens of meters, not km, of the
+// GeoNames point). 2km is deliberately generous relative to that real
+// motivating case, not tight-fit to it — it's still small enough that a
+// genuine structural gap (Colombia's Puerto Escondido/Nuqui/Necocli, which
+// is_in() confirmed has NO containing boundary in either source at ANY
+// admin level, meaning the nearest real candidate is typically many km
+// away) won't get incorrectly snapped to a distant, wrong polygon.
+const SNAP_MAX_KM = 2
+
 async function fetchWithRetry(fn, attempts = 6) {
   let lastErr
   for (let i = 0; i < attempts; i++) {
@@ -149,6 +164,19 @@ function loadCityPoints(countryId) {
   return [...headline, ...detail]
 }
 
+// Diacritic/case/whitespace-insensitive compare, for the snap fallback's
+// name-preference tie-break below — GeoNames and geoBoundaries/OSM
+// routinely spell the same real place differently (Cité Soleil vs. Cite
+// Soleil, Jérémie vs. Jeremie, Port-à-Piment vs. Port a Piment), so an
+// exact-string compare would miss every real match.
+function normalizeName(name) {
+  return name
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[^a-z0-9]/gi, '')
+    .toLowerCase()
+}
+
 // The real per-feature join: for every GeoNames point, find the containing
 // candidate polygon and decide whether to keep it, per the threshold policy
 // above. Returns { kept: Feature[], report: {...} }.
@@ -157,6 +185,7 @@ function joinCityPointsToPolygons(countryName, cities, candidates) {
   const kept = []
   const unmatched = []
   const rejected = []
+  const snapped = []
 
   for (const city of cities) {
     const point = [city.lng, city.lat]
@@ -176,15 +205,61 @@ function joinCityPointsToPolygons(countryName, cities, candidates) {
         // ignore malformed candidate geometry
       }
     }
+    let snapDistanceKm
     if (!hit) {
-      unmatched.push({ name: city.name, population: city.population, lat: city.lat, lng: city.lng })
-      continue
+      // Containment failed outright — before giving up, check whether a
+      // candidate's boundary edge sits within SNAP_MAX_KM of the point (see
+      // that constant's own comment). Real per-city inspection (Haiti's
+      // Grand Gosier, this pass) found globally-nearest-wins can pick the
+      // WRONG neighboring polygon when two real communes' boundaries both
+      // pass close to the same point (here, geoBoundaries' own Thiotte
+      // edge sat 0.198km away vs. the correctly-named Grand Gosier
+      // commune's own 0.314km — both genuinely within snap range, but only
+      // one is the place the point is actually named after) — confirmed via
+      // OSM's own is_in() at the exact coordinate, which resolves to
+      // "Commune de Grand Gosier," not Thiotte. So: prefer a
+      // same-named candidate within range over a closer differently-named
+      // one, and only fall back to pure nearest-wins when no candidate
+      // within range shares the city's name.
+      let bestDistance = Infinity
+      let bestNamedDistance = Infinity
+      let namedHit
+      const cityKey = normalizeName(city.name)
+      for (const c of withArea) {
+        let d
+        try {
+          d = distanceToGeometryKm(point, c.geometry)
+        } catch {
+          continue
+        }
+        if (d < bestDistance) {
+          bestDistance = d
+          hit = c
+        }
+        if (normalizeName(c.name) === cityKey && d < bestNamedDistance) {
+          bestNamedDistance = d
+          namedHit = c
+        }
+      }
+      if (namedHit && bestNamedDistance <= SNAP_MAX_KM) {
+        hit = namedHit
+        bestDistance = bestNamedDistance
+      }
+      if (!hit || bestDistance > SNAP_MAX_KM) {
+        hit = undefined
+        unmatched.push({ name: city.name, population: city.population, lat: city.lat, lng: city.lng })
+        continue
+      }
+      snapDistanceKm = bestDistance
     }
     const isSubstantial = city.isCapital || city.population >= SUBSTANTIAL_POPULATION_FLOOR
     const ceiling = isSubstantial ? LOOSE_MAX_SQKM : SOFT_MAX_SQKM
     if (hit.areaSqKm > ceiling) {
       rejected.push({ name: city.name, population: city.population, matchedTo: hit.name, areaSqKm: Math.round(hit.areaSqKm * 10) / 10, isSubstantial })
       continue
+    }
+    if (snapDistanceKm !== undefined) {
+      snapped.push({ name: city.name, population: city.population, matchedTo: hit.name, snapDistanceKm: Math.round(snapDistanceKm * 1000) / 1000 })
     }
     // Memoized per candidate polygon (not per matched city) — more than one
     // city can land in the same administrative unit, and Douglas-Peucker
@@ -198,8 +273,8 @@ function joinCityPointsToPolygons(countryName, cities, candidates) {
     })
   }
 
-  console.log(`  ${countryName}: ${cities.length} points -> ${kept.length} kept, ${rejected.length} rejected (too large), ${unmatched.length} unmatched (no containing polygon)`)
-  return { kept, report: { unmatched, rejected } }
+  console.log(`  ${countryName}: ${cities.length} points -> ${kept.length} kept${snapped.length > 0 ? ` (${snapped.length} snapped)` : ''}, ${rejected.length} rejected (too large), ${unmatched.length} unmatched (no containing polygon)`)
+  return { kept, report: { unmatched, rejected, snapped } }
 }
 
 function writeCountryOutput(countryId, features) {
@@ -910,6 +985,106 @@ out geom;`),
   const peruJoin = joinCityPointsToPolygons('Peru', peruCities, peruCandidates)
   shardByState('604', peruJoin.kept, { adm0A3: 'PER', abbrevField: 'postal' })
   report.peru = peruJoin.report
+}
+
+// --- Caribbean pass (Thirteenth pass, 2026-09-12): all 13 UN Caribbean
+// members. Same investigate-before-trust discipline as every prior batch —
+// geoBoundaries' own canonicalName cross-checked against a real independent
+// count (Wikipedia/well-established parish structures) AND the live
+// download's own feature names actually inspected, not just metadata
+// trusted (the Belize/Guyana lesson). Most of these islands are small
+// enough that their real *only* local-government tier is the parish/
+// district (no separate municipio/distrito layer exists the way it does on
+// the mainland) — confirmed via a direct OSM admin_level survey for all 13
+// before picking a source per country, not assumed from area alone: an
+// OSM relation count matching geoBoundaries' own unit count at the
+// corresponding admin_level is what confirms "this is the real, complete
+// tier," the same bar Bolivia/Brazil/Colombia/Venezuela's exact-count
+// matches met in the Tenth pass.
+//
+// Nine straightforward parish/district confirmations (OSM's own
+// admin_level count matches geoBoundaries' unit count exactly): Antigua and
+// Barbuda's Parish and Dependency (ADM1, 8 — 6 parishes + Barbuda + Redonda,
+// OSM admin_level=6 also 8), Barbados's Parish (ADM1, 11, OSM
+// admin_level=6 also 11), Dominica's Parish (ADM1, 10, OSM admin_level=4
+// also 10), Grenada's Parish (ADM1, 7, OSM admin_level=6 also 7), Saint
+// Kitts and Nevis's Parish (ADM1, 14, OSM admin_level=6 also 14), Saint
+// Vincent and the Grenadines's Parishes (ADM1, 6, OSM admin_level=6 also
+// 6), Bahamas's Second/Third Schedule Districts (ADM2, 33-34 — real feature
+// names are island/island-region names: Green Turtle Cay, South Andros,
+// San Salvador, Ragged Island, matching Bahamas' real ~31 local-government
+// districts), Cuba's Municipios (ADM2, 168 — OSM's own admin_level=6
+// count, 117 tagged place=municipality plus 50 untagged, sums to the same
+// 167-168; real feature names Niquero/Bayamo/Marianao/Cárdenas confirmed
+// against Cuba's actual municipio list, including Marianao as one of
+// Havana's own municipios), and Dominican Republic's Municipalities (ADM2,
+// 155 vs. OSM admin_level=6's 156; real names Azua de Compostela/Neyba/
+// Tamayo confirmed real DR municipios). All nine kept on geoBoundaries via
+// runGeoBoundariesCountry() below, same as every clean South America
+// confirmation in the Tenth pass.
+//
+// Two coarser-than-parish "communities" layers, inspected directly rather
+// than trusted from the canonicalName alone (the Belize/Paraguay
+// precedent): Jamaica's ADM2 "community" (827 units, min 0.10 km²) and
+// Saint Lucia's ADM2 "Communities" (547 units, min 0.01 km²) both have real
+// named-settlement feature names on direct inspection (Jamaica: Irish
+// Town, Norbrook, Mavis Bank, Kingston itself; Saint Lucia: Jacmel, Vanard,
+// Roseau Valley) — genuine fine-grained community/village polygons, not an
+// electoral or code-based mislabeling the way Belize's "Constituencies" or
+// Guyana's original ADM2 attempt were. No OSM survey confirmed a matching
+// finer tier for either (Jamaica's own OSM admin_level=6 stops at its 14
+// parishes; Saint Lucia's stops at its 10 districts), but the download's
+// own real names are confirmation enough on their own, the same bar
+// Paraguay's Distritos met when its own canonicalName ("barrios y
+// localidades") was wrong but the real feature names were right.
+//
+// Haiti's Communes (ADM3, 140, OSM admin_level=8 confirms 143) is a real,
+// correctly-identified municipal tier — Port au Prince, Delmas, Carrefour,
+// Petionville all present and correctly named, matching Haiti's actual
+// commune list.
+//
+// Trinidad and Tobago is the one country in this pass that needed OSM
+// instead of geoBoundaries, not just a confirmation of it: geoBoundaries'
+// ADM1 (14 units) is missing Arima — a real, incorporated borough
+// (population ~33,000) — entirely from its download, leaving only 13 of
+// Trinidad's real 14 divisions (2 cities + 5 boroughs + 7 regions,
+// confirmed against Wikipedia) plus Tobago as a 14th combined feature. A
+// direct OSM admin_level=4 query has the real, complete set instead — all
+// 14 Trinidad divisions including Arima, plus Tobago itself (also tagged
+// admin_level=4, in addition to place=island) as a 15th feature — matching
+// Trinidad and Tobago's real total of 15 administrative divisions exactly
+// where geoBoundaries' own download falls one short.
+if (shouldRun('028')) report.antiguaAndBarbuda = await runGeoBoundariesCountry({ name: 'Antigua and Barbuda', numericId: '028', alpha3: 'ATG', admLevel: 'ADM1' })
+if (shouldRun('044')) report.bahamas = await runGeoBoundariesCountry({ name: 'Bahamas', numericId: '044', alpha3: 'BHS', admLevel: 'ADM2' })
+if (shouldRun('052')) report.barbados = await runGeoBoundariesCountry({ name: 'Barbados', numericId: '052', alpha3: 'BRB', admLevel: 'ADM1' })
+if (shouldRun('192')) report.cuba = await runGeoBoundariesCountry({ name: 'Cuba', numericId: '192', alpha3: 'CUB', admLevel: 'ADM2' })
+if (shouldRun('212')) report.dominica = await runGeoBoundariesCountry({ name: 'Dominica', numericId: '212', alpha3: 'DMA', admLevel: 'ADM1' })
+if (shouldRun('214')) report.dominicanRepublic = await runGeoBoundariesCountry({ name: 'Dominican Republic', numericId: '214', alpha3: 'DOM', admLevel: 'ADM2' })
+if (shouldRun('308')) report.grenada = await runGeoBoundariesCountry({ name: 'Grenada', numericId: '308', alpha3: 'GRD', admLevel: 'ADM1' })
+if (shouldRun('332')) report.haiti = await runGeoBoundariesCountry({ name: 'Haiti', numericId: '332', alpha3: 'HTI', admLevel: 'ADM3' })
+if (shouldRun('388')) report.jamaica = await runGeoBoundariesCountry({ name: 'Jamaica', numericId: '388', alpha3: 'JAM', admLevel: 'ADM2' })
+if (shouldRun('659')) report.saintKittsAndNevis = await runGeoBoundariesCountry({ name: 'Saint Kitts and Nevis', numericId: '659', alpha3: 'KNA', admLevel: 'ADM1' })
+if (shouldRun('662')) report.saintLucia = await runGeoBoundariesCountry({ name: 'Saint Lucia', numericId: '662', alpha3: 'LCA', admLevel: 'ADM2' })
+if (shouldRun('670')) report.saintVincentAndTheGrenadines = await runGeoBoundariesCountry({ name: 'Saint Vincent and the Grenadines', numericId: '670', alpha3: 'VCT', admLevel: 'ADM1' })
+if (!process.env.SKIP_OSM && shouldRun('780')) {
+  console.log('\n=== Trinidad and Tobago ===')
+  const trinidadRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="TT"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="4"];
+out geom;`),
+  )
+  let trinidadUnclosedCount = 0
+  const trinidadCandidates = trinidadRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) trinidadUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin4' }
+  })
+  if (trinidadUnclosedCount > 0) console.log(`  [warn] ${trinidadUnclosedCount} Trinidad and Tobago relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const trinidadCities = loadCityPoints('780')
+  const trinidadJoin = joinCityPointsToPolygons('Trinidad and Tobago', trinidadCities, trinidadCandidates)
+  writeCountryOutput('780', trinidadJoin.kept)
+  report.trinidadAndTobago = trinidadJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census

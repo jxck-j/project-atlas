@@ -11,11 +11,14 @@
 // Scoped to exactly the countries city-boundaries-architecture.md's
 // investigation covers today (Jordan, Kuwait, US, the 2026-09-04 Central
 // America pass: Costa Rica, El Salvador, Guatemala, Honduras, Nicaragua,
-// Panama, Belize, the 2026-09-05 Canada/Mexico pass, plus the 2026-09-05
+// Panama, Belize, the 2026-09-05 Canada/Mexico pass, the 2026-09-05
 // South America pass: all twelve UN members — Argentina, Bolivia, Brazil,
 // Chile, Colombia, Ecuador, Guyana, Paraguay, Peru, Suriname, Uruguay,
-// Venezuela) — NOT the other 169 UN members yet. See that doc's migration
-// plan.
+// Venezuela, plus the 2026-09-12 Caribbean pass: Antigua and Barbuda,
+// Bahamas, Barbados, Cuba, Dominica, Dominican Republic, Grenada, Haiti,
+// Jamaica, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the
+// Grenadines, Trinidad and Tobago) — NOT the other 156 UN members yet. See
+// that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -42,6 +45,19 @@ const BOUNDARY_COUNTRIES = [
   { id: '740', name: 'Suriname' },
   { id: '858', name: 'Uruguay' },
   { id: '862', name: 'Venezuela' },
+  { id: '028', name: 'Antigua and Barbuda' },
+  { id: '044', name: 'Bahamas' },
+  { id: '052', name: 'Barbados' },
+  { id: '192', name: 'Cuba' },
+  { id: '212', name: 'Dominica' },
+  { id: '214', name: 'Dominican Republic' },
+  { id: '308', name: 'Grenada' },
+  { id: '332', name: 'Haiti' },
+  { id: '388', name: 'Jamaica' },
+  { id: '659', name: 'Saint Kitts and Nevis' },
+  { id: '662', name: 'Saint Lucia' },
+  { id: '670', name: 'Saint Vincent and the Grenadines' },
+  { id: '780', name: 'Trinidad and Tobago' },
 ]
 
 function addFromBoundaryFile(countryId) {

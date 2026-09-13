@@ -39,6 +39,53 @@ export function pointInGeometry(point, geometry) {
   throw new Error(`pointInGeometry: unsupported geometry type ${geometry.type}`)
 }
 
+// Equirectangular (not great-circle) point-to-segment distance, projected
+// flat around the query point's own latitude — fine at the sub-few-km scale
+// this is built for (see distanceToGeometryKm's own comment), the same
+// "planar is close enough at this scale" call simplifyGeometry's Douglas-
+// Peucker already makes for this file.
+function distanceToSegmentKm([plng, plat], [alng, alat], [blng, blat]) {
+  const kmPerDegLat = 111.32
+  const kmPerDegLng = 111.32 * Math.cos(toRad(plat))
+  const px = plng * kmPerDegLng
+  const py = plat * kmPerDegLat
+  const ax = alng * kmPerDegLng
+  const ay = alat * kmPerDegLat
+  const bx = blng * kmPerDegLng
+  const by = blat * kmPerDegLat
+  const dx = bx - ax
+  const dy = by - ay
+  if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay)
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)))
+  const cx = ax + t * dx
+  const cy = ay + t * dy
+  return Math.hypot(px - cx, py - cy)
+}
+
+// The "point sits right on top of the boundary but ray-casting still calls
+// it outside" fallback — built after the Caribbean pass found several
+// unmatched GeoNames points (Haiti's Saint-Marc/Cite Soleil/Jeremie/Grand
+// Gosier) whose real containing polygon exists, is correctly named, and
+// sits within TENS OF METERS of the point (confirmed by direct inspection,
+// not assumed) — a floating-point edge-of-ring case, not the km-scale
+// genuine coordinate mismatch Kuwait's Al Funayțis/Costa Rica's Canoas
+// were originally logged as. Returns the minimum distance from a point to
+// any edge of a geometry's rings (holes included — a hole edge is still a
+// real boundary a point can sit just outside of).
+export function distanceToGeometryKm(point, geometry) {
+  const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+  let best = Infinity
+  for (const rings of polygons) {
+    for (const ring of rings) {
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const d = distanceToSegmentKm(point, ring[j], ring[i])
+        if (d < best) best = d
+      }
+    }
+  }
+  return best
+}
+
 // Chamberlain & Duquette spherical polygon area (the same approximation
 // Turf.js's `area` module uses) — a signed ring sum scaled by R^2. Hole
 // rings wind the opposite direction from the outer ring, so summing them
