@@ -232,11 +232,13 @@ function shouldRun(numericId) {
   return !ONLY || ONLY.has(numericId)
 }
 
-// SKIP_OSM=1 skips the Overpass-dependent countries (Jordan, Belize, Guyana,
-// Peru, Argentina, Uruguay, Kuwait) — useful for re-running just the
-// geoBoundaries-sourced countries when the Overpass endpoint this script
-// depends on (see its own comment above) is temporarily unreachable,
-// without touching their already-committed output.
+// SKIP_OSM=1 skips every Overpass-dependent country — the OSM-only sources
+// (Jordan, Belize, Guyana, Peru, Argentina, Uruguay, Kuwait, Costa Rica) and,
+// as of the Twelfth pass, the geoBoundaries+OSM combined ones too (Panama,
+// Canada, Venezuela, via runGeoBoundariesCountry's extraOsm option) — useful
+// for re-running just the pure-geoBoundaries countries when the Overpass
+// endpoint this script depends on (see its own comment above) is temporarily
+// unreachable, without touching their already-committed output.
 if (!process.env.SKIP_OSM && shouldRun('400')) {
   // --- Jordan (numeric id 400, alpha3 JOR) ---
   console.log('\n=== Jordan ===')
@@ -268,7 +270,23 @@ out geom;`),
 // settlement-scale hierarchy (municipio/distrito/corregimiento), not
 // something that looks small on paper but isn't (Jordan's mislabeled Liwa,
 // Belize's electoral constituencies).
-async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOutput }) {
+// extraOsm ({ query, sourceLabel }), added 2026-09-12 (Twelfth pass): lets a
+// geoBoundaries-sourced country ALSO pull in a supplemental OSM admin-level
+// layer as additional join candidates, rather than picking exactly one
+// source per country the way every earlier pass did. Panama and Canada are
+// the motivating cases — each has real geoBoundaries coverage that's good
+// but not complete (Panama's ADM3 corregimientos miss real Guna Yala/Darién
+// communities that OSM's own admin_level=8 layer separately has; Canada's
+// CSD file misses Montreal boroughs and some northern-Quebec/Newfoundland
+// settlements that OSM's admin_level 8/10 layers separately cover) — a full
+// source swap (Jordan/Guyana/Peru/Uruguay's approach) would have thrown away
+// geoBoundaries' otherwise-good coverage for no reason. The join's existing
+// "smallest containing polygon wins" rule (see joinCityPointsToPolygons's own
+// comment) makes this safe to add unconditionally: a supplemental OSM
+// candidate only ever gets picked where it's smaller than whatever
+// geoBoundaries candidate also contains the point, or where geoBoundaries has
+// no containing candidate at all.
+async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOutput, extraOsm }) {
   console.log(`\n=== ${name} ===`)
   const meta = await fetchWithRetry(async () => {
     const res = await fetch(`https://www.geoboundaries.org/api/current/gbOpen/${alpha3}/ALL/`)
@@ -282,11 +300,23 @@ async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOu
     if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
     return res.json()
   })
-  const candidates = geo.features.map((f) => ({
+  let candidates = geo.features.map((f) => ({
     name: f.properties.shapeName,
     geometry: f.geometry,
     source: `geoboundaries-${admLevel.toLowerCase()}`,
   }))
+  if (extraOsm) {
+    const raw = await fetchWithRetry(() => fetchOverpass(extraOsm.query))
+    let unclosedCount = 0
+    const osmCandidates = raw.elements.map((rel) => {
+      const { geometry, closed } = relationToGeometry(rel)
+      if (!closed) unclosedCount++
+      return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: extraOsm.sourceLabel }
+    })
+    if (unclosedCount > 0) console.log(`  [warn] ${unclosedCount} ${name} supplemental OSM relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+    console.log(`  +${osmCandidates.length} supplemental OSM candidates (${extraOsm.sourceLabel})`)
+    candidates = [...candidates, ...osmCandidates]
+  }
   const cities = loadCityPoints(numericId)
   const join = joinCityPointsToPolygons(name, cities, candidates)
   if (onOutput) onOutput(join.kept)
@@ -391,12 +421,81 @@ out geom;`),
 // (ADM2), Panama's Corregimientos (ADM3). Belize is the seventh and is
 // handled separately below — its geoBoundaries ADM2 is electoral
 // constituencies, not settlements, so it needs a real OSM source instead.
-if (shouldRun('188')) report.costaRica = await runGeoBoundariesCountry({ name: 'Costa Rica', numericId: '188', alpha3: 'CRI', admLevel: 'ADM3' })
+//
+// Costa Rica switched off geoBoundaries entirely in the Twelfth pass
+// (2026-09-12) — its own ADM3 Distritos left 6 real towns unmatched
+// (Canoas, San Vito, San Rafael, San Felipe, Sabalito, Parrita), and a
+// direct area-contained Overpass query found OSM has a real, comprehensive
+// nationwide admin_level=8 layer for the same Distrito tier (495 relations,
+// real names spot-checked against Wikipedia — Isla del Coco, Cóbano,
+// Aguacaliente, Dulce Nombre, ...) that resolves all but one of them: 136/137
+// kept, 0 rejected, 1 unmatched. The one residual (Canoas, a real Costa
+// Rican border town) is a GeoNames coordinate-precision issue, not a source
+// gap — its point resolves to Panama's own Chiriquí province, across the
+// border, in both sources; see the Twelfth pass's own notes in
+// city-boundaries-architecture.md.
+if (!process.env.SKIP_OSM && shouldRun('188')) {
+  console.log('\n=== Costa Rica ===')
+  const costaRicaRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="CR"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`),
+  )
+  let costaRicaUnclosedCount = 0
+  const costaRicaCandidates = costaRicaRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) costaRicaUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+  })
+  if (costaRicaUnclosedCount > 0) console.log(`  [warn] ${costaRicaUnclosedCount} Costa Rica relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const costaRicaCities = loadCityPoints('188')
+  const costaRicaJoin = joinCityPointsToPolygons('Costa Rica', costaRicaCities, costaRicaCandidates)
+  writeCountryOutput('188', costaRicaJoin.kept)
+  report.costaRica = costaRicaJoin.report
+}
 if (shouldRun('222')) report.elSalvador = await runGeoBoundariesCountry({ name: 'El Salvador', numericId: '222', alpha3: 'SLV', admLevel: 'ADM2' })
 if (shouldRun('320')) report.guatemala = await runGeoBoundariesCountry({ name: 'Guatemala', numericId: '320', alpha3: 'GTM', admLevel: 'ADM2' })
+// Honduras: re-checked in the Twelfth pass (2026-09-12) — a direct OSM
+// admin_level=6 (Municipio) query reproduces geoBoundaries' own numbers
+// almost exactly (487 kept, 47 rejected, 10 unmatched vs. 487/46/11), which
+// makes sense since both ultimately derive from the same real Honduran
+// municipio boundaries. No source change made; confirms the existing
+// geoBoundaries source is already correct and complete, not under-verified.
+// Of the 11 residual unmatched towns, one (Magdalena) is a genuine GeoNames
+// country-tag error — its coordinate resolves to El Salvador's San Miguel
+// department, not Honduras — and the rest are real Caribbean coastal/island
+// towns (Islas de la Bahía, Gracias a Dios) that fall in real gaps between
+// municipio polygons in both sources alike. See BACKLOG.md.
 if (shouldRun('340')) report.honduras = await runGeoBoundariesCountry({ name: 'Honduras', numericId: '340', alpha3: 'HND', admLevel: 'ADM2' })
 if (shouldRun('558')) report.nicaragua = await runGeoBoundariesCountry({ name: 'Nicaragua', numericId: '558', alpha3: 'NIC', admLevel: 'ADM2' })
-if (shouldRun('591')) report.panama = await runGeoBoundariesCountry({ name: 'Panama', numericId: '591', alpha3: 'PAN', admLevel: 'ADM3' })
+// Panama: geoBoundaries' ADM3 corregimientos (632 units) is real and mostly
+// complete (783/801 kept on its own), but a direct is_in() check on the
+// Twelfth pass's 17 residual unmatched towns found real, correctly-named OSM
+// admin_level=8 relations for most of them (Tubualá, Narganá, Mulatupo,
+// Ailigandí, Achutupo, Puerto Piña, Gonzalo Vásquez, ... — genuine Guna
+// Yala/Darién community boundaries geoBoundaries' download doesn't have) —
+// added as a supplemental candidate source rather than a full swap, since
+// geoBoundaries' own coverage is otherwise good: 795/801 kept, 1 rejected, 5
+// unmatched (down from 17). The remaining 5 (Tubualá's second/Colón-area
+// point, Palenque, a second Narganá-area point, Mulatupo, Cauchero) have no
+// containing boundary in either source at all — a real, structural coverage
+// gap (remote Guna Yala/Bocas del Toro coastal communities), not a technique
+// problem. See city-boundaries-architecture.md's Twelfth pass.
+if (!process.env.SKIP_OSM && shouldRun('591'))
+  report.panama = await runGeoBoundariesCountry({
+    name: 'Panama',
+    numericId: '591',
+    alpha3: 'PAN',
+    admLevel: 'ADM3',
+    extraOsm: {
+      sourceLabel: 'osm-admin8',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="PA"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`,
+    },
+  })
 
 // --- Belize (numeric id 084, alpha3 BLZ) ---
 // geoBoundaries' only sub-national level for Belize is electoral
@@ -477,7 +576,37 @@ out geom;`),
 //     "Benito Juárez" each appear multiple times) — harmless here since the
 //     join is point-in-polygon against real geometry, never name-based, but
 //     worth knowing before any future name-keyed lookup against this file.
-if (shouldRun('124')) report.canada = await runGeoBoundariesCountry({ name: 'Canada', numericId: '124', alpha3: 'CAN', admLevel: 'ADM3' })
+// Canada: geoBoundaries' ADM3 (Census Subdivisions, 5,162 units) is real and
+// mostly complete (3,036/3,296 kept on its own), but the Twelfth pass's
+// is_in() check on the 28 residual unmatched towns found real gaps a
+// supplemental OSM layer fills, two different shapes at once — Montreal's
+// boroughs (Ahuntsic-Cartierville, Vieux-Montréal, ...) are their own real
+// admin_level=10 relations one tier below the single CSD-level "Montréal"
+// polygon, and some northern-Quebec/BC settlements (Akulivik, Belcarra, ...)
+// have a real admin_level=8 relation CSD's own download is simply missing.
+// Querying OSM admin_level 8|10 together and adding both as supplemental
+// candidates (same "smallest containing polygon wins" join logic, no source
+// swap) resolved both shapes at once: 3,194/3,296 kept (up from 3,036), 89
+// rejected (down from 232 — many of these are also finer OSM boundaries
+// replacing a huge "Unorganized"-tier CSD match), 13 unmatched (down from
+// 28). The residual 13 are almost all small Newfoundland outport towns
+// (Twillingate, Burgeo, Port au Choix, ...) with no boundary in either
+// source — a real, sparse-OSM-mapping gap in rural Newfoundland, not a
+// technique problem. See city-boundaries-architecture.md's Twelfth pass.
+if (!process.env.SKIP_OSM && shouldRun('124'))
+  report.canada = await runGeoBoundariesCountry({
+    name: 'Canada',
+    numericId: '124',
+    alpha3: 'CAN',
+    admLevel: 'ADM3',
+    extraOsm: {
+      sourceLabel: 'osm-admin8-10',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="CA"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(8|10)$"];
+out geom;`,
+    },
+  })
 if (shouldRun('484'))
 // Mexico's real per-feature join produces 14,545 kept features — checking
 // the actual output file size (this project's own established discipline;
@@ -514,9 +643,43 @@ report.mexico = await runGeoBoundariesCountry({
 // block's own comment.
 if (shouldRun('068')) report.bolivia = await runGeoBoundariesCountry({ name: 'Bolivia', numericId: '068', alpha3: 'BOL', admLevel: 'ADM3' })
 if (shouldRun('152')) report.chile = await runGeoBoundariesCountry({ name: 'Chile', numericId: '152', alpha3: 'CHL', admLevel: 'ADM3' })
+// Colombia: re-checked in the Twelfth pass (2026-09-12) — its 3 residual
+// unmatched towns (Puerto Escondido, Nuquí, Necoclí, all real Chocó/Urabá
+// coastal towns) resolve to NO administrative boundary at all in OSM, at any
+// level (an is_in() query at each exact coordinate returns only "Colombia"
+// itself) — a genuine coverage gap in this stretch of coastline's OSM
+// mapping, not a wrong-admin-level problem a different source or level would
+// fix. No source change made. See BACKLOG.md.
 if (shouldRun('170')) report.colombia = await runGeoBoundariesCountry({ name: 'Colombia', numericId: '170', alpha3: 'COL', admLevel: 'ADM2' })
 if (shouldRun('600')) report.paraguay = await runGeoBoundariesCountry({ name: 'Paraguay', numericId: '600', alpha3: 'PRY', admLevel: 'ADM2' })
-if (shouldRun('862')) report.venezuela = await runGeoBoundariesCountry({ name: 'Venezuela', numericId: '862', alpha3: 'VEN', admLevel: 'ADM2' })
+// Venezuela: geoBoundaries' ADM2 Municipios (335 units) is real but coarse —
+// the Twelfth pass's is_in() check on its 11 residual unmatched towns
+// surfaced a real, comprehensive finer tier OSM already has: admin_level=7
+// Parroquia (parish), Venezuela's actual sub-municipio local-government
+// layer (1,215 relations, real names spot-checked — "Parroquia Tumeremo",
+// "Parroquia La Guaira", "Parroquia San Rafael", ...). Added as a
+// supplemental candidate source (not a full swap, since Municipio still
+// resolves everything Parroquia doesn't, e.g. the Federal Dependencies'
+// islands) — the combination improves every bucket at once: 387/414 kept (up
+// from 320), 25 rejected (down from 83 — Parroquia's smaller polygons keep
+// many real cities that Municipio's larger ones pushed over the ceiling), 2
+// unmatched (down from 11). The 2 residual (Los Roques, an island
+// dependency; La Aguada) have no containing boundary in either source. See
+// city-boundaries-architecture.md's Twelfth pass.
+if (!process.env.SKIP_OSM && shouldRun('862'))
+  report.venezuela = await runGeoBoundariesCountry({
+    name: 'Venezuela',
+    numericId: '862',
+    alpha3: 'VEN',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-admin7',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="VE"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="7"];
+out geom;`,
+    },
+  })
 // Suriname's Ressorten (real Dutch term for its actual sub-district local-
 // government tier — 62 vs. Wikipedia's 63, the usual vintage-count drift).
 if (shouldRun('740')) report.suriname = await runGeoBoundariesCountry({ name: 'Suriname', numericId: '740', alpha3: 'SUR', admLevel: 'ADM2' })
@@ -591,19 +754,33 @@ if (shouldRun('218')) report.ecuador = await runGeoBoundariesCountry({ name: 'Ec
 // candidate rather than the first one found — a real city's admin_level=7
 // polygon and a larger enclosing admin_level=8 relation can both contain
 // the same point once two levels are queried together.
+// Twelfth pass (2026-09-12): the 134 towns still unmatched after the 7|8
+// broadening above turned out to cluster almost entirely in Buenos Aires and
+// San Juan provinces, and a direct is_in() check found why — Buenos Aires
+// Province's partidos (its real municipal-equivalent tier; the province has
+// no further sub-partido local government at all) are tagged admin_level=5,
+// not 7 or 8 ("Partido de Zárate", "Partido de Luján", ...), a third level
+// entirely from the two this file already broadened to. Adding admin_level=5
+// nationwide (which resolves to "Departamento" in most other provinces —
+// coarser than 7|8 there, but only ever picked when nothing finer contains a
+// point, per the smallest-wins join rule) eliminated every unmatched town:
+// 1,106/1,204 kept (up from 1,038), 98 rejected (up from 32 — genuinely
+// large departamentos/partidos that a real city still doesn't fit inside
+// even at this coarser fallback level), 0 unmatched (down from 134). See
+// city-boundaries-architecture.md's Twelfth pass.
 if (!process.env.SKIP_OSM && shouldRun('032')) {
   console.log('\n=== Argentina ===')
   const argentinaRaw = await fetchWithRetry(() =>
     fetchOverpass(`[out:json][timeout:400];
 area["ISO3166-1"="AR"][admin_level=2];
-relation(area)["boundary"="administrative"]["admin_level"~"^(7|8)$"];
+relation(area)["boundary"="administrative"]["admin_level"~"^(5|7|8)$"];
 out geom;`),
   )
   let argentinaUnclosedCount = 0
   const argentinaCandidates = argentinaRaw.elements.map((rel) => {
     const { geometry, closed } = relationToGeometry(rel)
     if (!closed) argentinaUnclosedCount++
-    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin5-7-8' }
   })
   if (argentinaUnclosedCount > 0) console.log(`  [warn] ${argentinaUnclosedCount} Argentina relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
   const argentinaCities = loadCityPoints('032')

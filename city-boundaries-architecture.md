@@ -841,6 +841,98 @@ fallback (for cases shaped like Al Funayţīs, where the real boundary exists bu
 is still a distinct, unbuilt idea — worth its own pass once the source-swap approach has been tried on the
 rest of the list.
 
+### Twelfth pass: the source-swap-first check, run against every remaining unmatched-town country (2026-09-12)
+
+The Eleventh pass's revised takeaway applied directly, one country at a time, using the same is_in()-at-
+exact-coordinate technique that resolved Kuwait: for every residual unmatched town, ask OSM directly what
+administrative boundary (if any) actually contains that point, at any level, before assuming the gap needs a
+novel fix. Five real, different outcomes came out of this pass — not one uniform result — which is itself
+the point: "check per-country, don't batch-assume" continues to hold at this stage of the list, same as
+every earlier pass.
+
+**`runGeoBoundariesCountry()` gained a new `extraOsm` option** (`scripts/buildCityBoundaries.mjs`) — three of
+the five real fixes below turned out to be "geoBoundaries is mostly right, add a supplemental OSM layer,"
+not "replace the source entirely" the way every earlier OSM fix in this file (Jordan, Guyana, Peru, Uruguay,
+Kuwait) was. The existing join's "smallest containing polygon wins" rule (built for Argentina's own 7|8 mix
+in the Tenth pass) makes this safe: a supplemental candidate only ever gets picked where it's smaller than
+whatever geoBoundaries candidate also contains the point, or where geoBoundaries has none at all — it can't
+make an already-good geoBoundaries match worse.
+
+- **Costa Rica — full source swap, not a supplement.** geoBoundaries' Distritos (ADM3) left 6 unmatched
+  (San Vito, San Rafael, San Felipe, Sabalito, Parrita, Canoas). A direct OSM admin_level=8 query resolves to
+  495 real, correctly-named distritos (Isla del Coco, Cóbano, Aguacaliente, Dulce Nombre, ... — spot-checked
+  against real Costa Rican distrito names, close to Wikipedia's 472-492 count range). Full swap: 136/137
+  kept (up from 131), 0 rejected, 1 unmatched (down from 6). The one residual, Canoas, is a real GeoNames
+  coordinate-precision issue, not a coverage gap — an is_in() check on its exact point resolves to Panama's
+  own Chiriquí province, across the border, in **both** sources; Costa Rica's real Canoas is a genuine border
+  town and the point simply lands on the wrong side of the line.
+- **Panama — supplemental, not a swap.** geoBoundaries' Corregimientos (ADM3, 632 units) already covers
+  783/801 well; its 17 unmatched were mostly real Guna Yala/Darién communities (Tubualá, Narganá, Mulatupo,
+  Ailigandí, Achutupo, Puerto Piña, Gonzalo Vásquez, ...) that turned out to have their own real,
+  correctly-named OSM admin_level=8 relations geoBoundaries' download simply doesn't include. Added as
+  `extraOsm`: 795/801 kept (up from 783), 1 rejected (unchanged), 5 unmatched (down from 17). The remaining 5
+  (a second, Colón-area "Tubualá" point, Palenque, a second Narganá-area point, Mulatupo's own duplicate, and
+  Cauchero near the Costa Rica border) have no containing boundary in either source — confirmed via the same
+  is_in() check, a real structural gap in this specific stretch of remote coastline, not a technique problem.
+- **Canada — supplemental, two different real gaps at once.** geoBoundaries' CSD (ADM3, 5,162 units) already
+  covers 3,036/3,296; its 28 unmatched split into two unrelated shapes on inspection — Montreal boroughs
+  (Ahuntsic-Cartierville, Vieux-Montréal, ...) are their own real admin_level=10 relations one tier below the
+  single CSD-level "Montréal" polygon, while some northern-Quebec/BC settlements (Akulivik, Belcarra, ...)
+  have a real admin_level=8 relation the CSD download is simply missing. Querying `admin_level~"^(8|10)$"`
+  together and adding both as `extraOsm` resolved both shapes in one pass: 3,194/3,296 kept (up from 3,036),
+  89 rejected (down from 232 — several of the newly-added finer OSM boundaries replace a huge
+  "Unorganized"-tier CSD match that used to push a real town over the ceiling), 13 unmatched (down from 28).
+  The residual 13 are almost all small Newfoundland outport towns (Twillingate, Burgeo, Port au Choix, Trout
+  River, ...) with no boundary in either source — a real, sparse-OSM-mapping gap in rural Newfoundland (the
+  same shape as Botswana/Libya/South Sudan's sparse tagging, just localized to one province), not a technique
+  problem.
+- **Venezuela — supplemental, and it improved more than just the unmatched count.** geoBoundaries' Municipios
+  (ADM2, 335 units) is real but coarse; its 11 unmatched towns' is_in() checks surfaced a real, comprehensive
+  finer tier OSM already has — admin_level=7 Parroquia (parish), Venezuela's actual sub-municipio
+  local-government layer (1,215 relations, real names spot-checked: "Parroquia Tumeremo," "Parroquia La
+  Guaira," "Parroquia San Rafael"). Added as `extraOsm`: 387/414 kept (up from 320), 25 rejected (down from
+  83 — Parroquia's smaller polygons keep many real cities that Municipio's larger ones had pushed past the
+  ceiling), 2 unmatched (down from 11). This is the one country in this pass where the fix helped the
+  rejected bucket as much as the unmatched one — Municipio wasn't just missing coverage, it was actively too
+  coarse for cities it did technically contain. The 2 residual unmatched (Los Roques, an island federal
+  dependency; La Aguada) have no containing boundary in either source.
+- **Argentina — a third admin_level, not a supplemental query on top of the existing 7|8.** The Tenth pass's
+  134 remaining unmatched towns clustered specifically in Buenos Aires and San Juan provinces; a direct
+  is_in() check explained why — Buenos Aires Province's partidos (its real municipal-equivalent tier; the
+  province has no further sub-partido local government at all) are tagged admin_level=5 ("Partido de Zárate,"
+  "Partido de Luján," ...), a third level entirely from the two this file already broadened to in the Tenth
+  pass. Widening the existing query to `admin_level~"^(5|7|8)$"` (level 5 resolves to "Departamento" in most
+  other provinces — coarser than 7|8 there, but only ever picked when nothing finer contains a point, per the
+  existing smallest-wins join rule) eliminated every unmatched town outright: 1,106/1,204 kept (up from
+  1,038), 98 rejected (up from 32 — genuinely large departamentos/partidos a real city still doesn't fit
+  inside even at this coarser fallback), 0 unmatched (down from 134). Unlike Panama/Canada/Venezuela above,
+  this is a query-pattern change to the same single source, not an additional source — Argentina's OSM
+  candidates already come from one Overpass query, level 5 is simply now part of the same regex.
+- **Honduras — checked and confirmed, no change.** A direct OSM admin_level=6 (Municipio) query reproduces
+  geoBoundaries' own ADM2 numbers almost exactly (487 kept, 47 rejected, 10 unmatched vs. 487/46/11) — the two
+  sources evidently derive from the same underlying Honduran municipio boundaries. This is a real, useful
+  negative result, not a wasted check: it confirms the existing source is already correct and complete rather
+  than leaving it merely unverified. Of the 11 originally-logged unmatched towns, one (Magdalena) turned out
+  to be a genuine GeoNames country-tag error — its coordinate resolves to El Salvador's San Miguel department,
+  not Honduras, in both sources — and the rest are real Caribbean coastal/island towns (Islas de la Bahía,
+  Gracias a Dios) sitting in real gaps between municipio polygons that no admin-level swap changes.
+- **Colombia — checked and confirmed, a real gap, not a wrong-level problem.** All 3 residual unmatched towns
+  (Puerto Escondido, Nuquí, Necoclí — real Chocó/Urabá coastal towns) resolve to no administrative boundary
+  at all in OSM, at any level — an is_in() query at each exact coordinate returns only "Colombia" itself, the
+  country polygon. A different admin_level or a different source can't fix a point that has no containing
+  boundary of any kind in OSM's own data for that stretch of coastline.
+
+**Net effect**: of the 7 countries this pass covered, 5 got a real, verified improvement (Costa Rica, Panama,
+Canada, Venezuela, Argentina — Argentina's fix alone took its unmatched count from 134 to 0) and 2 were
+checked and confirmed already-correct (Honduras, Colombia) rather than left merely unverified. Total
+unmatched towns across all 24 done countries dropped from 228 to about 33 (Kuwait's 1, Costa Rica's 1,
+Panama's 5, Canada's 13, Colombia's 3, Venezuela's 2, Honduras's 11 unchanged — Belize's 127 structural-gap
+towns excluded from this count per the standing distinction). The "check is_in() at the exact unmatched
+coordinate before assuming a fix is needed" technique (not just "try a different admin_level and compare
+counts") is what made every one of these five real fixes fast to find — worth using first for whatever
+countries pick up this same investigation next, over re-deriving country-wide admin-level survey data that a
+per-point check answers more directly.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -872,15 +964,18 @@ rest of the list.
    Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, and Argentina all sharded by
    state/province — see `shardByState()`).
    **Not done: the other 169 countries** — each needs the same investigate-before-trusting treatment
-   (Fourth/Eighth/Tenth pass) before its own join can run, not a blind batch extension of this script. Also
-   not done: the same source-swap-first check for every country's own residual unmatched towns (Panama's
-   17, Honduras's 11, Costa Rica's 6, Canada's 28, Colombia's 3, Venezuela's 11, Uruguay's 10, and
-   Argentina's 134 — a per-country source can still leave individual cities with nothing; Belize's 127 is a
-   different, structural case, not a fallback candidate — see the Eighth/Tenth passes). **Kuwait's own 3 were
-   the first tried, in the Eleventh pass**: switching to OSM's own `admin_level=6` layer fixed 2 (down to 1
-   real remaining case, a coordinate-precision mismatch rather than missing data — see that pass for why a
-   true per-*point* fallback, not just a per-*country* source swap, is still a distinct, unbuilt idea worth
-   its own pass). Also not done: further tuning
+   (Fourth/Eighth/Tenth pass) before its own join can run, not a blind batch extension of this script.
+   **The source-swap-first check against every done country's residual unmatched towns is now finished for
+   all 24 done countries** (Kuwait in the Eleventh pass, Costa Rica/Panama/Canada/Venezuela/Argentina/
+   Honduras/Colombia in the Twelfth pass, Uruguay having already been fixed inline during its own Tenth-pass
+   discovery) — see the Twelfth pass section for the five real fixes and two confirmed-already-correct
+   results this produced. What's left standing, all logged rather than chased further: Kuwait's 1 (Al
+   Funayţīs, a coordinate-precision mismatch), Costa Rica's 1 (Canoas, same shape — a real border town whose
+   point lands across the border in both sources), Panama's 5, Canada's 13, Colombia's 3 (a genuine
+   zero-boundary-anywhere gap), Venezuela's 2, and Honduras's 11 (confirmed already-optimal, not
+   under-verified) — real, structural residuals, not further source-swap candidates. A true per-*point*
+   "snap to nearest candidate within a small radius" fallback (for the Al Funayţīs/Canoas coordinate-mismatch
+   shape specifically) is still a distinct, unbuilt idea. Also not done: further tuning
    Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent — see the Ninth
    pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/

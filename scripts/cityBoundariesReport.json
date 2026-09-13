@@ -1,817 +1,26 @@
 {
   "argentina": {
-    "unmatched": [
-      {
-        "name": "Zárate",
-        "population": 99061,
-        "lat": -34.09584,
-        "lng": -59.02423
-      },
-      {
-        "name": "Villa Gesell",
-        "population": 23257,
-        "lat": -37.26394,
-        "lng": -56.97304
-      },
-      {
-        "name": "Verónica",
-        "population": 0,
-        "lat": -35.38732,
-        "lng": -57.33839
-      },
-      {
-        "name": "San Vicente",
-        "population": 90021,
-        "lat": -35.0249,
-        "lng": -58.42409
-      },
-      {
-        "name": "San Andrés de Giles",
-        "population": 13941,
-        "lat": -34.44738,
-        "lng": -59.44442
-      },
-      {
-        "name": "Pinamar",
-        "population": 39218,
-        "lat": -37.11108,
-        "lng": -56.86523
-      },
+    "unmatched": [],
+    "rejected": [
       {
         "name": "Pila",
         "population": 3594,
-        "lat": -36.00418,
-        "lng": -58.14107
+        "matchedTo": "Partido de Pila",
+        "areaSqKm": 3453.1,
+        "isSubstantial": false
       },
-      {
-        "name": "Open Door",
-        "population": 5014,
-        "lat": -34.49113,
-        "lng": -59.07531
-      },
-      {
-        "name": "Olivos",
-        "population": 0,
-        "lat": -34.50872,
-        "lng": -58.48026
-      },
-      {
-        "name": "Norberto de la Riestra",
-        "population": 5206,
-        "lat": -35.27333,
-        "lng": -59.77555
-      },
-      {
-        "name": "Manuel J. Cobo",
-        "population": 5515,
-        "lat": -35.87458,
-        "lng": -57.8973
-      },
-      {
-        "name": "Magdalena",
-        "population": 15338,
-        "lat": -35.07997,
-        "lng": -57.51368
-      },
-      {
-        "name": "Luján",
-        "population": 97363,
-        "lat": -34.5664,
-        "lng": -59.11478
-      },
-      {
-        "name": "Lima",
-        "population": 13871,
-        "lat": -34.04473,
-        "lng": -59.19619
-      },
-      {
-        "name": "General Rodríguez",
-        "population": 0,
-        "lat": -34.60658,
-        "lng": -58.95221
-      },
-      {
-        "name": "General Lavalle",
-        "population": 2445,
-        "lat": -36.40809,
-        "lng": -56.94336
-      },
-      {
-        "name": "General Juan Madariaga",
-        "population": 21461,
-        "lat": -37.00196,
-        "lng": -57.13584
-      },
-      {
-        "name": "General Conesa",
-        "population": 2190,
-        "lat": -36.52086,
-        "lng": -57.32494
-      },
-      {
-        "name": "Ensenada",
-        "population": 63978,
-        "lat": -34.86074,
-        "lng": -57.91238
-      },
-      {
-        "name": "Domselaar",
-        "population": 4814,
-        "lat": -35.0722,
-        "lng": -58.28833
-      },
-      {
-        "name": "Chillar",
-        "population": 3453,
-        "lat": -37.3128,
-        "lng": -59.98517
-      },
-      {
-        "name": "Campana",
-        "population": 86860,
-        "lat": -34.16327,
-        "lng": -58.95919
-      },
-      {
-        "name": "Estación Camet",
-        "population": 5241,
-        "lat": -37.88876,
-        "lng": -57.60563
-      },
-      {
-        "name": "Cacharí",
-        "population": 3903,
-        "lat": -36.38029,
-        "lng": -59.50215
-      },
-      {
-        "name": "Berisso",
-        "population": 88470,
-        "lat": -34.8715,
-        "lng": -57.88328
-      },
-      {
-        "name": "Azul",
-        "population": 64884,
-        "lat": -36.77803,
-        "lng": -59.85848
-      },
-      {
-        "name": "Villa Basilio Nievas",
-        "population": 4038,
-        "lat": -31.55,
-        "lng": -68.73333
-      },
-      {
-        "name": "Vinchina",
-        "population": 2834,
-        "lat": -28.75964,
-        "lng": -68.20692
-      },
-      {
-        "name": "Villa Unión",
-        "population": 0,
-        "lat": -29.41362,
-        "lng": -62.7904
-      },
-      {
-        "name": "Villa Unión",
-        "population": 0,
-        "lat": -29.31654,
-        "lng": -68.22745
-      },
-      {
-        "name": "Villa Santa Rosa",
-        "population": 6332,
-        "lat": -31.74484,
-        "lng": -68.31435
-      },
-      {
-        "name": "Villa Paula de Sarmiento",
-        "population": 19092,
-        "lat": -31.4933,
-        "lng": -68.53838
-      },
-      {
-        "name": "Villa Nueva",
-        "population": 11104,
-        "lat": -32.89737,
-        "lng": -68.7871
-      },
-      {
-        "name": "Villa Mercedes",
-        "population": 1580,
-        "lat": -30.10836,
-        "lng": -68.70321
-      },
-      {
-        "name": "Villa Media Agua",
-        "population": 11187,
-        "lat": -31.9831,
-        "lng": -68.42499
-      },
-      {
-        "name": "Villa Krause",
-        "population": 0,
-        "lat": -31.56667,
-        "lng": -68.53333
-      },
-      {
-        "name": "Villa Independencia",
-        "population": 1938,
-        "lat": -31.62467,
-        "lng": -68.31407
-      },
-      {
-        "name": "Villa del Totoral",
-        "population": 7110,
-        "lat": -30.81667,
-        "lng": -63.71667
-      },
-      {
-        "name": "Villa El Salvador",
-        "population": 6103,
-        "lat": -31.45328,
-        "lng": -68.40392
-      },
-      {
-        "name": "Villa Castelli",
-        "population": 0,
-        "lat": -29.01447,
-        "lng": -68.22339
-      },
-      {
-        "name": "Villa Bustos",
-        "population": 2165,
-        "lat": -29.28636,
-        "lng": -67.02067
-      },
-      {
-        "name": "Villa Atuel",
-        "population": 3531,
-        "lat": -34.83011,
-        "lng": -67.92287
-      },
-      {
-        "name": "Villa Aberastain",
-        "population": 0,
-        "lat": -31.65805,
-        "lng": -68.57953
-      },
-      {
-        "name": "Veinticinco de Mayo",
-        "population": 2087,
-        "lat": -34.58377,
-        "lng": -68.54471
-      },
-      {
-        "name": "Vedia",
-        "population": 9595,
-        "lat": -34.49791,
-        "lng": -61.54231
-      },
-      {
-        "name": "Ulapes",
-        "population": 0,
-        "lat": -31.57323,
-        "lng": -66.23709
-      },
-      {
-        "name": "Tupungato",
-        "population": 16893,
-        "lat": -33.36926,
-        "lng": -69.14781
-      },
-      {
-        "name": "Tunuyán",
-        "population": 38367,
-        "lat": -33.58125,
-        "lng": -69.01537
-      },
-      {
-        "name": "Tamberías",
-        "population": 0,
-        "lat": -31.45868,
-        "lng": -69.422
-      },
-      {
-        "name": "Tama",
-        "population": 0,
-        "lat": -30.50726,
-        "lng": -66.52954
-      },
-      {
-        "name": "Stroeder",
-        "population": 2117,
-        "lat": -40.18583,
-        "lng": -62.62031
-      },
-      {
-        "name": "Santa Rosa",
-        "population": 0,
-        "lat": -33.25407,
-        "lng": -68.15066
-      },
-      {
-        "name": "Santa Lucía",
-        "population": 62697,
-        "lat": -31.54055,
-        "lng": -68.49794
-      },
-      {
-        "name": "San Roque",
-        "population": 10199,
-        "lat": -33.02887,
-        "lng": -68.59729
-      },
-      {
-        "name": "San Rafael",
-        "population": 118009,
-        "lat": -34.61531,
-        "lng": -68.33238
-      },
-      {
-        "name": "Sañogasta",
-        "population": 0,
-        "lat": -29.0952,
-        "lng": -67.11586
-      },
-      {
-        "name": "San Martín",
-        "population": 82549,
-        "lat": -33.08338,
-        "lng": -68.47312
-      },
-      {
-        "name": "Villa General San Martín",
-        "population": 29789,
-        "lat": -31.43963,
-        "lng": -68.5205
-      },
-      {
-        "name": "San Juan",
-        "population": 109123,
-        "lat": -31.53726,
-        "lng": -68.52568
-      },
-      {
-        "name": "San Carlos",
-        "population": 13678,
-        "lat": -33.77464,
-        "lng": -69.04299
-      },
-      {
-        "name": "San Blas",
-        "population": 0,
-        "lat": -28.4078,
-        "lng": -67.09189
-      },
-      {
-        "name": "Villa San Agustín",
-        "population": 5682,
-        "lat": -30.63464,
-        "lng": -67.4679
-      },
-      {
-        "name": "Salto de las Rosas",
-        "population": 4505,
-        "lat": -34.72409,
-        "lng": -68.22778
-      },
-      {
-        "name": "Rodríguez Peña",
-        "population": 1735,
-        "lat": -33.12044,
-        "lng": -68.59516
-      },
-      {
-        "name": "Rodeo del Medio",
-        "population": 18574,
-        "lat": -32.99487,
-        "lng": -68.68597
-      },
-      {
-        "name": "Rodeo",
-        "population": 3958,
-        "lat": -30.21014,
-        "lng": -69.13262
-      },
-      {
-        "name": "Rivadavia",
-        "population": 34830,
-        "lat": -33.19097,
-        "lng": -68.4622
-      },
-      {
-        "name": "Rivadavia",
-        "population": 0,
-        "lat": -31.53245,
-        "lng": -68.59731
-      },
-      {
-        "name": "Tupelí",
-        "population": 1512,
-        "lat": -31.8364,
-        "lng": -68.35822
-      },
-      {
-        "name": "Real del Padre",
-        "population": 4004,
-        "lat": -34.84013,
-        "lng": -67.76261
-      },
-      {
-        "name": "Ramallo",
-        "population": 29964,
-        "lat": -33.48508,
-        "lng": -60.00629
-      },
-      {
-        "name": "Alfredo Demarchi",
-        "population": 1853,
-        "lat": -35.29238,
-        "lng": -61.40573
-      },
-      {
-        "name": "Primero de Mayo",
-        "population": 1000,
-        "lat": -32.26667,
-        "lng": -68.41667
-      },
-      {
-        "name": "Pocito",
-        "population": 40969,
-        "lat": -31.68333,
-        "lng": -68.58333
-      },
-      {
-        "name": "Perdriel",
-        "population": 19321,
-        "lat": -33.0749,
-        "lng": -68.8884
-      },
-      {
-        "name": "Patquía",
-        "population": 0,
-        "lat": -30.04728,
-        "lng": -66.87999
-      },
-      {
-        "name": "Olavarría",
-        "population": 89721,
-        "lat": -36.89384,
-        "lng": -60.32319
-      },
-      {
-        "name": "Nueve de Julio",
-        "population": 5444,
-        "lat": -31.6692,
-        "lng": -68.39013
-      },
-      {
-        "name": "Monte Comán",
-        "population": 3617,
-        "lat": -34.59258,
-        "lng": -67.87606
-      },
-      {
-        "name": "Maipú",
-        "population": 0,
-        "lat": -32.98462,
-        "lng": -68.78821
-      },
-      {
-        "name": "Luján de Cuyo",
-        "population": 0,
-        "lat": -33.03917,
-        "lng": -68.87955
-      },
-      {
-        "name": "Los Berros",
-        "population": 5674,
-        "lat": -31.95271,
-        "lng": -68.65423
-      },
-      {
-        "name": "Lincoln",
-        "population": 32773,
-        "lat": -34.86819,
-        "lng": -61.52929
-      },
-      {
-        "name": "Las Heras",
-        "population": 0,
-        "lat": -32.85034,
-        "lng": -68.84052
-      },
-      {
-        "name": "Las Flores",
-        "population": 1242,
-        "lat": -30.32207,
-        "lng": -69.20465
-      },
-      {
-        "name": "La Paz",
-        "population": 9559,
-        "lat": -33.4617,
-        "lng": -67.55228
-      },
-      {
-        "name": "Lago Posadas",
-        "population": 662,
-        "lat": -47.51094,
-        "lng": -71.77168
-      },
-      {
-        "name": "La Dormida",
-        "population": 3533,
-        "lat": -33.34672,
-        "lng": -67.91713
-      },
-      {
-        "name": "La Consulta",
-        "population": 9563,
-        "lat": -33.73385,
-        "lng": -69.11988
-      },
-      {
-        "name": "Junín",
-        "population": 10442,
-        "lat": -33.14653,
-        "lng": -68.48727
-      },
-      {
-        "name": "Juan Bautista Alberdi",
-        "population": 3491,
-        "lat": -34.43851,
-        "lng": -61.81212
-      },
-      {
-        "name": "Jocolí",
-        "population": 1640,
-        "lat": -32.584,
-        "lng": -68.666
-      },
-      {
-        "name": "Ingeniero Giagnoni",
-        "population": 1283,
-        "lat": -33.124,
-        "lng": -68.412
-      },
-      {
-        "name": "Iglesia",
-        "population": 1485,
-        "lat": -30.41103,
-        "lng": -69.2238
-      },
-      {
-        "name": "Henderson",
-        "population": 9781,
-        "lat": -36.29818,
-        "lng": -61.71856
-      },
-      {
-        "name": "Godoy Cruz",
-        "population": 0,
-        "lat": -32.92533,
-        "lng": -68.84428
-      },
-      {
-        "name": "Germania",
-        "population": 1554,
-        "lat": -34.57702,
-        "lng": -62.04778
-      },
-      {
-        "name": "General Villegas",
-        "population": 22474,
-        "lat": -35.03264,
-        "lng": -63.01484
-      },
-      {
-        "name": "General Pinto",
-        "population": 0,
-        "lat": -34.76431,
-        "lng": -61.89154
-      },
-      {
-        "name": "Villa Tulumaya",
-        "population": 12373,
-        "lat": -32.72145,
-        "lng": -68.59578
-      },
-      {
-        "name": "General Arenales",
-        "population": 0,
-        "lat": -34.30337,
-        "lng": -61.30708
-      },
-      {
-        "name": "General Alvear",
-        "population": 35626,
-        "lat": -34.97747,
-        "lng": -67.69618
-      },
-      {
-        "name": "Garza",
-        "population": 0,
-        "lat": -28.15294,
-        "lng": -63.53887
-      },
-      {
-        "name": "Fray Luis Beltrán",
-        "population": 7813,
-        "lat": -33.0069,
-        "lng": -68.65715
-      },
-      {
-        "name": "Famatina",
-        "population": 0,
-        "lat": -28.92264,
-        "lng": -67.52016
-      },
-      {
-        "name": "El Simbolar",
-        "population": 0,
-        "lat": -27.97167,
-        "lng": -64.89544
-      },
-      {
-        "name": "El Nihuil",
-        "population": 1327,
-        "lat": -35.02998,
-        "lng": -68.67351
-      },
-      {
-        "name": "El Hoyo",
-        "population": 2162,
-        "lat": -27.01507,
-        "lng": -63.23357
-      },
-      {
-        "name": "Costa de Araujo",
-        "population": 5306,
-        "lat": -32.75828,
-        "lng": -68.4011
-      },
-      {
-        "name": "Los Corralitos",
-        "population": 6928,
-        "lat": -32.90107,
-        "lng": -68.69758
-      },
-      {
-        "name": "Tres de Mayo",
-        "population": 1384,
-        "lat": -32.68047,
-        "lng": -68.63923
-      },
-      {
-        "name": "Chimbas",
-        "population": 73829,
-        "lat": -31.49313,
-        "lng": -68.53263
-      },
-      {
-        "name": "Chapanay",
-        "population": 1771,
-        "lat": -32.98306,
-        "lng": -68.46672
-      },
-      {
-        "name": "Caucete",
-        "population": 32454,
-        "lat": -31.6515,
-        "lng": -68.28216
-      },
-      {
-        "name": "Carmensa",
-        "population": 1307,
-        "lat": -35.15013,
-        "lng": -67.6537
-      },
-      {
-        "name": "Calingasta",
-        "population": 2722,
-        "lat": -31.33394,
-        "lng": -69.4208
-      },
-      {
-        "name": "Brea Pozo",
-        "population": 0,
-        "lat": -28.24385,
-        "lng": -63.95334
-      },
-      {
-        "name": "Bowen",
-        "population": 6005,
-        "lat": -35.00035,
-        "lng": -67.51034
-      },
-      {
-        "name": "Bermejo",
-        "population": 13428,
-        "lat": -32.86731,
-        "lng": -68.77954
-      },
-      {
-        "name": "Barreal",
-        "population": 5062,
-        "lat": -31.64996,
-        "lng": -69.47224
-      },
-      {
-        "name": "Aminga",
-        "population": 0,
-        "lat": -28.84771,
-        "lng": -66.93024
-      },
-      {
-        "name": "La Primavera",
-        "population": 2134,
-        "lat": -32.92214,
-        "lng": -68.6711
-      },
-      {
-        "name": "Albardón",
-        "population": 20413,
-        "lat": -31.43722,
-        "lng": -68.52556
-      },
-      {
-        "name": "Cariló",
-        "population": 1553,
-        "lat": -37.16524,
-        "lng": -56.89133
-      },
-      {
-        "name": "Pavón",
-        "population": 1637,
-        "lat": -36.7114,
-        "lng": -56.75445
-      },
-      {
-        "name": "Puente de Hierro",
-        "population": 11683,
-        "lat": -32.86555,
-        "lng": -68.67362
-      },
-      {
-        "name": "Villa Don Bosco",
-        "population": 3571,
-        "lat": -31.55256,
-        "lng": -68.33852
-      },
-      {
-        "name": "Villa Borjas",
-        "population": 6850,
-        "lat": -31.8121,
-        "lng": -68.32829
-      },
-      {
-        "name": "Barrio Sadop",
-        "population": 1239,
-        "lat": -31.53421,
-        "lng": -68.39847
-      },
-      {
-        "name": "Los Barriales",
-        "population": 6517,
-        "lat": -33.09968,
-        "lng": -68.56881
-      },
-      {
-        "name": "La Colonia",
-        "population": 11245,
-        "lat": -33.09894,
-        "lng": -68.4805
-      },
-      {
-        "name": "Ciudad de Las Heras",
-        "population": 189067,
-        "lat": -32.85094,
-        "lng": -68.83602
-      },
-      {
-        "name": "Colonia Segovia",
-        "population": 8885,
-        "lat": -32.8476,
-        "lng": -68.71411
-      },
-      {
-        "name": "Rawson",
-        "population": 130258,
-        "lat": -31.58189,
-        "lng": -68.54211
-      }
-    ],
-    "rejected": [
       {
         "name": "Palo Santo",
         "population": 5324,
         "matchedTo": "Municipio de Palo Santo",
         "areaSqKm": 2491.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Norberto de la Riestra",
+        "population": 5206,
+        "matchedTo": "Partido de Veinticinco de Mayo",
+        "areaSqKm": 4778.7,
         "isSubstantial": false
       },
       {
@@ -843,6 +52,13 @@
         "isSubstantial": true
       },
       {
+        "name": "General Lavalle",
+        "population": 2445,
+        "matchedTo": "Partido de General Lavalle",
+        "areaSqKm": 2697.6,
+        "isSubstantial": false
+      },
+      {
         "name": "Concepción",
         "population": 4800,
         "matchedTo": "Municipio de Concepción",
@@ -857,10 +73,143 @@
         "isSubstantial": false
       },
       {
+        "name": "Chillar",
+        "population": 3453,
+        "matchedTo": "Partido de Azul",
+        "areaSqKm": 6527.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cacharí",
+        "population": 3903,
+        "matchedTo": "Partido de Azul",
+        "areaSqKm": 6527.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Azul",
+        "population": 64884,
+        "matchedTo": "Partido de Azul",
+        "areaSqKm": 6527.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Villa Basilio Nievas",
+        "population": 4038,
+        "matchedTo": "Zonda",
+        "areaSqKm": 2438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vinchina",
+        "population": 2834,
+        "matchedTo": "Departamento Vinchina",
+        "areaSqKm": 11422.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Unión",
+        "population": 0,
+        "matchedTo": "Departamento Mitre",
+        "areaSqKm": 2731.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Unión",
+        "population": 0,
+        "matchedTo": "Coronel Felipe Varela",
+        "areaSqKm": 8319.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Santa Rosa",
+        "population": 6332,
+        "matchedTo": "25 de Mayo",
+        "areaSqKm": 3806.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Mercedes",
+        "population": 1580,
+        "matchedTo": "Jáchal",
+        "areaSqKm": 14331.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Independencia",
+        "population": 1938,
+        "matchedTo": "Caucete",
+        "areaSqKm": 7658,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa del Totoral",
+        "population": 7110,
+        "matchedTo": "Departamento Totoral",
+        "areaSqKm": 3056,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa El Salvador",
+        "population": 6103,
+        "matchedTo": "Angaco",
+        "areaSqKm": 2561.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Castelli",
+        "population": 0,
+        "matchedTo": "General Lamadrid",
+        "areaSqKm": 6136.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Atuel",
+        "population": 3531,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Veinticinco de Mayo",
+        "population": 2087,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulapes",
+        "population": 0,
+        "matchedTo": "Departamento General San Martín",
+        "areaSqKm": 4433.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamberías",
+        "population": 0,
+        "matchedTo": "Calingasta",
+        "areaSqKm": 22518.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tama",
+        "population": 0,
+        "matchedTo": "Departamento General Ángel V. Peñaloza",
+        "areaSqKm": 3138.5,
+        "isSubstantial": false
+      },
+      {
         "name": "Susques",
         "population": 1140,
         "matchedTo": "Municipio de Susques",
         "areaSqKm": 4560.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Stroeder",
+        "population": 2117,
+        "matchedTo": "Partido de Patagones",
+        "areaSqKm": 13483.2,
         "isSubstantial": false
       },
       {
@@ -871,11 +220,32 @@
         "isSubstantial": false
       },
       {
+        "name": "Santa Rosa",
+        "population": 0,
+        "matchedTo": "Departamento Santa Rosa",
+        "areaSqKm": 8493.7,
+        "isSubstantial": false
+      },
+      {
         "name": "Santa María",
         "population": 1475,
         "matchedTo": "Municipio de Santa Victoria Este",
         "areaSqKm": 4822.5,
         "isSubstantial": false
+      },
+      {
+        "name": "San Rafael",
+        "population": 118009,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "San Carlos",
+        "population": 13678,
+        "matchedTo": "Departamento San Carlos",
+        "areaSqKm": 11647.3,
+        "isSubstantial": true
       },
       {
         "name": "San Antonio de los Cobres",
@@ -885,10 +255,59 @@
         "isSubstantial": false
       },
       {
+        "name": "Villa San Agustín",
+        "population": 5682,
+        "matchedTo": "Valle Fértil",
+        "areaSqKm": 5676.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Salto de las Rosas",
+        "population": 4505,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rodeo",
+        "population": 3958,
+        "matchedTo": "Iglesia",
+        "areaSqKm": 19416.5,
+        "isSubstantial": false
+      },
+      {
         "name": "Rivadavia",
         "population": 0,
         "matchedTo": "Municipio de Rivadavia Banda Sur",
         "areaSqKm": 9089.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tupelí",
+        "population": 1512,
+        "matchedTo": "25 de Mayo",
+        "areaSqKm": 3806.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Real del Padre",
+        "population": 4004,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alfredo Demarchi",
+        "population": 1853,
+        "matchedTo": "Partido de Nueve de Julio",
+        "areaSqKm": 4287.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Primero de Mayo",
+        "population": 1000,
+        "matchedTo": "Departamento Lavalle",
+        "areaSqKm": 10287,
         "isSubstantial": false
       },
       {
@@ -906,10 +325,31 @@
         "isSubstantial": false
       },
       {
+        "name": "Patquía",
+        "population": 0,
+        "matchedTo": "Departamento Independencia",
+        "areaSqKm": 7049.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Olavarría",
+        "population": 89721,
+        "matchedTo": "Partido de Olavarría",
+        "areaSqKm": 7648.3,
+        "isSubstantial": true
+      },
+      {
         "name": "Nuestra Señora de Talavera",
         "population": 1406,
         "matchedTo": "Municipio de El Quebrachal",
         "areaSqKm": 4442.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Monte Comán",
+        "population": 3617,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
         "isSubstantial": false
       },
       {
@@ -927,6 +367,27 @@
         "isSubstantial": false
       },
       {
+        "name": "Luján de Cuyo",
+        "population": 0,
+        "matchedTo": "Departamento Luján de Cuyo",
+        "areaSqKm": 4983.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Los Berros",
+        "population": 5674,
+        "matchedTo": "Sarmiento",
+        "areaSqKm": 2881.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lincoln",
+        "population": 32773,
+        "matchedTo": "Partido de Lincoln",
+        "areaSqKm": 5785.1,
+        "isSubstantial": true
+      },
+      {
         "name": "Limay Mahuida",
         "population": 0,
         "matchedTo": "Comisión de Fomento de Limay Mahuida",
@@ -934,10 +395,31 @@
         "isSubstantial": false
       },
       {
+        "name": "Las Heras",
+        "population": 0,
+        "matchedTo": "Departamento Las Heras",
+        "areaSqKm": 8634.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Las Flores",
+        "population": 1242,
+        "matchedTo": "Iglesia",
+        "areaSqKm": 19416.5,
+        "isSubstantial": false
+      },
+      {
         "name": "La Poma",
         "population": 0,
-        "matchedTo": "Municipio de La Poma",
+        "matchedTo": "Departemento La Poma",
         "areaSqKm": 4016.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "La Paz",
+        "population": 9559,
+        "matchedTo": "Departamento La Paz",
+        "areaSqKm": 7542.7,
         "isSubstantial": false
       },
       {
@@ -948,11 +430,46 @@
         "isSubstantial": false
       },
       {
+        "name": "Lago Posadas",
+        "population": 662,
+        "matchedTo": "Río Chico",
+        "areaSqKm": 33882.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "La Dormida",
+        "population": 3533,
+        "matchedTo": "Departamento Santa Rosa",
+        "areaSqKm": 8493.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "La Consulta",
+        "population": 9563,
+        "matchedTo": "Departamento San Carlos",
+        "areaSqKm": 11647.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jocolí",
+        "population": 1640,
+        "matchedTo": "Departamento Lavalle",
+        "areaSqKm": 10287,
+        "isSubstantial": false
+      },
+      {
         "name": "Joaquín V. González",
         "population": 19185,
         "matchedTo": "Municipio de Joaquín V. González",
         "areaSqKm": 11132.6,
         "isSubstantial": true
+      },
+      {
+        "name": "Iglesia",
+        "population": 1485,
+        "matchedTo": "Iglesia",
+        "areaSqKm": 19416.5,
+        "isSubstantial": false
       },
       {
         "name": "Hickmann",
@@ -964,15 +481,78 @@
       {
         "name": "Guachipas",
         "population": 2576,
-        "matchedTo": "Municipio de Guachipas",
+        "matchedTo": "Guachipas",
         "areaSqKm": 2790.1,
         "isSubstantial": false
+      },
+      {
+        "name": "Germania",
+        "population": 1554,
+        "matchedTo": "Partido de General Pinto",
+        "areaSqKm": 2546.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "General Villegas",
+        "population": 22474,
+        "matchedTo": "Partido de General Villegas",
+        "areaSqKm": 7240.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "General Pinto",
+        "population": 0,
+        "matchedTo": "Partido de General Pinto",
+        "areaSqKm": 2546.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Villa Tulumaya",
+        "population": 12373,
+        "matchedTo": "Departamento Lavalle",
+        "areaSqKm": 10287,
+        "isSubstantial": true
+      },
+      {
+        "name": "General Alvear",
+        "population": 35626,
+        "matchedTo": "General Alvear",
+        "areaSqKm": 14744.4,
+        "isSubstantial": true
       },
       {
         "name": "Gaona",
         "population": 2171,
         "matchedTo": "Municipio de El Quebrachal",
         "areaSqKm": 4442.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Famatina",
+        "population": 0,
+        "matchedTo": "Departamento Famatina",
+        "areaSqKm": 4177.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Simbolar",
+        "population": 0,
+        "matchedTo": "Departamento Guasayán",
+        "areaSqKm": 2582.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Nihuil",
+        "population": 1327,
+        "matchedTo": "Departamento San Rafael",
+        "areaSqKm": 31399.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Hoyo",
+        "population": 2162,
+        "matchedTo": "Departamento Moreno",
+        "areaSqKm": 16317.2,
         "isSubstantial": false
       },
       {
@@ -990,10 +570,38 @@
         "isSubstantial": false
       },
       {
+        "name": "Costa de Araujo",
+        "population": 5306,
+        "matchedTo": "Departamento Lavalle",
+        "areaSqKm": 10287,
+        "isSubstantial": false
+      },
+      {
         "name": "Copacabana",
         "population": 851,
         "matchedTo": "Municipio de Tinogasta",
         "areaSqKm": 5326.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tres de Mayo",
+        "population": 1384,
+        "matchedTo": "Departamento Lavalle",
+        "areaSqKm": 10287,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caucete",
+        "population": 32454,
+        "matchedTo": "Caucete",
+        "areaSqKm": 7658,
+        "isSubstantial": true
+      },
+      {
+        "name": "Carmensa",
+        "population": 1307,
+        "matchedTo": "General Alvear",
+        "areaSqKm": 14744.4,
         "isSubstantial": false
       },
       {
@@ -1004,10 +612,45 @@
         "isSubstantial": false
       },
       {
+        "name": "Calingasta",
+        "population": 2722,
+        "matchedTo": "Calingasta",
+        "areaSqKm": 22518.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brea Pozo",
+        "population": 0,
+        "matchedTo": "Departamento San Martín",
+        "areaSqKm": 2074.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bowen",
+        "population": 6005,
+        "matchedTo": "General Alvear",
+        "areaSqKm": 14744.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Barreal",
+        "population": 5062,
+        "matchedTo": "Calingasta",
+        "areaSqKm": 22518.7,
+        "isSubstantial": false
+      },
+      {
         "name": "Alto de la Sierra",
         "population": 2263,
         "matchedTo": "Municipio de Rivadavia Banda Norte",
         "areaSqKm": 12446.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pavón",
+        "population": 1637,
+        "matchedTo": "Partido de General Lavalle",
+        "areaSqKm": 2697.6,
         "isSubstantial": false
       },
       {
@@ -1025,11 +668,25 @@
         "isSubstantial": false
       },
       {
+        "name": "Villa Borjas",
+        "population": 6850,
+        "matchedTo": "25 de Mayo",
+        "areaSqKm": 3806.4,
+        "isSubstantial": false
+      },
+      {
         "name": "La Merced",
         "population": 2430,
         "matchedTo": "Municipio de Santa Victoria Este",
         "areaSqKm": 4822.5,
         "isSubstantial": false
+      },
+      {
+        "name": "Ciudad de Las Heras",
+        "population": 189067,
+        "matchedTo": "Departamento Las Heras",
+        "areaSqKm": 8634.3,
+        "isSubstantial": true
       }
     ]
   },
@@ -2477,64 +2134,10 @@
   "venezuela": {
     "unmatched": [
       {
-        "name": "San Rafael",
-        "population": 55810,
-        "lat": 10.96205,
-        "lng": -71.73034
-      },
-      {
-        "name": "San Juan de los Cayos",
-        "population": 0,
-        "lat": 11.17203,
-        "lng": -68.4128
-      },
-      {
-        "name": "San Antonio del Golfo",
-        "population": 0,
-        "lat": 10.44198,
-        "lng": -63.78874
-      },
-      {
-        "name": "Marigüitar",
-        "population": 0,
-        "lat": 10.44789,
-        "lng": -63.90161
-      },
-      {
-        "name": "Macuto",
-        "population": 0,
-        "lat": 10.60508,
-        "lng": -66.89745
-      },
-      {
-        "name": "La Sabana",
-        "population": 0,
-        "lat": 10.61867,
-        "lng": -66.38194
-      },
-      {
-        "name": "La Guaira",
-        "population": 25259,
-        "lat": 10.60156,
-        "lng": -66.93293
-      },
-      {
         "name": "Los Roques",
         "population": 1471,
         "lat": 11.94836,
         "lng": -66.67835
-      },
-      {
-        "name": "Boca de Aroa",
-        "population": 10033,
-        "lat": 10.68229,
-        "lng": -68.29829
-      },
-      {
-        "name": "Bobures",
-        "population": 8012,
-        "lat": 9.24173,
-        "lng": -71.17506
       },
       {
         "name": "La Aguada",
@@ -2545,353 +2148,94 @@
     ],
     "rejected": [
       {
-        "name": "Ciudad Bolívar",
-        "population": 412619,
-        "matchedTo": "Heres",
-        "areaSqKm": 7100,
-        "isSubstantial": true
-      },
-      {
-        "name": "Maturín",
-        "population": 647459,
-        "matchedTo": "Maturín",
-        "areaSqKm": 12912.2,
-        "isSubstantial": true
-      },
-      {
-        "name": "San Fernando de Apure",
-        "population": 229197,
-        "matchedTo": "San Fernando",
-        "areaSqKm": 5618.3,
-        "isSubstantial": true
-      },
-      {
-        "name": "La Mula",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Las Casitas del Vegon de Nutrias",
-        "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Valle de La Pascua",
-        "population": 153136,
-        "matchedTo": "Leonardo Infante",
-        "areaSqKm": 10112.3,
-        "isSubstantial": true
-      },
-      {
-        "name": "Urica",
-        "population": 4517,
-        "matchedTo": "Pedro María Freites",
-        "areaSqKm": 7936.2,
-        "isSubstantial": false
-      },
-      {
-        "name": "Upata",
-        "population": 112617,
-        "matchedTo": "Piar",
-        "areaSqKm": 14338.8,
-        "isSubstantial": true
-      },
-      {
         "name": "Tumeremo",
         "population": 37614,
-        "matchedTo": "Sifontes",
-        "areaSqKm": 26390.3,
+        "matchedTo": "Parroquia Tumeremo",
+        "areaSqKm": 12902.8,
         "isSubstantial": true
-      },
-      {
-        "name": "Tucupita",
-        "population": 99778,
-        "matchedTo": "Tucupita",
-        "areaSqKm": 11754.6,
-        "isSubstantial": true
-      },
-      {
-        "name": "Torunos",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Soledad",
-        "population": 29763,
-        "matchedTo": "Independencia",
-        "areaSqKm": 6869,
-        "isSubstantial": true
-      },
-      {
-        "name": "Siquisique",
-        "population": 0,
-        "matchedTo": "Urdaneta",
-        "areaSqKm": 3573.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Sinamaica",
-        "population": 0,
-        "matchedTo": "Páez",
-        "areaSqKm": 2120.9,
-        "isSubstantial": false
       },
       {
         "name": "Santa María de Ipire",
         "population": 0,
-        "matchedTo": "Santa María de Ipire",
-        "areaSqKm": 4540.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Santa Lucía",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Santa Inés",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
+        "matchedTo": "Parroquia Ipire",
+        "areaSqKm": 3793,
         "isSubstantial": false
       },
       {
         "name": "Santa Elena de Uairén",
         "population": 29795,
-        "matchedTo": "Gran Sabana",
-        "areaSqKm": 34654.7,
+        "matchedTo": "Parroquia Gran Sabana",
+        "areaSqKm": 28724.5,
         "isSubstantial": true
-      },
-      {
-        "name": "Santa Catalina",
-        "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "San Silvestre",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "San Rafael de Canaguá",
-        "population": 0,
-        "matchedTo": "Pedraza",
-        "areaSqKm": 7075.8,
-        "isSubstantial": false
       },
       {
         "name": "San Juan de Manapiare",
         "population": 0,
-        "matchedTo": "Autónomo Manapiare",
-        "areaSqKm": 32639.1,
+        "matchedTo": "Parroquia Medio Ventuari",
+        "areaSqKm": 17394.3,
         "isSubstantial": false
       },
       {
         "name": "San Fernando de Atabapo",
         "population": 11929,
-        "matchedTo": "Autónomo Atabapo",
-        "areaSqKm": 25545.8,
+        "matchedTo": "Parroquia Caname",
+        "areaSqKm": 7466.7,
         "isSubstantial": true
-      },
-      {
-        "name": "San Carlos de Río Negro",
-        "population": 0,
-        "matchedTo": "Autónomo Río Negro",
-        "areaSqKm": 39183.1,
-        "isSubstantial": false
       },
       {
         "name": "San Antonio",
         "population": 0,
-        "matchedTo": "Arismendi",
-        "areaSqKm": 7583.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Quebrada Seca",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Punta de Piedra",
-        "population": 0,
-        "matchedTo": "Ezequiel Zamora",
-        "areaSqKm": 3982.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Puerto de Nutrias",
-        "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Pedregal",
-        "population": 0,
-        "matchedTo": "Democracia",
-        "areaSqKm": 2703.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Pedraza La Vieja",
-        "population": 0,
-        "matchedTo": "Ezequiel Zamora",
-        "areaSqKm": 3982.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Pedernales",
-        "population": 0,
-        "matchedTo": "Pedernales",
-        "areaSqKm": 2523.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Pariaguán",
-        "population": 40751,
-        "matchedTo": "Francisco de Miranda",
-        "areaSqKm": 5142.9,
-        "isSubstantial": true
-      },
-      {
-        "name": "Papelón",
-        "population": 0,
-        "matchedTo": "Papelón",
-        "areaSqKm": 2545.1,
+        "matchedTo": "Parroquia San Antonio",
+        "areaSqKm": 2904.6,
         "isSubstantial": false
       },
       {
         "name": "Palmasola",
         "population": 0,
-        "matchedTo": "Julián Mellado",
-        "areaSqKm": 2100.4,
-        "isSubstantial": false
-      },
-      {
-        "name": "Ortiz",
-        "population": 0,
-        "matchedTo": "Ortíz",
-        "areaSqKm": 4123.9,
+        "matchedTo": "Parroquia El Sombrero",
+        "areaSqKm": 2028.9,
         "isSubstantial": false
       },
       {
         "name": "Maroa",
         "population": 0,
-        "matchedTo": "Autónomo Maroa",
-        "areaSqKm": 13983.2,
-        "isSubstantial": false
-      },
-      {
-        "name": "Maripa",
-        "population": 0,
-        "matchedTo": "Sucre",
-        "areaSqKm": 50003.3,
+        "matchedTo": "Parroquia Guainia",
+        "areaSqKm": 9073.4,
         "isSubstantial": false
       },
       {
         "name": "Maporal",
         "population": 0,
-        "matchedTo": "Pedraza",
-        "areaSqKm": 7075.8,
+        "matchedTo": "Parroquia Ignacio Briceño",
+        "areaSqKm": 2439.9,
         "isSubstantial": false
-      },
-      {
-        "name": "Mapire",
-        "population": 0,
-        "matchedTo": "José Gregorio Monagas",
-        "areaSqKm": 9711.3,
-        "isSubstantial": false
-      },
-      {
-        "name": "Machiques",
-        "population": 132734,
-        "matchedTo": "Machiques de Perijá",
-        "areaSqKm": 8393.8,
-        "isSubstantial": true
       },
       {
         "name": "Las Mercedes",
         "population": 0,
-        "matchedTo": "Las Mercedes",
-        "areaSqKm": 8024.8,
+        "matchedTo": "Parroquia Las Mercedes",
+        "areaSqKm": 2612.4,
         "isSubstantial": false
       },
       {
         "name": "La Paragua",
         "population": 18591,
-        "matchedTo": "Raúl Leoni",
-        "areaSqKm": 58674.5,
+        "matchedTo": "Parroquia Barceloneta",
+        "areaSqKm": 44446.5,
         "isSubstantial": true
       },
       {
         "name": "La Esmeralda",
         "population": 0,
-        "matchedTo": "Autónomo Alto Orinoco",
-        "areaSqKm": 49470.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Chameta",
-        "population": 0,
-        "matchedTo": "Antonio José de Sucre",
-        "areaSqKm": 3153.3,
-        "isSubstantial": false
-      },
-      {
-        "name": "Caramuca",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
+        "matchedTo": "Parroquia Huachamacare",
+        "areaSqKm": 6717.2,
         "isSubstantial": false
       },
       {
         "name": "Kanavayén",
         "population": 1500,
-        "matchedTo": "Gran Sabana",
-        "areaSqKm": 34654.7,
-        "isSubstantial": false
-      },
-      {
-        "name": "Jacura",
-        "population": 0,
-        "matchedTo": "Jacura",
-        "areaSqKm": 2171.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Guayabal",
-        "population": 0,
-        "matchedTo": "San Gerónimo de Guayabal",
-        "areaSqKm": 4049.3,
-        "isSubstantial": false
-      },
-      {
-        "name": "Guasipati",
-        "population": 27988,
-        "matchedTo": "Roscio",
-        "areaSqKm": 6726.9,
-        "isSubstantial": true
-      },
-      {
-        "name": "Guadarrama",
-        "population": 0,
-        "matchedTo": "Girardot",
-        "areaSqKm": 3219.2,
+        "matchedTo": "Parroquia Gran Sabana",
+        "areaSqKm": 28724.5,
         "isSubstantial": false
       },
       {
@@ -2899,20 +2243,6 @@
         "population": 0,
         "matchedTo": "El Socorro",
         "areaSqKm": 2663.2,
-        "isSubstantial": false
-      },
-      {
-        "name": "El Regalo",
-        "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "El Pilar",
-        "population": 0,
-        "matchedTo": "Benítez",
-        "areaSqKm": 2790.7,
         "isSubstantial": false
       },
       {
@@ -2932,30 +2262,16 @@
       {
         "name": "Elorza",
         "population": 27795,
-        "matchedTo": "Rómulo Gallegos",
-        "areaSqKm": 12000.5,
+        "matchedTo": "Parroquia Elorza",
+        "areaSqKm": 9982.3,
         "isSubstantial": true
       },
       {
         "name": "El Dorado",
         "population": 16100,
-        "matchedTo": "Sifontes",
-        "areaSqKm": 26390.3,
+        "matchedTo": "Parroquia Dalla Costa",
+        "areaSqKm": 7106.8,
         "isSubstantial": true
-      },
-      {
-        "name": "El Corozo",
-        "population": 0,
-        "matchedTo": "Barinas",
-        "areaSqKm": 3464.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "El Cantón",
-        "population": 0,
-        "matchedTo": "Ezequiel Zamora",
-        "areaSqKm": 3982.8,
-        "isSubstantial": false
       },
       {
         "name": "El Callao",
@@ -2967,120 +2283,36 @@
       {
         "name": "Curiapo",
         "population": 0,
-        "matchedTo": "Antonio Díaz",
-        "areaSqKm": 21721.9,
+        "matchedTo": "Parroquia Curiapo",
+        "areaSqKm": 4964.9,
         "isSubstantial": false
-      },
-      {
-        "name": "Curbatí",
-        "population": 0,
-        "matchedTo": "Pedraza",
-        "areaSqKm": 7075.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Concepción",
-        "population": 0,
-        "matchedTo": "Mara",
-        "areaSqKm": 3117.7,
-        "isSubstantial": false
-      },
-      {
-        "name": "Ciudad Piar",
-        "population": 51967,
-        "matchedTo": "Raúl Leoni",
-        "areaSqKm": 58674.5,
-        "isSubstantial": true
-      },
-      {
-        "name": "Ciudad De Nutrias",
-        "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Ciudad Bolivia",
-        "population": 52476,
-        "matchedTo": "Pedraza",
-        "areaSqKm": 7075.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Casigua El Cubo",
-        "population": 24592,
-        "matchedTo": "Jesús María Semprum",
-        "areaSqKm": 5208.7,
-        "isSubstantial": true
-      },
-      {
-        "name": "Carora",
-        "population": 121741,
-        "matchedTo": "Torres",
-        "areaSqKm": 7364.2,
-        "isSubstantial": true
-      },
-      {
-        "name": "Capitanejo",
-        "population": 0,
-        "matchedTo": "Ezequiel Zamora",
-        "areaSqKm": 3982.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Canape Capatárida",
-        "population": 0,
-        "matchedTo": "Buchivacoa",
-        "areaSqKm": 3252.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Cantaura",
-        "population": 68885,
-        "matchedTo": "Pedro María Freites",
-        "areaSqKm": 7936.2,
-        "isSubstantial": true
       },
       {
         "name": "Calabozo",
         "population": 168605,
-        "matchedTo": "Francisco de Miranda",
-        "areaSqKm": 14005.4,
+        "matchedTo": "Parroquia Calabozo",
+        "areaSqKm": 6146.3,
         "isSubstantial": true
       },
       {
         "name": "Caicara del Orinoco",
         "population": 67277,
-        "matchedTo": "Cedeño",
-        "areaSqKm": 49986.7,
+        "matchedTo": "Parroquia Caicara",
+        "areaSqKm": 9919.2,
         "isSubstantial": true
-      },
-      {
-        "name": "Bum Bum",
-        "population": 0,
-        "matchedTo": "Antonio José de Sucre",
-        "areaSqKm": 3153.3,
-        "isSubstantial": false
       },
       {
         "name": "Bruzual",
         "population": 0,
-        "matchedTo": "Sosa",
-        "areaSqKm": 3693.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Barbacoas",
-        "population": 0,
-        "matchedTo": "Urdaneta",
-        "areaSqKm": 2004.2,
+        "matchedTo": "Parroquia Bruzual",
+        "areaSqKm": 2246.5,
         "isSubstantial": false
       },
       {
         "name": "Arismendi",
         "population": 0,
-        "matchedTo": "Arismendi",
-        "areaSqKm": 7583.6,
+        "matchedTo": "Parroquia Arismendi",
+        "areaSqKm": 2300.6,
         "isSubstantial": false
       },
       {
@@ -3088,41 +2320,6 @@
         "population": 0,
         "matchedTo": "Aguasay",
         "areaSqKm": 2415.9,
-        "isSubstantial": false
-      },
-      {
-        "name": "Achaguas",
-        "population": 45311,
-        "matchedTo": "Achaguas",
-        "areaSqKm": 13954.1,
-        "isSubstantial": true
-      },
-      {
-        "name": "Isla Ratón",
-        "population": 0,
-        "matchedTo": "Autónomo Autana",
-        "areaSqKm": 15014.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Sierra Imataca",
-        "population": 0,
-        "matchedTo": "Casacoima",
-        "areaSqKm": 2636.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Guasdualito",
-        "population": 64608,
-        "matchedTo": "Páez",
-        "areaSqKm": 12179.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "San Juan de Payara",
-        "population": 0,
-        "matchedTo": "Pedro Camejo",
-        "areaSqKm": 21177.9,
         "isSubstantial": false
       }
     ]
@@ -8721,36 +7918,6 @@
   "costaRica": {
     "unmatched": [
       {
-        "name": "San Vito",
-        "population": 3981,
-        "lat": 8.82079,
-        "lng": -82.97092
-      },
-      {
-        "name": "San Rafael",
-        "population": 25410,
-        "lat": 9.92826,
-        "lng": -84.13537
-      },
-      {
-        "name": "San Felipe",
-        "population": 24985,
-        "lat": 9.90444,
-        "lng": -84.1062
-      },
-      {
-        "name": "Sabalito",
-        "population": 0,
-        "lat": 8.81814,
-        "lng": -82.90911
-      },
-      {
-        "name": "Parrita",
-        "population": 3734,
-        "lat": 9.52166,
-        "lng": -84.32289
-      },
-      {
         "name": "Canoas",
         "population": 4573,
         "lat": 8.53305,
@@ -9282,34 +8449,10 @@
   "panama": {
     "unmatched": [
       {
-        "name": "Ustupo",
-        "population": 2514,
-        "lat": 9.13112,
-        "lng": -77.9262
-      },
-      {
-        "name": "Tubualá",
-        "population": 877,
-        "lat": 8.92098,
-        "lng": -77.72394
-      },
-      {
         "name": "Tubualá",
         "population": 1061,
         "lat": 9.50959,
         "lng": -79.04492
-      },
-      {
-        "name": "San Ignacio de Tupile",
-        "population": 1429,
-        "lat": 9.29505,
-        "lng": -78.15501
-      },
-      {
-        "name": "Puerto Piña",
-        "population": 883,
-        "lat": 7.58297,
-        "lng": -78.17777
       },
       {
         "name": "Palenque",
@@ -9330,58 +8473,10 @@
         "lng": -77.7508
       },
       {
-        "name": "Isla Tigre",
-        "population": 817,
-        "lat": 9.43177,
-        "lng": -78.52139
-      },
-      {
-        "name": "Gonzalo Vásquez",
-        "population": 0,
-        "lat": 8.41976,
-        "lng": -78.45189
-      },
-      {
-        "name": "El Porvenir",
-        "population": 10,
-        "lat": 9.55276,
-        "lng": -78.9523
-      },
-      {
-        "name": "Gannirdup",
-        "population": 930,
-        "lat": 8.90308,
-        "lng": -77.69567
-      },
-      {
         "name": "Cauchero",
         "population": 40,
         "lat": 9.15226,
         "lng": -82.2645
-      },
-      {
-        "name": "Cartí Sugtupu",
-        "population": 1050,
-        "lat": 9.47065,
-        "lng": -78.96119
-      },
-      {
-        "name": "Ailigandí",
-        "population": 1652,
-        "lat": 9.2281,
-        "lng": -78.02778
-      },
-      {
-        "name": "Achutupo",
-        "population": 1753,
-        "lat": 9.19827,
-        "lng": -77.98729
-      },
-      {
-        "name": "Contadora",
-        "population": 253,
-        "lat": 8.62483,
-        "lng": -79.03748
       }
     ],
     "rejected": [
@@ -10164,46 +9259,10 @@
   "canada": {
     "unmatched": [
       {
-        "name": "Advocate Harbour",
-        "population": 826,
-        "lat": 45.33337,
-        "lng": -64.77752
-      },
-      {
-        "name": "Ahuntsic-Cartierville",
-        "population": 135336,
-        "lat": 45.56667,
-        "lng": -73.66667
-      },
-      {
-        "name": "Akulivik",
-        "population": 642,
-        "lat": 60.80056,
-        "lng": -78.19935
-      },
-      {
-        "name": "Belcarra",
-        "population": 687,
-        "lat": 49.31777,
-        "lng": -122.93043
-      },
-      {
         "name": "Bloomfield",
         "population": 523,
         "lat": 48.3832,
         "lng": -53.8981
-      },
-      {
-        "name": "Bois-des-Filion",
-        "population": 8383,
-        "lat": 45.66678,
-        "lng": -73.74918
-      },
-      {
-        "name": "Bonavista",
-        "population": 3448,
-        "lat": 48.64989,
-        "lng": -53.11474
       },
       {
         "name": "Burgeo",
@@ -10218,12 +9277,6 @@
         "lng": -53.96982
       },
       {
-        "name": "Denman Island",
-        "population": 1020,
-        "lat": 49.53294,
-        "lng": -124.8195
-      },
-      {
         "name": "Dover",
         "population": 579,
         "lat": 48.8666,
@@ -10236,22 +9289,10 @@
         "lng": -54.48141
       },
       {
-        "name": "Harbour Breton",
-        "population": 1898,
-        "lat": 47.48325,
-        "lng": -55.79833
-      },
-      {
         "name": "Isle aux Morts",
         "population": 578,
         "lat": 47.58331,
         "lng": -58.98187
-      },
-      {
-        "name": "Mill Bay",
-        "population": 7200,
-        "lat": 48.65,
-        "lng": -123.55
       },
       {
         "name": "North West River",
@@ -10272,28 +9313,10 @@
         "lng": -57.36492
       },
       {
-        "name": "Pugwash",
-        "population": 746,
-        "lat": 45.85015,
-        "lng": -63.66541
-      },
-      {
-        "name": "Sheet Harbour",
-        "population": 800,
-        "lat": 44.91685,
-        "lng": -62.53192
-      },
-      {
         "name": "Springdale",
         "population": 2080,
         "lat": 49.49995,
         "lng": -56.06492
-      },
-      {
-        "name": "Thessalon",
-        "population": 1175,
-        "lat": 46.25006,
-        "lng": -83.5666
       },
       {
         "name": "Trout River",
@@ -10308,24 +9331,6 @@
         "lng": -54.76486
       },
       {
-        "name": "Verchères",
-        "population": 4030,
-        "lat": 45.78338,
-        "lng": -73.34916
-      },
-      {
-        "name": "Waterfront Communities-The Island",
-        "population": 65913,
-        "lat": 43.63388,
-        "lng": -79.3772
-      },
-      {
-        "name": "Vieux-Montréal",
-        "population": 5549,
-        "lat": 45.50621,
-        "lng": -73.54164
-      },
-      {
         "name": "Port de Grave",
         "population": 874,
         "lat": 47.58678,
@@ -10334,39 +9339,11 @@
     ],
     "rejected": [
       {
-        "name": "Halifax",
-        "population": 471559,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Albert Bridge",
-        "population": 1285,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Albro Lake",
-        "population": 8503,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Anzac",
         "population": 506,
         "matchedTo": "Wood Buffalo",
         "areaSqKm": 66202.4,
         "isSubstantial": false
-      },
-      {
-        "name": "Armdale",
-        "population": 16502,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
       },
       {
         "name": "Attawapiskat",
@@ -10390,52 +9367,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Balls Creek",
-        "population": 757,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Barnwell",
         "population": 978,
         "matchedTo": "Taber",
         "areaSqKm": 4257.5,
-        "isSubstantial": false
-      },
-      {
-        "name": "Beaver Bank",
-        "population": 6000,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Bedford",
-        "population": 21474,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Beechville",
-        "population": 2100,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Bel Ayr Park",
-        "population": 1305,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Bells Corners",
-        "population": 9272,
-        "matchedTo": "Ottawa",
-        "areaSqKm": 2885.5,
         "isSubstantial": false
       },
       {
@@ -10446,51 +9381,9 @@
         "isSubstantial": false
       },
       {
-        "name": "Blackburn Hamlet",
-        "population": 8173,
-        "matchedTo": "Ottawa",
-        "areaSqKm": 2885.5,
-        "isSubstantial": false
-      },
-      {
-        "name": "Bothwell",
-        "population": 856,
-        "matchedTo": "Chatham-Kent",
-        "areaSqKm": 2470.9,
-        "isSubstantial": false
-      },
-      {
-        "name": "Boulderwood",
-        "population": 1393,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Boutiliers Point",
-        "population": 781,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Bridgeview",
-        "population": 2206,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Burnside",
-        "population": 7506,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Cache Bay",
         "population": 641,
-        "matchedTo": "West Nipissing / Nipissing Ou*",
+        "matchedTo": "West Nipissing",
         "areaSqKm": 2609.3,
         "isSubstantial": false
       },
@@ -10544,27 +9437,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Clairmont",
-        "population": 2799,
-        "matchedTo": "Grande Prairie County No. 1",
-        "areaSqKm": 5936.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Clayton Park",
-        "population": 5201,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Commodore Park",
-        "population": 1976,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Constance Bay",
         "population": 2314,
         "matchedTo": "Ottawa",
@@ -10572,66 +9444,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Convoy Place",
-        "population": 5581,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Côte-Nord-du-Golfe-du-Saint-Laurent",
         "population": 787,
-        "matchedTo": "CÃ´te-Nord-du-Golfe-du-Saint-L",
-        "areaSqKm": 3003.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Cow Bay",
-        "population": 1619,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Cowie Hill",
-        "population": 2694,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Coxheath",
-        "population": 2333,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Crichton Park",
-        "population": 2576,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Dartmouth",
-        "population": 101343,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Dominion",
-        "population": 1953,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Donkin",
-        "population": 532,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
+        "matchedTo": "Côte-Nord-du-Golfe-du-Saint-Laurent",
+        "areaSqKm": 2877.3,
         "isSubstantial": false
       },
       {
@@ -10649,27 +9465,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Eastern Passage",
-        "population": 11738,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "East Preston",
-        "population": 869,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Ellenvale",
-        "population": 3994,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Elmvale Acres",
         "population": 2627,
         "matchedTo": "Ottawa",
@@ -10677,52 +9472,10 @@
         "isSubstantial": false
       },
       {
-        "name": "English Corner",
-        "population": 1058,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Fairmount",
-        "population": 3928,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Fairview",
-        "population": 8618,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Fall River",
-        "population": 11526,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
         "name": "Fenelon Falls",
         "population": 1915,
         "matchedTo": "Kawartha Lakes",
         "areaSqKm": 3328.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Fernie",
-        "population": 5249,
-        "matchedTo": "East Kootenay A",
-        "areaSqKm": 4614.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Florence",
-        "population": 1684,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
         "isSubstantial": false
       },
       {
@@ -10738,13 +9491,6 @@
         "matchedTo": "Wood Buffalo",
         "areaSqKm": 66202.4,
         "isSubstantial": false
-      },
-      {
-        "name": "Fort McMurray",
-        "population": 66573,
-        "matchedTo": "Wood Buffalo",
-        "areaSqKm": 66202.4,
-        "isSubstantial": true
       },
       {
         "name": "Fort Nelson",
@@ -10768,24 +9514,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Gardiner Mines",
-        "population": 613,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Georges River",
-        "population": 711,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Geraldton",
         "population": 1761,
         "matchedTo": "Greenstone",
-        "areaSqKm": 3002,
+        "areaSqKm": 2966.5,
         "isSubstantial": false
       },
       {
@@ -10796,17 +9528,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Glen Moir",
-        "population": 2294,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Godefroy",
         "population": 1410,
-        "matchedTo": "RiviÃ¨re-Mouchalagane",
-        "areaSqKm": 34967.5,
+        "matchedTo": "Rivière-Mouchalagane",
+        "areaSqKm": 34882.5,
         "isSubstantial": false
       },
       {
@@ -10824,24 +9549,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Green Acres",
-        "population": 1140,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Greenough",
-        "population": 1819,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Greenstone",
         "population": 4636,
         "matchedTo": "Greenstone",
-        "areaSqKm": 3002,
+        "areaSqKm": 2966.5,
         "isSubstantial": false
       },
       {
@@ -10852,13 +9563,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Hammonds Plains",
-        "population": 6242,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Hanceville",
         "population": 10000,
         "matchedTo": "Cariboo K",
@@ -10866,17 +9570,10 @@
         "isSubstantial": true
       },
       {
-        "name": "Harrietsfield",
-        "population": 849,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Havre-Saint-Pierre",
         "population": 3460,
         "matchedTo": "Havre-Saint-Pierre",
-        "areaSqKm": 2974.9,
+        "areaSqKm": 2916.4,
         "isSubstantial": false
       },
       {
@@ -10887,45 +9584,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Herring Cove",
-        "population": 2790,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Hintonburg",
         "population": 7844,
         "matchedTo": "Ottawa",
         "areaSqKm": 2885.5,
-        "isSubstantial": false
-      },
-      {
-        "name": "Howie Centre",
-        "population": 1106,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Hubbards",
-        "population": 654,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Hubley",
-        "population": 1029,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Imperoyal",
-        "population": 5102,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
         "isSubstantial": false
       },
       {
@@ -10936,17 +9598,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Kearney Lake",
-        "population": 3220,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Keremeos",
         "population": 1791,
-        "matchedTo": "Okanagan-Similkameen G",
-        "areaSqKm": 2121.3,
+        "matchedTo": "Area G (Upper Similkameen/Hedley)",
+        "areaSqKm": 2058.7,
         "isSubstantial": false
       },
       {
@@ -10964,31 +9619,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Lac La Biche",
-        "population": 2314,
-        "matchedTo": "Lac la Biche County",
-        "areaSqKm": 13631.2,
-        "isSubstantial": false
-      },
-      {
         "name": "La Crête",
         "population": 2911,
         "matchedTo": "Mackenzie County",
         "areaSqKm": 81526.4,
-        "isSubstantial": false
-      },
-      {
-        "name": "Lake Charlotte",
-        "population": 821,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Lake Echo",
-        "population": 2365,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
         "isSubstantial": false
       },
       {
@@ -11009,21 +9643,14 @@
         "name": "La Tuque",
         "population": 11001,
         "matchedTo": "La Tuque",
-        "areaSqKm": 28240.3,
+        "areaSqKm": 28165.9,
         "isSubstantial": true
-      },
-      {
-        "name": "Lawrencetown",
-        "population": 3402,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
       },
       {
         "name": "Leblanc",
         "population": 1513,
         "matchedTo": "La Tuque",
-        "areaSqKm": 28240.3,
+        "areaSqKm": 28165.9,
         "isSubstantial": false
       },
       {
@@ -11034,24 +9661,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Liverpool",
-        "population": 2546,
-        "matchedTo": "Queens",
-        "areaSqKm": 2758.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Louisbourg",
-        "population": 1265,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Lower Nicola",
         "population": 980,
-        "matchedTo": "Thompson-Nicola M (Beautiful *",
-        "areaSqKm": 3939.1,
+        "matchedTo": "Area M (Beautiful Nicola Valley - North)",
+        "areaSqKm": 3904.6,
         "isSubstantial": false
       },
       {
@@ -11062,24 +9675,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Marion Bridge",
-        "population": 1711,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
         "name": "McLennan",
         "population": 695,
         "matchedTo": "Smoky River No. 130",
         "areaSqKm": 2889.9,
-        "isSubstantial": false
-      },
-      {
-        "name": "Melville Cove",
-        "population": 1071,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
         "isSubstantial": false
       },
       {
@@ -11090,38 +9689,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Micmac Village",
-        "population": 2429,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Middle Sackville",
-        "population": 4329,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Midway",
         "population": 651,
         "matchedTo": "Kootenay Boundary E / West Bo*",
         "areaSqKm": 4301.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Millview",
-        "population": 9189,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Mineville",
-        "population": 1073,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
         "isSubstantial": false
       },
       {
@@ -11139,13 +9710,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Mulgrave Park",
-        "population": 680,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Munster",
         "population": 1145,
         "matchedTo": "Ottawa",
@@ -11153,45 +9717,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Musquodoboit Harbour",
-        "population": 1714,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "New Edinburgh",
         "population": 3539,
         "matchedTo": "Ottawa",
         "areaSqKm": 2885.5,
-        "isSubstantial": false
-      },
-      {
-        "name": "New Victoria",
-        "population": 1093,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "New Waterford",
-        "population": 6723,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "North Preston",
-        "population": 903,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "North Sydney",
-        "population": 5699,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
         "isSubstantial": false
       },
       {
@@ -11230,48 +9759,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Porters Lake",
-        "population": 3716,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Port Morien",
-        "population": 700,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Port Wallace",
-        "population": 6963,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Preston",
-        "population": 3223,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Radium Hot Springs",
-        "population": 1339,
-        "matchedTo": "East Kootenay G",
-        "areaSqKm": 4690,
-        "isSubstantial": false
-      },
-      {
-        "name": "Reserve Mines",
-        "population": 2402,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Richmond",
         "population": 4055,
         "matchedTo": "Ottawa",
@@ -11293,20 +9780,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Rockingham",
-        "population": 10079,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Rouyn-Noranda",
-        "population": 23504,
-        "matchedTo": "Rouyn-Noranda",
-        "areaSqKm": 6464.2,
-        "isSubstantial": true
-      },
-      {
         "name": "Savona",
         "population": 519,
         "matchedTo": "Thompson-Nicola J (Copper Des*",
@@ -11316,15 +9789,8 @@
       {
         "name": "Scotch Creek",
         "population": 711,
-        "matchedTo": "Columbia-Shuswap F",
-        "areaSqKm": 2794.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Scotchtown",
-        "population": 1082,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
+        "matchedTo": "Area F (Scotch Creek/Seymour Arm)",
+        "areaSqKm": 2783.4,
         "isSubstantial": false
       },
       {
@@ -11342,20 +9808,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Shad Bay",
-        "population": 2053,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Sherwood Heights",
-        "population": 651,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Sointula",
         "population": 513,
         "matchedTo": "Mount Waddington A",
@@ -11363,44 +9815,9 @@
         "isSubstantial": false
       },
       {
-        "name": "South Bar",
-        "population": 673,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Southdale",
-        "population": 2925,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Springfield Lake",
-        "population": 1500,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Spryfield",
-        "population": 10118,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Stillwater Lake",
-        "population": 3379,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Sturgeon Falls",
         "population": 6939,
-        "matchedTo": "West Nipissing / Nipissing Ou*",
+        "matchedTo": "West Nipissing",
         "areaSqKm": 2609.3,
         "isSubstantial": false
       },
@@ -11412,41 +9829,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Sydney Forks",
-        "population": 1081,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Tam O'Shanter Ridge",
-        "population": 2519,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Telkwa",
-        "population": 1474,
-        "matchedTo": "Bulkley-Nechako A",
-        "areaSqKm": 3701.4,
-        "isSubstantial": false
-      },
-      {
-        "name": "Terence Bay",
-        "population": 678,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Thornhill",
-        "population": 2188,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Tilbury",
         "population": 4687,
         "matchedTo": "Chatham-Kent",
@@ -11454,52 +9836,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Timberlea",
-        "population": 5627,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Tufts Cove",
-        "population": 1409,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Upper Hammonds Plains",
-        "population": 1840,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Upper Sackville",
-        "population": 1035,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Valemount",
-        "population": 1052,
-        "matchedTo": "Fraser-Fort George H",
-        "areaSqKm": 15098.9,
-        "isSubstantial": false
-      },
-      {
         "name": "Vavenby",
         "population": 700,
-        "matchedTo": "Thompson-Nicola A (Wells Gray*",
-        "areaSqKm": 7333.3,
-        "isSubstantial": false
-      },
-      {
-        "name": "Viscount Alexander Park",
-        "population": 5430,
-        "matchedTo": "Ottawa",
-        "areaSqKm": 2885.5,
+        "matchedTo": "Area A (Wells Gray Country)",
+        "areaSqKm": 7278.3,
         "isSubstantial": false
       },
       {
@@ -11515,90 +9855,6 @@
         "matchedTo": "Opportunity No. 17",
         "areaSqKm": 30085.1,
         "isSubstantial": false
-      },
-      {
-        "name": "Wallace Heights",
-        "population": 1551,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Waverley",
-        "population": 2541,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Wedgewood",
-        "population": 974,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Westmount",
-        "population": 3000,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Westphal",
-        "population": 2533,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Whitney Pier",
-        "population": 4612,
-        "matchedTo": "Cape Breton",
-        "areaSqKm": 2551.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Wildwood Lake",
-        "population": 1523,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Windsor Junction",
-        "population": 1199,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Woodlawn",
-        "population": 20000,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Woodside",
-        "population": 8348,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Churchill Falls",
-        "population": 650,
-        "matchedTo": "Division No. 10, Subd. D",
-        "areaSqKm": 83180.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Cole Harbour",
-        "population": 19096,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
       },
       {
         "name": "Quathiaski Cove",
@@ -11629,13 +9885,6 @@
         "isSubstantial": false
       },
       {
-        "name": "Bragg Creek",
-        "population": 550,
-        "matchedTo": "Rocky View County",
-        "areaSqKm": 3922.4,
-        "isSubstantial": false
-      },
-      {
         "name": "Bobcaygeon",
         "population": 3576,
         "matchedTo": "Kawartha Lakes",
@@ -11643,31 +9892,17 @@
         "isSubstantial": false
       },
       {
-        "name": "Lower Sackville",
-        "population": 51749,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Brookside",
-        "population": 1439,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
         "name": "Longlac",
         "population": 1316,
         "matchedTo": "Greenstone",
-        "areaSqKm": 3002,
+        "areaSqKm": 2966.5,
         "isSubstantial": false
       },
       {
         "name": "Anglemont",
         "population": 613,
-        "matchedTo": "Columbia-Shuswap F",
-        "areaSqKm": 2794.1,
+        "matchedTo": "Area F (Scotch Creek/Seymour Arm)",
+        "areaSqKm": 2783.4,
         "isSubstantial": false
       },
       {
@@ -11682,20 +9917,6 @@
         "population": 5182,
         "matchedTo": "Ottawa",
         "areaSqKm": 2885.5,
-        "isSubstantial": false
-      },
-      {
-        "name": "Springbrook",
-        "population": 1507,
-        "matchedTo": "Red Deer County",
-        "areaSqKm": 4053.1,
-        "isSubstantial": false
-      },
-      {
-        "name": "Westlake",
-        "population": 1363,
-        "matchedTo": "Grande Prairie County No. 1",
-        "areaSqKm": 5936.6,
         "isSubstantial": false
       },
       {
@@ -11734,227 +9955,10 @@
         "isSubstantial": false
       },
       {
-        "name": "Downtown Halifax",
-        "population": 25555,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
         "name": "108 Mile Ranch",
         "population": 1043,
         "matchedTo": "Cariboo G",
         "areaSqKm": 2779.6,
-        "isSubstantial": false
-      },
-      {
-        "name": "Halifax South End",
-        "population": 19922,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Quinpool District",
-        "population": 7228,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Halifax West End",
-        "population": 22664,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Halifax North End",
-        "population": 14893,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Manor Park",
-        "population": 7716,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Downtown Dartmouth",
-        "population": 6300,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Brightwood",
-        "population": 681,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Montebello",
-        "population": 1751,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Portland Estates",
-        "population": 3099,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Colby Village",
-        "population": 4934,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Forest Hills",
-        "population": 8822,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Highfield Park",
-        "population": 2678,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Lancaster Ridge",
-        "population": 1225,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Oakmount",
-        "population": 1075,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Nantucket",
-        "population": 1417,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Portland Hills",
-        "population": 3403,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Russell Lake",
-        "population": 2146,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Shearwater",
-        "population": 1550,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Sunset Acres",
-        "population": 2750,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Keystone Village",
-        "population": 1233,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Willowdale",
-        "population": 5543,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Lake Loon",
-        "population": 782,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Harbourview",
-        "population": 6656,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Westmount",
-        "population": 6388,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Williams Lake",
-        "population": 6268,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Clayton Park West",
-        "population": 16550,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": true
-      },
-      {
-        "name": "Paper Mill Lake",
-        "population": 1970,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Spring Garden",
-        "population": 4469,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Stoneridge",
-        "population": 2400,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
-        "isSubstantial": false
-      },
-      {
-        "name": "Schmidtville",
-        "population": 2940,
-        "matchedTo": "Halifax",
-        "areaSqKm": 5937.8,
         "isSubstantial": false
       }
     ]

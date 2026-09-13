@@ -899,19 +899,17 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   (5,161 vs. 5,162) or field richness, and nothing in the shipped pipeline reads from it — Canada's real
   city-boundary source is geoBoundaries' direct download instead. Left in place pending an explicit
   deletion decision (untracked local data, not something to remove without confirmation).
-- **Argentina's real city-boundary join needed a source swap mid-pass, not just a threshold tweak**
-  (found 2026-09-05, `city-boundaries-architecture.md`'s "Tenth pass"). geoBoundaries' Departamentos/
-  Partidos (ADM2) is a real, correctly-identified tier, but the first real join rejected 762/1,204 points
-  (63%) — including genuine provincial capitals (Paraná, Neuquén, Formosa, San Luis, Comodoro Rivadavia),
-  not just villages in empty desert the way every prior coarse-tier rejection was. Argentina's low
-  population density outside Buenos Aires means a departamento built around one real city can still be
-  several thousand km², past even the existing loose ceiling. Fixed with OSM `admin_level` 7|8 instead
-  (a real, comprehensive locality tier — 2,025 relations nationwide), which pushed kept features from 442
-  to 1,038 (86%). **134 remain unmatched, clustered in Buenos Aires and San Juan provinces specifically**
-  (Ciudad de Las Heras, San Rafael, San Juan, Zárate, Luján, Olavarría, Berisso, Campana, ... — all real,
-  substantial cities) — likely a different OSM admin-boundary tagging convention in those two provinces,
-  not investigated further this pass. A real per-city fallback candidate for a future pass, the same shape
-  as Panama's 17 unmatched towns, just larger in absolute count.
+- ~~Argentina's real city-boundary join needed a source swap mid-pass, not just a threshold tweak~~ —
+  **134 remaining unmatched towns fixed 2026-09-12** (`city-boundaries-architecture.md`'s "Twelfth pass").
+  The first OSM fix (found 2026-09-05, "Tenth pass": geoBoundaries' Departamentos/Partidos (ADM2) rejected
+  762/1,204 points including genuine provincial capitals — Paraná, Neuquén, Formosa, San Luis, Comodoro
+  Rivadavia — fixed by switching to OSM `admin_level` 7|8, a real comprehensive locality tier) left 134 towns
+  clustered in Buenos Aires and San Juan provinces unmatched. Root cause found by checking is_in() at each
+  point directly: Buenos Aires Province's partidos (its real, only municipal-equivalent tier — no
+  sub-partido government exists) are tagged `admin_level=5`, a third level entirely from the 7|8 already
+  queried. Widening the query to `admin_level~"^(5|7|8)$"` eliminated every unmatched town: 1,106/1,204 kept
+  (up from 1,038), 98 rejected (up from 32 — real, large departamentos/partidos a city still doesn't fit
+  inside even at this coarser fallback), 0 unmatched.
 - ~~Kuwait's 3 unmatched towns (Al Mahbūlah, Al Funayţīs, Al Fințās) needed a per-city fallback~~ — **2 of 3
   fixed 2026-09-12** (`city-boundaries-architecture.md`'s "Eleventh pass"), and turned out not to need a
   bespoke per-city mechanism at all: geoBoundaries' ADM2 (137 features) has real gaps between polygons; OSM's
@@ -920,11 +918,28 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   1,878) remains genuinely unmatched** — its own OSM relation (17935319, same source, real name, verified
   to close into a valid ~3 km² polygon) exists, but GeoNames' point coordinate for it lands just outside that
   polygon's edge. A strict point-in-polygon join can't fix a case like this; would need a "snap to nearest
-  candidate within some small radius" fallback, a real join-logic change (not a source swap) that hasn't
-  been attempted anywhere in this file yet. Worth building once the source-swap check has been tried against
-  the rest of the countries with unmatched towns (Costa Rica, Honduras, Panama, Canada, Colombia, Venezuela,
-  Argentina), in case more of those turn out to be the same "polygon exists, point just misses it" shape
-  rather than genuinely missing coverage.
+  candidate within some small radius" fallback, a real join-logic change (not a source swap), still not
+  built — see the entry below, which found the same shape again in Costa Rica.
+- **The source-swap-first check has now been run against every one of the 24 done countries' residual
+  unmatched towns** (`city-boundaries-architecture.md`'s "Twelfth pass," 2026-09-12) — five real fixes (Costa
+  Rica, Panama, Canada, Venezuela, Argentina, the last one covered in its own entry above) and two
+  confirmed-already-correct results (Honduras, Colombia). Costa Rica swapped fully to OSM `admin_level=8`
+  (Distrito): 136/137 kept (up from 131), 1 unmatched (down from 6). Panama, Canada, and Venezuela each kept
+  their existing geoBoundaries source and added a supplemental OSM layer via `runGeoBoundariesCountry()`'s
+  new `extraOsm` option (Panama +`admin_level=8`: 795/801 kept, 5 unmatched, down from 17; Canada
+  +`admin_level~"^(8|10)$"`: 3,194/3,296 kept, 13 unmatched, down from 28; Venezuela +`admin_level=7`
+  Parroquia: 387/414 kept, 2 unmatched, down from 11 — and 25 rejected, down from 83, since Parroquia is
+  finer than Municipio for cities it already matched too). Honduras and Colombia were checked and confirmed
+  to already have the best available source — Honduras's OSM `admin_level=6` reproduces geoBoundaries'
+  numbers almost exactly, and Colombia's 3 residual towns (Puerto Escondido, Nuquí, Necoclí) resolve to no
+  OSM boundary at any level, a real gap not fixable by a different level. **A real second finding of the
+  Kuwait/Al-Funayţīs "point exists just outside a real polygon" shape**: Costa Rica's own residual (Canoas)
+  and Panama's Cauchero both landed with no containing boundary in either source at exact-coordinate
+  is_in() checks near an international border — worth checking whether a small-radius nearest-polygon
+  fallback would resolve these specifically (unbuilt, same as the Kuwait entry above) once that mechanism is
+  ever built. Residual unmatched counts across all 24 done countries: Kuwait 1, Costa Rica 1, Panama 5,
+  Canada 13, Colombia 3, Venezuela 2, Honduras 11 (Belize's 127 structural-gap towns excluded, per the
+  standing distinction) — real, logged, not further source-swap candidates.
 - ~~Uruguay's 49/154 unmatched (32%) is a real structural gap in the source, not a join failure~~ —
   **fixed same day (found and fixed 2026-09-05, `city-boundaries-architecture.md`'s "Tenth pass").**
   Uruguay's geoBoundaries municipio file genuinely had no polygon for any of its 18 departmental capitals
