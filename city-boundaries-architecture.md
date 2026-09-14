@@ -1045,6 +1045,119 @@ Haiti 114, Jamaica 104, Saint Kitts and Nevis 18, Saint Lucia 38, Saint Vincent 
 Trinidad and Tobago 27), plus corrections to the 6 countries in the table above already shipped. 37 of 193 UN
 members now have real city-boundary data; 156 remain.
 
+### Fourteenth pass: Northern Europe, the first Europe batch (2026-09-13)
+
+The next continent after the Americas: Denmark, Estonia, Finland, Iceland, Ireland, Latvia, Lithuania,
+Norway, Sweden, United Kingdom (the UN-geoscheme Northern Europe subregion). Unlike every prior region,
+this one's own recon already existed — the Third pass's `cityAdminLevelsReport.json` covers all 193
+countries — so this pass started straight from that report's per-country finest-level numbers instead of
+re-running geoBoundaries' metadata API. That turned out to matter: **two of this batch's ten countries had a
+real per-feature join disagree with what looked like the finest plausible level on paper**, the exact
+failure mode the report's own caveat (recon "can't replace the real point-in-polygon-against-actual-cities
+check") warned about, and a third country's only geoBoundaries level wasn't trustworthy at all.
+
+**Six straightforward confirmations**, all matched to real municipality-level polygons at the areas expected
+from independent knowledge of each country's real administrative geography: Denmark's Kommune (ADM2, 98,
+Copenhagen → 87.8 km² vs. a real ~86 km²), Estonia's linn/vald (ADM2, 215, Tallinn → "Tallinna linn" 158.5
+km² vs. a real ~159 km²), Finland's Kunta (ADM3, 313, Helsinki → 201.1 km² vs. a real ~213 km²), Iceland's
+Sveitarfélag (ADM2, 74, Reykjavík → "Reykjavíkurborg" 272.4 km² vs. a real ~273 km²), Latvia's pilsētas un
+pagasti (ADM2, 589, Riga → "Rīga" 302.5 km² vs. a real ~307 km²), and Norway's Kommune (ADM2, 431, Oslo →
+448.8 km² vs. a real ~454 km², Bergen → 460.9 km² vs. a real ~465 km²). Norway's matched-unit names carry an
+odd `" nor"`/`" sme"` suffix and the occasional trailing digit (`"Oslo nor"`, `"Kåfjord nor 2"`) — a
+geoBoundaries `shapeName` quirk (Norwegian-language and Northern Sámi dual-name municipalities, plus a
+duplicate-name disambiguator) that only affects the diagnostic `matchedAdminUnit` field, not the displayed
+city name (`properties.name`, sourced from GeoNames) or the matched area — cosmetic, not a join bug.
+
+**Two real "finest level on paper, wrong level in practice" catches — this pass's actual finding.**
+Lithuania's and Sweden's own *finest* geoBoundaries level (ADM3 in both cases) looked exactly like every
+other country's finest level in the recon report, but a real join against it put Vilnius inside "Naujamiestis
+seniūnija" (4.9 km², one eldership *within* Vilnius) and Stockholm inside "Stockholms domkyrkodistrikt" (2.7
+km², one parish *within* Stockholm) — real, correctly-named features, just sub-city administrative fragments,
+not the city itself. The same trap as Jordan's mislabeled Liwa and Belize's Constituencies, just one level
+down: a level can be genuinely real and correctly labeled and still be the wrong *kind* of unit for "the
+city's own boundary." Both countries had a real municipality-count tier exactly one level up in the same
+recon data (Lithuania's ADM2, "Unknown" canonicalName, 60 units — Lithuania's real 60 savivaldybės; Sweden's
+ADM2, "Municipality," 290 units — Sweden's real 290 kommuner) that a blank/"Unknown" canonicalName alone gave
+no reason to prefer over ADM3 without actually running the join. Switched both to ADM2; re-verified Vilnius →
+"Vilnius city municipality" 399 km² (real ~401 km²) and Stockholm → "Stockholm" 180.2 km² (real ~188 km²).
+
+**Ireland: geoBoundaries had no usable level at all.** Its only sub-national level (ADM2, "Local Electoral
+Areas," 166 units) isn't a coarser-but-real city tier the way Ecuador's cantones are — a real join matched
+Dublin to "PEMBROKE LEA-5" (9.4 km²) and Cork to "CORK CITY SOUTH CENTRAL LEA-6" (16.8 km²), both real LEA
+electoral-ward fragments *within* those cities. OSM's `admin_level=6` alone has the real 26 traditional
+counties, but that's coarse enough to reject Cork (population 224,004, Ireland's second-largest city) and
+Galway outright — County Cork/County Galway both exceed even `LOOSE_MAX_SQKM`. `admin_level=7` separately
+carries the real city/county authorities the 2014 local-government reform created (Cork, Dublin, Fingal,
+South Dublin, Dún Laoghaire-Rathdown, "Cathair na Gaillimhe"/Galway City, Limerick, Waterford) mixed in with
+redundant re-tagged county polygons for counties that were never split — the same mixed-granularity shape
+Argentina's `admin_level` 7|8 query already established a precedent for in this file. Querying `6|7` together
+(smallest containing polygon wins, same rule as every other mixed-level query in this file) resolved Cork to
+its own 186 km² authority (a real ~187.5 km²) and Galway to 50.2 km² (matching its real area almost exactly),
+while every never-split county still falls back to its level-6 boundary. `overpass-api.de` (this file's usual
+endpoint) 504'd on every attempt against Ireland specifically, including a plain `out ids` count query with
+no geometry, while it answered every other country in this pass without issue — genuinely reachable but
+degraded for this one query shape, not a client-side bug. `overpass.private.coffee` answered the identical
+query, so this one query is pinned to that endpoint. **One retry against that same endpoint still came back
+degraded** (238 expected relations collapsed to a response missing the entire Dublin metro area, surfacing as
+92 cities newly "unmatched" including Dublin itself, population 1,024,027) before a clean retry the same
+minute returned the real, complete data with 0 unmatched — worth remembering generally: a 200 response from
+either Overpass mirror isn't by itself proof of a complete response, if the kept/unmatched counts move
+between two runs of an unmodified query against unmodified source data.
+
+**United Kingdom: real, correctly-named, but the wrong granularity, then the same silent-partial-response
+risk again.** geoBoundaries' ADM2 and ADM3 are the same 216-unit "Counties and Unitary Authorities" layer
+duplicated at both levels (no finer geoBoundaries tier exists) — a first run rejected 2,839/5,918 points
+(48%, dwarfing every other country in this pass, including real cities like Manchester and Birmingham sitting
+inside a much larger authority than themselves). OSM's `admin_level=8` has a real, finer 232-238-unit layer
+(metropolitan/London boroughs, unitary authorities, non-metropolitan districts) that resolves exactly the
+cities the 216-unit tier merges away — added as a supplemental `extraOsm` layer (same pattern as Panama/
+Canada/Venezuela) rather than a full source swap, since geoBoundaries' own tier is still real and worth
+keeping as the fallback wherever `admin_level=8` doesn't reach city-scale either. `runGeoBoundariesCountry`'s
+`extraOsm` gained an optional per-call `endpoint` override for this (`overpass-api.de` 504'd repeatedly on
+this specific query too) — the first attempt against `private.coffee` came back with only 5 of the expected
+~232 candidates (a **silent** partial response: HTTP 200, valid JSON, just an incomplete `elements` array,
+the same failure shape Ireland's retry hit above but with no unmatched-count signal to notice it by, since
+those 5 candidates were still enough to keep the run from erroring) — caught only by the rejection rate
+(48%, unchanged from the pre-`extraOsm` run) not dropping the way every other supplemental-layer addition in
+this file has. A second attempt at the identical query, moments later, returned the real, complete 238-
+element response. Rejection rate then dropped to 24.3% (1,437/5,918), back in line with Finland/Norway's own
+coarse-tier trade-off, and every checked flagship city matched correctly: Manchester 111.5 km² (real ~115.6),
+Birmingham 266.9 km² via `osm-admin8` (real ~267.8), Leeds 548.6 km², Liverpool 112.7 km², Glasgow 177.7 km²,
+Edinburgh 262.2 km², Cardiff 141.8 km², Belfast 137.1 km² (all within a few percent of their real areas).
+**"London" itself resolves to "City of Westminster" (22 km²)** — GeoNames' London point sits in Westminster
+specifically, and Greater London has no single `admin_level=8` polygon of its own (it's a two-tier structure,
+boroughs below the GLA) — a real structural limitation of "smallest containing polygon wins" for any city
+whose everyday name refers to a multi-borough conurbation rather than one administrative unit, not a bug to
+fix here.
+
+**Two genuinely interesting unmatched/rejected findings, not just residual noise:**
+`Akrotiri`/`Dhekelia` (the British Sovereign Base Areas on Cyprus, pop. 684/10,000) came back unmatched for
+the United Kingdom — GeoNames tags them under the UK's country code since they're UK sovereign territory, but
+geographically they're on Cyprus, so naturally neither the UK's geoBoundaries nor its OSM `admin_level=8`
+layer contains them. Not a bug; this project's GeoEntity registry already has a real, separate entry for the
+Cyprus Sovereign Base Areas as its own `GeoEntity` (see the Geopolitical data architecture section) — a
+neat, independent corroboration of that entity's real-world basis, not something this pipeline needs to
+reconcile. Sweden's 9 unmatched are all small archipelago islands (Styrsö/Donsö/Brännö off Gothenburg,
+Sturkö/Hasslö off Karlskrona, Vaxholm/Rindö in the Stockholm archipelago) — real communities whose GeoNames
+point sits just outside their parent municipality's simplified mainland-plus-nearby-islands polygon, the same
+shape as Denmark's own single unmatched point (Christiansø, an isolated Baltic islet, pop. 90). Finland's one
+unmatched point, Raisio (pop. 25,846, a real independent municipality near Turku, not one of the 2010s-era
+merger absorptions that account for the other 112 "rejected" Finnish points below), is a genuine
+geoBoundaries data gap rather than a join issue — logged to `BACKLOG.md` rather than chased further this
+pass, the same single-country-residual treatment Honduras's own remaining 5 got in the Twelfth pass.
+
+**Finland's 112 rejected points are a real, structural artifact of Finnish municipal history, not a source
+or join defect** — the large majority resolve to `Oulu` (3,093 km²), which absorbed several smaller
+neighboring municipalities (Ylikiiminki, Yli-Ii, Haukipudas among them) in a 2010s municipal-merger wave;
+GeoNames still carries the pre-merger town/neighborhood names as separate points, and they now correctly
+fall inside the much larger merged Oulu. The same shape as Ecuador's cantón trade-off, just produced by
+municipal mergers instead of always having been one large rural unit.
+
+Total across this batch: 10,458 GeoNames points → 8,323 kept, 2,122 rejected (too large — dominated by the
+UK's own residual 24.3% and Ireland's 52.5%, both real coarse-tier trades once the level/source fixes above
+landed, not join failures), 13 unmatched (all individually accounted for above). 47 of 193 UN members now
+have real city-boundary data; 146 remain.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1074,14 +1187,17 @@ members now have real city-boundary data; 156 remain.
    Bolivia/Brazil/Chile/Colombia/Ecuador/Paraguay/Suriname/Antigua and Barbuda/Bahamas/Barbados/Cuba/
    Dominica/Dominican Republic/Grenada/Haiti/Jamaica/Saint Kitts and Nevis/Saint Lucia/Saint Vincent and the
    Grenadines (geoBoundaries, each level independently verified — see the Eighth/Ninth/Tenth/Thirteenth
-   passes), Panama/Venezuela (geoBoundaries + a supplemental OSM layer via `extraOsm`), and Belize (OSM,
-   hand-curated 9-municipality name list) against the already-shipped GeoNames city index; US reused
-   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by state.
-   Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, and Argentina all sharded by
-   state/province — see `shardByState()`).
-   **Not done: the other 156 countries** — each needs the same investigate-before-trusting treatment
-   (Fourth/Eighth/Tenth/Thirteenth pass) before its own join can run, not a blind batch extension of this
-   script.
+   passes), Panama/Venezuela/United Kingdom (geoBoundaries + a supplemental OSM layer via `extraOsm`), Ireland
+   (OSM `admin_level` 6|7, on `overpass.private.coffee` rather than this file's usual endpoint — see the
+   Fourteenth pass), Denmark/Estonia/Finland/Iceland/Latvia/Lithuania/Norway/Sweden (geoBoundaries, each level
+   independently verified — see the Fourteenth pass, including two real wrong-level catches on Lithuania and
+   Sweden's own recon-reported "finest" level), and Belize (OSM, hand-curated 9-municipality name list)
+   against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census output
+   directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/` (Mexico,
+   Brazil, Peru, and Argentina all sharded by state/province — see `shardByState()`).
+   **Not done: the other 146 countries** — each needs the same investigate-before-trusting treatment
+   (Fourth/Eighth/Tenth/Thirteenth/Fourteenth pass) before its own join can run, not a blind batch extension
+   of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
@@ -1090,8 +1206,10 @@ members now have real city-boundary data; 156 remain.
    remaining coastal/island gaps plus one confirmed GeoNames country-tag error); Venezuela correctly stayed
    at 2 (confirmed nothing within the 2km radius, so the fallback didn't force a wrong match). See the
    Thirteenth pass's own table for the full before/after and what each snap actually matched to. Total
-   residual unmatched across all 37 done countries: 7 (Honduras 5, Venezuela 2) — real, structural residuals
-   now, not further-fixable by this mechanism. Also not done: further tuning
+   residual unmatched across all 47 done countries: 20 (Honduras 5, Venezuela 2 from before this pass, plus
+   Denmark 1, Finland 1, Sweden 9, United Kingdom 2 from the Fourteenth pass — see that pass for what each of
+   the new ones actually is) — real, structural residuals now, not further-fixable by this mechanism. Also
+   not done: further tuning
    Mexico's largest state shards (Veracruz's 11.9MB is still well above the US precedent — see the Ninth
    pass).
 3. ~~Generalize `UsCityLabels.tsx`/`UsCityOutlineHighlight.tsx`/
@@ -1171,9 +1289,9 @@ members now have real city-boundary data; 156 remain.
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 37 countries with real boundary data (Seventh/Eighth/Ninth/Tenth/Thirteenth passes),
-  not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 156 countries (once each has its own verified
+  scoped to the 47 countries with real boundary data (Seventh/Eighth/Ninth/Tenth/Thirteenth/Fourteenth
+  passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 146 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

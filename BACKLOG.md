@@ -963,6 +963,32 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   reproduced the exact prior numbers (138/148 kept), confirming the swap changed nothing about correctness.
   Worth remembering if `overpass-api.de` itself ever goes flaky in a future pass — this project has now
   seen every Overpass mirror it's tried degrade at least once.
+- **An Overpass mirror can return a silently-incomplete response — HTTP 200, valid JSON, just a truncated
+  `elements` array — with no error to catch** (found 2026-09-13, `city-boundaries-architecture.md`'s
+  "Fourteenth pass"). Worse than the already-known 504/timeout flakiness above, because `fetchWithRetry`
+  has nothing to retry on: the request "succeeded." Hit twice in the same pass — Ireland's `admin_level`
+  6|7 query came back once missing the entire Dublin metro area (surfacing as 92 cities, including Dublin
+  itself, newly "unmatched"), and the United Kingdom's supplemental `admin_level=8` `extraOsm` query came
+  back with 5 of an expected ~232 relations (only caught because the rejection rate stayed at the
+  pre-`extraOsm` 48% instead of dropping). Both resolved by simply re-running the identical query moments
+  later, which returned the real, complete data both times. No code fix yet — flagged as a real risk for
+  every future OSM-sourced country in the remaining 146-country walk: a plausible-looking kept/rejected/
+  unmatched count is not by itself proof the underlying fetch was complete, especially right after a run
+  that needed retries. A future pass could add a plausibility check (e.g. comparing `extraOsm` candidate
+  counts against `researchCityAdminLevels.mjs`'s independently-known relation count) rather than relying on
+  a human noticing an unchanged rejection rate.
+- **Finland's Raisio (pop. 25,846, a real independent municipality near Turku, not a merger-absorbed
+  town) came back unmatched** (found 2026-09-13, "Fourteenth pass") — a genuine geoBoundaries data gap
+  (no candidate within `SNAP_MAX_KM` either), not a join bug. Single-country residual, logged rather than
+  chased further, the same treatment Honduras's own remaining 5 got in the Twelfth pass.
+- **"London" resolves to "City of Westminster" (22 km²), not a Greater-London-wide polygon** (found
+  2026-09-13, "Fourteenth pass") — GeoNames' London point sits in Westminster specifically, and Greater
+  London has no single `admin_level=8` polygon of its own (a two-tier structure, 32 boroughs + the City of
+  London below the GLA) for "smallest containing polygon wins" to pick instead. A real, structural
+  limitation for any city whose everyday name refers to a multi-borough conurbation rather than one
+  administrative unit — not fixable by this pipeline's existing join logic, and not otherwise checked for
+  across the 46 other done countries (a capital city spanning multiple local-government units the way
+  London does is uncommon among them, but not verified absent).
 
 ## Visualization
 

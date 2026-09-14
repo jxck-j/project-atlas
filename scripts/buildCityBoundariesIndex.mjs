@@ -17,7 +17,9 @@
 // Venezuela, plus the 2026-09-12 Caribbean pass: Antigua and Barbuda,
 // Bahamas, Barbados, Cuba, Dominica, Dominican Republic, Grenada, Haiti,
 // Jamaica, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the
-// Grenadines, Trinidad and Tobago) — NOT the other 156 UN members yet. See
+// Grenadines, Trinidad and Tobago, plus the 2026-09-13 Northern Europe pass:
+// Denmark, Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway,
+// Sweden, United Kingdom) — NOT the other 146 UN members yet. See
 // that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
@@ -58,6 +60,16 @@ const BOUNDARY_COUNTRIES = [
   { id: '662', name: 'Saint Lucia' },
   { id: '670', name: 'Saint Vincent and the Grenadines' },
   { id: '780', name: 'Trinidad and Tobago' },
+  { id: '208', name: 'Denmark' },
+  { id: '233', name: 'Estonia' },
+  { id: '246', name: 'Finland' },
+  { id: '352', name: 'Iceland' },
+  { id: '372', name: 'Ireland' },
+  { id: '428', name: 'Latvia' },
+  { id: '440', name: 'Lithuania' },
+  { id: '578', name: 'Norway' },
+  { id: '752', name: 'Sweden' },
+  { id: '826', name: 'United Kingdom' },
 ]
 
 function addFromBoundaryFile(countryId) {

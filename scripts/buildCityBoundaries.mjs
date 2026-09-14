@@ -8,7 +8,9 @@
 // plus the 2026-09-12 Caribbean pass: Antigua and Barbuda, Bahamas,
 // Barbados, Cuba, Dominica, Dominican Republic, Grenada, Haiti, Jamaica,
 // Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines,
-// Trinidad and Tobago) — NOT the other 156 UN members yet. See that doc's "Fifth pass" section
+// Trinidad and Tobago, plus the 2026-09-13 Northern Europe pass: Denmark,
+// Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway, Sweden,
+// United Kingdom) — NOT the other 146 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -381,7 +383,7 @@ async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOu
     source: `geoboundaries-${admLevel.toLowerCase()}`,
   }))
   if (extraOsm) {
-    const raw = await fetchWithRetry(() => fetchOverpass(extraOsm.query))
+    const raw = await fetchWithRetry(() => fetchOverpass(extraOsm.query, extraOsm.endpoint ?? OVERPASS))
     let unclosedCount = 0
     const osmCandidates = raw.elements.map((rel) => {
       const { geometry, closed } = relationToGeometry(rel)
@@ -1086,6 +1088,113 @@ out geom;`),
   writeCountryOutput('780', trinidadJoin.kept)
   report.trinidadAndTobago = trinidadJoin.report
 }
+
+// Fourteenth pass (2026-09-13): Northern Europe, the first batch of the
+// Europe region — the next continent after the Americas (see
+// city-boundaries-architecture.md). Candidate levels below come from the
+// Third pass's geoBoundaries recon (scripts/cityAdminLevelsReport.json);
+// each was actually run through the real per-feature join against this
+// project's own GeoNames city index before being trusted, per this file's
+// own discipline — several of these levels report a blank/"Unknown"
+// geoBoundaries canonicalName, the same missing-label shape Belize's
+// "Constituencies" and Jordan's mislabeled Liwa both had, so a blank label
+// here is a reason for extra scrutiny of the actual join output (matched
+// unit names, rejected-count shape), not by itself a reason to reject the
+// level — see city-boundaries-architecture.md's Fourteenth pass section for
+// what each country's real output showed.
+if (shouldRun('208')) report.denmark = await runGeoBoundariesCountry({ name: 'Denmark', numericId: '208', alpha3: 'DNK', admLevel: 'ADM2' })
+if (shouldRun('233')) report.estonia = await runGeoBoundariesCountry({ name: 'Estonia', numericId: '233', alpha3: 'EST', admLevel: 'ADM2' })
+if (shouldRun('246')) report.finland = await runGeoBoundariesCountry({ name: 'Finland', numericId: '246', alpha3: 'FIN', admLevel: 'ADM3' })
+if (shouldRun('352')) report.iceland = await runGeoBoundariesCountry({ name: 'Iceland', numericId: '352', alpha3: 'ISL', admLevel: 'ADM2' })
+// Ireland: geoBoundaries' only sub-national level (ADM2, "Local Electoral
+// Areas," 166 units) turned out NOT to be a coarser-but-real city tier the
+// way Ecuador's cantones are — a real first attempt matched Dublin to
+// "PEMBROKE LEA-5" (9.4 km²) and Cork to "CORK CITY SOUTH CENTRAL LEA-6"
+// (16.8 km²): real LEA sub-ward fragments of those cities, not the cities
+// themselves — LEAs are electoral subdivisions WITHIN a city/county, not a
+// city-scale administrative unit on their own, the same "looks small enough
+// to be plausible, isn't the right kind of unit" trap as Jordan's mislabeled
+// Liwa and Belize's Constituencies. Ireland's real local-government tier
+// (31 city/county councils) isn't in geoBoundaries at all. OSM's own
+// admin_level=6 alone only carries the 26 traditional counties (Dublin's 4
+// modern authorities and Tipperary's 2 collapse back into one "County
+// Dublin"/"County Tipperary" each) — real and correctly named, but coarse
+// enough to outright reject Cork (population 224,004, Ireland's
+// second-largest city) and Galway, since County Cork/County Galway exceed
+// even LOOSE_MAX_SQKM. admin_level=7 separately carries the real modern
+// city/county authorities the 2014 local-government reform created (Cork,
+// Dublin, Fingal, South Dublin, Dún Laoghaire-Rathdown, "Cathair na
+// Gaillimhe"/Galway City, Limerick, Waterford) mixed in with redundant
+// re-tagged county polygons for counties that were never split — the same
+// "combine two admin_levels, smallest containing polygon wins" mixed-
+// granularity shape Argentina's admin_level 7|8 query already established
+// a precedent for in this file. Querying 6|7 together, rather than either
+// level alone, lets a real city like Cork resolve to its own level-7
+// authority while a never-split county like Clare or Kerry falls back to
+// its level-6 boundary automatically. overpass-api.de (this file's usual
+// endpoint) timed out repeatedly on Ireland specifically while working fine
+// for every other country in this pass; overpass.private.coffee answered
+// the identical shape of query, so this one query uses that endpoint
+// instead.
+if (!process.env.SKIP_OSM && shouldRun('372')) {
+  console.log('\n=== Ireland ===')
+  const irelandRaw = await fetchWithRetry(() =>
+    fetchOverpass(
+      `[out:json][timeout:180];
+area["ISO3166-1"="IE"][admin_level=2]->.a;
+relation(area.a)["boundary"="administrative"]["admin_level"~"^(6|7)$"];
+out geom;`,
+      'https://overpass.private.coffee/api/interpreter',
+    ),
+  )
+  let irelandUnclosedCount = 0
+  const irelandCandidates = irelandRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) irelandUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6' }
+  })
+  if (irelandUnclosedCount > 0) console.log(`  [warn] ${irelandUnclosedCount} Ireland relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const irelandCities = loadCityPoints('372')
+  const irelandJoin = joinCityPointsToPolygons('Ireland', irelandCities, irelandCandidates)
+  writeCountryOutput('372', irelandJoin.kept)
+  report.ireland = irelandJoin.report
+}
+if (shouldRun('428')) report.latvia = await runGeoBoundariesCountry({ name: 'Latvia', numericId: '428', alpha3: 'LVA', admLevel: 'ADM2' })
+if (shouldRun('440')) report.lithuania = await runGeoBoundariesCountry({ name: 'Lithuania', numericId: '440', alpha3: 'LTU', admLevel: 'ADM2' })
+if (shouldRun('578')) report.norway = await runGeoBoundariesCountry({ name: 'Norway', numericId: '578', alpha3: 'NOR', admLevel: 'ADM2' })
+if (shouldRun('752')) report.sweden = await runGeoBoundariesCountry({ name: 'Sweden', numericId: '752', alpha3: 'SWE', admLevel: 'ADM2' })
+// United Kingdom: geoBoundaries' own ADM2/ADM3 are the same 216-unit
+// "Counties and Unitary Authorities" layer duplicated at both levels (no
+// finer geoBoundaries tier exists) — real and correctly named, but coarse
+// enough that a first run rejected 2,839/5,918 points (48%, dwarfing every
+// other country in this pass), including real cities like Manchester and
+// Birmingham sitting inside a much larger encompassing authority. OSM's own
+// admin_level=8 has a real, finer 232-unit layer (metropolitan/London
+// boroughs, unitary authorities, and non-metropolitan districts) that
+// includes exactly the individual cities geoBoundaries' 216-unit tier
+// merges away — added as a supplemental layer (smallest-containing-polygon-
+// wins, same as Panama/Canada/Venezuela's extraOsm) rather than a full
+// source swap, since geoBoundaries' own tier is still real and worth
+// keeping as the fallback wherever OSM's admin_level=8 doesn't reach
+// city-scale either. overpass-api.de repeatedly 504'd on this specific
+// query (tags/geometry for 232 UK relations, apparently too heavy for it
+// right now) while private.coffee's mirror answered it, so this one query
+// is pinned to that endpoint via extraOsm's per-call endpoint override.
+if (shouldRun('826'))
+  report.unitedKingdom = await runGeoBoundariesCountry({
+    name: 'United Kingdom',
+    numericId: '826',
+    alpha3: 'GBR',
+    admLevel: 'ADM3',
+    extraOsm: {
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="GB"][admin_level=2]->.a;
+relation(area.a)["boundary"="administrative"]["admin_level"="8"];
+out geom;`,
+      sourceLabel: 'osm-admin8',
+      endpoint: 'https://overpass.private.coffee/api/interpreter',
+    },
+  })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are
