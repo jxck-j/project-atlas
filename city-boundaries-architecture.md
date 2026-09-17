@@ -1158,6 +1158,154 @@ UK's own residual 24.3% and Ireland's 52.5%, both real coarse-tier trades once t
 landed, not join failures), 13 unmatched (all individually accounted for above). 47 of 193 UN members now
 have real city-boundary data; 146 remain.
 
+### Fifteenth pass: Western Europe (2026-09-16) — the cleanest batch yet, and a real Overpass-mirror resilience gap found the hard way
+
+Austria, Belgium, France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands, Switzerland — the second
+Europe batch. Same investigate-before-trust discipline as every prior pass: every candidate level's real
+per-feature names checked directly (via geoBoundaries downloads and targeted OSM `is_in()` containment
+queries at real city centers), not trusted from recon or a level's on-paper area alone.
+
+**Five straightforward confirmations**, each verified by a real `is_in()` (or direct-download) check landing
+on a single, correctly-sized feature: Liechtenstein's Gemeinde (ADM1, 11 — Vaduz confirmed), Netherlands'
+Municipality (ADM2, 344 — Amsterdam confirmed as its own 918,117-population level-8 relation, already
+correctly labeled by geoBoundaries), Switzerland's Municipality (ADM3, 2286 — Zurich confirmed as its own
+level-8 relation), Luxembourg's communes (ADM3, 102 — direct download inspection confirms "Luxembourg" city
+appears as one whole feature, not fragmented), and Belgium's communes (ADM4, 589, canonicalName blank in
+recon — direct download inspection confirms "Bruxelles | Brussel" appears as one whole feature, population-
+bearing, not split into its 19 constituent municipalities).
+
+**Austria's own recon-reported "finest" level (ADM4, 7850 units) was the familiar "finest on paper, wrong
+kind of unit" trap this file has hit repeatedly (Lithuania/Sweden/Ireland)** — a real `is_in()` check at
+Vienna's center resolves the OSM equivalent of ADM4 to "Katastralgemeinde Innere Stadt," a cadastral survey
+unit *within* one of Vienna's own districts, not a Gemeinde. ADM3 (2097 units) is Austria's real Gemeinde
+tier instead (matching the real ~2,093 count). A real wrinkle checked directly rather than assumed: Vienna's
+own Land (state) and Gemeinde (municipality) boundaries coincide in OSM's own tagging — Vienna has no
+separate `admin_level=8` relation of its own, only its Land-level `admin_level=4` entry and its 23 internal
+districts at `admin_level=9`. Whether this OSM quirk would silently drop Vienna from a geoBoundaries-sourced
+ADM3 join was checked directly, not assumed either way: geoBoundaries' own ADM3 download does include "Wien"
+as one real, whole feature anyway — its own sourcing isn't a blind mirror of OSM's `admin_level=8` tag, so
+this particular OSM quirk doesn't propagate into it.
+
+**Monaco needed a real hybrid, found by testing where each of its 10 GeoNames points actually lands, not
+assumed from either candidate level alone.** geoBoundaries' ADM2 (9 quartiers — Fontvieille, Monaco-Ville, La
+Condamine, La Rousse, Larvotto, Monte-Carlo, Jardin Exotique, Les Monegetti, Sainte-Dévote) resolves 9 of
+Monaco's 10 real named places correctly — Monte-Carlo lands in "Monte-Carlo," La Condamine in "La Condamine,"
+etc. But the 10th point — "Monaco" itself, the PPLC/capital entry, population 32,965, the one a search or the
+label-reveal layer most often surfaces — lands in "Sainte-Dévote," one specific small quartier with no
+special claim to representing the whole city, the same sub-city-fragment trap as every OSM/geoBoundaries
+level-mismatch in this file, just affecting one of ten points instead of a whole level. Fixed by special-
+casing: the capital point is joined against ADM1 (Monaco's own single whole-country/city polygon, 2.03 km²)
+while the other 9 are joined against ADM2's quartiers. 10/10 kept, 0 rejected, 0 unmatched.
+
+**France's ADM5 (35,010 features, canonicalName itself a blended "Arrondissement municipal, Commune simple,
+Préfecture, ..." list) turned out to have a real, unfilterable-by-level defect on direct download
+inspection** — Paris, Lyon, and Marseille (France's only three communes legally subdivided into their own
+arrondissements municipaux) have NO whole-city feature in this file at all, only their 20/9/16 arrondissement
+fragments (confirmed: searching the download for "Paris" surfaces "Paris 4e Arrondissement" etc., never bare
+"Paris"). A live `is_in()` check at Notre-Dame confirmed OSM's own `admin_level=8` DOES carry a real, whole
+"Paris" relation (population 2,133,111, correct) distinct from its own `admin_level=9` arrondissements — so
+rather than a full source swap to OSM nationwide (real overkill for 3 of ~35,000 features), the fix drops
+ADM5's 45 Paris/Lyon/Marseille arrondissement fragments (an exact `"<City> <N>(er|e) Arrondissement"` name
+match — real communes with "Paris"/"Lyon"/"Marseille" as a *substring*, like "Villeparisis" or
+"Chazelles-sur-Lyon," don't match this pattern and are correctly left alone) and adds back 3 targeted, cheap
+OSM queries (one relation each) for the real whole-city polygons. Verified after the fact: Paris 105.1 km²
+(real ~105.4), Lyon 47.9 km² (real ~47.9), Marseille 241.7 km² (real ~240.6) — all three now resolve to their
+real administrative area almost exactly. **Result: 15,363/15,363 kept, 0 rejected, 0 unmatched** — the
+cleanest large-country result in this project's history, sharded into 96 department files (20.2 MB combined,
+largest 1.4 MB) via Natural Earth's own `iso_3166_2` field (France's admin-1 rows here are department-level,
+101 of them, not the 13-region level a "state" framing might suggest — `postal` is blank for 99/101 of them,
+an unrelated shape from Mexico/Brazil/Peru/Argentina's own province-level rows, so `shardByState()` needed a
+non-`postal` abbreviation source for the first time — see below).
+
+**Germany needed a fundamentally different fetch shape, not just a different source or level.**
+geoBoundaries' finest level (ADM3, 428 units — kreisfreie Städte + Landkreise, Germany's county-equivalent
+tier) is real but only city-scale for the ~107 independent cities; every other town sits inside a whole
+Landkreis (mean area 836 km² per the recon report) instead of its own boundary. A direct `is_in()` check
+confirmed a real, comprehensive finer tier in OSM: `admin_level=8` (Gemeinde) resolves even a
+non-independent town (Dachau, inside Landkreis Dachau) to its own real municipal polygon distinct from its
+enclosing Landkreis — the same "geoBoundaries' offering is real but coarser than OSM's own next tier down"
+shape as Peru's Provincias/Distritos. A nationwide `admin_level=8` query for Germany's ~10,795 real Gemeinden
+proved too heavy for this file's shared Overpass endpoints to answer in one shot — confirmed directly (a bare
+`out count`, no geometry, still failed) rather than assumed — so this queries per-Bundesland instead (13
+states individually, plus Bavaria split further into its own 7 Regierungsbezirke at `admin_level=5` once
+even the whole-Bavaria query alone proved too heavy on its own). Berlin, Hamburg, and Bremen are German
+city-states whose Land *is* their Gemeinde — confirmed via the same Vienna-shape `is_in()` check used for
+Austria above, both resolve straight from their level-2 country to their own level-4 Land/city boundary with
+no municipality level in between — so each is fetched directly by name at `admin_level=4` instead of relying
+on the per-state loop to ever find them.
+
+**A real, previously-undiscovered gap in this project's own Overpass-fetch resilience surfaced directly from
+running this at Germany's scale — 20 separate area queries against a shared, heavily-loaded public mirror,
+far more sustained load than any single-query country in this file has ever put on one mirror in one pass.**
+`overpass-api.de` (this file's usual endpoint) went **fully unreachable mid-run** — a real TCP connect
+timeout to both of its known IPs, confirmed directly (`curl -v` hung the same way), not a query problem: 9 of
+13 states had already fetched successfully against it moments earlier. Switched to
+`overpass.private.coffee`, confirmed healthy at the time (the same per-country override Ireland/UK already
+needed). Two further, real problems surfaced only once running at this sustained scale, neither hit by any
+prior country in this file:
+
+- **`fetchOverpass` had no client-side timeout at all** — a single request to Bayern (before the
+  per-Regierungsbezirk split) hung indefinitely past its own `[timeout:120]` Overpass-side directive with
+  *no response ever coming back*, so `fetchWithRetry`'s retry loop never got the rejection it needed to move
+  on — confirmed by watching the process sit alive, doing nothing, for far longer than any query in this
+  file has ever legitimately taken. Fixed with a 180s `AbortSignal.timeout` on every `fetchOverpass` call —
+  turns a silent hang into a real, retryable failure without changing behavior for any query that completes
+  normally (every one of them, in every prior country, already finishes well under 180s).
+- **A single area's total-retry exhaustion used to crash the ENTIRE Germany block**, discarding every other
+  state already fetched in the same run — hit twice for real: the first crash (Bayern, on the original
+  `overpass-api.de` connect-timeout) lost 9 already-fetched states; the second (Mecklenburg-Vorpommern, on
+  `private.coffee` under sustained public load — 6 straight failures, a mix of 504s and the new abort-timeout
+  firing) lost the 3 states re-fetched since. Fixed two ways: `fetchGemeinden`'s per-area attempts raised
+  from the shared default of 6 to 10 (specifically for Germany, given how aggressively the shared mirror was
+  rate-limiting/timing out this pass), and a real try/catch around each area's fetch — a total failure now
+  logs the area to a `failedAreas` list in the report and the run continues, the same "report, don't crash"
+  discipline every unmatched/rejected list in this file already follows, rather than a silent skip or a
+  fatal throw.
+- **A third real failure mode — the exact silently-truncated-response shape BACKLOG.md already logged once
+  for Ireland/UK in the Fourteenth pass — hit for real here too, and this time there was no human watching
+  a rejection-rate to catch it.** Brandenburg's fetch came back a "successful" HTTP 200 with a valid but
+  **empty** `elements` array — no error for `fetchWithRetry` to catch, and (unlike the Fourteenth pass's
+  UK case) no rejection-rate signal to notice by eye either, since this run's progress log is the only
+  thing a human was watching. Caught only because `0 Gemeinden` for a real German state is obviously wrong
+  on sight — Brandenburg genuinely has ~409-417. Fixed with a real, generalizable guard this time instead of
+  relying on a human to keep noticing: `fetchGemeinden` now throws (folding into the same retry path every
+  other error already goes through) whenever a response comes back with fewer than `MIN_PLAUSIBLE_GEMEINDEN`
+  (10 — Saarland's real 52 is the smallest this loop ever legitimately expects) elements, and the
+  Berlin/Hamburg/Bremen city-state query does the same against its own exactly-known expected count (3).
+  Worth carrying this "does the count clear a real, known-plausible floor" check forward as standard
+  practice for any future country whose fetch shape allows a cheap sanity bound — not just re-running by eye
+  when something looks like it might be wrong.
+
+Sharded by state via Natural Earth's own `iso_3166_2` field, not `postal` — **a real, confirmed data bug in
+the vendored Natural Earth file**, found by inspecting it directly rather than trusting the existing
+`shardByState()` convention blindly: Brandenburg's `postal` value is "BE," the same value Berlin's real
+postal code already uses (should be "BB"). Using `postal` as-is would have silently merged Brandenburg's
+cities into Berlin's own shard. `iso_3166_2` ("DE-BB" vs. "DE-BE") has no such collision. `shardByState()`
+gained an `abbrevOf` option (a function deriving the shard key from a feature's properties) alongside its
+existing `abbrevField` for this — France's own sharding (above) reuses the same option, since its admin-1
+rows have no usable `postal` value at all rather than a colliding one.
+
+**A general, cross-country performance fix came out of this pass too, not just Germany-specific ones.**
+`pointInGeometry` had no bounding-box pre-check — every city/candidate pair walked the candidate's full ring
+regardless of distance, fine at every prior country's scale (Mexico's 2,457 candidates was the previous
+high) but genuinely too slow at France's ~35,000-candidate, ~15,000-point scale (an initial unoptimized run
+was killed after running substantially longer than every previous country's join combined, still short of
+finishing). `sphericalGeometry.mjs` gained `geometryBBox`/`bboxContains` — a cheap `[minLng, minLat, maxLng,
+maxLat]` check that can only ever reject a true negative, so it changes nothing about which candidate wins,
+only how many full ring walks the join has to do. Re-run with the fix, France's full join completed in
+minutes.
+
+**Status at time of writing: 8 of the 9 countries in this pass are done and committed** (Austria, Belgium,
+France, Liechtenstein, Luxembourg, Monaco, Netherlands, Switzerland — every one 100% matched: 0 rejected, 0
+unmatched, across 24,849 combined GeoNames points). **Germany's fetch is still running** — its 20-query shape
+against a shared, badly-congested public Overpass mirror (repeated 504s and silently-truncated responses on
+nearly every request, well beyond anything any prior country in this file has hit) means it's taking
+substantially longer than every other country in this pass combined, even with the resilience fixes above in
+place. Not a data-quality problem — the fixes above exist specifically so a slow, congested run still produces
+correct output rather than a corrupted or incomplete one — just a real, ongoing wait on a third-party service
+this project doesn't control. 55 of 193 UN members have real city-boundary data as of the 8 committed here;
+Germany will make 56 once its own fetch completes.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1174,7 +1322,7 @@ have real city-boundary data; 146 remain.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 37 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 45 countries, Germany's own fetch still in progress** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -1191,13 +1339,19 @@ have real city-boundary data; 146 remain.
    (OSM `admin_level` 6|7, on `overpass.private.coffee` rather than this file's usual endpoint — see the
    Fourteenth pass), Denmark/Estonia/Finland/Iceland/Latvia/Lithuania/Norway/Sweden (geoBoundaries, each level
    independently verified — see the Fourteenth pass, including two real wrong-level catches on Lithuania and
-   Sweden's own recon-reported "finest" level), and Belize (OSM, hand-curated 9-municipality name list)
-   against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s existing Census output
-   directly, reshaped in place, still sharded by state. Output in `public/geo/city-boundaries/` (Mexico,
-   Brazil, Peru, and Argentina all sharded by state/province — see `shardByState()`).
-   **Not done: the other 146 countries** — each needs the same investigate-before-trusting treatment
-   (Fourth/Eighth/Tenth/Thirteenth/Fourteenth pass) before its own join can run, not a blind batch extension
-   of this script.
+   Sweden's own recon-reported "finest" level), Belize (OSM, hand-curated 9-municipality name list), and
+   Liechtenstein/Netherlands/Switzerland/Luxembourg/Belgium/Austria (geoBoundaries, each level independently
+   verified), Monaco (a real hybrid — the capital point against ADM1's whole-country polygon, every other
+   point against ADM2's quartiers), and France (geoBoundaries ADM5 with its 45 Paris/Lyon/Marseille
+   arrondissement-municipal fragments dropped and replaced by 3 targeted OSM whole-city polygons — see the
+   Fifteenth pass for all of Western Europe's findings, including Germany's own still-in-progress OSM
+   per-Bundesland/Regierungsbezirke fetch) against the already-shipped GeoNames city index; US reused
+   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by state.
+   Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, and France all sharded by
+   state/province/department — see `shardByState()`).
+   **Not done: Germany's own fetch (in progress) plus the other 137 countries** — each needs the same
+   investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth pass) before
+   its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
@@ -1289,9 +1443,10 @@ have real city-boundary data; 146 remain.
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 47 countries with real boundary data (Seventh/Eighth/Ninth/Tenth/Thirteenth/Fourteenth
-  passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 146 countries (once each has its own verified
+  scoped to the 45 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
+  Thirteenth/Fourteenth/Fifteenth passes — Germany's own fetch still in progress, see the Fifteenth pass),
+  not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 137 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

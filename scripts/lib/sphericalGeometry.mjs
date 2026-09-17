@@ -33,6 +33,38 @@ function pointInPolygonCoords(point, polygonCoords) {
   return true
 }
 
+// Cheap [minLng, minLat, maxLng, maxLat] bounding box — a fast reject before
+// the real ring-by-ring point-in-polygon test below. Added for the Western
+// Europe pass (2026-09-16): France (~35,000 unfiltered geoBoundaries
+// candidates) and Germany (~10,800 OSM Gemeinden) pushed this join's
+// candidate counts well past every prior country (Mexico's own 2,457 was
+// the previous high), and pointInGeometry has no early-out at all — every
+// city/candidate pair walks the candidate's full ring regardless of whether
+// the point is anywhere near it. A bbox check can only ever reject a true
+// negative (a point outside a candidate's bbox is never inside its
+// geometry), so this changes nothing about which candidate ultimately wins,
+// only how many full ring walks the join actually has to do.
+export function geometryBBox(geometry) {
+  const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
+  let minLng = Infinity
+  let minLat = Infinity
+  let maxLng = -Infinity
+  let maxLat = -Infinity
+  for (const rings of polygons) {
+    for (const [lng, lat] of rings[0]) {
+      if (lng < minLng) minLng = lng
+      if (lng > maxLng) maxLng = lng
+      if (lat < minLat) minLat = lat
+      if (lat > maxLat) maxLat = lat
+    }
+  }
+  return [minLng, minLat, maxLng, maxLat]
+}
+
+export function bboxContains([minLng, minLat, maxLng, maxLat], [lng, lat]) {
+  return lng >= minLng && lng <= maxLng && lat >= minLat && lat <= maxLat
+}
+
 export function pointInGeometry(point, geometry) {
   if (geometry.type === 'Polygon') return pointInPolygonCoords(point, geometry.coordinates)
   if (geometry.type === 'MultiPolygon') return geometry.coordinates.some((poly) => pointInPolygonCoords(point, poly))

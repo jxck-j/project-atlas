@@ -977,6 +977,30 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   that needed retries. A future pass could add a plausibility check (e.g. comparing `extraOsm` candidate
   counts against `researchCityAdminLevels.mjs`'s independently-known relation count) rather than relying on
   a human noticing an unchanged rejection rate.
+- ~~A single area's Overpass fetch hanging forever, or exhausting its retries, could take down this whole
+  script's progress on every other country/area already fetched in the same run~~ — **fixed** (found and
+  fixed 2026-09-16, `city-boundaries-architecture.md`'s "Fifteenth pass"). Surfaced only once a country's
+  fetch shape got big enough to matter: Germany's 20 separate per-Bundesland/Regierungsbezirk queries against
+  a shared, heavily-loaded public Overpass mirror hit two real failure modes no single-query country in this
+  file had ever hit before. First, `fetchOverpass` had no client-side timeout at all — a query to Bayern hung
+  indefinitely past its own `[timeout:120]` Overpass-side directive with no response ever coming back, so
+  `fetchWithRetry` never got the rejection it needed to retry against; fixed with a 180s `AbortSignal.timeout`
+  on every Overpass fetch. Second, a single area exhausting all retries used to `throw` and crash the entire
+  Germany block via an uncaught rejection, discarding every other area already fetched in the same run — hit
+  twice for real, losing 9 then 3 already-fetched states each time. Fixed with a real try/catch per area (a
+  total failure now logs to a `failedAreas` list in the report and the run continues) plus raising Germany's
+  own per-area retry budget from the shared default of 6 to 10, given how aggressively the shared mirror was
+  rate-limiting/timing out that pass. Worth remembering for any future country whose fetch shape needs many
+  separate Overpass requests rather than one nationwide query — a single request's total failure should never
+  be allowed to cost every other request's already-fetched progress in the same run.
+- **`pointInGeometry` had no bounding-box pre-check, and stayed fast enough not to matter until France's
+  ~35,000-candidate, ~15,000-point join made it the real bottleneck** (found and fixed 2026-09-16,
+  `city-boundaries-architecture.md`'s "Fifteenth pass") — an unoptimized run was killed after running
+  substantially longer than every previous country's join combined, still short of finishing. Fixed with
+  `sphericalGeometry.mjs`'s `geometryBBox`/`bboxContains`, a cheap bounding-box check that can only ever
+  reject a true negative (never changes which candidate wins, only how many full ring walks the join does) —
+  re-run, France's full join completed in minutes. Worth remembering for any future country whose candidate
+  count approaches or exceeds France's — Mexico's 2,457 was the previous high and never needed this.
 - **Finland's Raisio (pop. 25,846, a real independent municipality near Turku, not a merger-absorbed
   town) came back unmatched** (found 2026-09-13, "Fourteenth pass") — a genuine geoBoundaries data gap
   (no candidate within `SNAP_MAX_KM` either), not a join bug. Single-country residual, logged rather than

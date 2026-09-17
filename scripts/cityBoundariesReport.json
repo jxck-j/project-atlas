@@ -42056,5 +42056,79 @@
         "snapDistanceKm": 0.159
       }
     ]
+  },
+  "liechtenstein": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "netherlands": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "switzerland": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "luxembourg": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Machtum",
+        "population": 592,
+        "matchedTo": "Wormeldange",
+        "snapDistanceKm": 0.042
+      },
+      {
+        "name": "Bech-Kleinmacher",
+        "population": 685,
+        "matchedTo": "Schengen",
+        "snapDistanceKm": 0.018
+      }
+    ]
+  },
+  "belgium": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Knokke-Heist",
+        "population": 33781,
+        "matchedTo": "Knokke-Heist",
+        "snapDistanceKm": 0.264
+      }
+    ]
+  },
+  "austria": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Mühlgraben",
+        "population": 795,
+        "matchedTo": "Erl",
+        "snapDistanceKm": 0.042
+      }
+    ]
+  },
+  "monaco": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "france": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Benerville-sur-Mer",
+        "population": 536,
+        "matchedTo": "Benerville-sur-Mer",
+        "snapDistanceKm": 0.611
+      }
+    ]
   }
 }

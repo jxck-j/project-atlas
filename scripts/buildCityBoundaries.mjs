@@ -10,7 +10,9 @@
 // Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the Grenadines,
 // Trinidad and Tobago, plus the 2026-09-13 Northern Europe pass: Denmark,
 // Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway, Sweden,
-// United Kingdom) — NOT the other 146 UN members yet. See that doc's "Fifth pass" section
+// United Kingdom, plus the 2026-09-16 Western Europe pass: Austria, Belgium,
+// France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands,
+// Switzerland) — NOT the other 137 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -52,7 +54,7 @@
 // the "report, don't silently drop" discipline buildGeoEntityEconomics.mjs
 // and researchCityAdminLevels.mjs already established in this repo.
 import fs from 'node:fs'
-import { pointInGeometry, geometryAreaSqKm, geometryCentroid, simplifyGeometry, distanceToGeometryKm } from './lib/sphericalGeometry.mjs'
+import { pointInGeometry, geometryAreaSqKm, geometryCentroid, simplifyGeometry, distanceToGeometryKm, geometryBBox, bboxContains } from './lib/sphericalGeometry.mjs'
 import { relationToGeometry } from './lib/osmRelationToGeometry.mjs'
 
 const HEADLINE_INDEX = 'public/geo/global-cities-headline.json'
@@ -143,17 +145,25 @@ async function fetchWithRetry(fn, attempts = 6) {
     } catch (err) {
       lastErr = err
       console.log(`  [retry ${i + 1}/${attempts}] ${err.message}`)
-      await new Promise((r) => setTimeout(r, 5000 * (i + 1)))
+      await new Promise((r) => setTimeout(r, Math.min(5000 * (i + 1), 30_000)))
     }
   }
   throw lastErr
 }
 
+// A 180s client-side abort, added for the Western Europe pass (2026-09-16)
+// after a Bayern query genuinely hung past its own [timeout:120] Overpass
+// directive with no response at all — `fetch()` had no client-side timeout
+// of its own, so fetchWithRetry's retry loop never got the rejection it
+// needed to move on. This doesn't change what a healthy request looks like
+// (every prior country's queries complete well under 180s); it only turns a
+// silent hang into a real, retryable failure.
 async function fetchOverpass(query, endpoint = OVERPASS) {
   const res = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': OVERPASS_USER_AGENT },
     body: 'data=' + encodeURIComponent(query),
+    signal: AbortSignal.timeout(180_000),
   })
   if (!res.ok) throw new Error(`Overpass ${res.status}`)
   return res.json()
@@ -183,7 +193,7 @@ function normalizeName(name) {
 // candidate polygon and decide whether to keep it, per the threshold policy
 // above. Returns { kept: Feature[], report: {...} }.
 function joinCityPointsToPolygons(countryName, cities, candidates) {
-  const withArea = candidates.map((c) => ({ ...c, areaSqKm: geometryAreaSqKm(c.geometry) }))
+  const withArea = candidates.map((c) => ({ ...c, areaSqKm: geometryAreaSqKm(c.geometry), bbox: geometryBBox(c.geometry) }))
   const kept = []
   const unmatched = []
   const rejected = []
@@ -201,6 +211,7 @@ function joinCityPointsToPolygons(countryName, cities, candidates) {
     // response happened to list first would be arbitrary.
     let hit
     for (const c of withArea) {
+      if (!bboxContains(c.bbox, point)) continue
       try {
         if (pointInGeometry(point, c.geometry) && (!hit || c.areaSqKm < hit.areaSqKm)) hit = c
       } catch {
@@ -413,11 +424,24 @@ async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOu
 // not a name/code guess. Falls back to nearest-state-by-centroid only for a
 // feature whose centroid lands outside every state polygon (island/coastline
 // simplification artifacts) — logged, not silent.
-function shardByState(countryId, features, { adm0A3, abbrevField }) {
+// abbrevOf, added for the Western Europe pass (2026-09-16): Germany's own
+// Natural Earth admin-1 rows have a real data bug — Brandenburg's `postal`
+// field is "BE", the same value Berlin's real postal code already uses
+// (should be "BB"; found by inspecting the raw vendor file directly, not
+// assumed) — so the default `postal`-keyed lookup would silently merge
+// Brandenburg's cities into Berlin's own shard. `iso_3166_2` (e.g. "DE-BB"
+// vs. "DE-BE") doesn't have this collision and is used instead for Germany;
+// France's own admin-1 rows are department-level with `postal` blank for
+// 99 of 101 entries (an unrelated shape from Mexico/Brazil/Peru/Argentina's
+// province-level rows), so it uses `iso_3166_2` (e.g. "FR-59") too. Pass
+// abbrevOf to derive the shard key some other way than a flat field lookup;
+// abbrevField stays the default path for every other already-shipped country.
+function shardByState(countryId, features, { adm0A3, abbrevField, abbrevOf }) {
   const ne = JSON.parse(fs.readFileSync('scripts/vendor/ne_10m_admin_1_states_provinces.geojson', 'utf8'))
+  const deriveAbbrev = abbrevOf ?? ((props) => props[abbrevField])
   const states = ne.features
-    .filter((f) => f.properties.adm0_a3 === adm0A3 && f.properties[abbrevField])
-    .map((f) => ({ abbrev: f.properties[abbrevField], geometry: f.geometry, centroid: geometryCentroid(f.geometry) }))
+    .filter((f) => f.properties.adm0_a3 === adm0A3 && deriveAbbrev(f.properties))
+    .map((f) => ({ abbrev: deriveAbbrev(f.properties), geometry: f.geometry, centroid: geometryCentroid(f.geometry) }))
 
   const byState = new Map()
   let fallbackCount = 0
@@ -1195,6 +1219,318 @@ out geom;`,
       endpoint: 'https://overpass.private.coffee/api/interpreter',
     },
   })
+
+// Fifteenth pass (2026-09-16): Western Europe (Austria, Belgium, France,
+// Germany, Liechtenstein, Luxembourg, Monaco, Netherlands, Switzerland) —
+// the second Europe batch. Same investigate-before-trust discipline: every
+// candidate level's real per-feature names checked directly (via geoBoundaries
+// downloads and targeted OSM is_in() containment queries at real city
+// centers), not trusted from recon or canonicalName alone.
+//
+// Five straightforward confirmations, each verified by a real is_in() (or
+// direct-download) check at that country's capital/largest city landing on a
+// single, correctly-sized feature at the stated level: Liechtenstein's
+// Gemeinde (ADM1, 11 — Vaduz confirmed), Netherlands' Municipality (ADM2,
+// 344 — Amsterdam confirmed as its own 918,117-population level-8 relation,
+// already correctly labeled by geoBoundaries), Switzerland's Municipality
+// (ADM3, 2286 — Zurich confirmed as its own level-8 relation, already
+// correctly labeled), Luxembourg's communes (ADM3, 102 — direct download
+// inspection confirms "Luxembourg" city appears as one whole feature, not
+// fragmented), and Belgium's communes (ADM4, 589, canonicalName blank in
+// recon — direct download inspection confirms "Bruxelles | Brussel" appears
+// as one whole feature, population-bearing, not split into its 19
+// constituent municipalities or any smaller ward).
+//
+// Austria's own recon-reported "finest" level (ADM4, 7850 units) is the
+// familiar "finest on paper, wrong kind of unit" trap this file has hit
+// repeatedly (Lithuania/Sweden/Ireland) — a real is_in() check at Vienna's
+// center resolves ADM4-equivalent OSM admin_level=10 to "Katastralgemeinde
+// Innere Stadt," a cadastral survey unit *within* one of Vienna's own
+// districts, not a Gemeinde. ADM3 (2097 units) is Austria's real Gemeinde
+// tier instead (matching the real ~2,093 count) — and, checked directly
+// against the actual download rather than assumed from the OSM quirk that
+// Vienna's Land and Gemeinde boundaries coincide (so Vienna has no separate
+// OSM admin_level=8 relation of its own), geoBoundaries' own ADM3 file
+// includes "Wien" as one real, whole feature anyway — it isn't sourced by
+// blindly mirroring OSM's own admin_level=8 tag, so this particular OSM
+// quirk doesn't propagate into it.
+if (shouldRun('438')) report.liechtenstein = await runGeoBoundariesCountry({ name: 'Liechtenstein', numericId: '438', alpha3: 'LIE', admLevel: 'ADM1' })
+if (shouldRun('528')) report.netherlands = await runGeoBoundariesCountry({ name: 'Netherlands', numericId: '528', alpha3: 'NLD', admLevel: 'ADM2' })
+if (shouldRun('756')) report.switzerland = await runGeoBoundariesCountry({ name: 'Switzerland', numericId: '756', alpha3: 'CHE', admLevel: 'ADM3' })
+if (shouldRun('442')) report.luxembourg = await runGeoBoundariesCountry({ name: 'Luxembourg', numericId: '442', alpha3: 'LUX', admLevel: 'ADM3' })
+if (shouldRun('056')) report.belgium = await runGeoBoundariesCountry({ name: 'Belgium', numericId: '056', alpha3: 'BEL', admLevel: 'ADM4' })
+if (shouldRun('040')) report.austria = await runGeoBoundariesCountry({ name: 'Austria', numericId: '040', alpha3: 'AUT', admLevel: 'ADM3' })
+
+// Monaco: a real hybrid case, found by actually testing where each of
+// Monaco's 10 GeoNames points lands, not assumed from either level alone.
+// geoBoundaries' ADM2 (9 quartiers — Fontvieille, Monaco-Ville, La
+// Condamine, La Rousse, Larvotto, Monte-Carlo, Jardin Exotique, Les
+// Monegetti, Sainte-Dévote) resolves 9 of Monaco's 10 real named places
+// correctly — Monte-Carlo lands in "Monte-Carlo," La Condamine in "La
+// Condamine," etc., real per-feature accuracy this micro-state's other
+// quartier-named points deserve, not the same flattened whole-country shape
+// every other candidate level in this file would give them. But the 10th
+// point — "Monaco" itself, the PPLC/capital entry, population 32,965, what
+// a search or the label-reveal layer actually surfaces most often — lands
+// in "Sainte-Dévote," one specific small quartier with no special claim to
+// representing the whole city. That's the same sub-city-fragment trap as
+// every other country in this pass, just affecting exactly one of ten
+// points instead of the whole level, so neither "use ADM2 for everyone" nor
+// "use ADM1 (the single whole-country polygon) for everyone" is fully
+// correct on its own — this special-cases the one point that needs it.
+if (!process.env.SKIP_OSM && shouldRun('492')) {
+  console.log('\n=== Monaco ===')
+  const monacoMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/MCO/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const fetchLevel = async (admLevel) => {
+    const meta = monacoMeta.find((l) => l.boundaryType === admLevel)
+    const res = await fetchWithRetry(async () => {
+      const r = await fetch(meta.gjDownloadURL)
+      if (!r.ok) throw new Error(`geoBoundaries geojson ${r.status}`)
+      return r.json()
+    })
+    return res.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: `geoboundaries-${admLevel.toLowerCase()}` }))
+  }
+  const monacoQuartiers = await fetchLevel('ADM2')
+  const monacoWhole = await fetchLevel('ADM1')
+  const monacoCities = loadCityPoints('492')
+  const monacoCapital = monacoCities.filter((c) => c.isCapital)
+  const monacoOthers = monacoCities.filter((c) => !c.isCapital)
+  const capitalJoin = joinCityPointsToPolygons('Monaco (capital point, whole-country level)', monacoCapital, monacoWhole)
+  const othersJoin = joinCityPointsToPolygons('Monaco (quartiers, everyone else)', monacoOthers, monacoQuartiers)
+  writeCountryOutput('492', [...capitalJoin.kept, ...othersJoin.kept])
+  report.monaco = {
+    unmatched: [...capitalJoin.report.unmatched, ...othersJoin.report.unmatched],
+    rejected: [...capitalJoin.report.rejected, ...othersJoin.report.rejected],
+    snapped: [...capitalJoin.report.snapped, ...othersJoin.report.snapped],
+  }
+}
+
+// France: geoBoundaries' ADM5 (35,010 features, canonicalName itself a
+// blended "Arrondissement municipal, Commune simple, Préfecture, ..." list)
+// turned out to have a real, unfilterable defect on direct download
+// inspection, not just a messy label — Paris, Lyon, and Marseille (France's
+// only three communes legally subdivided into their own arrondissements
+// municipaux) have NO whole-city feature in this file at all, only their
+// 20/9/16 arrondissement fragments (confirmed: searching the download for
+// "Paris" surfaces "Paris 4e Arrondissement" etc., never bare "Paris"). A
+// real per-feature join against ADM5 as-is would land each city's GeoNames
+// point inside whichever single arrondissement it happens to fall in — the
+// same sub-city-fragment trap as Lithuania/Sweden/Ireland, except this time
+// affecting only 3 of ~35,000 features rather than the whole level, so a
+// full source swap to OSM nationwide (Peru/Uruguay/Argentina's approach)
+// would be real overkill. A live is_in() check at Notre-Dame confirmed OSM's
+// own admin_level=8 DOES carry a real, whole "Paris" relation (population
+// 2,133,111, correct) distinct from its own admin_level=9 arrondissements —
+// so the fix is: drop ADM5's 45 Paris/Lyon/Marseille arrondissement
+// fragments (identified by an exact `"<City> <N>(er|e) Arrondissement"` name
+// match — real communes with "Paris"/"Lyon"/"Marseille" as a SUBSTRING, like
+// "Villeparisis" or "Chazelles-sur-Lyon," don't match this exact pattern and
+// are correctly left alone) and add back 3 targeted, cheap OSM queries (one
+// relation each, not a nationwide fetch) for the real whole-city polygons.
+// Sharded by department via Natural Earth's own `iso_3166_2` field
+// ("FR-59," ...) rather than `postal` — this file's France rows are
+// department-level (101 of them) with `postal` blank for 99/101, an
+// unrelated shape from Mexico/Brazil/Peru/Argentina's own province-level
+// rows — see shardByState's own comment.
+if (!process.env.SKIP_OSM && shouldRun('250')) {
+  console.log('\n=== France ===')
+  const franceMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/FRA/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const franceAdmMeta = franceMeta.find((l) => l.boundaryType === 'ADM5')
+  const franceGeo = await fetchWithRetry(async () => {
+    const res = await fetch(franceAdmMeta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const isArrondissementMunicipal = /^(Paris|Lyon|Marseille) \d+(er|e) Arrondissement$/
+  const droppedFragments = franceGeo.features.filter((f) => isArrondissementMunicipal.test(f.properties.shapeName)).length
+  console.log(`  dropping ${droppedFragments} Paris/Lyon/Marseille arrondissement-municipal fragments (real communes, wrong kind of unit for this join — see this block's own comment)`)
+  const franceCandidates = franceGeo.features
+    .filter((f) => !isArrondissementMunicipal.test(f.properties.shapeName))
+    .map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm5' }))
+  const franceCitiesRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:60];
+area["ISO3166-1"="FR"][admin_level=2]->.fr;
+(relation(area.fr)["boundary"="administrative"]["admin_level"="8"]["name"="Paris"];
+relation(area.fr)["boundary"="administrative"]["admin_level"="8"]["name"="Lyon"];
+relation(area.fr)["boundary"="administrative"]["admin_level"="8"]["name"="Marseille"];);
+out geom;`),
+  )
+  console.log(`  +${franceCitiesRaw.elements.length} supplemental whole-city OSM candidates (expected 3: Paris/Lyon/Marseille)`)
+  const franceSupplemental = franceCitiesRaw.elements.map((rel) => {
+    const { geometry } = relationToGeometry(rel)
+    return { name: rel.tags.name, geometry, source: 'osm-admin8' }
+  })
+  const franceCities = loadCityPoints('250')
+  const franceJoin = joinCityPointsToPolygons('France', franceCities, [...franceCandidates, ...franceSupplemental])
+  shardByState('250', franceJoin.kept, { adm0A3: 'FRA', abbrevOf: (props) => props.iso_3166_2?.replace(/^FR-/, '') })
+  report.france = franceJoin.report
+}
+
+// Germany: geoBoundaries' finest level (ADM3, 428 units — kreisfreie Städte
+// + Landkreise, i.e. Germany's county-equivalent tier) is real but only
+// city-scale for the ~107 independent cities; every other town sits inside
+// a whole Landkreis (mean area 836 km² per the recon report) instead of its
+// own boundary. A direct is_in() check confirmed a real, comprehensive
+// finer tier exists in OSM: admin_level=8 (Gemeinde) resolves even a
+// non-independent town (Dachau, inside Landkreis Dachau) to its own real
+// municipal polygon, distinct from its enclosing Landkreis — the same
+// "geoBoundaries' offering is real but coarser than OSM's own next tier
+// down" shape as Peru's Provincias/Distritos. A nationwide admin_level=8
+// query for Germany (~10,795 real Gemeinden, per Destatis) timed out
+// repeatedly against this file's usual Overpass endpoint even for a bare
+// `out count` — confirmed genuinely too heavy in one shot, not a query
+// error — so this queries per-Bundesland instead (a real, fast, ~10s query
+// for Saarland's 52 Gemeinden confirmed the chunked approach works). Berlin,
+// Hamburg, and Bremen are German city-states whose Land IS their Gemeinde —
+// they have no separate admin_level=8 relation of their own (confirmed via
+// is_in() at both Vienna, in Austria, and Berlin: both resolve straight from
+// their level-2 country to their own level-4 Land/city boundary, skipping
+// municipality level entirely) — so each is fetched directly by name at
+// admin_level=4 instead of relying on the per-state admin_level=8 loop to
+// ever find them. Sharded by state via `iso_3166_2` (e.g. "DE-BB"), not
+// `postal` — Natural Earth's own `postal` field for Brandenburg is a real,
+// confirmed data bug (wrongly set to "BE," the same value Berlin's real
+// postal code uses) that would otherwise silently merge Brandenburg's
+// cities into Berlin's shard; see shardByState's own comment.
+if (!process.env.SKIP_OSM && shouldRun('276')) {
+  console.log('\n=== Germany ===')
+  const GERMAN_STATES = [
+    'Baden-Württemberg',
+    'Brandenburg',
+    'Hessen',
+    'Mecklenburg-Vorpommern',
+    'Niedersachsen',
+    'Nordrhein-Westfalen',
+    'Rheinland-Pfalz',
+    'Saarland',
+    'Sachsen',
+    'Sachsen-Anhalt',
+    'Schleswig-Holstein',
+    'Thüringen',
+  ]
+  // Bayern queried as its own 7 Regierungsbezirke (admin_level=5) instead of
+  // one admin_level=4 query for the whole state — its ~2,200 Gemeinden made
+  // it the one query in this loop that repeatedly hung (past both a 120s
+  // server-side Overpass timeout AND, before fetchOverpass grew its own
+  // 180s client-side abort above, past that too, with no response ever
+  // coming back for fetchWithRetry to retry against). Splitting into seven
+  // smaller requests is the same "break the query into chunks Overpass can
+  // actually finish" fix Germany's own per-state (rather than nationwide)
+  // structure already applies at the state level, just one level deeper for
+  // the one state large enough to still need it.
+  const BAVARIAN_REGIERUNGSBEZIRKE = ['Oberbayern', 'Niederbayern', 'Oberpfalz', 'Oberfranken', 'Mittelfranken', 'Unterfranken', 'Schwaben']
+  // overpass-api.de (this file's usual endpoint) went fully unreachable
+  // partway through this pass's first attempt — a real connect-timeout to
+  // both of its known IPs, not a query problem (9 of 13 states had already
+  // fetched successfully against it right before this). overpass.private.coffee
+  // confirmed healthy at the time, so Germany's queries are pinned there
+  // instead, the same per-country endpoint override Ireland/UK already
+  // needed for the identical reason.
+  const GERMANY_ENDPOINT = 'https://overpass.private.coffee/api/interpreter'
+  const germanyCandidates = []
+  // failedAreas + the try/catch below, added after the shared public Overpass
+  // mirror this pass depends on hit sustained congestion severe enough that
+  // Mecklenburg-Vorpommern's query failed 6 attempts in a row (a mix of 504s
+  // and this file's own 180s client-side abort) — a single-state failure
+  // used to crash the whole Germany block via fetchWithRetry's throw,
+  // discarding every other state already fetched in the same run (this
+  // happened twice; the first time cost all 9 states fetched before it).
+  // Report-don't-crash instead: log the area as a real gap and move on, the
+  // same discipline every other unmatched/rejected report in this file
+  // already follows, so a re-run only needs to target the actually-missing
+  // area (ONLY=276 reruns the whole country, but a real fix could re-fetch
+  // just the failed area's own Gemeinden and merge them in by hand). Attempts
+  // raised from the default 6 to 10 for Germany specifically, given how
+  // aggressively the shared server was rate-limiting/timing out this pass.
+  const failedAreas = []
+  // MIN_PLAUSIBLE_GEMEINDEN: a real, deliberately low floor (Saarland's own
+  // real 52 Gemeinden is the smallest of any area this loop queries) that
+  // exists purely to catch the OTHER real Overpass failure mode this project
+  // already logged once (BACKLOG.md's Fourteenth-pass entry: an HTTP 200,
+  // valid-JSON, silently-truncated `elements` array — no error for
+  // fetchWithRetry to catch at all). Hit for real during this pass:
+  // Brandenburg's first fetch came back as a "successful" 0-element response
+  // — confirmed a truncation, not real data, since Brandenburg genuinely has
+  // ~409-417 Gemeinden. Throwing here folds this failure mode into the same
+  // fetchWithRetry path every other error already goes through, rather than
+  // silently shipping a real German state with zero city coverage.
+  const MIN_PLAUSIBLE_GEMEINDEN = 10
+  const fetchGemeinden = async (areaName, areaAdminLevel) => {
+    try {
+      const raw = await fetchWithRetry(
+        async () => {
+          const result = await fetchOverpass(
+            `[out:json][timeout:120];
+area["name"="${areaName}"]["admin_level"="${areaAdminLevel}"]->.s;
+relation(area.s)["boundary"="administrative"]["admin_level"="8"];
+out geom;`,
+            GERMANY_ENDPOINT,
+          )
+          if (result.elements.length < MIN_PLAUSIBLE_GEMEINDEN) {
+            throw new Error(`implausibly few elements (${result.elements.length}) — likely a silently-truncated response, not real data`)
+          }
+          return result
+        },
+        10,
+      )
+      console.log(`  ${areaName}: ${raw.elements.length} Gemeinden`)
+      for (const rel of raw.elements) {
+        const { geometry } = relationToGeometry(rel)
+        germanyCandidates.push({ name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' })
+      }
+    } catch (err) {
+      console.log(`  [FAILED, all retries exhausted] ${areaName}: ${err.message} — real gap, logged not silently dropped`)
+      failedAreas.push(areaName)
+    }
+  }
+  for (const stateName of GERMAN_STATES) await fetchGemeinden(stateName, '4')
+  for (const bezirk of BAVARIAN_REGIERUNGSBEZIRKE) await fetchGemeinden(bezirk, '5')
+  try {
+    const cityStateRaw = await fetchWithRetry(
+      async () => {
+        const result = await fetchOverpass(
+          `[out:json][timeout:60];
+area["ISO3166-1"="DE"][admin_level=2]->.de;
+(relation(area.de)["boundary"="administrative"]["admin_level"="4"]["name"="Berlin"];
+relation(area.de)["boundary"="administrative"]["admin_level"="4"]["name"="Hamburg"];
+relation(area.de)["boundary"="administrative"]["admin_level"="4"]["name"="Bremen"];);
+out geom;`,
+          GERMANY_ENDPOINT,
+        )
+        // Exactly 3 expected (Berlin/Hamburg/Bremen) — same silent-truncation
+        // guard as fetchGemeinden's own MIN_PLAUSIBLE_GEMEINDEN, just with an
+        // exact rather than a floor check since this query's real answer is a
+        // fixed, known count.
+        if (result.elements.length !== 3) {
+          throw new Error(`expected exactly 3 city-state relations, got ${result.elements.length} — likely a silently-truncated response`)
+        }
+        return result
+      },
+      10,
+    )
+    console.log(`  +${cityStateRaw.elements.length} city-state candidates (expected 3: Berlin/Hamburg/Bremen)`)
+    for (const rel of cityStateRaw.elements) {
+      const { geometry } = relationToGeometry(rel)
+      germanyCandidates.push({ name: rel.tags.name, geometry, source: 'osm-admin4' })
+    }
+  } catch (err) {
+    console.log(`  [FAILED, all retries exhausted] city-states (Berlin/Hamburg/Bremen): ${err.message} — real gap, logged not silently dropped`)
+    failedAreas.push('city-states (Berlin/Hamburg/Bremen)')
+  }
+  const germanyCities = loadCityPoints('276')
+  const germanyJoin = joinCityPointsToPolygons('Germany', germanyCities, germanyCandidates)
+  shardByState('276', germanyJoin.kept, { adm0A3: 'DEU', abbrevOf: (props) => props.iso_3166_2?.replace(/^DE-/, '') })
+  report.germany = { ...germanyJoin.report, failedAreas }
+  if (failedAreas.length > 0) console.log(`  [warn] ${failedAreas.length} area(s) failed all retries and are MISSING from Germany's output: ${failedAreas.join(', ')} — see scripts/cityBoundariesReport.json`)
+}
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

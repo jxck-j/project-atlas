@@ -19,7 +19,12 @@
 // Jamaica, Saint Kitts and Nevis, Saint Lucia, Saint Vincent and the
 // Grenadines, Trinidad and Tobago, plus the 2026-09-13 Northern Europe pass:
 // Denmark, Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway,
-// Sweden, United Kingdom) — NOT the other 146 UN members yet. See
+// Sweden, United Kingdom, plus the 2026-09-16 Western Europe pass: Austria,
+// Belgium, France, Liechtenstein, Luxembourg, Monaco, Netherlands,
+// Switzerland — Germany's own fetch was still in progress against a badly
+// congested shared Overpass mirror when this was last regenerated; add its
+// addFromShardedDir('276') call once public/geo/city-boundaries/276/ exists)
+// — NOT the other 137 UN members (138 pending Germany) yet. See
 // that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
@@ -70,6 +75,13 @@ const BOUNDARY_COUNTRIES = [
   { id: '578', name: 'Norway' },
   { id: '752', name: 'Sweden' },
   { id: '826', name: 'United Kingdom' },
+  { id: '040', name: 'Austria' },
+  { id: '056', name: 'Belgium' },
+  { id: '438', name: 'Liechtenstein' },
+  { id: '442', name: 'Luxembourg' },
+  { id: '492', name: 'Monaco' },
+  { id: '528', name: 'Netherlands' },
+  { id: '756', name: 'Switzerland' },
 ]
 
 function addFromBoundaryFile(countryId) {
@@ -121,6 +133,7 @@ addFromShardedDir('484')
 addFromShardedDir('076')
 addFromShardedDir('604')
 addFromShardedDir('032')
+addFromShardedDir('250')
 
 const usIndex = JSON.parse(fs.readFileSync('public/geo/us-cities-index.json', 'utf8'))
 for (const e of usIndex) {
@@ -142,5 +155,5 @@ const perCountryCounts = BOUNDARY_COUNTRIES.map(
   (c) => `${c.name} ${entries.filter((e) => e.countryId === c.id).length}`,
 ).join(', ')
 console.log(
-  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
+  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
 )
