@@ -1025,6 +1025,28 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   simultaneously their own top-level unit" structure (Austria's statutory cities were checked and found NOT
   to have this problem — geoBoundaries' own ADM3 download already includes Vienna, Graz, Linz, etc. as
   ordinary features, unlike Germany's raw OSM tagging split).
+- ~~Serbia's first join rejected 44 of 492 points, all matched to a single 3235.7 km² "Belgrade" polygon~~ —
+  **fixed** (found and fixed 2026-09-17, `city-boundaries-architecture.md`'s "Sixteenth pass"). Root cause:
+  the City of Belgrade's own geoBoundaries ADM2 unit spans the whole metro region (rural exurbs like
+  Mladenovac and Barajevo included), so every one of Belgrade's own inner boroughs (Vračar, Zvezdara,
+  Palilula, Stari Grad, ...) and outer settlements landed inside it rather than their own smaller unit. Fixed
+  with a supplemental OSM `admin_level=9` layer scoped to just Belgrade's own `admin_level=7` area (166
+  real, correctly-named features) via `extraOsm`, the same smallest-containing-polygon-wins pattern
+  Panama/Canada/Venezuela/UK's own `extraOsm` blocks already established. Re-run: 492/492 kept, 0 rejected, 0
+  unmatched. Worth remembering for any future capital whose own administrative unit is unusually large
+  relative to its built-up area, the same shape as Germany's kreisfreie Städte finding above and London's
+  multi-borough gap below, but the opposite fix direction (a real finer OSM layer existed here, unlike
+  London's structural gap).
+- **Montenegro's join rejected 4 small villages (Zagrad, Miločani, Kuta, Dučice — all under 1,000
+  population), matched to Nikšić Municipality's 2019 km² polygon, just over the 2000 km² `SOFT_MAX_SQKM`
+  ceiling** (found 2026-09-17, "Sixteenth pass"). Montenegro's geoBoundaries ADM1 is the finest level
+  available (confirmed, no ADM2 exists) — unlike Serbia's Belgrade finding above, there's no finer real
+  layer to supplement with, so this is a genuine large-rural-municipality residual, the same shape as
+  Jordan's desert sub-districts. Single-country residual, logged rather than chased further.
+- **Greece left 2 of 1,986 points unmatched (Kyparissía, Kalamákion)** (found 2026-09-17, "Sixteenth pass") —
+  in line with every prior pass's small residual tail (Honduras 5, Finland's Raisio above, Sweden 9, United
+  Kingdom 2), not investigated further since nothing about a 2-town residual out of 1,986 suggested a
+  systemic wrong-level issue the way Germany's 263-major-cities pattern did.
 
 ## Visualization
 

@@ -12,7 +12,10 @@
 // Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway, Sweden,
 // United Kingdom, plus the 2026-09-16 Western Europe pass: Austria, Belgium,
 // France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands,
-// Switzerland) — NOT the other 137 UN members yet. See that doc's "Fifth pass" section
+// Switzerland, plus the 2026-09-17 Southern Europe pass: Albania, Andorra,
+// Bosnia and Herzegovina, Croatia, Greece, Italy, Malta, Montenegro, North
+// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain) — NOT the other
+// 123 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -1548,6 +1551,114 @@ out geom;`,
   report.germany = { ...germanyJoin.report, failedAreas }
   if (failedAreas.length > 0) console.log(`  [warn] ${failedAreas.length} area(s) failed all retries and are MISSING from Germany's output: ${failedAreas.join(', ')} — see scripts/cityBoundariesReport.json`)
 }
+
+// --- Sixteenth pass (2026-09-17): Southern Europe (Albania, Andorra, Bosnia
+// and Herzegovina, Croatia, Greece, Italy, Malta, Montenegro, North
+// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain) — the third
+// Europe batch. Same discipline as every prior pass: every candidate level's
+// real per-feature names checked directly against a live geoBoundaries
+// download, not trusted from recon or canonicalName alone — several of these
+// had a blank/garbage canonicalName in scripts/cityAdminLevelsReport.json
+// (Bosnia's literally read "gbOpen") but resolved to real, correctly-scaled
+// municipality names on inspection anyway. Twelve straightforward
+// confirmations, all a plain single-source geoBoundaries join with no OSM
+// supplement needed: Albania's pre-2015 communes (ADM3, 373 — finer than the
+// current 61 post-reform bashki, which is the right direction for
+// city-scale matching, the same reasoning Portugal's freguesia-over-
+// municipality choice below already established), Andorra's parishes (ADM1,
+// 7 — Sant Julia de Loria/Canillo/Ordino/... all 7 real names present),
+// Bosnia and Herzegovina's opštine/Brčko District (ADM3, 142 — Mostar,
+// Goražde, Brcko District all real and correctly named despite the garbage
+// canonicalName), Croatia's općine/gradovi (ADM2, 560 — "Općina Kapela" etc,
+// includes small island units like "Otok Ilovik"), Greece's dimoi (ADM3,
+// 326 post-Kallikratis municipalities), Malta's local councils (ADM1, 68),
+// Montenegro's municipalities (ADM1, 23), North Macedonia's opštini (ADM2,
+// 84), San Marino's castelli (ADM1, 9 — all 9 real names present), Serbia's
+// opštine/gradovi (ADM2, 145, Kosovo correctly excluded since this dataset
+// only covers Serbia-proper), and Slovenia's municipalities (ADM2, 213).
+//
+// Portugal is the one name-collision trap worth flagging explicitly: its
+// ADM3 freguesias (2905) include many real, differently-located parishes
+// sharing the same name (multiple "Pinheiro"s were the first red flag on
+// inspection) — harmless here specifically because joinCityPointsToPolygons
+// matches by real point-in-polygon containment, never by name (name is only
+// ever a tie-break for the >2km snap fallback), so duplicate parish names
+// across different municipalities can't cross-match each other.
+//
+// Italy (ADM4 comuni, 7901 — matches the real ~7900 comuni count) and Spain
+// (ADM3 municipios, 8205 — matches the real ~8131 count, source vintage
+// accounts for the small drift) both needed shardByState() rather than a
+// flat file, the same "check the actual output file size" discipline as
+// Mexico/Brazil/France/Germany before them: Italy joins ~11,855 GeoNames
+// points and Spain ~7,400. Italy shards cleanly on Natural Earth's own
+// `postal` field (110 provinces, no blanks, no collisions). Spain's own
+// `postal` field collides the same way Germany's did (Ceuta and Melilla
+// both read "CE"; every mainland province's `postal` is actually its
+// autonomous-community code, e.g. every Basque province reads "PV", not a
+// per-province code) — `iso_3166_2` has zero collisions across all 52
+// Spanish provinces and is used instead, the same fix France/Germany's own
+// blocks already needed for an unrelated reason.
+if (shouldRun('008')) report.albania = await runGeoBoundariesCountry({ name: 'Albania', numericId: '008', alpha3: 'ALB', admLevel: 'ADM3' })
+if (shouldRun('020')) report.andorra = await runGeoBoundariesCountry({ name: 'Andorra', numericId: '020', alpha3: 'AND', admLevel: 'ADM1' })
+if (shouldRun('070')) report.bosniaAndHerzegovina = await runGeoBoundariesCountry({ name: 'Bosnia and Herzegovina', numericId: '070', alpha3: 'BIH', admLevel: 'ADM3' })
+if (shouldRun('191')) report.croatia = await runGeoBoundariesCountry({ name: 'Croatia', numericId: '191', alpha3: 'HRV', admLevel: 'ADM2' })
+if (shouldRun('300')) report.greece = await runGeoBoundariesCountry({ name: 'Greece', numericId: '300', alpha3: 'GRC', admLevel: 'ADM3' })
+if (shouldRun('470')) report.malta = await runGeoBoundariesCountry({ name: 'Malta', numericId: '470', alpha3: 'MLT', admLevel: 'ADM1' })
+if (shouldRun('499')) report.montenegro = await runGeoBoundariesCountry({ name: 'Montenegro', numericId: '499', alpha3: 'MNE', admLevel: 'ADM1' })
+if (shouldRun('807')) report.northMacedonia = await runGeoBoundariesCountry({ name: 'North Macedonia', numericId: '807', alpha3: 'MKD', admLevel: 'ADM2' })
+if (shouldRun('674')) report.sanMarino = await runGeoBoundariesCountry({ name: 'San Marino', numericId: '674', alpha3: 'SMR', admLevel: 'ADM1' })
+// Serbia's first run (geoBoundaries ADM2 alone) rejected 44/492 points, all
+// matched to the single "Belgrade" polygon (3235.7 km² — the City of
+// Belgrade's own ADM2 unit spans the whole metro region including rural
+// exurbs like Mladenovac and Barajevo, not just the built-up city). Every
+// rejected name (Vračar, Zvezdara, Palilula, Savski Venac, Stari Grad,
+// Čukarica, Voždovac, Rakovica, Grocka, Barajevo, Sopot, Mladenovac, ...) is
+// a real Belgrade inner borough or outer settlement — confirmed directly via
+// a live Overpass query scoped to Belgrade's own admin_level=7 area, which
+// returned a real, correctly-named admin_level=9 settlement/borough layer
+// (166 features, e.g. the inner boroughs tagged "Београд (Врачар)" etc.) that
+// resolves the whole rejected list. Added as a supplemental smallest-
+// containing-polygon-wins source, same pattern as Panama/Canada/Venezuela/UK's
+// own extraOsm above, scoped to just Belgrade's own area rather than a
+// nationwide admin_level=9 fetch (thousands of naselja Serbia-wide) since
+// every other Serbian city's own ADM2 "City"/"Municipality" unit already
+// joined cleanly with 0 rejections. Pinned to the private.coffee mirror —
+// overpass-api.de returned a real "server busy" timeout on this query during
+// recon, unrelated to the query itself (retried and got a clean response
+// from private.coffee).
+if (shouldRun('688'))
+  report.serbia = await runGeoBoundariesCountry({
+    name: 'Serbia',
+    numericId: '688',
+    alpha3: 'SRB',
+    admLevel: 'ADM2',
+    extraOsm: {
+      query: `[out:json][timeout:180];
+area["boundary"="administrative"]["admin_level"="7"]["name"="Град Београд"]->.a;
+relation(area.a)["boundary"="administrative"]["admin_level"="9"];
+out geom;`,
+      sourceLabel: 'osm-admin9-belgrade',
+      endpoint: 'https://overpass.private.coffee/api/interpreter',
+    },
+  })
+if (shouldRun('705')) report.slovenia = await runGeoBoundariesCountry({ name: 'Slovenia', numericId: '705', alpha3: 'SVN', admLevel: 'ADM2' })
+if (shouldRun('620')) report.portugal = await runGeoBoundariesCountry({ name: 'Portugal', numericId: '620', alpha3: 'PRT', admLevel: 'ADM3' })
+if (shouldRun('380'))
+  report.italy = await runGeoBoundariesCountry({
+    name: 'Italy',
+    numericId: '380',
+    alpha3: 'ITA',
+    admLevel: 'ADM4',
+    onOutput: (kept) => shardByState('380', kept, { adm0A3: 'ITA', abbrevField: 'postal' }),
+  })
+if (shouldRun('724'))
+  report.spain = await runGeoBoundariesCountry({
+    name: 'Spain',
+    numericId: '724',
+    alpha3: 'ESP',
+    admLevel: 'ADM3',
+    onOutput: (kept) => shardByState('724', kept, { adm0A3: 'ESP', abbrevOf: (props) => props.iso_3166_2?.replace(/^ES-/, '') }),
+  })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

@@ -1322,6 +1322,85 @@ renders its real boundary.
 0 unmatched), 36,763 combined GeoNames points across the pass. 56 of 193 UN members now have real
 city-boundary data; 137 remain.
 
+### Sixteenth pass: Southern Europe (2026-09-17) — the third Europe batch, 14 countries, and a real Belgrade-scale finding
+
+Albania, Andorra, Bosnia and Herzegovina, Croatia, Greece, Italy, Malta, Montenegro, North Macedonia,
+Portugal, San Marino, Serbia, Slovenia, Spain — the largest single-pass country count yet, chosen as the next
+contiguous region per the standing discipline (Southern Europe over a first Africa/Asia/Oceania batch, since
+the recon report already had level candidates ready for the whole region).
+
+Same investigate-before-trusting discipline as every prior pass: every candidate level's real per-feature
+names checked directly against a live geoBoundaries download, not trusted from
+`scripts/cityAdminLevelsReport.json`'s own recon or `canonicalName` alone — several of these had a blank or
+garbage `canonicalName` (Bosnia and Herzegovina's literally read `"gbOpen"`, Albania/Italy/Montenegro/San
+Marino/Serbia/Slovenia all read `"Unknown"`) but every one resolved to real, correctly-scaled municipality
+names on inspection. Twelve of the fourteen were a single straightforward geoBoundaries join with no OSM
+supplement needed at all: Albania's pre-2015 communes (ADM3, 373 — a real, deliberate choice of the *finer*
+pre-reform tier over the current 61 post-reform bashki, the same reasoning Portugal's freguesia-over-
+municipality choice below already established for city-scale matching), Andorra's parishes (ADM1, 7 — all 7
+real names present), Bosnia and Herzegovina's opštine/Brčko District (ADM3, 142 — Mostar, Goražde, Brcko
+District all real and correctly named despite the garbage canonicalName), Croatia's općine/gradovi (ADM2,
+560, including small island units like "Otok Ilovik"), Greece's post-Kallikratis dimoi (ADM3, 326), Malta's
+local councils (ADM1, 68), Montenegro's municipalities (ADM1, 23), North Macedonia's opštini (ADM2, 84), San
+Marino's castelli (ADM1, 9 — all 9 real names present), Slovenia's municipalities (ADM2, 213), and Portugal's
+freguesias (ADM3, 2905).
+
+**Portugal is the one real name-collision trap worth flagging explicitly, even though it needed no code
+change**: its 2905 freguesias include many real, differently-located parishes sharing the same name (multiple
+distinct "Pinheiro" parishes were the first thing noticed on inspection, in different municipalities
+entirely). This is harmless specifically because `joinCityPointsToPolygons` matches by real point-in-polygon
+containment, never by name — name is only ever a tie-break for the `SNAP_MAX_KM` fallback — so duplicate
+parish names across different municipalities can't cross-match each other. Worth remembering for any future
+country with a similarly fine, duplicate-name-prone civil-parish-level tier.
+
+**Italy (ADM4 comuni, 7901 features — matches the real ~7900 comuni count) and Spain (ADM3 municipios, 8205
+— matches the real ~8131 count, source-vintage drift accounts for the difference) both needed
+`shardByState()`** rather than a flat file, the same "check the actual output file size" discipline as
+Mexico/Brazil/France/Germany before them — Italy joins ~11,855 GeoNames points, Spain ~7,400. Italy shards
+cleanly on Natural Earth's own `postal` field (110 provinces, no blanks, no collisions). **Spain's own
+`postal` field collides the same way Germany's Brandenburg/Berlin bug did** — Ceuta and Melilla both read
+`"CE"`, and every mainland province's `postal` value turned out to actually be its *autonomous community's*
+code, not a per-province one (every Basque province reads `"PV"`, not a distinct code per province) — caught
+by checking the raw vendor file directly rather than assuming `postal` behaves the same way in every country.
+`iso_3166_2` has zero collisions across all 52 Spanish provinces and was used instead, the same fix
+France/Germany's own blocks needed for an unrelated reason. Both joined with **0 rejected, 0 unmatched**
+(Italy: 3 snapped; Spain: 3 snapped).
+
+**Serbia needed a real supplemental-source fix, the same shape as Panama/Canada/Venezuela/UK's own `extraOsm`
+above.** Its first run (geoBoundaries ADM2 alone, 145 opštine/gradovi) rejected 44 of 492 points, all matched
+to a single "Belgrade" polygon (3235.7 km² — the City of Belgrade's own ADM2 unit spans the whole metro
+region, rural exurbs like Mladenovac and Barajevo included, not just the built-up city). Every rejected name
+(Vračar, Zvezdara, Palilula, Savski Venac, Stari Grad, Čukarica, Voždovac, Rakovica, Grocka, Barajevo, Sopot,
+Mladenovac, ...) turned out to be a real Belgrade inner borough or outer settlement — confirmed directly via a
+live Overpass query scoped to Belgrade's own `admin_level=7` area (`area[...][name="Град Београд"]`), which
+returned a real, correctly-named `admin_level=9` settlement/borough layer (166 features — the inner boroughs
+tagged e.g. `"Београд (Врачар)"`) that resolves the entire rejected list. Added as a supplemental
+smallest-containing-polygon-wins source scoped to just Belgrade's own area, not a nationwide `admin_level=9`
+fetch (Serbia has thousands of naselja countrywide, and every other Serbian city's own ADM2 unit already
+joined with 0 rejections — no reason to pay for a much heavier fetch to fix one city). `overpass-api.de`
+504'd/timed-out three times in a row on this specific query during the actual build run (unrelated to the
+query itself — a plain recon check against it minutes earlier also hit a "server busy" response, while
+`overpass.private.coffee` answered immediately) — pinned to the private.coffee mirror the same way the
+Fourteenth pass's Ireland query was. Re-run: **492/492 kept, 0 rejected, 0 unmatched.**
+
+**Two small, genuinely structural residuals, neither chased further**: Montenegro rejected 4 small villages
+(Zagrad, Miločani, Kuta, Dučice — all population under 1,000) matched to Nikšić Municipality's 2019 km²
+polygon, just over the 2000 km² `SOFT_MAX_SQKM` ceiling — Montenegro's ADM1 is geoBoundaries' finest available
+level (confirmed, no ADM2 exists), so unlike Serbia's Belgrade case there's no finer real layer to supplement
+with; this is the same "large rural municipality, small low-population village" shape as Jordan's desert
+sub-districts, not a data gap. Greece left 2 points unmatched (Kyparissía, Kalamákion) out of 1,986 — in line
+with every prior pass's small residual tail (Honduras 5, Sweden 9, United Kingdom 2, ...), not chased since
+nothing about 2-out-of-1986 suggested a systemic wrong-level issue the way Germany's 263-major-cities pattern
+did.
+
+**Final status: all 14 Southern Europe countries are done and committed** — 25,834 combined GeoNames points
+across the pass, all but 6 kept (2 Greece unmatched, 4 Montenegro rejected). 70 of 193 UN members now have
+real city-boundary data; 123 remain. Southern and Eastern Europe together were the last un-picked slice of
+Europe per this file's own "next logical scope" note — Eastern Europe (Belarus, Bulgaria, Czechia, Hungary,
+Moldova, Poland, Romania, Russia, Slovakia, Ukraine) is the natural next Europe batch, though Russia's own
+scale/transcontinental extent likely warrants its own dedicated investigation rather than folding into a
+routine regional batch the way this pass did.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1338,13 +1417,14 @@ city-boundary data; 137 remain.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 56 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 70 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
    Tenth pass for all 12 South American UN members + the Guyana/Peru/Argentina/Uruguay
-   OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag, and the
-   Thirteenth pass for all 13 UN Caribbean members + the general snap-to-nearest join fallback).
+   OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag, the
+   Thirteenth pass for all 13 UN Caribbean members + the general snap-to-nearest join fallback, and
+   the Sixteenth pass for all 14 Southern Europe UN members + the Serbia/Belgrade `extraOsm` fix).
    Real per-feature join for Jordan/Argentina (OSM `admin_level` 6 / 5|7|8), Guyana/Peru/Uruguay (OSM
    `admin_level` 6 / 8 / 8), Trinidad and Tobago (OSM `admin_level` 4), Kuwait/Costa Rica (OSM, switched off
    geoBoundaries entirely — see their own entries), El Salvador/Guatemala/Honduras/Nicaragua/Canada/Mexico/
@@ -1362,13 +1442,17 @@ city-boundary data; 137 remain.
    arrondissement-municipal fragments dropped and replaced by 3 targeted OSM whole-city polygons), and Germany
    (OSM `admin_level` 6|8 per-Bundesland/Regierungsbezirke — 6 needed alongside 8 specifically to catch
    kreisfreie Städte, missed entirely by an `8`-only first attempt — see the Fifteenth pass for all of Western
-   Europe's findings) against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s
+   Europe's findings), and Albania/Andorra/Bosnia and Herzegovina/Croatia/Greece/Italy/Malta/Montenegro/North
+   Macedonia/Portugal/San Marino/Slovenia/Spain (geoBoundaries, each level independently verified; Italy and
+   Spain both sharded by state — see the Sixteenth pass) and Serbia (geoBoundaries plus a supplemental OSM
+   `admin_level=9` layer scoped to Belgrade's own area — see the Sixteenth pass) against the already-shipped
+   GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
-   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, and Germany all sharded by
-   state/province/department — see `shardByState()`).
-   **Not done: the other 137 countries** — each needs the same
-   investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth pass) before
-   its own join can run, not a blind batch extension of this script.
+   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, and Spain all
+   sharded by state/province/department — see `shardByState()`).
+   **Not done: the other 123 countries** — each needs the same
+   investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth pass)
+   before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
@@ -1460,9 +1544,9 @@ city-boundary data; 137 remain.
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 56 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
-  Thirteenth/Fourteenth/Fifteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 137 countries (once each has its own verified
+  scoped to the 70 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
+  Thirteenth/Fourteenth/Fifteenth/Sixteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 123 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

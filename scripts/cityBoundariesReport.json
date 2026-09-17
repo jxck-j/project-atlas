@@ -42167,5 +42167,820 @@
       }
     ],
     "failedAreas": []
+  },
+  "albania": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "andorra": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Pas de la Casa",
+        "population": 2996,
+        "matchedTo": "Encamp",
+        "snapDistanceKm": 0.05
+      }
+    ]
+  },
+  "bosniaAndHerzegovina": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "croatia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Vranjic",
+        "population": 1064,
+        "matchedTo": "Grad Solin",
+        "snapDistanceKm": 0.152
+      },
+      {
+        "name": "Novigrad",
+        "population": 2292,
+        "matchedTo": "Grad Novigrad",
+        "snapDistanceKm": 0.02
+      },
+      {
+        "name": "Kaštel Stari",
+        "population": 6950,
+        "matchedTo": "Grad Kaštela",
+        "snapDistanceKm": 0.125
+      },
+      {
+        "name": "Liberpolis",
+        "population": 63,
+        "matchedTo": "Općina Kneževi Vinogradi",
+        "snapDistanceKm": 0.872
+      }
+    ]
+  },
+  "greece": {
+    "unmatched": [
+      {
+        "name": "Kyparissía",
+        "population": 5033,
+        "lat": 37.25111,
+        "lng": 21.67361
+      },
+      {
+        "name": "Kalamákion",
+        "population": 1226,
+        "lat": 37.74174,
+        "lng": 20.90286
+      }
+    ],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Vareiá",
+        "population": 1133,
+        "matchedTo": "Lesbos",
+        "snapDistanceKm": 1.093
+      },
+      {
+        "name": "Vári",
+        "population": 1266,
+        "matchedTo": "Syros",
+        "snapDistanceKm": 0.624
+      },
+      {
+        "name": "Trypití",
+        "population": 766,
+        "matchedTo": "Milos",
+        "snapDistanceKm": 0.212
+      },
+      {
+        "name": "Ialysós",
+        "population": 12717,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.173
+      },
+      {
+        "name": "Stoúpa",
+        "population": 600,
+        "matchedTo": "West Mani",
+        "snapDistanceKm": 1.131
+      },
+      {
+        "name": "Stómio",
+        "population": 649,
+        "matchedTo": "Agia",
+        "snapDistanceKm": 1.609
+      },
+      {
+        "name": "Stalís",
+        "population": 1092,
+        "matchedTo": "Hersonissos",
+        "snapDistanceKm": 0.618
+      },
+      {
+        "name": "Schísma Eloúndas",
+        "population": 1730,
+        "matchedTo": "Agios Nikolaos",
+        "snapDistanceKm": 0.457
+      },
+      {
+        "name": "Skála",
+        "population": 1747,
+        "matchedTo": "Patmos",
+        "snapDistanceKm": 0.059
+      },
+      {
+        "name": "Sísion",
+        "population": 1003,
+        "matchedTo": "Agios Nikolaos",
+        "snapDistanceKm": 0.596
+      },
+      {
+        "name": "Sými",
+        "population": 2354,
+        "matchedTo": "Symi",
+        "snapDistanceKm": 0.405
+      },
+      {
+        "name": "Roviés",
+        "population": 1206,
+        "matchedTo": "Mantoudi-Limni-Agia Anna",
+        "snapDistanceKm": 0.486
+      },
+      {
+        "name": "Pérama",
+        "population": 726,
+        "matchedTo": "Lesbos",
+        "snapDistanceKm": 0.608
+      },
+      {
+        "name": "Parálio Ástros",
+        "population": 1059,
+        "matchedTo": "North Kynouria",
+        "snapDistanceKm": 1.533
+      },
+      {
+        "name": "Paradeísi",
+        "population": 2623,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.665
+      },
+      {
+        "name": "Psará",
+        "population": 454,
+        "matchedTo": "Psara",
+        "snapDistanceKm": 0.48
+      },
+      {
+        "name": "Palaiá Epídavros",
+        "population": 1713,
+        "matchedTo": "Epidaurus",
+        "snapDistanceKm": 0.07
+      },
+      {
+        "name": "Pacheía Ámmos",
+        "population": 827,
+        "matchedTo": "Ierapetra",
+        "snapDistanceKm": 0.333
+      },
+      {
+        "name": "Páchi",
+        "population": 542,
+        "matchedTo": "Megara",
+        "snapDistanceKm": 0.601
+      },
+      {
+        "name": "Órmos Korthíou",
+        "population": 903,
+        "matchedTo": "Andros",
+        "snapDistanceKm": 0.215
+      },
+      {
+        "name": "Oreoí",
+        "population": 2827,
+        "matchedTo": "Istiaia-Aidipsos",
+        "snapDistanceKm": 0.563
+      },
+      {
+        "name": "Oinoússes",
+        "population": 792,
+        "matchedTo": "Oinousses",
+        "snapDistanceKm": 0.122
+      },
+      {
+        "name": "Néa Stíra",
+        "population": 1031,
+        "matchedTo": "Karystos",
+        "snapDistanceKm": 0.307
+      },
+      {
+        "name": "Moúdhros",
+        "population": 3398,
+        "matchedTo": "Lemnos",
+        "snapDistanceKm": 0.088
+      },
+      {
+        "name": "Mytilene",
+        "population": 28322,
+        "matchedTo": "Lesbos",
+        "snapDistanceKm": 0.343
+      },
+      {
+        "name": "Mýtikas",
+        "population": 759,
+        "matchedTo": "Xiromero",
+        "snapDistanceKm": 0.361
+      },
+      {
+        "name": "Míthymna",
+        "population": 1933,
+        "matchedTo": "Lesbos",
+        "snapDistanceKm": 1.008
+      },
+      {
+        "name": "Mýloi",
+        "population": 610,
+        "matchedTo": "Argos-Mykines",
+        "snapDistanceKm": 1.034
+      },
+      {
+        "name": "Mikrón Vathí",
+        "population": 576,
+        "matchedTo": "Chalcis",
+        "snapDistanceKm": 0.195
+      },
+      {
+        "name": "Mikrá Mantíneia",
+        "population": 615,
+        "matchedTo": "Kalamata",
+        "snapDistanceKm": 0.075
+      },
+      {
+        "name": "Megísti",
+        "population": 0,
+        "matchedTo": "Kastellorizo",
+        "snapDistanceKm": 0.229
+      },
+      {
+        "name": "Methóni",
+        "population": 2157,
+        "matchedTo": "Pylos-Nestoras",
+        "snapDistanceKm": 0.182
+      },
+      {
+        "name": "Méthana",
+        "population": 892,
+        "matchedTo": "Troizinia-Methana",
+        "snapDistanceKm": 0.509
+      },
+      {
+        "name": "Marmárion",
+        "population": 1972,
+        "matchedTo": "Karystos",
+        "snapDistanceKm": 0.227
+      },
+      {
+        "name": "Marathópolis",
+        "population": 877,
+        "matchedTo": "Trifylia",
+        "snapDistanceKm": 1.737
+      },
+      {
+        "name": "Loutrá Aidhipsoú",
+        "population": 2560,
+        "matchedTo": "Istiaia-Aidipsos",
+        "snapDistanceKm": 0.914
+      },
+      {
+        "name": "Leipsoí",
+        "population": 0,
+        "matchedTo": "Leipsoi",
+        "snapDistanceKm": 0.366
+      },
+      {
+        "name": "Limín Khersonísou",
+        "population": 2968,
+        "matchedTo": "Hersonissos",
+        "snapDistanceKm": 0.865
+      },
+      {
+        "name": "Lávrio",
+        "population": 7078,
+        "matchedTo": "Lavreotiki",
+        "snapDistanceKm": 0.158
+      },
+      {
+        "name": "Koróni",
+        "population": 3600,
+        "matchedTo": "Pylos-Nestoras",
+        "snapDistanceKm": 0.272
+      },
+      {
+        "name": "Kokkíni Cháni",
+        "population": 1755,
+        "matchedTo": "Hersonissos",
+        "snapDistanceKm": 0.531
+      },
+      {
+        "name": "Kokkári",
+        "population": 933,
+        "matchedTo": "Samos",
+        "snapDistanceKm": 1.052
+      },
+      {
+        "name": "Kivéri",
+        "population": 960,
+        "matchedTo": "North Kynouria",
+        "snapDistanceKm": 0.964
+      },
+      {
+        "name": "Kírra",
+        "population": 1392,
+        "matchedTo": "Delphi",
+        "snapDistanceKm": 0.49
+      },
+      {
+        "name": "Kímolos",
+        "population": 837,
+        "matchedTo": "Kimolos",
+        "snapDistanceKm": 0.191
+      },
+      {
+        "name": "Chóra Sfakíon",
+        "population": 243,
+        "matchedTo": "Sfakia",
+        "snapDistanceKm": 0.025
+      },
+      {
+        "name": "Khalkoútsion",
+        "population": 2094,
+        "matchedTo": "Oropos",
+        "snapDistanceKm": 0.265
+      },
+      {
+        "name": "Chalkída",
+        "population": 59125,
+        "matchedTo": "Chalcis",
+        "snapDistanceKm": 0.349
+      },
+      {
+        "name": "Chálki",
+        "population": 0,
+        "matchedTo": "Halki",
+        "snapDistanceKm": 0.353
+      },
+      {
+        "name": "Katákolo",
+        "population": 594,
+        "matchedTo": "Pyrgos",
+        "snapDistanceKm": 0.452
+      },
+      {
+        "name": "Karpathos",
+        "population": 7790,
+        "matchedTo": "Karpathos",
+        "snapDistanceKm": 0.492
+      },
+      {
+        "name": "Kárystos",
+        "population": 5091,
+        "matchedTo": "Karystos",
+        "snapDistanceKm": 0.016
+      },
+      {
+        "name": "Kardamýli",
+        "population": 300,
+        "matchedTo": "West Mani",
+        "snapDistanceKm": 0.839
+      },
+      {
+        "name": "Kardámaina",
+        "population": 2132,
+        "matchedTo": "Kos",
+        "snapDistanceKm": 0.539
+      },
+      {
+        "name": "Kalón Nerón",
+        "population": 559,
+        "matchedTo": "Trifylia",
+        "snapDistanceKm": 0.043
+      },
+      {
+        "name": "Kalavárda",
+        "population": 514,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.106
+      },
+      {
+        "name": "Itháki",
+        "population": 1843,
+        "matchedTo": "Ithaca",
+        "snapDistanceKm": 0.285
+      },
+      {
+        "name": "Itéa",
+        "population": 6050,
+        "matchedTo": "Delphi",
+        "snapDistanceKm": 0.412
+      },
+      {
+        "name": "Goúrnes",
+        "population": 1628,
+        "matchedTo": "Hersonissos",
+        "snapDistanceKm": 0.288
+      },
+      {
+        "name": "Gávrio",
+        "population": 810,
+        "matchedTo": "Andros",
+        "snapDistanceKm": 0.133
+      },
+      {
+        "name": "Foinikoúnta",
+        "population": 573,
+        "matchedTo": "Pylos-Nestoras",
+        "snapDistanceKm": 1.193
+      },
+      {
+        "name": "Ermoúpolis",
+        "population": 11351,
+        "matchedTo": "Syros",
+        "snapDistanceKm": 0.929
+      },
+      {
+        "name": "Ermióni",
+        "population": 3936,
+        "matchedTo": "Ermionida",
+        "snapDistanceKm": 0.137
+      },
+      {
+        "name": "Erateiní",
+        "population": 757,
+        "matchedTo": "Dorida",
+        "snapDistanceKm": 0.031
+      },
+      {
+        "name": "Emporeiós",
+        "population": 3704,
+        "matchedTo": "Chios",
+        "snapDistanceKm": 0.683
+      },
+      {
+        "name": "Eloúnda",
+        "population": 2193,
+        "matchedTo": "Agios Nikolaos",
+        "snapDistanceKm": 0.803
+      },
+      {
+        "name": "Elafónisos",
+        "population": 745,
+        "matchedTo": "Elafonisos",
+        "snapDistanceKm": 1.057
+      },
+      {
+        "name": "Drépanon",
+        "population": 1272,
+        "matchedTo": "Nafplio",
+        "snapDistanceKm": 0.619
+      },
+      {
+        "name": "Ágios Nikólaos",
+        "population": 11421,
+        "matchedTo": "Agios Nikolaos",
+        "snapDistanceKm": 0.373
+      },
+      {
+        "name": "Ágioi Theódoroi",
+        "population": 4934,
+        "matchedTo": "Loutraki-Agioi Theodoroi",
+        "snapDistanceKm": 0.101
+      },
+      {
+        "name": "Avía",
+        "population": 1915,
+        "matchedTo": "West Mani",
+        "snapDistanceKm": 0.112
+      },
+      {
+        "name": "Artemísio",
+        "population": 3410,
+        "matchedTo": "Istiaia-Aidipsos",
+        "snapDistanceKm": 0.165
+      },
+      {
+        "name": "Anthíli",
+        "population": 1693,
+        "matchedTo": "Lamia",
+        "snapDistanceKm": 0.278
+      },
+      {
+        "name": "Áno Sýros",
+        "population": 1138,
+        "matchedTo": "Syros",
+        "snapDistanceKm": 0.386
+      },
+      {
+        "name": "Antirrio",
+        "population": 2603,
+        "matchedTo": "Nafpaktia",
+        "snapDistanceKm": 0.873
+      },
+      {
+        "name": "Antíparos",
+        "population": 0,
+        "matchedTo": "Antiparos",
+        "snapDistanceKm": 0.318
+      },
+      {
+        "name": "Aegina",
+        "population": 6867,
+        "matchedTo": "Aegina",
+        "snapDistanceKm": 0.114
+      },
+      {
+        "name": "Aitolikó",
+        "population": 6215,
+        "matchedTo": "Missolonghi",
+        "snapDistanceKm": 0.337
+      },
+      {
+        "name": "Aidipsós",
+        "population": 1249,
+        "matchedTo": "Istiaia-Aidipsos",
+        "snapDistanceKm": 0.097
+      },
+      {
+        "name": "Adámas",
+        "population": 1268,
+        "matchedTo": "Milos",
+        "snapDistanceKm": 0.714
+      },
+      {
+        "name": "Kremastí",
+        "population": 4700,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.344
+      },
+      {
+        "name": "Líndos",
+        "population": 4496,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.064
+      },
+      {
+        "name": "Stavrós",
+        "population": 3672,
+        "matchedTo": "Volvi",
+        "snapDistanceKm": 0.392
+      },
+      {
+        "name": "Leptokaryá",
+        "population": 3612,
+        "matchedTo": "Dion-Olympus",
+        "snapDistanceKm": 1.951
+      },
+      {
+        "name": "Paralía",
+        "population": 6228,
+        "matchedTo": "Katerini",
+        "snapDistanceKm": 1.062
+      },
+      {
+        "name": "Néa Róda",
+        "population": 1192,
+        "matchedTo": "Aristotelis",
+        "snapDistanceKm": 0.507
+      },
+      {
+        "name": "Néa Iraklítsa",
+        "population": 1560,
+        "matchedTo": "Pangeou",
+        "snapDistanceKm": 0.159
+      },
+      {
+        "name": "Makrýgialos",
+        "population": 1495,
+        "matchedTo": "Pydna - Kolindros",
+        "snapDistanceKm": 0.423
+      },
+      {
+        "name": "Kamariótissa",
+        "population": 1022,
+        "matchedTo": "Samothrakis",
+        "snapDistanceKm": 0.83
+      },
+      {
+        "name": "Ierissós",
+        "population": 3266,
+        "matchedTo": "Aristotelis",
+        "snapDistanceKm": 0.083
+      },
+      {
+        "name": "Díkaia",
+        "population": 737,
+        "matchedTo": "Orestiadas",
+        "snapDistanceKm": 0.258
+      },
+      {
+        "name": "Ammoulianí",
+        "population": 521,
+        "matchedTo": "Aristotelis",
+        "snapDistanceKm": 0.695
+      },
+      {
+        "name": "Corfu",
+        "population": 40047,
+        "matchedTo": "Corfu",
+        "snapDistanceKm": 0.117
+      },
+      {
+        "name": "Theologòs",
+        "population": 809,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.507
+      },
+      {
+        "name": "Laganás",
+        "population": 729,
+        "matchedTo": "Zakynthos",
+        "snapDistanceKm": 0.929
+      },
+      {
+        "name": "Agios Geórgios Argyrádon",
+        "population": 503,
+        "matchedTo": "Corfu",
+        "snapDistanceKm": 0.221
+      },
+      {
+        "name": "Foinikounta",
+        "population": 573,
+        "matchedTo": "Pylos-Nestoras",
+        "snapDistanceKm": 1.185
+      },
+      {
+        "name": "Káto Goúves",
+        "population": 2153,
+        "matchedTo": "Hersonissos",
+        "snapDistanceKm": 0.444
+      },
+      {
+        "name": "Soroní",
+        "population": 1265,
+        "matchedTo": "Rhodes",
+        "snapDistanceKm": 0.097
+      },
+      {
+        "name": "Kallitéros",
+        "population": 627,
+        "matchedTo": "Zakynthos",
+        "snapDistanceKm": 0.28
+      },
+      {
+        "name": "Paralía Vérgas",
+        "population": 1966,
+        "matchedTo": "Kalamata",
+        "snapDistanceKm": 0.584
+      },
+      {
+        "name": "Paralía Vathéos",
+        "population": 602,
+        "matchedTo": "Chalcis",
+        "snapDistanceKm": 0.376
+      }
+    ]
+  },
+  "malta": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Senglea",
+        "population": 2720,
+        "matchedTo": "Isla",
+        "snapDistanceKm": 0.08
+      },
+      {
+        "name": "Vittoriosa",
+        "population": 2489,
+        "matchedTo": "Birgu",
+        "snapDistanceKm": 0.018
+      }
+    ]
+  },
+  "montenegro": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zagrad",
+        "population": 550,
+        "matchedTo": "Nikšić Municipality",
+        "areaSqKm": 2019,
+        "isSubstantial": false
+      },
+      {
+        "name": "Miločani",
+        "population": 645,
+        "matchedTo": "Nikšić Municipality",
+        "areaSqKm": 2019,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuta",
+        "population": 950,
+        "matchedTo": "Nikšić Municipality",
+        "areaSqKm": 2019,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dučice",
+        "population": 589,
+        "matchedTo": "Nikšić Municipality",
+        "areaSqKm": 2019,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "northMacedonia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "sanMarino": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "serbia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "slovenia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "portugal": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Ribeira Grande",
+        "population": 5198,
+        "matchedTo": "Castelo Branco",
+        "snapDistanceKm": 0.327
+      }
+    ]
+  },
+  "italy": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Santo Spirito",
+        "population": 1000,
+        "matchedTo": "Bari",
+        "snapDistanceKm": 0.018
+      },
+      {
+        "name": "Golfo Aranci",
+        "population": 2006,
+        "matchedTo": "Golfo Aranci",
+        "snapDistanceKm": 0.555
+      },
+      {
+        "name": "Acitrezza",
+        "population": 5000,
+        "matchedTo": "Aci Castello",
+        "snapDistanceKm": 0.005
+      }
+    ]
+  },
+  "spain": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Sant Carles de la Ràpita",
+        "population": 15511,
+        "matchedTo": "Sant Carles de la Ràpita",
+        "snapDistanceKm": 0.059
+      },
+      {
+        "name": "Palmeira",
+        "population": 1894,
+        "matchedTo": "A Pobra do Caramiñal",
+        "snapDistanceKm": 0.184
+      },
+      {
+        "name": "Caldes d'Estrac",
+        "population": 0,
+        "matchedTo": "Caldes d'Estrac",
+        "snapDistanceKm": 0.263
+      }
+    ]
   }
 }
