@@ -42130,5 +42130,42 @@
         "snapDistanceKm": 0.611
       }
     ]
+  },
+  "germany": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Waldhof-Falkenstein",
+        "population": 44,
+        "matchedTo": "Waldhof-Falkenstein",
+        "snapDistanceKm": 0.064
+      },
+      {
+        "name": "Keppeshausen",
+        "population": 25,
+        "matchedTo": "Keppeshausen",
+        "snapDistanceKm": 0.101
+      },
+      {
+        "name": "Gentingen",
+        "population": 61,
+        "matchedTo": "Gentingen",
+        "snapDistanceKm": 0.041
+      },
+      {
+        "name": "Gemünd",
+        "population": 24,
+        "matchedTo": "Gemünd",
+        "snapDistanceKm": 0.175
+      },
+      {
+        "name": "Hirschthal",
+        "population": 114,
+        "matchedTo": "Hirschthal",
+        "snapDistanceKm": 1.436
+      }
+    ],
+    "failedAreas": []
   }
 }

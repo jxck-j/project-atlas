@@ -1400,6 +1400,23 @@ out geom;`),
 // confirmed data bug (wrongly set to "BE," the same value Berlin's real
 // postal code uses) that would otherwise silently merge Brandenburg's
 // cities into Berlin's shard; see shardByState's own comment.
+//
+// A real bug caught only by checking the actual unmatched list, not assumed
+// fixed once the fetch itself succeeded: the first full run's per-area query
+// filtered to admin_level=8 only, which silently excluded every one of
+// Germany's ~107 kreisfreie Städte (independent cities) — Munich, Cologne,
+// Stuttgart, Nuremberg, Leipzig, and nearly every other major German city
+// are tagged admin_level=6 in OSM (the same level a normal Landkreis sits
+// at), not 8, confirmed by this file's own earlier is_in() check on Munich.
+// 263 of 11,914 points came back unmatched on that first run, dominated by
+// exactly these flagship cities — not a long tail of small towns the way
+// every other country's residual unmatched list in this file reads.
+// Widened the query to `admin_level~"^(6|8)$"` (the same mixed-level,
+// smallest-containing-polygon-wins pattern Argentina's 5|7|8 and Ireland's
+// 6|7 queries already established): a kreisfreie Stadt has no admin_level=8
+// child of its own, so it's the only, correctly-sized candidate for its own
+// area; an ordinary Landkreis's real admin_level=8 Gemeinden still win over
+// their own enclosing Landkreis wherever both contain the same point.
 if (!process.env.SKIP_OSM && shouldRun('276')) {
   console.log('\n=== Germany ===')
   const GERMAN_STATES = [
@@ -1470,7 +1487,7 @@ if (!process.env.SKIP_OSM && shouldRun('276')) {
           const result = await fetchOverpass(
             `[out:json][timeout:120];
 area["name"="${areaName}"]["admin_level"="${areaAdminLevel}"]->.s;
-relation(area.s)["boundary"="administrative"]["admin_level"="8"];
+relation(area.s)["boundary"="administrative"]["admin_level"~"^(6|8)$"];
 out geom;`,
             GERMANY_ENDPOINT,
           )
@@ -1481,10 +1498,10 @@ out geom;`,
         },
         10,
       )
-      console.log(`  ${areaName}: ${raw.elements.length} Gemeinden`)
+      console.log(`  ${areaName}: ${raw.elements.length} Gemeinden/kreisfreie Städte/Kreise`)
       for (const rel of raw.elements) {
         const { geometry } = relationToGeometry(rel)
-        germanyCandidates.push({ name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' })
+        germanyCandidates.push({ name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6-8' })
       }
     } catch (err) {
       console.log(`  [FAILED, all retries exhausted] ${areaName}: ${err.message} — real gap, logged not silently dropped`)

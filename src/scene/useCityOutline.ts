@@ -9,13 +9,14 @@ import { useSelection } from '../hud/selectionStore'
 // doesn't re-fetch. Generalizes what was useUsCityOutline.ts: a country
 // large enough that even its per-country file is itself a "huge eager-
 // shaped file" (US, then Mexico, then Brazil, then Peru, then Argentina,
-// then France — see buildCityBoundaries.mjs's own shardByState() comment)
-// stays sharded by state (public/geo/city-boundaries/{countryId}/{state}.json,
-// matching us-cities/{state}.json's existing per-state granularity); every
-// other verified country (Jordan, Kuwait, Central America, the rest of
-// South America, Western/Northern Europe) is small enough to ship as one
-// file per country.
-const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250'])
+// then France, then Germany — see buildCityBoundaries.mjs's own
+// shardByState() comment) stays sharded by state
+// (public/geo/city-boundaries/{countryId}/{state}.json, matching
+// us-cities/{state}.json's existing per-state granularity); every other
+// verified country (Jordan, Kuwait, Central America, the rest of South
+// America, the rest of Europe) is small enough to ship as one file per
+// country.
+const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250', '276'])
 
 const shardCache = new Map<string, Feature[]>()
 const inFlight = new Map<string, Promise<void>>()

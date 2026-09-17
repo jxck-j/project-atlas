@@ -20,11 +20,8 @@
 // Grenadines, Trinidad and Tobago, plus the 2026-09-13 Northern Europe pass:
 // Denmark, Estonia, Finland, Iceland, Ireland, Latvia, Lithuania, Norway,
 // Sweden, United Kingdom, plus the 2026-09-16 Western Europe pass: Austria,
-// Belgium, France, Liechtenstein, Luxembourg, Monaco, Netherlands,
-// Switzerland — Germany's own fetch was still in progress against a badly
-// congested shared Overpass mirror when this was last regenerated; add its
-// addFromShardedDir('276') call once public/geo/city-boundaries/276/ exists)
-// — NOT the other 137 UN members (138 pending Germany) yet. See
+// Belgium, France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands,
+// Switzerland) — NOT the other 137 UN members yet. See
 // that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
@@ -134,6 +131,7 @@ addFromShardedDir('076')
 addFromShardedDir('604')
 addFromShardedDir('032')
 addFromShardedDir('250')
+addFromShardedDir('276')
 
 const usIndex = JSON.parse(fs.readFileSync('public/geo/us-cities-index.json', 'utf8'))
 for (const e of usIndex) {
@@ -155,5 +153,5 @@ const perCountryCounts = BOUNDARY_COUNTRIES.map(
   (c) => `${c.name} ${entries.filter((e) => e.countryId === c.id).length}`,
 ).join(', ')
 console.log(
-  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
+  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, Germany ${entries.filter((e) => e.countryId === '276').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
 )

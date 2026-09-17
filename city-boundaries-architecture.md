@@ -1295,16 +1295,32 @@ maxLat]` check that can only ever reject a true negative, so it changes nothing 
 only how many full ring walks the join has to do. Re-run with the fix, France's full join completed in
 minutes.
 
-**Status at time of writing: 8 of the 9 countries in this pass are done and committed** (Austria, Belgium,
-France, Liechtenstein, Luxembourg, Monaco, Netherlands, Switzerland — every one 100% matched: 0 rejected, 0
-unmatched, across 24,849 combined GeoNames points). **Germany's fetch is still running** — its 20-query shape
-against a shared, badly-congested public Overpass mirror (repeated 504s and silently-truncated responses on
-nearly every request, well beyond anything any prior country in this file has hit) means it's taking
-substantially longer than every other country in this pass combined, even with the resilience fixes above in
-place. Not a data-quality problem — the fixes above exist specifically so a slow, congested run still produces
-correct output rather than a corrupted or incomplete one — just a real, ongoing wait on a third-party service
-this project doesn't control. 55 of 193 UN members have real city-boundary data as of the 8 committed here;
-Germany will make 56 once its own fetch completes.
+**Germany's own fetch needed a second real fix beyond the resilience work above — a wrong admin-level filter,
+not just a flaky mirror.** The first full run (after all 20 queries finally succeeded against the congested
+mirror) came back with 263 of 11,914 points unmatched — and unlike every other country's residual-unmatched
+list in this file, this one was dominated by Germany's own flagship cities: Munich, Cologne, Stuttgart,
+Nuremberg, Leipzig, Wuppertal, Wiesbaden, Mannheim, Magdeburg, Lübeck, and more, not a long tail of small
+villages. Root cause, found by actually reading the unmatched list rather than assuming the fetch was simply
+incomplete: Germany's ~107 kreisfreie Städte (independent cities) are tagged `admin_level=6` in OSM, the same
+level a normal Landkreis (county) sits at — confirmed directly by this file's own earlier `is_in()` check on
+Munich, which returned no `admin_level=8` result at all, only level 6 ("München"). The per-area query had
+filtered to `admin_level=8` only, so it silently found every ordinary town's real Gemeinde but never found a
+single kreisfreie Stadt's own boundary. Fixed by widening the filter to `admin_level~"^(6|8)$"` — the same
+mixed-level, smallest-containing-polygon-wins pattern Argentina's 5|7|8 and Ireland's 6|7 queries already
+established: a kreisfreie Stadt has no `admin_level=8` child of its own, so it's the only, correctly-sized
+candidate for its own area, while an ordinary Landkreis's real Gemeinden still win over their own larger
+enclosing Landkreis wherever both contain the same point. Re-running the full 20-query fetch (verifying Munich,
+Cologne, Stuttgart, Mannheim, Nuremberg, Wiesbaden, Wuppertal, Lübeck, Leipzig, and Magdeburg all resolved to
+their own real, correctly-sized polygon afterward — areas within a percent or two of each city's real
+administrative area) produced a genuinely clean result: **11,914/11,914 kept, 0 rejected, 0 unmatched** (5
+tiny same-name snaps, all well under 1.5km), sharded into 16 state files (23.7 MB combined, largest Bayern at
+4.4 MB). Verified live in-browser: searching "Munich" surfaces "Munich, BY" (state-qualified, matching
+Mexico/Brazil/Peru/Argentina/France's own sharded-country display convention), flies the camera in, and
+renders its real boundary.
+
+**Final status: all 9 Western Europe countries are done and committed** — every one 100% matched (0 rejected,
+0 unmatched), 36,763 combined GeoNames points across the pass. 56 of 193 UN members now have real
+city-boundary data; 137 remain.
 
 ## Migration plan
 
@@ -1322,7 +1338,7 @@ Germany will make 56 once its own fetch completes.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 45 countries, Germany's own fetch still in progress** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 56 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -1342,14 +1358,15 @@ Germany will make 56 once its own fetch completes.
    Sweden's own recon-reported "finest" level), Belize (OSM, hand-curated 9-municipality name list), and
    Liechtenstein/Netherlands/Switzerland/Luxembourg/Belgium/Austria (geoBoundaries, each level independently
    verified), Monaco (a real hybrid — the capital point against ADM1's whole-country polygon, every other
-   point against ADM2's quartiers), and France (geoBoundaries ADM5 with its 45 Paris/Lyon/Marseille
-   arrondissement-municipal fragments dropped and replaced by 3 targeted OSM whole-city polygons — see the
-   Fifteenth pass for all of Western Europe's findings, including Germany's own still-in-progress OSM
-   per-Bundesland/Regierungsbezirke fetch) against the already-shipped GeoNames city index; US reused
-   `buildUsCitiesData.mjs`'s existing Census output directly, reshaped in place, still sharded by state.
-   Output in `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, and France all sharded by
+   point against ADM2's quartiers), France (geoBoundaries ADM5 with its 45 Paris/Lyon/Marseille
+   arrondissement-municipal fragments dropped and replaced by 3 targeted OSM whole-city polygons), and Germany
+   (OSM `admin_level` 6|8 per-Bundesland/Regierungsbezirke — 6 needed alongside 8 specifically to catch
+   kreisfreie Städte, missed entirely by an `8`-only first attempt — see the Fifteenth pass for all of Western
+   Europe's findings) against the already-shipped GeoNames city index; US reused `buildUsCitiesData.mjs`'s
+   existing Census output directly, reshaped in place, still sharded by state. Output in
+   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, and Germany all sharded by
    state/province/department — see `shardByState()`).
-   **Not done: Germany's own fetch (in progress) plus the other 137 countries** — each needs the same
+   **Not done: the other 137 countries** — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth pass) before
    its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
@@ -1443,9 +1460,8 @@ Germany will make 56 once its own fetch completes.
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 45 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
-  Thirteenth/Fourteenth/Fifteenth passes — Germany's own fetch still in progress, see the Fifteenth pass),
-  not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  scoped to the 56 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
+  Thirteenth/Fourteenth/Fifteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
   this file for the other 137 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.

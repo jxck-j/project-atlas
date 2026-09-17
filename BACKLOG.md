@@ -1013,6 +1013,18 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   administrative unit — not fixable by this pipeline's existing join logic, and not otherwise checked for
   across the 46 other done countries (a capital city spanning multiple local-government units the way
   London does is uncommon among them, but not verified absent).
+- ~~Germany's first full join left 263 of 11,914 points unmatched, dominated by its own flagship cities
+  (Munich, Cologne, Stuttgart, Nuremberg, Leipzig, and more) rather than a long tail of small towns~~ —
+  **fixed** (found and fixed 2026-09-16, `city-boundaries-architecture.md`'s "Fifteenth pass"). Root cause:
+  Germany's ~107 kreisfreie Städte (independent cities) are tagged OSM `admin_level=6`, the same level a
+  normal Landkreis (county) sits at, while the per-area query only fetched `admin_level=8` — every ordinary
+  town's real Gemeinde was found, but no kreisfreie Stadt's own boundary ever was. Fixed by widening the
+  filter to `admin_level~"^(6|8)$"` (the same mixed-level, smallest-containing-polygon-wins pattern
+  Argentina's 5|7|8 and Ireland's 6|7 already established). Re-run: 11,914/11,914 kept, 0 rejected, 0
+  unmatched. Worth remembering for any future country with a similar "some cities are administratively
+  simultaneously their own top-level unit" structure (Austria's statutory cities were checked and found NOT
+  to have this problem — geoBoundaries' own ADM3 download already includes Vienna, Graz, Linz, etc. as
+  ordinary features, unlike Germany's raw OSM tagging split).
 
 ## Visualization
 
