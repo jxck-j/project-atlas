@@ -1994,6 +1994,119 @@ results need no further entry.
 city-boundary data; 70 remain (India and Russia both still deliberately deferred to their own dedicated
 passes) — every UN member in continental and maritime Asia now has real city-boundary data except those two.**
 
+### Twenty-third pass: Oceania (2026-09-18) — Australia, Fiji, Kiribati, Marshall Islands, Micronesia, Nauru,
+New Zealand, Palau, Papua New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu
+
+Every level confirmed by a direct point-in-polygon (or, for several Pacific atoll nations whose "land" is a
+razor-thin reef ring around a lagoon too narrow for a manually-guessed test coordinate to reliably land on,
+area-plausibility against a real published figure) check, not just recon's own canonicalName field.
+
+**Six confirmed clean on recon's own reported finest level:** Australia (ADM2, "Local Government Areas," 547
+units — Sydney -> the 26.68 km² City of Sydney LGA, Melbourne -> the 37.52 km² City of Melbourne LGA, both
+correctly much smaller than their metro areas; Brisbane -> its own genuinely huge 1,344.92 km² LGA, a real
+fact about Brisbane's amalgamated council area, not a join error; 3,158/4,901 kept, 39 substantial rejects —
+Toowoomba 142,163 in a 12,978 km² regional council, Mildura 34,565 in a 22,084 km² one — the same accepted
+"real geography" shape as every prior pass's own oversized-rural-unit residuals, here a well-known real fact
+about Australian local government amalgamation, not chased further), Kiribati (ADM2, 24 units — "Tarawa
+Teinainano," Kiribati's own name for South Tarawa, computes to a plausible 11.63 km², matching real South
+Tarawa's ~15.5 km² land area; 36/37 kept, 1 unmatched), Marshall Islands (ADM1, 24 atolls/islands — this
+file's only level, since geoBoundaries has no ADM2 for MHL — Majuro computes to 10.42 km², Kwajalein to 7.24
+km², both matching real published atoll land areas; 22/26 kept, 2 unmatched, 2 rejected — both real atoll
+lagoon-inclusive areas, e.g. Ailuk's own 3,316 km² whole-atoll figure against a 451-population point, the same
+sea/lagoon-inclusion pattern this file has repeatedly accepted), Micronesia (ADM2, "Municipality," 75 units —
+Palikir/the seat of government resolves to Sokehs, 55.48 km², Weno resolves to its own 18.66 km² municipality;
+57/62 kept, 5 unmatched — all population-0 remote outlying atolls of Yap/Chuuk states), Nauru (ADM1,
+"District," 14 units — this file's only level; Yaren exists as its own named district, confirmed by name even
+though a manually-guessed test coordinate for a country whose average district is ~1.5 km² landed in the
+adjacent Meneng instead — the join's own GeoNames-precise coordinates plus the 2km snap fallback made this a
+non-issue in practice, confirmed directly: 15/15 kept, 7 snapped), and Samoa (ADM2, "Districts," 43 units —
+Apia resolves to Vaimauga West, 78.63 km², a real constituent district; Apia itself has no single unified city
+government, so this is the correct city-plausible granularity; clean 74/74).
+
+**Fiji needed the same override this file has now hit repeatedly:** recon's reported finest level (ADM4,
+"Enumeration Areas," a census-statistical unit, not a real administrative one) would obviously be wrong even
+before checking coordinates. ADM2 ("Provinces," 15 units) is too coarse in the other direction — Suva lands in
+the whole 343.40 km² Rewa province, Nadi in the whole 3,226.72 km² Ba province. ADM3 ("Tikina," Fiji's
+traditional district tier, 86 units) resolves both correctly instead — Suva -> Suva (153.99 km²), Nadi -> Nadi
+(180.16 km²) — and is used. Result: 15/16 kept, 1 unmatched, 0 rejected.
+
+**Tuvalu and Vanuatu both needed the opposite override from Fiji/Bangladesh/Sri Lanka/South Korea's usual
+shape:** recon's own area-based heuristic picked ADM3 as "cityPlausible" for both, but ADM3 in each case
+turned out to be bare NUMERIC shapeNames ("841," "904," ...; "110101," "220204," ...) — a statistical/census
+enumeration grid with no real place names at all, confirmed by direct inspection, not just a coordinates check
+(Vanuatu's own ADM3 landed Port Vila/Luganville in 0.35/0.50 km² numbered cells, nowhere near a real
+administrative unit). Both switched to ADM2 instead: Tuvalu's ADM2 ("village," 34 units) carries Funafuti
+atoll's own six real constituent villages (Alapi, Fakaifou, Senala, Teone, Vaiaku, Tonga) by name — clean
+12/12; Vanuatu's ADM2 ("Municipalities," 65 units, a real mix of the country's actual municipal councils plus
+rural area-council wards) resolves Port Vila and Luganville directly to their own named 23.69/24.97 km²
+municipalities — 10/10 kept, 1 snapped.
+
+**Papua New Guinea confirmed ADM3** ("Local Level Government areas," 326 units, matching recon) over the
+coarser ADM2 ("District," 87 units) — Lae's ADM2 unit is the whole 131.46 km² Lae District, while ADM3
+resolves it to the real 43.61 km² "Lae Urban LLG"; same shape for Mount Hagen (312.98 km² District vs. 9.77
+km² "Mt Hagen Urban LLG"). Port Moresby is its own National Capital District at both levels (267.57 km², no
+finer split available in this source) — accepted as the finest real unit obtainable, the same shape as North
+Korea's special cities in the Twenty-first pass. Result: 50/59 kept, 9 rejected, none substantial.
+
+**Tonga confirmed ADM2** ("district," 23 units, matching recon) — Nuku'alofa resolves to Kolofo'ou, 12.56 km²,
+one of the capital's own real constituent districts. Clean 47/47 (1 snapped).
+
+**Solomon Islands needed a real supplemental fix:** ADM2 ("Constituency," 50 units) doesn't include Honiara at
+all — the capital lands in the surrounding "North West Guadalcanl" constituency (682.91 km²) instead, since
+Honiara is administratively independent of Guadalcanal province, the same "capital not part of any ADM2 unit"
+shape as every Central Asian capital in the Nineteenth pass. Confirmed a real "Capital Territory (Honiara)"
+unit exists at ADM1 (the same tier as Solomon Islands' 9 provinces) — computes to a plausible 30.43 km², close
+to Honiara's real ~22 km² official area — added as a single supplemental candidate, the same Bhutan/
+Kazakhstan/Tajikistan "one specific missing capital, not a whole missing tier" pattern. Result: clean 23/23.
+
+**New Zealand's Auckland fragmentation was investigated and deliberately left as-is**, NOT given the
+Manila/Paris-style whole-city fix, because the whole-city alternative here is actually worse than the
+fragments: ADM2 ("Territorial Authorities," 88 units, matching recon) correctly resolves Wellington City
+(289.60 km²), Christchurch City (1,483.38 km², a real fact about Christchurch's amalgamated boundary), and
+Hamilton City (110.85 km²) as whole cities, but Auckland — uniquely among NZ's territorial authorities, since
+its 2010 "supercity" merger replaced its old constituent cities with 21 internal Local Board Areas instead of
+one bare "Auckland" unit — has no whole-city ADM2 feature at all. A live OSM check found a same-named
+"Auckland" administrative relation (population 1,642,800, matching real Auckland closely, confirming it's the
+right relation), but at 16,153 km² — a genuinely enormous figure (real Auckland Council land area is ~4,941
+km², so this OSM relation includes substantial Hauraki Gulf/harbor maritime jurisdiction) that would itself be
+REJECTED by this script's own LOOSE_MAX_SQKM=5,000 ceiling even for a substantial-population point. Unlike
+Manila (a 1.9M-population point landing in a sub-1-km² fragment — a severe, visually-broken mismatch)
+Auckland's own GeoNames point lands in a real, reasonably-sized Local Board Area (Waitematā, 19.41 km² — the
+same order of magnitude as Beijing/Jakarta/Manila's own accepted district-level matches elsewhere in this
+file), so the fragment here is a genuine, acceptable administrative unit, not a broken one — investigated and
+left alone rather than "fixed" into something worse. Result: 418/732 kept, 314 rejected (13 substantial — real
+NZ "Districts" routinely amalgamate a small town with a vast rural hinterland, e.g. Hastings 88,300 in a
+5,213 km² district, Marlborough/Blenheim 29,800 in 10,463 km² — a well-documented, real feature of NZ local
+government, not a technique failure).
+
+**Palau's ADM2 ("Hamlets," 77 units, matching recon) needed a real fix, caught only once the actual join ran**
+— not by the initial coordinate spot-check, which looked acceptable given Palau's small population scale.
+Koror town splits into named hamlets as small as 0.1-0.7 km², and GeoNames carries TWO separate Koror points
+("Koror," population 14,000, and "Koror Town," population 12,676) that each landed in one of those tiny
+hamlets — a real Manila-severity mismatch (a 12,676-population point in a 0.1 km² polygon), not a merely-finer-
+but-still-reasonable unit the way Beijing/Jakarta's own district-level matches are. Fixed the same way Manila
+was: 12 of Koror State's own hamlets fall geometrically inside the real whole "Koror" ADM1 state polygon
+(45.51 km², plausible for the whole state including outlying islets beyond the town proper) and are dropped in
+favor of that single candidate. Both Koror points now correctly resolve to the whole 45.5 km² state. Worth
+remembering for any future country: a coordinate-only spot-check can miss a real fragmentation problem that
+only shows up once GeoNames' own points are actually run through the join — check the real output, not just
+the candidate levels, before calling a small-population country clean.
+
+**File sizes**: none of Fiji/Kiribati/Marshall Islands/Micronesia/Nauru/Palau/Papua New
+Guinea/Samoa/Solomon Islands/Tonga/Tuvalu/Vanuatu needed `shardByState()` — New Zealand's 3,731 KB is the
+largest of those twelve. Australia (20,067 KB) also didn't need it despite a 4,901-point GeoNames index and a
+156 MB raw ADM2 download — well under the ~49 MB threshold that has triggered sharding elsewhere in this file.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: Australia's 39 substantial rejects (Australia's own
+famously huge amalgamated regional council areas), New Zealand's 13 substantial rejects (NZ Districts
+combining a small town with vast rural hinterland), and Marshall Islands' 2 rejected/2 unmatched (real
+lagoon-inclusive atoll areas and small outlying islands). Fiji/Kiribati/Micronesia's own small unmatched
+residuals (remote atolls/islands, real geography) need no further entry.
+
+**Final status: all 14 Oceania countries are done and committed. 137 of 193 UN members now have real
+city-boundary data; 56 remain (India and Russia both still deliberately deferred to their own dedicated
+passes) — every UN member outside Africa, India, and Russia now has real city-boundary data.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2010,7 +2123,7 @@ passes) — every UN member in continental and maritime Asia now has real city-b
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 123 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 137 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2085,17 +2198,29 @@ passes) — every UN member in continental and maritime Asia now has real city-b
    (geoBoundaries ADM3, confirmed finer and more consistent than the coarser ADM2 — see the Twenty-second pass)
    and Philippines (geoBoundaries ADM3 with Manila's own internal-district fragments dropped, identified
    geometrically rather than by name, and replaced with a single whole-city OSM polygon — the France
-   Paris/Lyon/Marseille shape at a smaller scale — see the Twenty-second pass) against the already-shipped
+   Paris/Lyon/Marseille shape at a smaller scale — see the Twenty-second pass) and Australia/Kiribati/Marshall
+   Islands/Micronesia/Nauru/Samoa (geoBoundaries, each level independently verified — see the Twenty-third
+   pass) and Fiji (geoBoundaries, overriding recon's own "Enumeration Areas" reported finest level for the real
+   ADM3 "Tikina" tier) and Tuvalu/Vanuatu (geoBoundaries ADM2, overriding recon's own area-heuristic pick of
+   ADM3, which turned out to be bare numeric census-grid shapeNames with no real names at all — the opposite
+   override direction from every other country in this file) and Papua New Guinea (geoBoundaries ADM3,
+   confirmed finer and more consistent than the coarser ADM2) and Tonga (geoBoundaries ADM2, matching recon)
+   and Solomon Islands (geoBoundaries ADM2 plus a single supplemental ADM1 candidate for Honiara, entirely
+   missing from ADM2) and New Zealand (geoBoundaries ADM2; Auckland's own internal-fragment issue investigated
+   and deliberately left as-is, since the only whole-city OSM alternative is an even-less-plausible 16,153 km²)
+   and Palau (geoBoundaries ADM2 with Koror's own internal-hamlet fragments dropped and replaced with the whole
+   ADM1 Koror state, a real fix caught only once the actual join ran, not by the initial coordinate check — see
+   the Twenty-third pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 70 countries** (Russia and India both included — see the Seventeenth pass's own note
+   **Not done: the other 56 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second pass) before its own join can run,
-   not a blind batch extension of this script.
+   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third pass) before its own
+   join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,

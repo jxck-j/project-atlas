@@ -1177,6 +1177,18 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **Vietnam left 1 of 913 points unmatched: Thổ Châu, population 1,829, a small offshore island** (found
   2026-09-18, "Twenty-second pass") — a genuine small-island gap, not chased further given the country's
   otherwise clean result (907/913 kept, 0 substantial rejects).
+- **Australia rejected 1,743 of 4,901 points, 39 substantial (Toowoomba 142,163 in a 12,978 km² regional
+  council, Mildura 34,565 in a 22,084 km² one, ...)** (found 2026-09-18, `city-boundaries-architecture.md`'s
+  "Twenty-third pass") — a well-known real fact about Australian local government amalgamation (many regional
+  councils genuinely span this much rural area), not a technique failure; not chased further.
+- **New Zealand rejected 314 of 732 points, 13 substantial (Hastings 88,300 in a 5,213 km² district,
+  Marlborough/Blenheim 29,800 in 10,463 km², ...)** (found 2026-09-18, "Twenty-third pass") — NZ's own
+  "Districts" routinely amalgamate a small town with a vast rural hinterland, a real documented feature of NZ
+  local government; not chased further.
+- **Marshall Islands rejected 2 of 26 points (Ailuk 3,316 km², Lae 2,001 km², both real lagoon-inclusive whole-
+  atoll areas) and left 2 unmatched (Aur, Kili — small outlying atolls)** (found 2026-09-18, "Twenty-third
+  pass") — same accepted atoll-lagoon-inclusion shape as this file's other Pacific/coastal findings; not
+  chased further.
 
 ## Visualization
 

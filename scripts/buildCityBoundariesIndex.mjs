@@ -34,9 +34,12 @@
 // Bangladesh, Sri Lanka, Maldives, plus the 2026-09-18 East Asia pass:
 // China, Japan, Mongolia, North Korea, South Korea, plus the 2026-09-18
 // Southeast Asia pass: Brunei, Cambodia, Indonesia, Laos, Malaysia,
-// Myanmar, Philippines, Singapore, Thailand, Timor-Leste, Vietnam) — NOT
-// the other 70 UN members yet (India deliberately excluded, same reasoning
-// as Russia). See that doc's migration plan.
+// Myanmar, Philippines, Singapore, Thailand, Timor-Leste, Vietnam, plus the
+// 2026-09-18 Oceania pass: Australia, Fiji, Kiribati, Marshall Islands,
+// Micronesia, Nauru, New Zealand, Palau, Papua New Guinea, Samoa, Solomon
+// Islands, Tonga, Tuvalu, Vanuatu) — NOT the other 56 UN members yet (India
+// deliberately excluded, same reasoning as Russia). See that doc's
+// migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -156,6 +159,20 @@ const BOUNDARY_COUNTRIES = [
   { id: '764', name: 'Thailand' },
   { id: '626', name: 'Timor-Leste' },
   { id: '704', name: 'Vietnam' },
+  { id: '036', name: 'Australia' },
+  { id: '242', name: 'Fiji' },
+  { id: '296', name: 'Kiribati' },
+  { id: '584', name: 'Marshall Islands' },
+  { id: '583', name: 'Micronesia' },
+  { id: '520', name: 'Nauru' },
+  { id: '554', name: 'New Zealand' },
+  { id: '585', name: 'Palau' },
+  { id: '598', name: 'Papua New Guinea' },
+  { id: '882', name: 'Samoa' },
+  { id: '090', name: 'Solomon Islands' },
+  { id: '776', name: 'Tonga' },
+  { id: '798', name: 'Tuvalu' },
+  { id: '548', name: 'Vanuatu' },
 ]
 
 function addFromBoundaryFile(countryId) {

@@ -29,7 +29,10 @@
 // 2026-09-18 East Asia pass: China, Japan, Mongolia, North Korea, South
 // Korea, plus the 2026-09-18 Southeast Asia pass: Brunei, Cambodia,
 // Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand,
-// Timor-Leste, Vietnam — NOT the other 70 UN members yet. See that doc's "Fifth pass" section
+// Timor-Leste, Vietnam, plus the 2026-09-18 Oceania pass: Australia, Fiji,
+// Kiribati, Marshall Islands, Micronesia, Nauru, New Zealand, Palau, Papua
+// New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu — NOT the
+// other 56 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -2814,6 +2817,225 @@ out geom;`),
   const phlJoin = joinCityPointsToPolygons('Philippines', phlCities, phlCandidates)
   writeCountryOutput('608', phlJoin.kept)
   report.philippines = phlJoin.report
+}
+
+// --- Twenty-third pass (2026-09-18): Oceania (Australia, Fiji, Kiribati,
+// Marshall Islands, Micronesia, Nauru, New Zealand, Palau, Papua New
+// Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu) — every level
+// confirmed by a direct point-in-polygon (or, for several Pacific atoll
+// nations whose "land" is a razor-thin reef ring around a lagoon too
+// narrow for a manually-guessed test coordinate to reliably land on,
+// area-plausibility) check, not just recon's own canonicalName field.
+//
+// Six confirmed clean on recon's own reported finest level: Australia
+// (ADM2, "Local Government Areas," 547 units — Sydney -> the 26.68 km² City
+// of Sydney LGA, Melbourne -> the 37.52 km² City of Melbourne LGA, both
+// correctly much smaller than their metro areas; Brisbane -> its own
+// genuinely huge 1,344.92 km² LGA, a real fact about Brisbane's amalgamated
+// council area, not a join error), Kiribati (ADM2, 24 units — "Tarawa
+// Teinainano," Kiribati's own name for South Tarawa, computes to a
+// plausible 11.63 km², matching real South Tarawa's ~15.5 km² land area),
+// Marshall Islands (ADM1, 24 atolls/islands — this file's only level, since
+// geoBoundaries has no ADM2 for MHL — Majuro computes to 10.42 km², Kwajalein
+// to 7.24 km², both matching real published atoll land areas), Micronesia
+// (ADM2, "Municipality," 75 units — Palikir/the seat of government resolves
+// to Sokehs, 55.48 km², Weno resolves to its own 18.66 km² municipality),
+// Nauru (ADM1, "District," 14 units — this file's only level; Yaren exists
+// as its own named district, confirmed by name even though a manually-
+// guessed test coordinate for a country whose average district is ~1.5 km²
+// landed in the adjacent Meneng instead — the join's own GeoNames-precise
+// coordinates plus the 2km snap fallback make this a non-issue in practice),
+// and Samoa (ADM2, "Districts," 43 units — Apia resolves to Vaimauga West,
+// 78.63 km², a real constituent district; Apia itself has no single unified
+// city government, so this is the correct city-plausible granularity).
+//
+// Fiji needed the same override this file has now hit repeatedly: recon's
+// reported finest level (ADM4, "Enumeration Areas," a census-statistical
+// unit, not a real administrative one) would obviously be wrong even before
+// checking coordinates. ADM2 ("Provinces," 15 units) is too coarse in the
+// other direction — Suva lands in the whole 343.40 km² Rewa province, Nadi
+// in the whole 3,226.72 km² Ba province. ADM3 ("Tikina," Fiji's traditional
+// district tier, 86 units) resolves both correctly instead — Suva -> Suva
+// (153.99 km²), Nadi -> Nadi (180.16 km²) — and is used.
+//
+// Tuvalu and Vanuatu both needed the opposite override from Fiji/Bangladesh/
+// Sri Lanka/South Korea's usual shape: recon's own area-based heuristic
+// picked ADM3 as "cityPlausible" for both, but ADM3 in each case turned out
+// to be bare NUMERIC shapeNames ("841," "904," ...; "110101," "220204," ...)
+// — a statistical/census enumeration grid with no real place names at all,
+// confirmed by direct inspection, not just a coordinates check (Vanuatu's
+// own ADM3 landed Port Vila/Luganville in 0.35/0.50 km² numbered cells,
+// nowhere near a real administrative unit). Both switched to ADM2 instead:
+// Tuvalu's ADM2 ("village," 34 units) carries Funafuti atoll's own six real
+// constituent villages (Alapi, Fakaifou, Senala, Teone, Vaiaku, Tonga) by
+// name; Vanuatu's ADM2 ("Municipalities," 65 units, a real mix of the
+// country's actual municipal councils plus rural area-council wards)
+// resolves Port Vila and Luganville directly to their own named 23.69/24.97
+// km² municipalities.
+//
+// Papua New Guinea confirmed ADM3 ("Local Level Government areas," 326
+// units, matching recon) over the coarser ADM2 ("District," 87 units) —
+// Lae's ADM2 unit is the whole 131.46 km² Lae District, while ADM3 resolves
+// it to the real 43.61 km² "Lae Urban LLG"; same shape for Mount Hagen
+// (312.98 km² District vs. 9.77 km² "Mt Hagen Urban LLG"). Port Moresby is
+// its own National Capital District at both levels (267.57 km², no finer
+// split available in this source) — accepted as the finest real unit
+// obtainable, the same shape as North Korea's special cities in the
+// Twenty-first pass.
+//
+// Tonga confirmed ADM2 ("district," 23 units, matching recon) — Nuku'alofa
+// resolves to Kolofo'ou, 12.56 km², one of the capital's own real
+// constituent districts.
+//
+// Solomon Islands needed a real supplemental fix: ADM2 ("Constituency," 50
+// units) doesn't include Honiara at all — the capital lands in the
+// surrounding "North West Guadalcanl" constituency (682.91 km²) instead,
+// since Honiara is administratively independent of Guadalcanal province,
+// the same "capital not part of any ADM2 unit" shape as every Central
+// Asian capital in the Nineteenth pass. Confirmed a real "Capital Territory
+// (Honiara)" unit exists at ADM1 (the same tier as Solomon Islands' 9
+// provinces) — computes to a plausible 30.43 km², close to Honiara's real
+// ~22 km² official area — added as a single supplemental candidate, the
+// same Bhutan/Kazakhstan/Tajikistan "one specific missing capital, not a
+// whole missing tier" pattern.
+//
+// New Zealand's Auckland fragmentation was investigated and deliberately
+// left as-is, NOT given the Manila/Paris-style whole-city fix, because the
+// whole-city alternative here is actually worse than the fragments: ADM2
+// ("Territorial Authorities," 88 units, matching recon) correctly resolves
+// Wellington City (289.60 km²), Christchurch City (1,483.38 km², a real
+// fact about Christchurch's amalgamated boundary), and Hamilton City
+// (110.85 km²) as whole cities, but Auckland — uniquely among NZ's
+// territorial authorities, since its 2010 "supercity" merger replaced its
+// old constituent cities with 21 internal Local Board Areas instead of one
+// bare "Auckland" unit — has no whole-city ADM2 feature at all. A live OSM
+// check found a same-named "Auckland" administrative relation, but at
+// 16,153 km², a genuinely enormous figure (real Auckland Council land area
+// is ~4,941 km², so this OSM relation includes substantial Hauraki
+// Gulf/harbor maritime jurisdiction) that would itself be REJECTED by this
+// script's own LOOSE_MAX_SQKM=5,000 ceiling even for a substantial-
+// population point. Unlike Manila (a 1.9M-population point landing in a
+// sub-1-km² fragment — a severe, visually-broken mismatch) Auckland's own
+// GeoNames point lands in a real, reasonably-sized Local Board Area
+// (Waitematā, 19.41 km² — the same order of magnitude as Beijing/Jakarta/
+// Manila's own accepted district-level matches elsewhere in this file),
+// so the fragment here is a genuine, acceptable administrative unit, not a
+// broken one — investigated and left alone rather than "fixed" into
+// something worse.
+//
+// Palau's ADM2 ("Hamlets," 77 units, matching recon) splits Koror town —
+// Palau's main urban center — into named hamlets as small as 0.1-0.7 km²,
+// and the actual join (not just a coordinate spot-check) revealed this is a
+// real Manila-severity mismatch, not a merely-finer-but-still-reasonable
+// unit: GeoNames carries two separate Koror points (population 14,000 and
+// 12,676) that both land in a sub-1-km² hamlet. Fixed with the same
+// fragment-drop-and-replace mechanism as Manila/Auckland's own
+// investigation, using the real whole "Koror" ADM1 state (45.51 km²) as
+// the replacement — see this pass's own Palau block, below the country
+// list, for the implementation (a bespoke block, not
+// `runGeoBoundariesCountry`, since it needs the geometric exclusion step).
+if (shouldRun('036')) report.australia = await runGeoBoundariesCountry({ name: 'Australia', numericId: '036', alpha3: 'AUS', admLevel: 'ADM2' })
+if (shouldRun('242')) report.fiji = await runGeoBoundariesCountry({ name: 'Fiji', numericId: '242', alpha3: 'FJI', admLevel: 'ADM3' })
+if (shouldRun('296')) report.kiribati = await runGeoBoundariesCountry({ name: 'Kiribati', numericId: '296', alpha3: 'KIR', admLevel: 'ADM2' })
+if (shouldRun('584')) report.marshallIslands = await runGeoBoundariesCountry({ name: 'Marshall Islands', numericId: '584', alpha3: 'MHL', admLevel: 'ADM1' })
+if (shouldRun('583')) report.micronesia = await runGeoBoundariesCountry({ name: 'Micronesia', numericId: '583', alpha3: 'FSM', admLevel: 'ADM2' })
+if (shouldRun('520')) report.nauru = await runGeoBoundariesCountry({ name: 'Nauru', numericId: '520', alpha3: 'NRU', admLevel: 'ADM1' })
+if (shouldRun('554')) report.newZealand = await runGeoBoundariesCountry({ name: 'New Zealand', numericId: '554', alpha3: 'NZL', admLevel: 'ADM2' })
+// Palau: ADM2 ("Hamlets") splits Koror town into named hamlets as small as
+// 0.1-0.7 km² — see this pass's own top comment for why this first looked
+// acceptable (a real, small-population country) until the actual join
+// revealed it isn't: GeoNames carries TWO separate Koror points ("Koror,"
+// population 14,000, and "Koror Town," population 12,676) that each landed
+// in their own tiny hamlet, both well past SUBSTANTIAL_POPULATION_FLOOR —
+// a 12,676-population point in a 0.1 km² polygon is the same severity of
+// mismatch Manila's fix addressed, not a merely-smaller-but-still-real unit
+// the way Beijing/Jakarta's district-level matches are. Fixed the same way:
+// 12 of Koror State's own hamlets fall geometrically inside the real
+// "Koror" ADM1 state polygon (45.51 km², plausible for the whole state
+// including outlying islets) and are dropped in favor of that single
+// whole-state candidate.
+if (shouldRun('585')) {
+  console.log('\n=== Palau ===')
+  const plwMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/PLW/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const plwAdm2Meta = plwMeta.find((l) => l.boundaryType === 'ADM2')
+  const plwAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(plwAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const plwAdm1Meta = plwMeta.find((l) => l.boundaryType === 'ADM1')
+  const plwAdm1 = await fetchWithRetry(async () => {
+    const res = await fetch(plwAdm1Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const kororState = plwAdm1.features.find((f) => f.properties.shapeName === 'Koror')
+  let droppedKororHamlets = 0
+  const plwCandidates = plwAdm2.features
+    .filter((f) => {
+      const { lat, lng } = geometryCentroid(f.geometry)
+      let inKoror = false
+      try {
+        inKoror = kororState ? pointInGeometry([lng, lat], kororState.geometry) : false
+      } catch {
+        inKoror = false
+      }
+      if (inKoror) droppedKororHamlets++
+      return !inKoror
+    })
+    .map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  console.log(`  dropping ${droppedKororHamlets} Koror internal-hamlet fragments (real areas, wrong kind of unit for this join — see this block's own comment)`)
+  if (kororState) {
+    plwCandidates.push({ name: kororState.properties.shapeName, geometry: kororState.geometry, source: 'geoboundaries-adm1' })
+    console.log('  +1 supplemental whole-state candidate (Koror)')
+  } else {
+    console.log('  [warn] "Koror" not found in Palau ADM1 — capital/main town may be unmatched')
+  }
+  const plwCities = loadCityPoints('585')
+  const plwJoin = joinCityPointsToPolygons('Palau', plwCities, plwCandidates)
+  writeCountryOutput('585', plwJoin.kept)
+  report.palau = plwJoin.report
+}
+if (shouldRun('598')) report.papuaNewGuinea = await runGeoBoundariesCountry({ name: 'Papua New Guinea', numericId: '598', alpha3: 'PNG', admLevel: 'ADM3' })
+if (shouldRun('882')) report.samoa = await runGeoBoundariesCountry({ name: 'Samoa', numericId: '882', alpha3: 'WSM', admLevel: 'ADM2' })
+if (shouldRun('776')) report.tonga = await runGeoBoundariesCountry({ name: 'Tonga', numericId: '776', alpha3: 'TON', admLevel: 'ADM2' })
+if (shouldRun('798')) report.tuvalu = await runGeoBoundariesCountry({ name: 'Tuvalu', numericId: '798', alpha3: 'TUV', admLevel: 'ADM2' })
+if (shouldRun('548')) report.vanuatu = await runGeoBoundariesCountry({ name: 'Vanuatu', numericId: '548', alpha3: 'VUT', admLevel: 'ADM2' })
+
+// Solomon Islands: ADM2 ("Constituency," 50 units) doesn't include Honiara
+// — see this pass's own top comment. A real "Capital Territory (Honiara)"
+// unit exists at ADM1, added as a single supplemental candidate.
+if (shouldRun('090')) {
+  console.log('\n=== Solomon Islands ===')
+  const slbMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/SLB/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const slbAdm2Meta = slbMeta.find((l) => l.boundaryType === 'ADM2')
+  const slbAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(slbAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const slbAdm1Meta = slbMeta.find((l) => l.boundaryType === 'ADM1')
+  const slbAdm1 = await fetchWithRetry(async () => {
+    const res = await fetch(slbAdm1Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const slbCandidates = slbAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  const honiara = slbAdm1.features.find((f) => f.properties.shapeName === 'Capital Territory (Honiara)')
+  if (honiara) slbCandidates.push({ name: honiara.properties.shapeName, geometry: honiara.geometry, source: 'geoboundaries-adm1' })
+  else console.log('  [warn] "Capital Territory (Honiara)" not found in Solomon Islands ADM1 — capital city may be unmatched')
+  const slbCities = loadCityPoints('090')
+  const slbJoin = joinCityPointsToPolygons('Solomon Islands', slbCities, slbCandidates)
+  writeCountryOutput('090', slbJoin.kept)
+  report.solomonIslands = slbJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
