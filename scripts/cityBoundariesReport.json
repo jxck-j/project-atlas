@@ -50725,5 +50725,854 @@
       }
     ],
     "snapped": []
+  },
+  "afghanistan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Wulêswālī Bihsūd",
+        "population": 0,
+        "matchedTo": "Markazi Bihsud",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lāsh",
+        "population": 0,
+        "matchedTo": "Kohistan",
+        "areaSqKm": 2248.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bāzār-e Yakāwlang",
+        "population": 65000,
+        "matchedTo": "Yakawlang",
+        "areaSqKm": 6704,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wāshēr",
+        "population": 0,
+        "matchedTo": "Washer",
+        "areaSqKm": 4301.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tūlak",
+        "population": 0,
+        "matchedTo": "Tulak",
+        "areaSqKm": 2701.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tītān",
+        "population": 0,
+        "matchedTo": "Saghar",
+        "areaSqKm": 2630.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tīr Pul",
+        "population": 6979,
+        "matchedTo": "Kohsan",
+        "areaSqKm": 2206,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taywarah",
+        "population": 0,
+        "matchedTo": "Taywara",
+        "areaSqKm": 3617.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tagāw-Bāy",
+        "population": 9096,
+        "matchedTo": "Kohistanat",
+        "areaSqKm": 6086.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Markaz-e Ḩukūmat-e Sulţān-e Bakwāh",
+        "population": 0,
+        "matchedTo": "Bakwa",
+        "areaSqKm": 2407.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Spīn Bōldak",
+        "population": 0,
+        "matchedTo": "Spin Boldak",
+        "areaSqKm": 5643.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shīnḏanḏ",
+        "population": 29264,
+        "matchedTo": "Shindand",
+        "areaSqKm": 6707.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sang-e Māshah",
+        "population": 0,
+        "matchedTo": "Jaghuri",
+        "areaSqKm": 2138.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rūdbār",
+        "population": 11034,
+        "matchedTo": "Chahar Burjak",
+        "areaSqKm": 21667.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rabāţ-e Sangī-ye Pā’īn",
+        "population": 0,
+        "matchedTo": "Koshk",
+        "areaSqKm": 2885.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qaīşār",
+        "population": 0,
+        "matchedTo": "Qaysar",
+        "areaSqKm": 2493,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qarah Bāgh",
+        "population": 12412,
+        "matchedTo": "Gulran",
+        "areaSqKm": 6014.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qal‘ah-ye Kuhnah",
+        "population": 0,
+        "matchedTo": "Gulistan",
+        "areaSqKm": 7067.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qal‘ah-ye Shahr",
+        "population": 7756,
+        "matchedTo": "Kohistanat",
+        "areaSqKm": 6086.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qādis",
+        "population": 0,
+        "matchedTo": "Qadis",
+        "areaSqKm": 3368,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pasnay",
+        "population": 0,
+        "matchedTo": "Kohistanat",
+        "areaSqKm": 6086.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pasāband",
+        "population": 0,
+        "matchedTo": "Pasaband",
+        "areaSqKm": 4527.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ōbêh",
+        "population": 0,
+        "matchedTo": "Obe",
+        "areaSqKm": 2619,
+        "isSubstantial": false
+      },
+      {
+        "name": "Now Zād",
+        "population": 0,
+        "matchedTo": "Naw Zad",
+        "areaSqKm": 4122.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nayak",
+        "population": 0,
+        "matchedTo": "Yakawlang",
+        "areaSqKm": 6704,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ōkak",
+        "population": 0,
+        "matchedTo": "Nawur",
+        "areaSqKm": 5238.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḩukūmat-e Nād ‘Alī",
+        "population": 0,
+        "matchedTo": "Nad Ali",
+        "areaSqKm": 4544.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bala Murghab",
+        "population": 0,
+        "matchedTo": "Bala Murghab",
+        "areaSqKm": 4466.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mīrābād",
+        "population": 14160,
+        "matchedTo": "Chahar Burjak",
+        "areaSqKm": 21667.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mandōl",
+        "population": 0,
+        "matchedTo": "Mandol",
+        "areaSqKm": 2030.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lāsh-e Juwayn",
+        "population": 0,
+        "matchedTo": "Lash Wa Juwayn",
+        "areaSqKm": 5428,
+        "isSubstantial": false
+      },
+      {
+        "name": "La‘l",
+        "population": 0,
+        "matchedTo": "Lal Wa Sarjangal",
+        "areaSqKm": 3881,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kushk",
+        "population": 16952,
+        "matchedTo": "Shindand",
+        "areaSqKm": 6707.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rāẕay Balochi",
+        "population": 2000,
+        "matchedTo": "Khash Rod",
+        "areaSqKm": 8188.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuran wa Munjan",
+        "population": 0,
+        "matchedTo": "Kuran Wa Munjan",
+        "areaSqKm": 5188,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khwājah Dū Kōh",
+        "population": 0,
+        "matchedTo": "Khwaja Du Koh",
+        "areaSqKm": 2178.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khūgyāṉī",
+        "population": 0,
+        "matchedTo": "Arghistan",
+        "areaSqKm": 3909.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khāsh",
+        "population": 15133,
+        "matchedTo": "Khash Rod",
+        "areaSqKm": 8188.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khān Neshīn",
+        "population": 25600,
+        "matchedTo": "Reg(Khanshin)",
+        "areaSqKm": 13099.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khandūd",
+        "population": 5521,
+        "matchedTo": "Wakhan",
+        "areaSqKm": 10916.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kishk-e Nakhūd",
+        "population": 0,
+        "matchedTo": "Maywand",
+        "areaSqKm": 2852.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jawand",
+        "population": 0,
+        "matchedTo": "Jawand",
+        "areaSqKm": 7120.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḩukūmat-e Shīnkaī",
+        "population": 0,
+        "matchedTo": "Shinkay",
+        "areaSqKm": 2270.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Guz̄arah",
+        "population": 0,
+        "matchedTo": "Guzara",
+        "areaSqKm": 2589.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gōmal Kêlay",
+        "population": 0,
+        "matchedTo": "Gomal",
+        "areaSqKm": 4084.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ghōriyān",
+        "population": 0,
+        "matchedTo": "Ghoryan",
+        "areaSqKm": 7297.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dowlatābād",
+        "population": 0,
+        "matchedTo": "Dawlatabad",
+        "areaSqKm": 2714,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dū Qal‘ah",
+        "population": 0,
+        "matchedTo": "Shib Koh",
+        "areaSqKm": 2707.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dūāb",
+        "population": 0,
+        "matchedTo": "Ruyi Du Ab",
+        "areaSqKm": 2415.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dasht-e Qal‘ah",
+        "population": 0,
+        "matchedTo": "Pur Chaman",
+        "areaSqKm": 6663.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Markaz-e Ḩukūmat-e Darwēshān",
+        "population": 9012,
+        "matchedTo": "Garmser",
+        "areaSqKm": 10307.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chīras",
+        "population": 12779,
+        "matchedTo": "Kohistanat",
+        "areaSqKm": 6086.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Chisht-e Sharīf",
+        "population": 0,
+        "matchedTo": "Chishti Sharif",
+        "areaSqKm": 2564.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fayrōz Kōh",
+        "population": 15000,
+        "matchedTo": "Chaghcharan",
+        "areaSqKm": 7665.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bāzār-e Tālah",
+        "population": 0,
+        "matchedTo": "Tala Wa Barfak",
+        "areaSqKm": 2882.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arghestān",
+        "population": 894,
+        "matchedTo": "Arghistan",
+        "areaSqKm": 3909.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Anār Darah",
+        "population": 10023,
+        "matchedTo": "Anar Dara",
+        "areaSqKm": 10522,
+        "isSubstantial": true
+      },
+      {
+        "name": "Amānzī",
+        "population": 0,
+        "matchedTo": "Shorabak",
+        "areaSqKm": 4033.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Alāqahdārī Dīshū",
+        "population": 9196,
+        "matchedTo": "Dishu",
+        "areaSqKm": 9428,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adraskan",
+        "population": 0,
+        "matchedTo": "Adraskan",
+        "areaSqKm": 9976.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Langar",
+        "population": 0,
+        "matchedTo": "Khuram Wa Sarbagh",
+        "areaSqKm": 2123.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kushkak",
+        "population": 0,
+        "matchedTo": "Qala Ka",
+        "areaSqKm": 3557.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chowṉêy",
+        "population": 0,
+        "matchedTo": "Gizab",
+        "areaSqKm": 3635,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dū Laīnah",
+        "population": 0,
+        "matchedTo": "Du Layna",
+        "areaSqKm": 4616.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mazad",
+        "population": 4000,
+        "matchedTo": "Khash Rod",
+        "areaSqKm": 8188.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "pakistan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Khuzdar",
+        "population": 218112,
+        "matchedTo": "Khuzdar",
+        "areaSqKm": 5947.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zhob",
+        "population": 50537,
+        "matchedTo": "ZHOB",
+        "areaSqKm": 7713.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yougu",
+        "population": 6000,
+        "matchedTo": "KHAPLU",
+        "areaSqKm": 2638.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yazman",
+        "population": 60738,
+        "matchedTo": "YAZMAN",
+        "areaSqKm": 19185.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Washuk",
+        "population": 41107,
+        "matchedTo": "WASHUK",
+        "areaSqKm": 7507.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wana",
+        "population": 2223,
+        "matchedTo": "WANA",
+        "areaSqKm": 2237.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Turbat",
+        "population": 75694,
+        "matchedTo": "Kech",
+        "areaSqKm": 9768.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tolti",
+        "population": 0,
+        "matchedTo": "KHARMANG",
+        "areaSqKm": 2791.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thamewali",
+        "population": 7300,
+        "matchedTo": "MIANWALI",
+        "areaSqKm": 2951.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tando Mitha Khan",
+        "population": 2723,
+        "matchedTo": "SANGHAR",
+        "areaSqKm": 2205,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shigar",
+        "population": 0,
+        "matchedTo": "SHIGAR",
+        "areaSqKm": 8922.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sann",
+        "population": 8834,
+        "matchedTo": "MANJAND",
+        "areaSqKm": 2282.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qila Saifullah",
+        "population": 0,
+        "matchedTo": "KILLA SAIFULLAH",
+        "areaSqKm": 4623.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goth Phulji",
+        "population": 7877,
+        "matchedTo": "JOHI",
+        "areaSqKm": 3622.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Panjgur",
+        "population": 0,
+        "matchedTo": "PANJGUR",
+        "areaSqKm": 3838.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nok Kundi",
+        "population": 30621,
+        "matchedTo": "Naukandi",
+        "areaSqKm": 14486.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Musa Khel Bazar",
+        "population": 0,
+        "matchedTo": "KINGRI",
+        "areaSqKm": 3838.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mithi",
+        "population": 52376,
+        "matchedTo": "MITHI",
+        "areaSqKm": 5328.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mirpur Sakro",
+        "population": 8371,
+        "matchedTo": "MIRPUR SAKRO",
+        "areaSqKm": 2197.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kharan",
+        "population": 30841,
+        "matchedTo": "Kharan",
+        "areaSqKm": 10719.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khaplu",
+        "population": 0,
+        "matchedTo": "KHAPLU",
+        "areaSqKm": 2638.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalat",
+        "population": 26701,
+        "matchedTo": "Kalat",
+        "areaSqKm": 5597,
+        "isSubstantial": true
+      },
+      {
+        "name": "Jati",
+        "population": 9152,
+        "matchedTo": "JATI",
+        "areaSqKm": 3520.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Islamkot",
+        "population": 12426,
+        "matchedTo": "MITHI",
+        "areaSqKm": 5328.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Duki",
+        "population": 6384,
+        "matchedTo": "Duki",
+        "areaSqKm": 4349.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dinan Bashnoian Wala",
+        "population": 7500,
+        "matchedTo": "BAHAWALNAGAR",
+        "areaSqKm": 2003,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dalbandin",
+        "population": 14621,
+        "matchedTo": "Dalbadin",
+        "areaSqKm": 15389.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Chitral",
+        "population": 57157,
+        "matchedTo": "CHITRAL",
+        "areaSqKm": 5909.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Chilas",
+        "population": 0,
+        "matchedTo": "CHILAS",
+        "areaSqKm": 4222.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Buni",
+        "population": 50000,
+        "matchedTo": "MASTUJ",
+        "areaSqKm": 8843.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barkhan",
+        "population": 8760,
+        "matchedTo": "Barkhan",
+        "areaSqKm": 3497.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bandhi",
+        "population": 8608,
+        "matchedTo": "DAUR",
+        "areaSqKm": 2249,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bakhri Ahmad Khan",
+        "population": 2000,
+        "matchedTo": "LAYYAH",
+        "areaSqKm": 2024.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Awaran",
+        "population": 0,
+        "matchedTo": "Awaran",
+        "areaSqKm": 5195.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jhang City",
+        "population": 0,
+        "matchedTo": "JHANG",
+        "areaSqKm": 2613,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shooli Bazar",
+        "population": 2219,
+        "matchedTo": "Dasht",
+        "areaSqKm": 2492.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Basti Aukharvand",
+        "population": 1000,
+        "matchedTo": "LAYYAH",
+        "areaSqKm": 2024.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dregun",
+        "population": 1050,
+        "matchedTo": "BALAKOT",
+        "areaSqKm": 2437.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jām Sāhib",
+        "population": 6869,
+        "matchedTo": "DAUR",
+        "areaSqKm": 2249,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nooriabad",
+        "population": 1000,
+        "matchedTo": "THANO BULA KHAN",
+        "areaSqKm": 5378.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Basti Dosa",
+        "population": 2000,
+        "matchedTo": "LAYYAH",
+        "areaSqKm": 2024.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moza Shahwala",
+        "population": 1200,
+        "matchedTo": "LAYYAH",
+        "areaSqKm": 2024.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dajjal wala",
+        "population": 1000,
+        "matchedTo": "LAYYAH",
+        "areaSqKm": 2024.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Eidghah",
+        "population": 0,
+        "matchedTo": "ASTORE",
+        "areaSqKm": 5210.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dasu",
+        "population": 0,
+        "matchedTo": "DASSU",
+        "areaSqKm": 3515.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Athmuqam",
+        "population": 0,
+        "matchedTo": "ATHUMQAM",
+        "areaSqKm": 3497,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taftan",
+        "population": 18510,
+        "matchedTo": "Taftan",
+        "areaSqKm": 9752.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Athhmuqam",
+        "population": 8000,
+        "matchedTo": "ATHUMQAM",
+        "areaSqKm": 3497,
+        "isSubstantial": false
+      },
+      {
+        "name": "Noorabad",
+        "population": 1100,
+        "matchedTo": "DAHARKI",
+        "areaSqKm": 2815.2,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "nepal": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "bangladesh": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "sriLanka": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Tangalle",
+        "population": 10497,
+        "matchedTo": "Tangalle",
+        "snapDistanceKm": 0.028
+      }
+    ]
+  },
+  "bhutan": {
+    "unmatched": [
+      {
+        "name": "Nganglam",
+        "population": 707,
+        "lat": 26.78333,
+        "lng": 91.25
+      }
+    ],
+    "rejected": [],
+    "snapped": []
+  },
+  "maldives": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
   }
 }

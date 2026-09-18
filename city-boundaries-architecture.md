@@ -1688,6 +1688,87 @@ varying size; Kazakhstan needed the most work and still carries the largest rema
 chaseable gap given how comprehensive the OSM supplement already is. **100 of 193 UN members now have real
 city-boundary data; 93 remain.**
 
+### Twentieth pass: South Asia minus India (2026-09-18) — two more "don't trust canonicalName" catches, and Maldives' first `way`-sourced OSM candidates
+
+Afghanistan, Pakistan, Nepal, Bhutan, Bangladesh, Sri Lanka, Maldives — continuing the west-to-east walk across
+Asia the Nineteenth pass started. **India deliberately excluded**, held for its own dedicated investigation
+the same way Russia is excluded from every routine regional batch: its recon-reported finest level is ADM5,
+649,771 units, min area 0.0004 km² — village scale, nowhere close to city scale, and picking a real level for
+a country this size (and this administratively complex — 28 states, 8 union territories, several with their
+own naming/tiering quirks) needs its own pass, not a blind fold-in in a batch sized around seven much smaller
+countries.
+
+**Afghanistan, Pakistan, and Nepal all confirmed clean on their recon-reported finest level**, each verified
+by direct point-in-polygon check against real coordinates, not just trusting the name: Afghanistan's ADM2
+(398 wuleswali) contains Kabul, Kandahar, and Mazari Sharif as their own named unit; Pakistan's ADM3 (554
+Tehsil) resolves Karachi/Lahore/Islamabad/Faisalabad/Rawalpindi correctly (Karachi and Lahore each split
+across multiple named towns/cantonments — real, expected granularity, not a data problem); Nepal's ADM3 (774
+Nagarpalika/Gāunpālikā) contains Kathmandu, Pokhara, Biratnagar, Lalitpur, and Bharatpur each as their own
+named municipality.
+
+**Bangladesh and Sri Lanka both needed a real override of recon's own reported "finest" level — the same
+"canonicalName looks right but isn't" trap this file has hit before (Belize's Constituencies, Lithuania/
+Sweden's one-level-too-deep pick).** Bangladesh's recon-reported ADM4 (canonicalName literally "Union
+Councils / Municipal Corporations / City Corporations", 5,160 units) sounds exactly like the level this join
+needs — but a direct point-in-polygon check against Dhaka/Chattogram/Rajshahi/Sylhet's real coordinates landed
+every one of them in an individual city WARD (0.4-0.9 km², e.g. Dhaka → "Ward No-73", Chattogram → "Ward
+No-22") — sub-city scale, not a city boundary, despite the name. ADM3 ("subdistricts"/Upazila, 544 units)
+landed the same four cities in real city-scale units instead (Dhaka → Kotwali 0.8 km², Chattogram → Kotwali
+9.4 km², Rajshahi → Boalia 18.9 km², Sylhet → Sylhet Sadar 318.4 km²) and is used instead. Sri Lanka's
+recon-reported ADM4 ("Grama Niladhari Divisions", 14,044 units) has the exact same problem — Colombo, Kandy,
+and Jaffna all land in a sub-1 km² GN division, not a real city boundary — while ADM3 ("Divisional
+Secretariat", 330 units) puts Colombo directly in its own 22 km² DS division. Both switched to ADM3. Result:
+Bangladesh 164/164 kept, 0 rejected, 0 unmatched; Sri Lanka 89/89 kept (1 snapped — Galle, whose real DS
+division "Galle4Gravets" carries a garbled name that made this file's own earlier by-name recon check
+initially read as "not found," resolved correctly anyway by the point-in-polygon join plus snap fallback), 0
+rejected, 0 unmatched. Both clean runs.
+
+**Bhutan's own ADM2 (205 Gewog) — real rural blocks, the finest level geoBoundaries has — doesn't cover the
+capital.** Direct point-in-polygon check: Thimphu's own coordinates land inside the surrounding rural "Chang"
+Gewog (157 km², not a Thimphu city boundary at all) — Thimphu Thromde (city) is administratively independent
+of any Gewog, the same shape as every other capital in this pass. geoBoundaries' ADM2 does, however, already
+carry Phuentsholing (note the real spelling — a first-pass name search for "Phuntsholing" missed it entirely,
+worth remembering before concluding a country has no coverage from a name search alone) as its own 133.8 km²
+unit, confirmed by direct point-in-polygon check against Phuntsholing's real coordinates — no gap or
+supplement needed there. A live OSM check found exactly one real Thromde-level boundary in the entire
+country: Thimphu itself, `admin_level=5` (the same tier as Bhutan's 20 Dzongkhags) — added as a single
+supplemental candidate, the same Kazakhstan/Tajikistan/Monaco "capital point against its own coarser-tier
+polygon" pattern already established. Result: 33/34 kept, 0 rejected, 1 unmatched — Nganglam (population 707,
+a small border town near Assam, India), a real, small, unrelated residual gap, not chased further.
+
+**Maldives needed a full source swap off geoBoundaries, and surfaced a real gap in this script's own OSM
+tooling.** geoBoundaries' finest level (ADM2, "Administrative Atolls," 21 units) is the SAME 21-atoll
+partition as its own ADM1 — a whole atoll including its lagoon (up to ~2,300 km²) is nowhere near city scale,
+and every city on it would join to the identical huge polygon regardless of which real island it's actually
+on. OSM has real, comprehensive per-island coverage instead — 894 `place=island`/`place=islet` features
+country-wide, confirmed directly against real inhabited islands (Fuvahmulah, Kulhudhuffushi, Hithadhoo all
+present by name) — but **almost every one of them is mapped as a single closed `way`, not a `relation`**,
+which this script had never needed to handle before: every prior OSM-sourced country queried
+`relation[boundary=administrative]` only, and `osmRelationToGeometry.mjs`'s `relationToGeometry` only knows
+how to stitch a relation's member way-segments into rings. Added `wayToGeometry` (a small, generic new helper
+in `buildCityBoundaries.mjs` itself) for the much simpler case Overpass's `out geom;` already gives a `way`
+element directly — a flat `.geometry` array of `{lat,lon}` points, already closed (verified against a real
+island way: first point equals last). Malé itself — the capital, fully urbanized, ~2 km² total — has no
+single `place=island` polygon of its own; its administrative area is covered instead by 6 real `admin_level`
+8/9 relations (Hulhumalé/Vilimalé at 8, the four wards Galolhu/Henveiru/Maafannu/Machchangolhi at 9), added as
+further supplemental candidates alongside the island ways. Result: 34/34 kept, 0 rejected, 0 unmatched — a
+clean run, and the smallest output file of any country so far (15 KB).
+
+**File sizes**: none of the 7 needed `shardByState()` — Pakistan's 1888 KB is the largest, well under any
+sharding threshold.
+
+**Real, accepted residuals**: Afghanistan (65/320 rejected, 11 substantial — real desert-district scale
+losses; a live OSM admin-level check found only 54 `admin_level=7` relations nationwide, far too sparse to be
+a comprehensive supplemental tier the way Kazakhstan's `ауыл округі` layer was, so none was added) and Pakistan
+(49/572 rejected, 14 substantial — concentrated in Balochistan/Sindh's own oversized desert districts; OSM's
+finer `admin_level` tiers there — 27 elements at level 8, 5 at level 9 nationwide — are similarly too sparse to
+supplement with) both logged to `BACKLOG.md` as real, honestly-characterized gaps rather than chased with a
+supplement that wouldn't actually be comprehensive. Bhutan's single unmatched Nganglam and Bangladesh/Sri
+Lanka/Nepal/Maldives' clean 0/0/0 runs need no further entry.
+
+**Final status: all 7 South Asia (minus India) countries are done and committed. 107 of 193 UN members now
+have real city-boundary data; 86 remain (India among them, deliberately deferred to its own pass).**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1704,7 +1785,7 @@ city-boundary data; 93 remain.**
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 100 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 107 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -1753,16 +1834,25 @@ city-boundary data; 93 remain.**
    layer, Kazakhstan's the largest fix in this file's history — 8% to 49% kept — and still the largest
    remaining residual) and Kyrgyzstan/Turkmenistan (OSM, switched off geoBoundaries entirely after a
    Latin-script name-search bug briefly made both capitals look like a real data gap — see the Nineteenth
-   pass) against the already-shipped
+   pass), and Afghanistan/Pakistan/Nepal (geoBoundaries, each level independently verified — see the
+   Twentieth pass) and Bangladesh/Sri Lanka (geoBoundaries, but overriding recon's own reported "finest"
+   level after a real canonicalName-vs-reality mismatch — both actually resolve to ward/GND-scale polygons at
+   the recon-suggested level, one level too fine, the same trap Lithuania/Sweden's recon hit — see the
+   Twentieth pass) and Bhutan (geoBoundaries, which already covers Phuentsholing as its own ADM2 unit, plus a
+   single supplemental OSM `admin_level=5` Thromde polygon for the capital, Thimphu, which ADM2 doesn't cover
+   — see the Twentieth pass) and Maldives (OSM, switched off geoBoundaries entirely — the
+   first country whose OSM candidates are sourced from `way` elements via a new `wayToGeometry` helper rather
+   than `relation`-only `boundary=administrative` queries — see the Twentieth pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, and Spain all
    sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 93 countries** (Russia included — see the Seventeenth pass's own note on why
-   it's deliberately excluded from routine regional batches) — each needs the same
+   **Not done: the other 86 countries** (Russia and India both included — see the Seventeenth pass's own note
+   on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
+   why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth pass) before its own join can run, not a blind batch extension of this
-   script.
+   Seventeenth/Eighteenth/Nineteenth/Twentieth pass) before its own join can run, not a blind batch extension
+   of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,

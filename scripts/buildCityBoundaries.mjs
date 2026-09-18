@@ -23,7 +23,10 @@
 // Lebanon, Oman, Qatar, Saudi Arabia, Syria, Turkey, United Arab Emirates,
 // Yemen, plus the 2026-09-18 Central Asia + Caucasus pass: Armenia,
 // Azerbaijan, Georgia, Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan,
-// Uzbekistan) — NOT the other 93 UN members yet. See that doc's "Fifth pass" section
+// Uzbekistan, plus the 2026-09-18 South Asia pass: Afghanistan, Pakistan,
+// Nepal, Bhutan, Bangladesh, Sri Lanka, Maldives (India deliberately excluded,
+// same reasoning as Russia — see that block's own comment) — NOT the other
+// 86 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -178,6 +181,20 @@ async function fetchOverpass(query, endpoint = OVERPASS) {
   })
   if (!res.ok) throw new Error(`Overpass ${res.status}`)
   return res.json()
+}
+
+// Every prior pass's OSM queries fetched `relation[boundary=administrative]`
+// only, so `relationToGeometry` (imported above) was the only geometry
+// converter this script ever needed. The Maldives block (Twentieth pass,
+// 2026-09-18) is the first to source candidates from `way`-tagged features
+// (`place=island`/`place=islet` — real per-island landmass outlines are
+// almost always mapped as a single closed way, not a multi-segment
+// relation) — Overpass's `out geom;` gives a `way` element a flat
+// `.geometry` array of `{lat,lon}` points directly, already closed (first
+// point equals last — verified directly against a real Maldives island
+// way), unlike a relation's member-segments-needing-stitching shape.
+function wayToGeometry(way) {
+  return { type: 'Polygon', coordinates: [way.geometry.map((p) => [p.lon, p.lat])] }
 }
 
 function loadCityPoints(countryId) {
@@ -2304,6 +2321,146 @@ out geom;`),
   const tjkJoin = joinCityPointsToPolygons('Tajikistan', tjkCities, tjkCandidates)
   writeCountryOutput('762', tjkJoin.kept)
   report.tajikistan = tjkJoin.report
+}
+
+// --- Twentieth pass (2026-09-18): South Asia minus India (Afghanistan,
+// Pakistan, Nepal, Bhutan, Bangladesh, Sri Lanka, Maldives) — continuing the
+// west-to-east walk across Asia the Nineteenth pass (Central Asia +
+// Caucasus) started. India deliberately excluded and held for its own
+// dedicated investigation, the same reasoning Russia is excluded from every
+// routine regional batch — its recon-reported finest level (ADM5, 649,771
+// units, min area 0.0004 km²) is village-scale, not remotely city-scale, and
+// picking a real level for a country this size needs its own pass, not a
+// blind adoption into a 7-country batch built around much smaller countries.
+//
+// Two real "don't trust canonicalName" catches, the same discipline this
+// file has followed since Belize/Lithuania/Sweden: Bangladesh's recon-
+// reported finest level (ADM4, canonicalName "Union Councils / Municipal
+// Corporations / City Corporations", 5,160 units) sounds like exactly the
+// city-scale level this join needs, but a direct point-in-polygon check
+// against Dhaka/Chattogram/Rajshahi/Sylhet's real coordinates landed each
+// one in an individual city WARD (0.4-0.9 km², e.g. Dhaka -> "Ward No-73")
+// — sub-city, not city-scale, the same shape as Sri Lanka's Grama Niladhari
+// problem below. ADM3 ("subdistricts"/Upazila, 544 units) landed the same
+// four cities in Kotwali/Boalia/Sylhet Sadar/Chittagong Port — real
+// city-scale units (0.8-318 km²) — and is used instead. Sri Lanka's own
+// recon-reported finest level (ADM4, "Grama Niladhari Divisions", 14,044
+// units) has the identical problem — Colombo/Kandy/Jaffna all land in a
+// sub-1 km² GN division, not a city boundary — while ADM3 ("Divisional
+// Secretariat", 330 units) puts Colombo in its own 22 km² DS division
+// directly. Afghanistan/Pakistan/Nepal all confirmed clean on their
+// recon-reported finest level (ADM2/ADM3/ADM3 respectively — Kabul,
+// Kandahar, Mazari Sharif; Karachi, Lahore, Islamabad, Faisalabad,
+// Rawalpindi; Kathmandu, Pokhara, Biratnagar, Lalitpur, Bharatpur all
+// confirmed present as their own named unit), no override needed.
+if (shouldRun('004')) report.afghanistan = await runGeoBoundariesCountry({ name: 'Afghanistan', numericId: '004', alpha3: 'AFG', admLevel: 'ADM2' })
+if (shouldRun('586')) report.pakistan = await runGeoBoundariesCountry({ name: 'Pakistan', numericId: '586', alpha3: 'PAK', admLevel: 'ADM3' })
+if (shouldRun('524')) report.nepal = await runGeoBoundariesCountry({ name: 'Nepal', numericId: '524', alpha3: 'NPL', admLevel: 'ADM3' })
+if (shouldRun('050')) report.bangladesh = await runGeoBoundariesCountry({ name: 'Bangladesh', numericId: '050', alpha3: 'BGD', admLevel: 'ADM3' })
+if (shouldRun('144')) report.sriLanka = await runGeoBoundariesCountry({ name: 'Sri Lanka', numericId: '144', alpha3: 'LKA', admLevel: 'ADM3' })
+
+// Bhutan: geoBoundaries' ADM2 (205 Gewogs, real rural blocks) already
+// covers Phuentsholing (note the real spelling) as its own 133.8 km² unit,
+// confirmed by direct point-in-polygon check — but not the capital: Thimphu
+// lands inside the surrounding rural "Chang" Gewog (157 km²) instead, since
+// Thimphu Thromde (city) is administratively independent of any Gewog, the
+// same shape as every other capital in this pass. A live OSM check found
+// exactly one real Thromde boundary in the whole country — Thimphu itself,
+// admin_level=5 (the same tier as Bhutan's 20 Dzongkhags) — added as a
+// single supplemental candidate, the Kazakhstan/Tajikistan/Monaco "capital
+// point against its own coarser-tier polygon" pattern.
+if (shouldRun('064')) {
+  console.log('\n=== Bhutan ===')
+  const btnMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/BTN/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const btnAdm2Meta = btnMeta.find((l) => l.boundaryType === 'ADM2')
+  const btnAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(btnAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const btnCandidates = btnAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  const btnOsmRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:60];
+area["ISO3166-1"="BT"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="5"];
+out geom;`),
+  )
+  let btnOsmUnclosedCount = 0
+  for (const rel of btnOsmRaw.elements) {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) btnOsmUnclosedCount++
+    btnCandidates.push({ name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin5' })
+  }
+  if (btnOsmUnclosedCount > 0) console.log(`  [warn] ${btnOsmUnclosedCount} Bhutan supplemental OSM relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  console.log(`  +${btnOsmRaw.elements.length} supplemental OSM candidates (osm-admin5, Thimphu Thromde)`)
+  const btnCities = loadCityPoints('064')
+  const btnJoin = joinCityPointsToPolygons('Bhutan', btnCities, btnCandidates)
+  writeCountryOutput('064', btnJoin.kept)
+  report.bhutan = btnJoin.report
+}
+
+// Maldives: geoBoundaries' finest level (ADM2, "Administrative Atolls", 21
+// units) is the SAME 21-atoll partition as its own ADM1 — a whole atoll
+// (lagoon included, up to ~2,300 km²) is nowhere near city scale, and every
+// city in it would join to the same huge polygon regardless of which real
+// island it's actually on. Switched off geoBoundaries entirely. OSM has
+// real, comprehensive per-island landmass coverage instead: 894
+// `place=island`/`place=islet` features across the country (almost all
+// mapped as a single closed `way`, not a `relation` — see `wayToGeometry`'s
+// own comment above for why this pass needed a real new geometry
+// converter), confirmed directly against real inhabited islands
+// (Fuvahmulah, Kulhudhuffushi, Hithadhoo all present by name). Malé itself —
+// the capital, fully urbanized, ~2 km² total — has no single `place=island`
+// polygon of its own; its administrative area is covered instead by 6 real
+// admin_level 8/9 relations (Hulhumalé/Vilimalé at 8, the four wards
+// Galolhu/Henveiru/Maafannu/Machchangolhi at 9), added as further
+// supplemental candidates. A GeoNames point for a resort/uninhabited islet
+// with no matching OSM island polygon still has the 2km snap fallback to
+// fall back on before counting as a real unmatched gap.
+if (!process.env.SKIP_OSM && shouldRun('462')) {
+  console.log('\n=== Maldives ===')
+  const mdvIslandsRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="MV"][admin_level=2]->.mv;
+(
+  way["place"~"^(island|islet)$"](area.mv);
+  relation["place"~"^(island|islet)$"](area.mv);
+);
+out geom;`),
+  )
+  const mdvCandidates = []
+  let mdvUnclosedCount = 0
+  for (const el of mdvIslandsRaw.elements) {
+    if (el.type === 'way') {
+      mdvCandidates.push({ name: el.tags?.['name:en'] ?? el.tags?.name ?? `way/${el.id}`, geometry: wayToGeometry(el), source: 'osm-place-island' })
+    } else if (el.type === 'relation') {
+      const { geometry, closed } = relationToGeometry(el)
+      if (!closed) mdvUnclosedCount++
+      mdvCandidates.push({ name: el.tags?.['name:en'] ?? el.tags?.name ?? `relation/${el.id}`, geometry, source: 'osm-place-island' })
+    }
+  }
+  console.log(`  +${mdvCandidates.length} island candidates (osm-place-island)`)
+  const mdvMaleRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:60];
+area["ISO3166-1"="MV"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(8|9)$"];
+out geom;`),
+  )
+  for (const rel of mdvMaleRaw.elements) {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) mdvUnclosedCount++
+    mdvCandidates.push({ name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8-9' })
+  }
+  if (mdvUnclosedCount > 0) console.log(`  [warn] ${mdvUnclosedCount} Maldives OSM elements had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  console.log(`  +${mdvMaleRaw.elements.length} Malé-area supplemental candidates (osm-admin8-9)`)
+  const mdvCities = loadCityPoints('462')
+  const mdvJoin = joinCityPointsToPolygons('Maldives', mdvCities, mdvCandidates)
+  writeCountryOutput('462', mdvJoin.kept)
+  report.maldives = mdvJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census

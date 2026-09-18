@@ -1130,6 +1130,20 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   revisited.
 - **Georgia rejected 10 of 218 points, none substantial** (found 2026-09-18, "Nineteenth pass") — same as
   Azerbaijan above, not investigated further.
+- **Afghanistan rejected 65 of 320 points, 11 substantial (Bāzār-e Yakāwlang 65,000, Shīnḏanḏ 29,264, Khān
+  Neshīn 25,600, Fayrōz Kōh/Chaghcharan 15,000, ...), all lost to oversized desert wuleswali (districts) up to
+  21,667 km²** (found 2026-09-18, `city-boundaries-architecture.md`'s "Twentieth pass"). A live OSM
+  admin-level check found only 54 `admin_level=7` relations nationwide — far too sparse to be a real
+  comprehensive supplemental tier the way Kazakhstan's "ауыл округі" layer was — so no supplement was added;
+  same accepted desert-district shape as Oman/Jordan/Syria/Yemen above, not chased further.
+- **Pakistan rejected 49 of 572 points, 14 substantial (Khuzdar 218,112, Turbat 75,694, Mithi 52,376, Zhob
+  50,537, Yazman 60,738, ...), concentrated in Balochistan/Sindh's own oversized desert tehsils** (found
+  2026-09-18, "Twentieth pass") — a live OSM check found only 27 `admin_level=8` and 5 `admin_level=9`
+  relations nationwide, too sparse to supplement with; same accepted shape, not chased further.
+- **Bhutan left 1 of 34 points unmatched: Nganglam, population 707, a small town near the Assam (India)
+  border** (found 2026-09-18, "Twentieth pass") — a genuine small-border-town gap, not chased further given
+  the country's overall clean result (33/34 kept; Thimphu and Phuntsholing, its two real municipalities, both
+  matched correctly — see `city-boundaries-architecture.md`'s Twentieth pass).
 
 ## Visualization
 
