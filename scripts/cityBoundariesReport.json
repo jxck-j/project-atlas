@@ -43064,5 +43064,4756 @@
     "unmatched": [],
     "rejected": [],
     "snapped": []
+  },
+  "cyprus": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "syria": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "‘Uqayribāt",
+        "population": 0,
+        "matchedTo": "Oqeirbat",
+        "areaSqKm": 2687,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tadmur",
+        "population": 51015,
+        "matchedTo": "Tadmor",
+        "areaSqKm": 17173.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Şirrīn ash Shamālīyah",
+        "population": 0,
+        "matchedTo": "Sarin",
+        "areaSqKm": 2003.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sulūk",
+        "population": 0,
+        "matchedTo": "Suluk",
+        "areaSqKm": 3125.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "As Sab‘ Biyār",
+        "population": 0,
+        "matchedTo": "Sabe Byar",
+        "areaSqKm": 12941.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ra’s al ‘Ayn",
+        "population": 0,
+        "matchedTo": "Ras Al Ain",
+        "areaSqKm": 2831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jalā’",
+        "population": 0,
+        "matchedTo": "Abu Kamal",
+        "areaSqKm": 4184.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Markadah",
+        "population": 0,
+        "matchedTo": "Markada",
+        "areaSqKm": 3383.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Khafsah",
+        "population": 0,
+        "matchedTo": "Al-Khafsa",
+        "areaSqKm": 3063.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jubb al Jarrāḩ",
+        "population": 0,
+        "matchedTo": "Jeb Ej-Jarrah",
+        "areaSqKm": 2466.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aḑ Ḑumayr",
+        "population": 0,
+        "matchedTo": "Dhameer",
+        "areaSqKm": 5930.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "As Sukhnah",
+        "population": 0,
+        "matchedTo": "Sokhneh",
+        "areaSqKm": 13660,
+        "isSubstantial": false
+      },
+      {
+        "name": "As Sabkhah",
+        "population": 0,
+        "matchedTo": "Sabka",
+        "areaSqKm": 2503.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nāḩiyat as Sab‘ Biyār",
+        "population": 0,
+        "matchedTo": "Sabe Byar",
+        "areaSqKm": 12941.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Kasrah",
+        "population": 0,
+        "matchedTo": "Kisreh",
+        "areaSqKm": 3929.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Manşūrah",
+        "population": 0,
+        "matchedTo": "Mansura",
+        "areaSqKm": 3912.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Ţarţūs",
+        "population": 458327,
+        "matchedTo": "Tartous",
+        "snapDistanceKm": 0.1
+      },
+      {
+        "name": "Ad Darbāsīyah",
+        "population": 21481,
+        "matchedTo": "Darbasiyah",
+        "snapDistanceKm": 0.286
+      }
+    ]
+  },
+  "turkey": {
+    "unmatched": [
+      {
+        "name": "Çey",
+        "population": 13000,
+        "lat": 37.2621,
+        "lng": 44.04086
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Yavrudoğan",
+        "population": 1749,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yüreğil",
+        "population": 1491,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dikmen",
+        "population": 656,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yıllarca",
+        "population": 1177,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yıldızeli",
+        "population": 6420,
+        "matchedTo": "Yıldızeli",
+        "areaSqKm": 2732.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doski Vadisi",
+        "population": 670,
+        "matchedTo": "Yüksekova",
+        "areaSqKm": 2448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeşilova",
+        "population": 0,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gölcük",
+        "population": 0,
+        "matchedTo": "Niğde (merkez)",
+        "areaSqKm": 2236.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeşildere",
+        "population": 798,
+        "matchedTo": "Karaman merkez",
+        "areaSqKm": 4224.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yenipınar",
+        "population": 769,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yenimehmetli",
+        "population": 218,
+        "matchedTo": "Polatlı",
+        "areaSqKm": 3525,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akhisar",
+        "population": 918,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yenicekale",
+        "population": 0,
+        "matchedTo": "Onikişubat",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeniceoba",
+        "population": 0,
+        "matchedTo": "Cihanbeyli",
+        "areaSqKm": 3627.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yelten",
+        "population": 1937,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yazyurdu",
+        "population": 0,
+        "matchedTo": "Gürün",
+        "areaSqKm": 2667.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yaygın",
+        "population": 0,
+        "matchedTo": "Muş merkez",
+        "areaSqKm": 2771.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yavu",
+        "population": 0,
+        "matchedTo": "Yıldızeli",
+        "areaSqKm": 2732.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yarma",
+        "population": 2601,
+        "matchedTo": "Karatay",
+        "areaSqKm": 2779.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yarımkaş",
+        "population": 626,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yaprakbaşı",
+        "population": 1483,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yalınca",
+        "population": 0,
+        "matchedTo": "Gürpınar",
+        "areaSqKm": 3968.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Üzümlü",
+        "population": 0,
+        "matchedTo": "Beyşehir",
+        "areaSqKm": 2088.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umraniye",
+        "population": 67,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulucanlar",
+        "population": 875,
+        "matchedTo": "Karayazı",
+        "areaSqKm": 2064.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulucak",
+        "population": 603,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Turgut",
+        "population": 0,
+        "matchedTo": "Yunak",
+        "areaSqKm": 2286.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tosmurlu",
+        "population": 1203,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tepeköy",
+        "population": 692,
+        "matchedTo": "Niğde (merkez)",
+        "areaSqKm": 2236.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tekman",
+        "population": 8270,
+        "matchedTo": "Tekman",
+        "areaSqKm": 2095.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gaziler",
+        "population": 3689,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tatköy",
+        "population": 810,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taşpınar",
+        "population": 0,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taşkesiği",
+        "population": 523,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taşağıl",
+        "population": 4645,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tabureli",
+        "population": 1076,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sülüklü",
+        "population": 0,
+        "matchedTo": "Yunak",
+        "areaSqKm": 2286.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Suluçem",
+        "population": 0,
+        "matchedTo": "Doğubayazıt",
+        "areaSqKm": 2279.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Süleymanlı",
+        "population": 518,
+        "matchedTo": "Onikişubat",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sülekler",
+        "population": 1076,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sülek",
+        "population": 1105,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sözveren",
+        "population": 596,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sorgun",
+        "population": 834,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sömek",
+        "population": 817,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sökün",
+        "population": 517,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sırımkesen",
+        "population": 555,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sıraç",
+        "population": 702,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yenice",
+        "population": 0,
+        "matchedTo": "Haymana",
+        "areaSqKm": 2217.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sincan",
+        "population": 0,
+        "matchedTo": "Divriği",
+        "areaSqKm": 2701.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sinanlı",
+        "population": 604,
+        "matchedTo": "Haymana",
+        "areaSqKm": 2217.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kırıkdağ",
+        "population": 1286,
+        "matchedTo": "Hakkari merkez",
+        "areaSqKm": 2070.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yuva",
+        "population": 1347,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Selimiye",
+        "population": 0,
+        "matchedTo": "Milas",
+        "areaSqKm": 2076.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Şekerli",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarıoba",
+        "population": 626,
+        "matchedTo": "Polatlı",
+        "areaSqKm": 3525,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarıçubuk",
+        "population": 1135,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sapmaz",
+        "population": 511,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sabuncu",
+        "population": 0,
+        "matchedTo": "Kütahya merkez",
+        "areaSqKm": 2455.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uzuncaburç",
+        "population": 878,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Poyraz",
+        "population": 165,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pazarören",
+        "population": 0,
+        "matchedTo": "Pınarbaşı",
+        "areaSqKm": 3411.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Övecek",
+        "population": 654,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ovakavağı",
+        "population": 2261,
+        "matchedTo": "Karatay",
+        "areaSqKm": 2779.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ovabağ",
+        "population": 0,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ortaşar",
+        "population": 961,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ortaköy",
+        "population": 0,
+        "matchedTo": "Şarkışla",
+        "areaSqKm": 2054.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Örenşehir",
+        "population": 0,
+        "matchedTo": "Pınarbaşı",
+        "areaSqKm": 3411.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ören",
+        "population": 0,
+        "matchedTo": "Milas",
+        "areaSqKm": 2076.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oğuzköy",
+        "population": 63,
+        "matchedTo": "Kemah",
+        "areaSqKm": 2269.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Obruk",
+        "population": 0,
+        "matchedTo": "Karatay",
+        "areaSqKm": 2779.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Denizyaka",
+        "population": 507,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demirci",
+        "population": 0,
+        "matchedTo": "Viranşehir",
+        "areaSqKm": 2118.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Narlı",
+        "population": 0,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mursal",
+        "population": 0,
+        "matchedTo": "Divriği",
+        "areaSqKm": 2701.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elmalıdere",
+        "population": 0,
+        "matchedTo": "Karayazı",
+        "areaSqKm": 2064.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mollakendi",
+        "population": 0,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mercimekkale",
+        "population": 0,
+        "matchedTo": "Muş merkez",
+        "areaSqKm": 2771.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kırobası",
+        "population": 359,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Limonlu",
+        "population": 2939,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kustulu",
+        "population": 751,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuşkayası",
+        "population": 0,
+        "matchedTo": "Kangal",
+        "areaSqKm": 3220.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kurtuluş",
+        "population": 1121,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kurtuluş",
+        "population": 1121,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarıkavak",
+        "population": 0,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "İnanöz",
+        "population": 1083,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kozağacı",
+        "population": 1072,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kösbucağı",
+        "population": 1933,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Köprüören",
+        "population": 0,
+        "matchedTo": "Kütahya merkez",
+        "areaSqKm": 2455.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konalga",
+        "population": 2395,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konakpınar",
+        "population": 0,
+        "matchedTo": "Gürün",
+        "areaSqKm": 2667.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kocapınar",
+        "population": 0,
+        "matchedTo": "Erciş",
+        "areaSqKm": 2024.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kocahasanlı",
+        "population": 5738,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kızılcadağ",
+        "population": 0,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kızılağaç",
+        "population": 0,
+        "matchedTo": "Muş merkez",
+        "areaSqKm": 2771.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulukapı",
+        "population": 3545,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kırköy",
+        "population": 1801,
+        "matchedTo": "Muş merkez",
+        "areaSqKm": 2771.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kırkgeçit",
+        "population": 0,
+        "matchedTo": "Gürpınar",
+        "areaSqKm": 3968.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kılıçkaya",
+        "population": 1954,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kılbasan",
+        "population": 1571,
+        "matchedTo": "Karaman merkez",
+        "areaSqKm": 4224.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kisecik",
+        "population": 548,
+        "matchedTo": "Karaman merkez",
+        "areaSqKm": 4224.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kerpiçköy",
+        "population": 740,
+        "matchedTo": "Haymana",
+        "areaSqKm": 2217.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sağırın",
+        "population": 1650,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kemerağzı",
+        "population": 5991,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kemah",
+        "population": 2549,
+        "matchedTo": "Kemah",
+        "areaSqKm": 2269.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Keben",
+        "population": 557,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaynar",
+        "population": 0,
+        "matchedTo": "Pınarbaşı",
+        "areaSqKm": 3411.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaymaz",
+        "population": 0,
+        "matchedTo": "Sivrihisar",
+        "areaSqKm": 2777.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayırlı",
+        "population": 962,
+        "matchedTo": "Niğde (merkez)",
+        "areaSqKm": 2236.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayadibi",
+        "population": 0,
+        "matchedTo": "Sivas merkez",
+        "areaSqKm": 3331.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayacı",
+        "population": 1223,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayabaşı",
+        "population": 626,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kavak",
+        "population": 0,
+        "matchedTo": "Kangal",
+        "areaSqKm": 3220.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kızılağaç",
+        "population": 1440,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karlı",
+        "population": 1239,
+        "matchedTo": "Yüksekova",
+        "areaSqKm": 2448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karayün",
+        "population": 0,
+        "matchedTo": "Sivas merkez",
+        "areaSqKm": 3331.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karayazı",
+        "population": 7340,
+        "matchedTo": "Karayazı",
+        "areaSqKm": 2064.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karayakup",
+        "population": 616,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saraçlı",
+        "population": 508,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karasungur",
+        "population": 2225,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Belenobası",
+        "population": 803,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karakeşli",
+        "population": 887,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karakent",
+        "population": 561,
+        "matchedTo": "Doğubayazıt",
+        "areaSqKm": 2279.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karakeçi",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karahıdırlı",
+        "population": 1267,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karahamzalı",
+        "population": 536,
+        "matchedTo": "Polatlı",
+        "areaSqKm": 3525,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karahacılı",
+        "population": 761,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Esenyurt",
+        "population": 512,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karadiken",
+        "population": 559,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karaçevre",
+        "population": 2218,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karacaören",
+        "population": 1607,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karacalar",
+        "population": 667,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karacalar",
+        "population": 2031,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karacadağ",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karabük",
+        "population": 575,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karabudak",
+        "population": 693,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karabucak",
+        "population": 539,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karababa",
+        "population": 629,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ataköy",
+        "population": 587,
+        "matchedTo": "Haymana",
+        "areaSqKm": 2217.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalebalta",
+        "population": 680,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaçıt",
+        "population": 862,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "İnönü",
+        "population": 5552,
+        "matchedTo": "Ayrancı",
+        "areaSqKm": 2145.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "İncesu",
+        "population": 1654,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "İmrahor",
+        "population": 1672,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "İmecik",
+        "population": 655,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "İmamuşağı",
+        "population": 634,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "İlemin",
+        "population": 666,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "İçme",
+        "population": 0,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hüseyinler",
+        "population": 565,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hüsametli",
+        "population": 523,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çayyazı",
+        "population": 1831,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hotamış",
+        "population": 0,
+        "matchedTo": "Karapınar",
+        "areaSqKm": 2682.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hıdırbaba",
+        "population": 0,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yazçiçeği",
+        "population": 902,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hatipoğlutolu",
+        "population": 564,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Harput",
+        "population": 0,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hankendi",
+        "population": 0,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hacıobası",
+        "population": 571,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hacıhalilarpaç",
+        "population": 1047,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gücünkaya",
+        "population": 1222,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Güzelsu",
+        "population": 0,
+        "matchedTo": "Gürpınar",
+        "areaSqKm": 3968.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Güzeloluk",
+        "population": 618,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Güveççi",
+        "population": 569,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gürpınar",
+        "population": 0,
+        "matchedTo": "Gürpınar",
+        "areaSqKm": 3968.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Güllük",
+        "population": 0,
+        "matchedTo": "Milas",
+        "areaSqKm": 2076.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gücük",
+        "population": 0,
+        "matchedTo": "Elbistan",
+        "areaSqKm": 2202.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gözlükuyu",
+        "population": 1294,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gösterli",
+        "population": 914,
+        "matchedTo": "Niğde (merkez)",
+        "areaSqKm": 2236.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Göksu",
+        "population": 0,
+        "matchedTo": "Karayazı",
+        "areaSqKm": 2064.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gökoğlan",
+        "population": 0,
+        "matchedTo": "Tekman",
+        "areaSqKm": 2095.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gökçe",
+        "population": 509,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elmacık",
+        "population": 673,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korucu",
+        "population": 599,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sevinçli",
+        "population": 1618,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gedikbaşı",
+        "population": 0,
+        "matchedTo": "Divriği",
+        "areaSqKm": 2701.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Geçitli",
+        "population": 0,
+        "matchedTo": "Hakkari merkez",
+        "areaSqKm": 2070.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adayazı",
+        "population": 938,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Evrenseki",
+        "population": 2615,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Esendere",
+        "population": 0,
+        "matchedTo": "Yüksekova",
+        "areaSqKm": 2448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Emirler",
+        "population": 726,
+        "matchedTo": "Haymana",
+        "areaSqKm": 2217.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bulucan",
+        "population": 0,
+        "matchedTo": "Zara",
+        "areaSqKm": 2614.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elvanlı",
+        "population": 2143,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elbeyli",
+        "population": 506,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elaçmaz",
+        "population": 1064,
+        "matchedTo": "Gürpınar",
+        "areaSqKm": 3968.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gençosman",
+        "population": 896,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dolbazlar",
+        "population": 592,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doğanbeyli",
+        "population": 0,
+        "matchedTo": "Kemah",
+        "areaSqKm": 2269.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doğanbey",
+        "population": 0,
+        "matchedTo": "Beyşehir",
+        "areaSqKm": 2088.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Direkli",
+        "population": 0,
+        "matchedTo": "Yıldızeli",
+        "areaSqKm": 2732.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dinek",
+        "population": 0,
+        "matchedTo": "Çumra",
+        "areaSqKm": 2135.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dikilitaş",
+        "population": 708,
+        "matchedTo": "Niğde (merkez)",
+        "areaSqKm": 2236.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ovacık",
+        "population": 972,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demirciler",
+        "population": 1337,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Deliktaş",
+        "population": 0,
+        "matchedTo": "Kangal",
+        "areaSqKm": 3220.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Deliçay",
+        "population": 0,
+        "matchedTo": "Erciş",
+        "areaSqKm": 2024.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Değirmenönü",
+        "population": 515,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Davulga",
+        "population": 557,
+        "matchedTo": "Emirdağ",
+        "areaSqKm": 2082.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Görece",
+        "population": 552,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dağlıca",
+        "population": 0,
+        "matchedTo": "Yüksekova",
+        "areaSqKm": 2448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dağbaşı",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dagarası",
+        "population": 607,
+        "matchedTo": "Muş merkez",
+        "areaSqKm": 2771.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çömçeli",
+        "population": 1795,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çomaklı",
+        "population": 891,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çoğlu",
+        "population": 665,
+        "matchedTo": "Karaman merkez",
+        "areaSqKm": 4224.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cipköy",
+        "population": 654,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çınar",
+        "population": 0,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çınarköy",
+        "population": 1080,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çiğil",
+        "population": 0,
+        "matchedTo": "Karapınar",
+        "areaSqKm": 2682.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çetinkaya",
+        "population": 0,
+        "matchedTo": "Kangal",
+        "areaSqKm": 3220.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çeşmeli",
+        "population": 5925,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Leblebitaşı",
+        "population": 1586,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çenger",
+        "population": 917,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çeltikçi",
+        "population": 2753,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çeltikçi",
+        "population": 706,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dağlı",
+        "population": 824,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çekiçler",
+        "population": 621,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çaylarbaşı",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çavuşköy",
+        "population": 578,
+        "matchedTo": "Karayazı",
+        "areaSqKm": 2064.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çatak",
+        "population": 0,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Altınkaya",
+        "population": 1260,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çardakköy",
+        "population": 944,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cambazlı",
+        "population": 686,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çaltıbozkır",
+        "population": 821,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çakış",
+        "population": 1820,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çakırkaya",
+        "population": 1186,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Buyuransu",
+        "population": 691,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Büyükköy",
+        "population": 1235,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeşilovacık",
+        "population": 3877,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burunucu",
+        "population": 865,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bulutçeker",
+        "population": 991,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bucakşeyhler",
+        "population": 723,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bucakkışla",
+        "population": 145,
+        "matchedTo": "Karaman merkez",
+        "areaSqKm": 4224.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boztepe",
+        "population": 543,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bozova",
+        "population": 935,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bozoğlak",
+        "population": 0,
+        "matchedTo": "Kemah",
+        "areaSqKm": 2269.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bozdoğan",
+        "population": 1761,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bilgi",
+        "population": 1100,
+        "matchedTo": "Çatak",
+        "areaSqKm": 2007.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beypınarı",
+        "population": 0,
+        "matchedTo": "Zara",
+        "areaSqKm": 2614.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beylikköprü",
+        "population": 943,
+        "matchedTo": "Polatlı",
+        "areaSqKm": 3525,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beşpınar",
+        "population": 1465,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beşkonak",
+        "population": 0,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bereket",
+        "population": 611,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beneklitaş",
+        "population": 791,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bellitaş",
+        "population": 694,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bucak",
+        "population": 0,
+        "matchedTo": "Siverek",
+        "areaSqKm": 3936.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bedirli",
+        "population": 0,
+        "matchedTo": "Sivas merkez",
+        "areaSqKm": 3331.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bayırkonağı",
+        "population": 573,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Basri",
+        "population": 2082,
+        "matchedTo": "Polatlı",
+        "areaSqKm": 3525,
+        "isSubstantial": false
+      },
+      {
+        "name": "Başaklı",
+        "population": 2036,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bağışlı",
+        "population": 0,
+        "matchedTo": "Hakkari merkez",
+        "areaSqKm": 2070.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayrancı",
+        "population": 0,
+        "matchedTo": "Ayrancı",
+        "areaSqKm": 2145.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayaş",
+        "population": 2634,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aşağıışıklı",
+        "population": 2240,
+        "matchedTo": "Erciş",
+        "areaSqKm": 2024.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arpaçbahşiş",
+        "population": 7285,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Armutlu",
+        "population": 1091,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Danişment",
+        "population": 0,
+        "matchedTo": "Divriği",
+        "areaSqKm": 2701.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Örençay",
+        "population": 681,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alpköy",
+        "population": 0,
+        "matchedTo": "Kemah",
+        "areaSqKm": 2269.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Albayrak",
+        "population": 0,
+        "matchedTo": "Başkale",
+        "areaSqKm": 2717.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alayhanı",
+        "population": 520,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alacahan",
+        "population": 0,
+        "matchedTo": "Kangal",
+        "areaSqKm": 3220.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alabaş",
+        "population": 1519,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akyar",
+        "population": 726,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akin",
+        "population": 588,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akdere",
+        "population": 1720,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akçakent",
+        "population": 842,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akcakışla",
+        "population": 0,
+        "matchedTo": "Şarkışla",
+        "areaSqKm": 2054.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Acıpınar",
+        "population": 785,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Atakent",
+        "population": 8195,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kızkalesi",
+        "population": 1742,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeşilyayla",
+        "population": 1517,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oymapınar",
+        "population": 1492,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Örenşehir",
+        "population": 965,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yusufeli",
+        "population": 6847,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarıgöl",
+        "population": 0,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seydim",
+        "population": 0,
+        "matchedTo": "Çorum merkez",
+        "areaSqKm": 2473.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Şerefiye",
+        "population": 0,
+        "matchedTo": "Zara",
+        "areaSqKm": 2614.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pamukçular",
+        "population": 521,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Öğdem",
+        "population": 93,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kılıçkaya",
+        "population": 0,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kırık",
+        "population": 0,
+        "matchedTo": "İspir",
+        "areaSqKm": 2024.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demirkent",
+        "population": 277,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çırçır",
+        "population": 0,
+        "matchedTo": "Yıldızeli",
+        "areaSqKm": 2732.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çevreli",
+        "population": 667,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cemilbey",
+        "population": 0,
+        "matchedTo": "Çorum merkez",
+        "areaSqKm": 2473.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çamlıkaya",
+        "population": 0,
+        "matchedTo": "İspir",
+        "areaSqKm": 2024.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Başgedikler",
+        "population": 0,
+        "matchedTo": "Kars merkez",
+        "areaSqKm": 2092.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Avdalı",
+        "population": 629,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karatay",
+        "population": 0,
+        "matchedTo": "Karatay",
+        "areaSqKm": 2779.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çolaklı",
+        "population": 7190,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayveri",
+        "population": 1480,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sevindik",
+        "population": 1361,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bağlı",
+        "population": 578,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hırkatolu",
+        "population": 1231,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seleciköse",
+        "population": 621,
+        "matchedTo": "Aksaray merkez",
+        "areaSqKm": 3948.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akgedik",
+        "population": 1509,
+        "matchedTo": "Mut",
+        "areaSqKm": 2859.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeniköy",
+        "population": 752,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gültepe",
+        "population": 2226,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karaöz",
+        "population": 1062,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doğançam",
+        "population": 671,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kargalık",
+        "population": 1238,
+        "matchedTo": "Korkuteli",
+        "areaSqKm": 2402.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tekkale",
+        "population": 555,
+        "matchedTo": "Yusufeli",
+        "areaSqKm": 2332.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dişlibaşak",
+        "population": 837,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yeşilbağ",
+        "population": 1084,
+        "matchedTo": "Çınar",
+        "areaSqKm": 2006.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çiftepınar",
+        "population": 1111,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çiriş",
+        "population": 1000,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Üçtepe",
+        "population": 1387,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Batısandal",
+        "population": 744,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarıkaya",
+        "population": 655,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Esenpınar",
+        "population": 1287,
+        "matchedTo": "Erdemli",
+        "areaSqKm": 2024.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "İmamlı",
+        "population": 622,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Narlıkuyu",
+        "population": 2476,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Atayurt",
+        "population": 6876,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arkum",
+        "population": 1737,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulugöz",
+        "population": 1165,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bolacalıkoyuncu",
+        "population": 971,
+        "matchedTo": "Silifke",
+        "areaSqKm": 2750.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aşağı Hisar",
+        "population": 8832,
+        "matchedTo": "Manavgat",
+        "areaSqKm": 2186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yenice",
+        "population": 736,
+        "matchedTo": "Elazığ merkez",
+        "areaSqKm": 2227.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Gündoğdu",
+        "population": 0,
+        "matchedTo": "Rize merkezi",
+        "snapDistanceKm": 0.122
+      }
+    ]
+  },
+  "bahrain": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "iraq": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Şafwān",
+        "population": 22929,
+        "matchedTo": "ناحية صفوان",
+        "areaSqKm": 7582.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qā’im",
+        "population": 74100,
+        "matchedTo": "ناحية مرکز قضاء القائم",
+        "areaSqKm": 5416,
+        "isSubstantial": true
+      },
+      {
+        "name": "Baladrūz",
+        "population": 0,
+        "matchedTo": "ناحية مرکز قضاء بلدروز",
+        "areaSqKm": 2055,
+        "isSubstantial": false
+      },
+      {
+        "name": "As Salmān",
+        "population": 0,
+        "matchedTo": "ناحية مرکز قضاء السلمان",
+        "areaSqKm": 17987.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Ruţbah",
+        "population": 22370,
+        "matchedTo": "ناحية مرکز قضاء االرطبة",
+        "areaSqKm": 37648.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "‘Anat al Qadīmah",
+        "population": 19719,
+        "matchedTo": "ناحية مرکز قضاء عانة",
+        "areaSqKm": 5195.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Ḩaḑar",
+        "population": 0,
+        "matchedTo": "ناحية مرکز قضاء الحضر",
+        "areaSqKm": 9099.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ba‘āj",
+        "population": 0,
+        "matchedTo": "ناحية مرکز قضاء البعاج",
+        "areaSqKm": 7498.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ad Dawr",
+        "population": 0,
+        "matchedTo": "Al-Daur",
+        "areaSqKm": 2736.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Anah",
+        "population": 27000,
+        "matchedTo": "ناحية مرکز قضاء عانة",
+        "areaSqKm": 5195.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "AlZwya",
+        "population": 15000,
+        "matchedTo": "Beygee",
+        "areaSqKm": 6627.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hawe Ben Alean",
+        "population": 1500,
+        "matchedTo": "Beygee",
+        "areaSqKm": 6627.2,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "oman": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Thamarīt",
+        "population": 10552,
+        "matchedTo": "WILAYAT THUMRAYT",
+        "areaSqKm": 36848.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "‘Ibrī",
+        "population": 163473,
+        "matchedTo": "WILAYAT IBRI",
+        "areaSqKm": 32809,
+        "isSubstantial": true
+      },
+      {
+        "name": "Haymā’",
+        "population": 1294,
+        "matchedTo": "WILAYAT HAYMA",
+        "areaSqKm": 53397.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Māzim",
+        "population": 1318,
+        "matchedTo": "WILAYAT IBRI",
+        "areaSqKm": 32809,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adam",
+        "population": 17283,
+        "matchedTo": "WILAYAT ADAM",
+        "areaSqKm": 20987,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Mazyūnah",
+        "population": 0,
+        "matchedTo": "WILAYAT AL MAZYUNAH",
+        "areaSqKm": 14129.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Wadan",
+        "population": 1000,
+        "matchedTo": "WILAYAT AS SUNAYNAH",
+        "areaSqKm": 2980.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "qatar": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "saudiArabia": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Yanbu",
+        "population": 200161,
+        "matchedTo": "Yanbu",
+        "areaSqKm": 10357.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tabuk",
+        "population": 667000,
+        "matchedTo": "محافظة تبوك",
+        "areaSqKm": 61597.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sulţānah",
+        "population": 946697,
+        "matchedTo": "Al Madinah Al Munawwarah",
+        "areaSqKm": 22986,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khamis Mushait",
+        "population": 387553,
+        "matchedTo": "Khamis Mushayt",
+        "areaSqKm": 5477.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ha'il",
+        "population": 605930,
+        "matchedTo": "Hail",
+        "areaSqKm": 33425.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hafar Al-Batin",
+        "population": 271642,
+        "matchedTo": "Hafar Al Batin Governorate",
+        "areaSqKm": 46422,
+        "isSubstantial": true
+      },
+      {
+        "name": "Buraydah",
+        "population": 745353,
+        "matchedTo": "محافظة بريدة",
+        "areaSqKm": 15082.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ta’if",
+        "population": 688693,
+        "matchedTo": "محافظة الطائف",
+        "areaSqKm": 14629.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Riyadh",
+        "population": 4205961,
+        "matchedTo": "محافظة الرياض",
+        "areaSqKm": 8147.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Mubarraz",
+        "population": 290802,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Madinah",
+        "population": 1300000,
+        "matchedTo": "Al Madinah Al Munawwarah",
+        "areaSqKm": 22986,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Kharj",
+        "population": 425300,
+        "matchedTo": "محافظة الخرج",
+        "areaSqKm": 13715.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jubayl",
+        "population": 237274,
+        "matchedTo": "Al Jubayl Governorate",
+        "areaSqKm": 6475.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Hufūf",
+        "population": 293179,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abha",
+        "population": 210886,
+        "matchedTo": "محافظة أبها",
+        "areaSqKm": 6845.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "‘Uqlat aş Şuqūr",
+        "population": 9717,
+        "matchedTo": "محافظة عقلة الصقور",
+        "areaSqKm": 8597,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umluj",
+        "population": 33874,
+        "matchedTo": "Umluj",
+        "areaSqKm": 9609,
+        "isSubstantial": true
+      },
+      {
+        "name": "Turaif",
+        "population": 40819,
+        "matchedTo": "محافظة طريف",
+        "areaSqKm": 19071,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ţurayf",
+        "population": 66014,
+        "matchedTo": "محافظة طريف",
+        "areaSqKm": 19071,
+        "isSubstantial": true
+      },
+      {
+        "name": "Turabah",
+        "population": 23235,
+        "matchedTo": "محافظة تربه",
+        "areaSqKm": 7078.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Taymā’",
+        "population": 37579,
+        "matchedTo": "Tayma",
+        "areaSqKm": 27595.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tathlīth",
+        "population": 0,
+        "matchedTo": "Tathlith",
+        "areaSqKm": 26220.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tanūmah",
+        "population": 13594,
+        "matchedTo": "محافظة الأسياح",
+        "areaSqKm": 14077.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ţubarjal",
+        "population": 40019,
+        "matchedTo": "محافظة طبرجل",
+        "areaSqKm": 19361.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tabālah",
+        "population": 5151,
+        "matchedTo": "محافظة بيشة",
+        "areaSqKm": 12720,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shaqra",
+        "population": 32215,
+        "matchedTo": "محافظة شقراء",
+        "areaSqKm": 5010.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sakakah",
+        "population": 128332,
+        "matchedTo": "Sakaka",
+        "areaSqKm": 29449.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rumāḩ",
+        "population": 25031,
+        "matchedTo": "Rumah",
+        "areaSqKm": 18695.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rābigh",
+        "population": 72928,
+        "matchedTo": "Rabigh",
+        "areaSqKm": 6701.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qibah",
+        "population": 11506,
+        "matchedTo": "محافظة الأسياح",
+        "areaSqKm": 14077.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qal‘at Bīshah",
+        "population": 81828,
+        "matchedTo": "محافظة بيشة",
+        "areaSqKm": 12720,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mulayjah",
+        "population": 5247,
+        "matchedTo": "Al Nuayriyah Governorate",
+        "areaSqKm": 16826.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marāt",
+        "population": 8885,
+        "matchedTo": "Marat",
+        "areaSqKm": 3957.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahd adh Dhahab",
+        "population": 20272,
+        "matchedTo": "Al Mahd",
+        "areaSqKm": 24081.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Laylá",
+        "population": 29698,
+        "matchedTo": "محافظة الافلاج",
+        "areaSqKm": 51291.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "King Faisal Military City",
+        "population": 65000,
+        "matchedTo": "Hafar Al Batin Governorate",
+        "areaSqKm": 46422,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khaybar",
+        "population": 0,
+        "matchedTo": "محافظة خيبر",
+        "areaSqKm": 19897.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Julayjilah",
+        "population": 5359,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Irqah",
+        "population": 42179,
+        "matchedTo": "محافظة الرياض",
+        "areaSqKm": 8147.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dukhnah",
+        "population": 6354,
+        "matchedTo": "محافظة الرس",
+        "areaSqKm": 2656.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Duba",
+        "population": 22000,
+        "matchedTo": "محافظة ضباء",
+        "areaSqKm": 11702.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abqaiq",
+        "population": 29474,
+        "matchedTo": "محافظة بقيق",
+        "areaSqKm": 6418.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Baq‘ā’",
+        "population": 19659,
+        "matchedTo": "Baqa",
+        "areaSqKm": 27144.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Badr Ḩunayn",
+        "population": 27257,
+        "matchedTo": "Badr",
+        "areaSqKm": 6903.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Az Zulfī",
+        "population": 125000,
+        "matchedTo": "محافظة الزلفى",
+        "areaSqKm": 5380.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ayn Ibn Fuhayd",
+        "population": 6548,
+        "matchedTo": "محافظة الأسياح",
+        "areaSqKm": 14077.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aţ Ţaraf",
+        "population": 21386,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "As Sulayyil",
+        "population": 24097,
+        "matchedTo": "As Sulayyil",
+        "areaSqKm": 59522.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sājir",
+        "population": 11717,
+        "matchedTo": "Ad Duwadimi",
+        "areaSqKm": 27795.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "As Saffānīyah",
+        "population": 7014,
+        "matchedTo": "Al Khafji Governorate",
+        "areaSqKm": 8221.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Rayn",
+        "population": 2726,
+        "matchedTo": "Ar Rayn",
+        "areaSqKm": 16011.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arar",
+        "population": 148540,
+        "matchedTo": "Arar",
+        "areaSqKm": 21077,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qurayyat",
+        "population": 102903,
+        "matchedTo": "محافظة القريات",
+        "areaSqKm": 9503.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Wadī‘ah",
+        "population": 8365,
+        "matchedTo": "Sharurah",
+        "areaSqKm": 77978.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Wajh",
+        "population": 26636,
+        "matchedTo": "محافظة الوجه",
+        "areaSqKm": 16684.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al-`Ula",
+        "population": 32413,
+        "matchedTo": "Al Ula",
+        "areaSqKm": 19875.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Udhailiyah",
+        "population": 1350,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Qurayn",
+        "population": 12013,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qaisumah",
+        "population": 20685,
+        "matchedTo": "Hafar Al Batin Governorate",
+        "areaSqKm": 46422,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qārah",
+        "population": 9106,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Muţayrifī",
+        "population": 5962,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Munayzilah",
+        "population": 16296,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Markaz",
+        "population": 6464,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Majma‘ah",
+        "population": 0,
+        "matchedTo": "محافظة المجمعة",
+        "areaSqKm": 24226.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Līth",
+        "population": 72000,
+        "matchedTo": "محافظة الليث",
+        "areaSqKm": 9661.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khurmah",
+        "population": 28491,
+        "matchedTo": "محافظة الخرمة",
+        "areaSqKm": 13013,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khafjī",
+        "population": 54857,
+        "matchedTo": "Al Khafji Governorate",
+        "areaSqKm": 8221.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khabrā’",
+        "population": 16906,
+        "matchedTo": "محافظة بريدة",
+        "areaSqKm": 15082.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jumūm",
+        "population": 22207,
+        "matchedTo": "محافظة الجموم",
+        "areaSqKm": 6327.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jubayl",
+        "population": 9108,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jafr",
+        "population": 8715,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ḩulwah",
+        "population": 4973,
+        "matchedTo": "Hawtat Bani Tamim",
+        "areaSqKm": 7542.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Hayāthim",
+        "population": 13893,
+        "matchedTo": "محافظة الخرج",
+        "areaSqKm": 13715.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Baţţālīyah",
+        "population": 16606,
+        "matchedTo": "محافظة الأحساء",
+        "areaSqKm": 241799.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Arţāwīyah",
+        "population": 9152,
+        "matchedTo": "محافظة المجمعة",
+        "areaSqKm": 24226.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Afif",
+        "population": 45525,
+        "matchedTo": "محافظة عفيف",
+        "areaSqKm": 25395.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Adh Dhibiyah",
+        "population": 5068,
+        "matchedTo": "محافظة بريدة",
+        "areaSqKm": 15082.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ad Dawādimī",
+        "population": 86861,
+        "matchedTo": "Ad Duwadimi",
+        "areaSqKm": 27795.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Şuwayr",
+        "population": 8515,
+        "matchedTo": "Sakaka",
+        "areaSqKm": 29449.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Turubah",
+        "population": 28279,
+        "matchedTo": "Baqa",
+        "areaSqKm": 27144.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wed Alnkil",
+        "population": 1500,
+        "matchedTo": "An Nabhaniyah",
+        "areaSqKm": 6899.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tumayr",
+        "population": 8246,
+        "matchedTo": "محافظة المجمعة",
+        "areaSqKm": 24226.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Fuwayliq",
+        "population": 5205,
+        "matchedTo": "Al Bukayriyah",
+        "areaSqKm": 3155.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yadamah",
+        "population": 4983,
+        "matchedTo": "Yadamah",
+        "areaSqKm": 21136.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ain AlBaraha",
+        "population": 1500,
+        "matchedTo": "Ad Duwadimi",
+        "areaSqKm": 27795.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Muwayh",
+        "population": 7364,
+        "matchedTo": "محافظة المويه",
+        "areaSqKm": 28370.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Hadā",
+        "population": 6885,
+        "matchedTo": "محافظة الطائف",
+        "areaSqKm": 14629.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ash Shafā",
+        "population": 72190,
+        "matchedTo": "محافظة الطائف",
+        "areaSqKm": 14629.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "shokhaibٍ",
+        "population": 1500,
+        "matchedTo": "Duruma",
+        "areaSqKm": 2457.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shaybah",
+        "population": 1000,
+        "matchedTo": "Al Udayd Governorate",
+        "areaSqKm": 171320.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "King Khalid Military City",
+        "population": 25356,
+        "matchedTo": "Hafar Al Batin Governorate",
+        "areaSqKm": 46422,
+        "isSubstantial": true
+      },
+      {
+        "name": "Alrmtheiah",
+        "population": 1000,
+        "matchedTo": "Dariyah",
+        "areaSqKm": 7008.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "King Abdullah City",
+        "population": 10000,
+        "matchedTo": "Rabigh",
+        "areaSqKm": 6701.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Mulaydā’",
+        "population": 6967,
+        "matchedTo": "محافظة بريدة",
+        "areaSqKm": 15082.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ranyah",
+        "population": 45942,
+        "matchedTo": "Ranyah",
+        "areaSqKm": 22000.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ash Shamli",
+        "population": 4830,
+        "matchedTo": "محافظة الشملى",
+        "areaSqKm": 11947.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḥawṭah Banī Tamīm",
+        "population": 30720,
+        "matchedTo": "Hawtat Bani Tamim",
+        "areaSqKm": 7542.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khubāsh",
+        "population": 7182,
+        "matchedTo": "محافظة خباش",
+        "areaSqKm": 14304.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "yemen": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Daḩasuways",
+        "population": 0,
+        "matchedTo": "Al Masilah",
+        "areaSqKm": 6622.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ash Shiḩr",
+        "population": 0,
+        "matchedTo": "Ash Shihr",
+        "areaSqKm": 2033.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Usaylān",
+        "population": 0,
+        "matchedTo": "Osaylan",
+        "areaSqKm": 3416.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thamūd",
+        "population": 0,
+        "matchedTo": "Thamud",
+        "areaSqKm": 15355.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tarim",
+        "population": 0,
+        "matchedTo": "Tarim",
+        "areaSqKm": 3021.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al ‘Inān",
+        "population": 100,
+        "matchedTo": "Barat Al Anan",
+        "areaSqKm": 2024,
+        "isSubstantial": false
+      },
+      {
+        "name": "Şīf",
+        "population": 0,
+        "matchedTo": "Daw'an",
+        "areaSqKm": 3458.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shiḩan as Suflá",
+        "population": 0,
+        "matchedTo": "Shahin",
+        "areaSqKm": 13642.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sayḩūt",
+        "population": 0,
+        "matchedTo": "Sayhut",
+        "areaSqKm": 2714.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sāh",
+        "population": 0,
+        "matchedTo": "Sah",
+        "areaSqKm": 2596.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Raydah",
+        "population": 0,
+        "matchedTo": "Ar Raydah wa Qussay'ar",
+        "areaSqKm": 3086.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ruḑūm",
+        "population": 0,
+        "matchedTo": "Radum",
+        "areaSqKm": 5920.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qishn",
+        "population": 0,
+        "matchedTo": "Qishn",
+        "areaSqKm": 3384,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nişāb",
+        "population": 0,
+        "matchedTo": "Nisab",
+        "areaSqKm": 2258.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Minwakh",
+        "population": 0,
+        "matchedTo": "Zamakh wa Manwokh",
+        "areaSqKm": 22036.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mayfa‘ah",
+        "population": 0,
+        "matchedTo": "Mayfa'ah",
+        "areaSqKm": 2867.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jawl",
+        "population": 0,
+        "matchedTo": "Hajar",
+        "areaSqKm": 2490,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Māfūd",
+        "population": 0,
+        "matchedTo": "Arma'a",
+        "areaSqKm": 4743.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lawdar",
+        "population": 0,
+        "matchedTo": "Lawdar",
+        "areaSqKm": 2122,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kitāf",
+        "population": 0,
+        "matchedTo": "Kitaf wa Al Boqa'",
+        "areaSqKm": 5406,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khawrah",
+        "population": 0,
+        "matchedTo": "Markhah As Sufla",
+        "areaSqKm": 3448,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ja‘ār",
+        "population": 0,
+        "matchedTo": "Khanfar",
+        "areaSqKm": 3808.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "As Salāsil",
+        "population": 0,
+        "matchedTo": "Al Qaff",
+        "areaSqKm": 30047.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al ‘Abr",
+        "population": 0,
+        "matchedTo": "Al Abr",
+        "areaSqKm": 7867.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hadibu",
+        "population": 8545,
+        "matchedTo": "Hadibu",
+        "areaSqKm": 2642.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burūm",
+        "population": 0,
+        "matchedTo": "Brum Mayf'ah",
+        "areaSqKm": 2043.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Bilād",
+        "population": 0,
+        "matchedTo": "As Sawm",
+        "areaSqKm": 12076,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ash Shaţţ",
+        "population": 0,
+        "matchedTo": "Al Madaribah Wa Al Aarah",
+        "areaSqKm": 3479.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Rawḑah",
+        "population": 0,
+        "matchedTo": "Ar Rawdah",
+        "areaSqKm": 2588.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Qurḩ",
+        "population": 0,
+        "matchedTo": "Man'ar",
+        "areaSqKm": 16915.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Maḩfid",
+        "population": 0,
+        "matchedTo": "Al Mahfad",
+        "areaSqKm": 2161,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Qaţan",
+        "population": 0,
+        "matchedTo": "Al Qatn",
+        "areaSqKm": 2925.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ḩarf",
+        "population": 0,
+        "matchedTo": "Harf Sufyan",
+        "areaSqKm": 2717.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḩajar al Mashā’ikh",
+        "population": 0,
+        "matchedTo": "Hajar As Say'ar",
+        "areaSqKm": 2888.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ghayz̧ah",
+        "population": 10948,
+        "matchedTo": "Al Ghaydhah",
+        "areaSqKm": 7182,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Bāţinah",
+        "population": 0,
+        "matchedTo": "Wadi Al Ayn",
+        "areaSqKm": 2329.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aḩwar",
+        "population": 0,
+        "matchedTo": "Ahwar",
+        "areaSqKm": 4298.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Az̧ Z̧alī‘ah",
+        "population": 0,
+        "matchedTo": "Ad Dulay'ah",
+        "areaSqKm": 2522.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Maḩjal",
+        "population": 0,
+        "matchedTo": "Khab wa Ash Sha'f",
+        "areaSqKm": 31808.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bi’r Ḩāt",
+        "population": 0,
+        "matchedTo": "Hat",
+        "areaSqKm": 13687.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rumāh",
+        "population": 0,
+        "matchedTo": "Rumah",
+        "areaSqKm": 26182.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jawl al Majma‘",
+        "population": 0,
+        "matchedTo": "Jardan",
+        "areaSqKm": 5450.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al ‘Ulayb",
+        "population": 0,
+        "matchedTo": "Ghayl bin Yamin",
+        "areaSqKm": 5533.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aţ Ţalḩ",
+        "population": 0,
+        "matchedTo": "At Talh",
+        "areaSqKm": 2103.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ḩuşūn",
+        "population": 0,
+        "matchedTo": "Ma'rib",
+        "areaSqKm": 9101.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ahl Mohammed bin Ahmed",
+        "population": 1800,
+        "matchedTo": "Khanfar",
+        "areaSqKm": 3808.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "CPF",
+        "population": 6000,
+        "matchedTo": "Sah",
+        "areaSqKm": 2596.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "iran": {
+    "unmatched": [
+      {
+        "name": "Mehrīān",
+        "population": 9421,
+        "lat": 30.6991,
+        "lng": 51.56398
+      },
+      {
+        "name": "Yasuj",
+        "population": 96786,
+        "lat": 30.66824,
+        "lng": 51.58796
+      },
+      {
+        "name": "Balahzār",
+        "population": 3478,
+        "lat": 30.71371,
+        "lng": 51.5549
+      },
+      {
+        "name": "Sībon",
+        "population": 537,
+        "lat": 36.82084,
+        "lng": 49.73885
+      },
+      {
+        "name": "Qānqarmeh",
+        "population": 2197,
+        "lat": 37.01311,
+        "lng": 54.50634
+      },
+      {
+        "name": "Nowsūd",
+        "population": 1949,
+        "lat": 35.16212,
+        "lng": 46.20413
+      },
+      {
+        "name": "Mādavān",
+        "population": 18078,
+        "lat": 30.71525,
+        "lng": 51.54131
+      },
+      {
+        "name": "Kāveh Kālī",
+        "population": 649,
+        "lat": 33.46025,
+        "lng": 48.29663
+      },
+      {
+        "name": "Khārk",
+        "population": 8193,
+        "lat": 29.26139,
+        "lng": 50.33056
+      },
+      {
+        "name": "Aghajari",
+        "population": 21785,
+        "lat": 30.7006,
+        "lng": 49.8315
+      },
+      {
+        "name": "Arvand Kenār",
+        "population": 11173,
+        "lat": 29.97775,
+        "lng": 48.51777
+      },
+      {
+        "name": "Qahjāvarestān",
+        "population": 9712,
+        "lat": 32.70247,
+        "lng": 51.83882
+      },
+      {
+        "name": "Mūlenjān",
+        "population": 557,
+        "lat": 32.71861,
+        "lng": 51.79708
+      },
+      {
+        "name": "Khowrzūq",
+        "population": 29154,
+        "lat": 32.778,
+        "lng": 51.64685
+      },
+      {
+        "name": "Haftshūyeh",
+        "population": 1248,
+        "lat": 32.70092,
+        "lng": 51.78901
+      },
+      {
+        "name": "Dowlatābād",
+        "population": 33607,
+        "lat": 32.79978,
+        "lng": 51.69553
+      },
+      {
+        "name": "Barehsar",
+        "population": 1612,
+        "lat": 36.77328,
+        "lng": 49.75552
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Gazdān",
+        "population": 728,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2290.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zehkalūt",
+        "population": 6835,
+        "matchedTo": "?????? ?????????",
+        "areaSqKm": 3119.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yazdel",
+        "population": 2391,
+        "matchedTo": "?????? ???? ???",
+        "areaSqKm": 2446.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Torūd",
+        "population": 1813,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 19923.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tonbak",
+        "population": 824,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2035.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tol-e Ashkī",
+        "population": 739,
+        "matchedTo": "?????? ???? ?????",
+        "areaSqKm": 2249.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bandar-e Sīraf",
+        "population": 6992,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2035.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sorkheh",
+        "population": 9951,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 8401,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shūrjestān",
+        "population": 618,
+        "matchedTo": "Bidek RD",
+        "areaSqKm": 2208.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bandar-e Shīrīnū",
+        "population": 9976,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2035.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rāvar",
+        "population": 40167,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 8349.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rāmsheh",
+        "population": 3131,
+        "matchedTo": "Ramsheh RD",
+        "areaSqKm": 4051.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Parak",
+        "population": 3582,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2035.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Noşratābād",
+        "population": 4182,
+        "matchedTo": "?????? ???? ????",
+        "areaSqKm": 14085.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sefidshahr",
+        "population": 5804,
+        "matchedTo": "?????? ???? ???",
+        "areaSqKm": 2446.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moḩammad Şāleḩī",
+        "population": 1515,
+        "matchedTo": "?????? ???? ????",
+        "areaSqKm": 3142.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moḩammadābād",
+        "population": 0,
+        "matchedTo": "?????? ???? ?????",
+        "areaSqKm": 2064.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mobārakeh",
+        "population": 3301,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 6769.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marvast",
+        "population": 9379,
+        "matchedTo": "Harabarjan",
+        "areaSqKm": 4660.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Māl-e Khalīfeh",
+        "population": 2463,
+        "matchedTo": "?????? ???? ????",
+        "areaSqKm": 3142.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Laţīfī",
+        "population": 7300,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 4441.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lāsjerd",
+        "population": 1024,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 8401,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kow’īk",
+        "population": 579,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2290.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khūr",
+        "population": 6765,
+        "matchedTo": "?????? ???????",
+        "areaSqKm": 5100.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khūsf",
+        "population": 5716,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 5327.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khūr",
+        "population": 7338,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 4441.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khūndāb",
+        "population": 1652,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khānkūk",
+        "population": 1099,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 3456.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kartī",
+        "population": 552,
+        "matchedTo": "?????? ?? ???",
+        "areaSqKm": 2471.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jāsk-e Kohneh",
+        "population": 1202,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2290.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hashcheh-ye Soflá",
+        "population": 958,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 4305.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Harangān",
+        "population": 552,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 2169,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gazī",
+        "population": 518,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 3549.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dowlatābād-e Esfandaqeh",
+        "population": 4930,
+        "matchedTo": "?????? ???????",
+        "areaSqKm": 3392.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doveyreh",
+        "population": 4096,
+        "matchedTo": "?????? ???? ?????",
+        "areaSqKm": 2249.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dorūneh",
+        "population": 1603,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 4668.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dīvān",
+        "population": 1931,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2848.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Deyhūk",
+        "population": 2959,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 8661.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dehaq",
+        "population": 8272,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chūpānān",
+        "population": 1826,
+        "matchedTo": "?????? ???????",
+        "areaSqKm": 17919.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Banjī Meskī",
+        "population": 583,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 3549.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Barāk",
+        "population": 2882,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 4441.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bandar-e Shenās",
+        "population": 2998,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2848.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moghūyeh",
+        "population": 1125,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2848.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bāfrān",
+        "population": 1978,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 3081.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bāfq",
+        "population": 45453,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 6769.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Armak",
+        "population": 679,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2848.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Anārak",
+        "population": 1903,
+        "matchedTo": "?????? ???????",
+        "areaSqKm": 17919.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Alīābād",
+        "population": 1375,
+        "matchedTo": "?????? ???? ???",
+        "areaSqKm": 2446.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Āb Ţavīl",
+        "population": 1507,
+        "matchedTo": "?????? ???? ?????",
+        "areaSqKm": 2249.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moḩammadābād",
+        "population": 2125,
+        "matchedTo": "?????? ???? ???",
+        "areaSqKm": 2446.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jowzdān",
+        "population": 6998,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jalālābād",
+        "population": 4056,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dehshīr",
+        "population": 1320,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2306.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ramīn",
+        "population": 3821,
+        "matchedTo": "?????? ???? ??????",
+        "areaSqKm": 2285.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sīrkān",
+        "population": 2196,
+        "matchedTo": "?????? ?? ???",
+        "areaSqKm": 2102.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baghdānī",
+        "population": 670,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ţūrdān",
+        "population": 2008,
+        "matchedTo": "?????? ????? ????",
+        "areaSqKm": 2506.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tīskūpān",
+        "population": 529,
+        "matchedTo": "?????? ???? ??????",
+        "areaSqKm": 2285.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ţīs",
+        "population": 6348,
+        "matchedTo": "?????? ???? ??????",
+        "areaSqKm": 2285.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shamsābād",
+        "population": 1774,
+        "matchedTo": "?????? ????? ????",
+        "areaSqKm": 2506.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shahr Derāz",
+        "population": 4618,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarzeh",
+        "population": 2282,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sar Kahūrān",
+        "population": 1450,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Poshot",
+        "population": 858,
+        "matchedTo": "?????? ???????????",
+        "areaSqKm": 2994.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pasābandar",
+        "population": 1093,
+        "matchedTo": "?????? ???????????",
+        "areaSqKm": 2994.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nehbandān",
+        "population": 18304,
+        "matchedTo": "?????? ??",
+        "areaSqKm": 12775.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kambel-e Soleymān",
+        "population": 872,
+        "matchedTo": "?????? ???? ??????",
+        "areaSqKm": 2285.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kahīr",
+        "population": 2213,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 4661.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jahlīār",
+        "population": 553,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 3406.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hīdūj",
+        "population": 1674,
+        "matchedTo": "Hidouj",
+        "areaSqKm": 2017.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hīdūj-e Bonāb",
+        "population": 894,
+        "matchedTo": "Hidouj",
+        "areaSqKm": 2017.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shahrak-e Maskūnī-ye Gawātar",
+        "population": 688,
+        "matchedTo": "?????? ???????????",
+        "areaSqKm": 2994.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gabūlān",
+        "population": 554,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 3406.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Deh Mīr",
+        "population": 2803,
+        "matchedTo": "?????? ????? ????",
+        "areaSqKm": 2506.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chāh-e Jamāl",
+        "population": 8144,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Berīs",
+        "population": 4488,
+        "matchedTo": "?????? ???????????",
+        "areaSqKm": 2994.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bazmān",
+        "population": 5192,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 5947.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bānsont",
+        "population": 1824,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 3406.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shahrak-e Madanī",
+        "population": 6089,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 4305.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pozm-e Tīāb",
+        "population": 2912,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 3406.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarzeh",
+        "population": 1633,
+        "matchedTo": "?????? ??????",
+        "areaSqKm": 2169,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḩājjīābād",
+        "population": 3448,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nehẕatābād",
+        "population": 3016,
+        "matchedTo": "Najafabad County",
+        "areaSqKm": 2455.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sar Chāhān-e Janūbī",
+        "population": 2250,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2283.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "‘Alīābād",
+        "population": 2616,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 2024.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bandar-e Ḩoseynīyeh",
+        "population": 811,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2848.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jūdāneh",
+        "population": 970,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2080.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bahābād",
+        "population": 0,
+        "matchedTo": "?????? ????",
+        "areaSqKm": 3749.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ebrāhīmābād-e Soflá",
+        "population": 554,
+        "matchedTo": "?????? ?????",
+        "areaSqKm": 2080.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jazīreh-ye Shīf",
+        "population": 3969,
+        "matchedTo": "?????? ???? ?????",
+        "areaSqKm": 2249.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tunb-e Bozorg",
+        "population": 690,
+        "matchedTo": "?????? ???",
+        "areaSqKm": 6105.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Naz̧arābād",
+        "population": 213388,
+        "matchedTo": "?????? ?????? ?????",
+        "snapDistanceKm": 1.288
+      },
+      {
+        "name": "Khorramabad",
+        "population": 329825,
+        "matchedTo": "?????? ????",
+        "snapDistanceKm": 1.143
+      },
+      {
+        "name": "Gāmīshlī Yelqī",
+        "population": 1490,
+        "matchedTo": "?????? ?? ?????",
+        "snapDistanceKm": 1.98
+      },
+      {
+        "name": "Rābor",
+        "population": 13263,
+        "matchedTo": "Rabor",
+        "snapDistanceKm": 1.051
+      },
+      {
+        "name": "Maşīrī",
+        "population": 0,
+        "matchedTo": "?????? ???? ??",
+        "snapDistanceKm": 0.249
+      },
+      {
+        "name": "Malāyer",
+        "population": 170237,
+        "matchedTo": "Kuh Sardeh",
+        "snapDistanceKm": 0.985
+      },
+      {
+        "name": "Khondāb",
+        "population": 7810,
+        "matchedTo": "?????? ?????",
+        "snapDistanceKm": 0.282
+      },
+      {
+        "name": "Kherāmeh",
+        "population": 0,
+        "matchedTo": "?????? ?????",
+        "snapDistanceKm": 0.579
+      },
+      {
+        "name": "Īz̄eh",
+        "population": 119399,
+        "matchedTo": "?????? ???? ????",
+        "snapDistanceKm": 1.091
+      },
+      {
+        "name": "Beyẕā",
+        "population": 7252,
+        "matchedTo": "?????? ????",
+        "snapDistanceKm": 0.016
+      },
+      {
+        "name": "Fasā",
+        "population": 98061,
+        "matchedTo": "?????? ???? ????",
+        "snapDistanceKm": 1.772
+      },
+      {
+        "name": "Evaz",
+        "population": 19987,
+        "matchedTo": "?????? ???",
+        "snapDistanceKm": 0.634
+      },
+      {
+        "name": "Būkān",
+        "population": 193501,
+        "matchedTo": "?????? ??? ??? ???? ????",
+        "snapDistanceKm": 1.249
+      },
+      {
+        "name": "Ben",
+        "population": 12971,
+        "matchedTo": "?????? ????",
+        "snapDistanceKm": 0.708
+      },
+      {
+        "name": "Ārdaḵān",
+        "population": 14633,
+        "matchedTo": "?????? ????",
+        "snapDistanceKm": 0.219
+      },
+      {
+        "name": "Bahārān",
+        "population": 676,
+        "matchedTo": "?????? ???? ?????",
+        "snapDistanceKm": 1.418
+      },
+      {
+        "name": "Sedeh Lanjān",
+        "population": 19101,
+        "matchedTo": "?????? ?????",
+        "snapDistanceKm": 0.075
+      },
+      {
+        "name": "Madīseh",
+        "population": 1395,
+        "matchedTo": "?????? ??????",
+        "snapDistanceKm": 1.071
+      },
+      {
+        "name": "Komeshcheh",
+        "population": 5100,
+        "matchedTo": "?????? ?????????",
+        "snapDistanceKm": 0.528
+      },
+      {
+        "name": "Ḩabībābād",
+        "population": 9491,
+        "matchedTo": "?????? ?????????",
+        "snapDistanceKm": 1.161
+      },
+      {
+        "name": "Dastgerd",
+        "population": 17775,
+        "matchedTo": "?????? ?????? ????",
+        "snapDistanceKm": 1.026
+      },
+      {
+        "name": "Chamgordān",
+        "population": 15574,
+        "matchedTo": "?????? ?????",
+        "snapDistanceKm": 0.413
+      },
+      {
+        "name": "Shahrak-e Nāmjū",
+        "population": 1438,
+        "matchedTo": "?????? ?????",
+        "snapDistanceKm": 1.533
+      }
+    ]
+  },
+  "israel": {
+    "unmatched": [
+      {
+        "name": "Naẖal Teqoa‘",
+        "population": 3882,
+        "lat": 31.65406,
+        "lng": 35.22822
+      },
+      {
+        "name": "Miẕpé Yeriẖo",
+        "population": 2453,
+        "lat": 31.81672,
+        "lng": 35.39405
+      },
+      {
+        "name": "Kokhav HaShaẖar",
+        "population": 2122,
+        "lat": 31.96028,
+        "lng": 35.34923
+      },
+      {
+        "name": "El‘azar",
+        "population": 2510,
+        "lat": 31.65977,
+        "lng": 35.14316
+      },
+      {
+        "name": "Beit Horon",
+        "population": 1115,
+        "lat": 31.87581,
+        "lng": 35.12999
+      },
+      {
+        "name": "Nili",
+        "population": 1786,
+        "lat": 31.96396,
+        "lng": 35.04853
+      },
+      {
+        "name": "Na'ale",
+        "population": 2148,
+        "lat": 31.96236,
+        "lng": 35.06553
+      },
+      {
+        "name": "Giv'on HaHadasha",
+        "population": 1067,
+        "lat": 31.84927,
+        "lng": 35.16106
+      },
+      {
+        "name": "Nahliel",
+        "population": 725,
+        "lat": 31.97415,
+        "lng": 35.13994
+      },
+      {
+        "name": "Talmon",
+        "population": 4575,
+        "lat": 31.93927,
+        "lng": 35.13539
+      },
+      {
+        "name": "Dolev",
+        "population": 1448,
+        "lat": 31.92609,
+        "lng": 35.13393
+      },
+      {
+        "name": "Ariel",
+        "population": 20540,
+        "lat": 32.1065,
+        "lng": 35.18449
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Yotvata",
+        "population": 717,
+        "matchedTo": "מועצה אזורית חבל אילות",
+        "areaSqKm": 2635.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Revivim",
+        "population": 1075,
+        "matchedTo": "מועצה אזורית רמת נגב",
+        "areaSqKm": 4092.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Be’er Ora",
+        "population": 1033,
+        "matchedTo": "מועצה אזורית חבל אילות",
+        "areaSqKm": 2635.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ashalim",
+        "population": 568,
+        "matchedTo": "מועצה אזורית רמת נגב",
+        "areaSqKm": 4092.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Telalim",
+        "population": 543,
+        "matchedTo": "מועצה אזורית רמת נגב",
+        "areaSqKm": 4092.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Midreshet Ben-Gurion",
+        "population": 1972,
+        "matchedTo": "מועצה אזורית רמת נגב",
+        "areaSqKm": 4092.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Retamim",
+        "population": 537,
+        "matchedTo": "מועצה אזורית רמת נגב",
+        "areaSqKm": 4092.5,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Har Adar",
+        "population": 3300,
+        "matchedTo": "מועצה אזורית מטה יהודה",
+        "snapDistanceKm": 0.713
+      },
+      {
+        "name": "Hadera",
+        "population": 97335,
+        "matchedTo": "חדרה",
+        "snapDistanceKm": 0.232
+      },
+      {
+        "name": "Modiin Ilit",
+        "population": 76374,
+        "matchedTo": "מועצה אזורית חבל מודיעין",
+        "snapDistanceKm": 1.574
+      },
+      {
+        "name": "Hashmonaim",
+        "population": 2771,
+        "matchedTo": "מועצה אזורית חבל מודיעין",
+        "snapDistanceKm": 0.411
+      },
+      {
+        "name": "Kfar NaOranim",
+        "population": 2657,
+        "matchedTo": "מועצה אזורית חבל מודיעין",
+        "snapDistanceKm": 0.21
+      },
+      {
+        "name": "Khirbat Abu Tulūl",
+        "population": 2023,
+        "matchedTo": "נאות חובב",
+        "snapDistanceKm": 0.779
+      },
+      {
+        "name": "Shibli–Umm al-Ghanam",
+        "population": 5995,
+        "matchedTo": "الشبلي-أم الغنم‎",
+        "snapDistanceKm": 0.494
+      }
+    ]
+  },
+  "lebanon": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Aïnâta",
+        "population": 3000,
+        "matchedTo": "Baalbek",
+        "areaSqKm": 2316.7,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "unitedArabEmirates": {
+    "unmatched": [
+      {
+        "name": "Abū Mūsá",
+        "population": 4213,
+        "lat": 25.86698,
+        "lng": 55.02363
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Jebel Ali",
+        "population": 210000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Murbaḩ",
+        "population": 2000,
+        "matchedTo": "الفجيرة",
+        "areaSqKm": 2845.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ash Sha‘m",
+        "population": 1550,
+        "matchedTo": "رأس الخيمة",
+        "areaSqKm": 3725.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ḩattā",
+        "population": 15324,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Knowledge Village",
+        "population": 15000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "The Palm Jumeirah",
+        "population": 25500,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dubai Marina",
+        "population": 120000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dubai Sports City",
+        "population": 15000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dubai Internet City",
+        "population": 24000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Sufouh",
+        "population": 3337,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dubai Festival City",
+        "population": 77000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dubai Investments Park",
+        "population": 160000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dubai Motor City",
+        "population": 8561,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Furjan",
+        "population": 26000,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khawaneej 1",
+        "population": 12241,
+        "matchedTo": "دبي",
+        "areaSqKm": 7214.8,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": []
   }
 }

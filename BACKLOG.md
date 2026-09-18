@@ -1047,6 +1047,44 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   in line with every prior pass's small residual tail (Honduras 5, Finland's Raisio above, Sweden 9, United
   Kingdom 2), not investigated further since nothing about a 2-town residual out of 1,986 suggested a
   systemic wrong-level issue the way Germany's 263-major-cities pattern did.
+- **Saudi Arabia is a real, significant, currently-unresolved city-boundary gap — not a small residual tail**
+  (found 2026-09-18, `city-boundaries-architecture.md`'s "Eighteenth pass"). geoBoundaries' ADM2 (147
+  governorates) rejects 98 of 160 GeoNames points, including the capital itself (Riyadh, 4.2M population,
+  8532.8 km² governorate) and roughly a dozen other real major cities (Jeddah-area, Ta'if, Buraydah, Ha'il,
+  Tabuk, Khamis Mushait, Madinah, Al Kharj, Al Hufuf, Abha, ...) — a governorate built around one substantial
+  city can still span thousands of km² of surrounding desert. Checked directly whether a finer source exists
+  anywhere and found none: OSM's own `admin_level=6` governorate layer (149 units) is the identical coarse
+  tier under a different admin_level number, and Riyadh's own real, individually-drawn city-limit boundary
+  ("مدينة الرياض"/Madinat Al Riyad, `admin_level=8`) is a genuine one-off, not part of a systematic per-city
+  layer — a nationwide search for similarly-named "مدينة "-prefixed relations found only small planned
+  communities and UAE cities sharing the same bounding box, not any of Saudi Arabia's other major cities. The
+  OSM `admin_level=6` layer was added as a supplement anyway (it resolved the run's 2 originally-unmatched
+  points, Dammam and Dhahran) but does nothing for the rejected major cities. Final: 62/160 kept, 98 rejected,
+  0 unmatched. Needs either a dedicated Saudi-specific source (e.g. the country's own General Authority for
+  Statistics or a national address-system open-data feed, neither investigated here) or acceptance that this
+  gap stands until one surfaces — genuinely unresolved, not merely unattempted.
+- **Israel's OSM-sourced local-authority join leaves exactly the West Bank unmatched** (found 2026-09-18,
+  "Eighteenth pass") — 12 of 724 GeoNames points, every one a real Israeli settlement in the West Bank (Ariel,
+  Talmon, Kokhav HaShahar, Nili, Na'ale, Dolev, Beit Horon, Nahliel, El'azar, Giv'on HaHadasha, Miẕpé Yeriẖo,
+  Naẖal Teqoa'). Reported here as a plain technical/data-coverage fact: neither geoBoundaries' own Israel ADM2
+  (its 15 subdistricts include one for Golan Heights but none covering this area) nor the OSM
+  `admin_level=8` Israeli-local-authority query used for this join returns a boundary relation for any of
+  these points — there is no candidate polygon in either checked source, the same "real, structural gap, not
+  a technique failure" shape as Saudi Arabia's major cities above.
+- **United Arab Emirates: 15 of 107 points still rejected after widening the OSM query to admin_level 4-10**
+  (found 2026-09-18, "Eighteenth pass") — 11 substantial, almost all real but modern planned Dubai
+  developments (Dubai Marina, Dubai Sports City, Dubai Internet City, Dubai Festival City, Dubai Investments
+  Park, Al Furjan, Knowledge Village, Palm Jumeirah) falling back to the whole 7214.8 km² Dubai emirate
+  polygon — plausibly just not yet drawn as their own boundary in OSM, not chased further given how much the
+  level-9/10 widening already recovered (46% → 85% kept). Also 1 unmatched: Abu Musa, a small disputed island
+  with no boundary in the checked source at any level.
+- **Iraq's western Anbar desert border towns remain a small residual after the `admin_level=7` nahiya
+  supplement** (found 2026-09-18, "Eighteenth pass") — 12 of 173 points rejected (6 substantial: Safwan,
+  Al-Qaim, Rutbah, Ana, Al-Zawiya), all real towns in oversized desert qada/nahiya units — the same
+  sparse-desert-district shape as Jordan's own qadas, not a technique failure.
+- **Iran left 17 of 2,632 points unmatched, including one provincial capital (Yasuj, 96,786)** (found
+  2026-09-18, "Eighteenth pass") — not investigated further given the pass's overall 96% match rate; worth a
+  closer look if Iran's own coverage is ever revisited.
 
 ## Visualization
 

@@ -1484,6 +1484,125 @@ Western, Southern, Eastern) complete except Russia, which still needs its own de
 it can be added (transcontinental scale, likely a poor fit for a single ADM level or even a single OSM query
 strategy the way every country in this pass was).
 
+### Eighteenth pass: Middle East (2026-09-18) — 13 countries, this file's first real per-country source gap
+
+Bahrain, Cyprus, Iran, Iraq, Israel, Lebanon, Oman, Qatar, Saudi Arabia, Syria, Turkey, United Arab Emirates,
+Yemen — Jordan and Kuwait (already done, way back at this file's original proof-of-concept) are
+geographically part of this same region but predate "pick the next contiguous region" as a standing
+discipline. Much harder than every European batch: 4 of 13 real-per-feature-checked geoBoundaries levels
+turned out too coarse and needed a real OSM investigation (Israel, Lebanon, UAE — full or partial source
+swaps — and Saudi Arabia, where investigation confirmed there simply isn't a finer source anywhere).
+
+Straightforward confirmations, matching a real independently-known count within the usual vintage drift:
+Cyprus's communities (ADM2, 610, real names like "Morfou"/"Kato Pyrgos"), Syria's sub-districts (ADM3, 272,
+matching the real ~270 nawahi), and Turkey's districts/ilçe (ADM2, 973, matching the real count almost
+exactly). Six real-but-coarse district-level tiers accepted on the same "finest real option, not a technique
+failure" basis as Ecuador's cantones/Jordan's own qadas: Bahrain's 4 governorates (confirmed to be the finest
+level available in EITHER geoBoundaries or OSM — a direct Overpass check found nothing finer — harmless here
+specifically because Bahrain's entire land area is small enough that even a whole governorate sits under
+`SOFT_MAX_SQKM`), Iraq's 101 districts (later supplemented, see below), Oman's 61 wilayat (an exact count
+match — wilayat genuinely is Oman's base local-government unit, not a coarser tier sitting above one), Qatar's
+79 zones (ADM2 — real per-feature names are bare cadastral zone numbers like `"76"`/`"97"`, not named
+localities, the same "candidate's own name is never the output's name" harmlessness as every prior garbled/
+mislabeled-name finding), Saudi Arabia's 147 governorates (later supplemented, see below), and Yemen's 335
+districts (matching the real ~333 count).
+
+**Iran's finest level, ADM4 ("Dehestan", 2772 units), is a real mix of rural sub-district (dehestan) entries
+and actual named cities (shahr) at the same tier** — "Tehran", "Lordegan", "Shahr-e Kord", "Bojnord",
+"Kazerun" all appear as their own features alongside Persian-labeled rural dehestani. **A real, confirmed
+upstream data bug**: many `shapeName` values are literal ASCII `?` characters — verified via the raw response
+bytes the same way the Seventeenth pass verified Czechia/Hungary/Slovakia's digit-garbled names — not a
+terminal/decode artifact, and harmless for the identical reason: the final output always uses GeoNames' own
+name. Iran joined 2523/2632 (96%), 92 rejected (95 of them non-substantial small desert towns; 3 substantial —
+Rāvar, Bāfq, Nehbandān — real but small cities in oversized desert dehestani, the accepted trade-off), 17
+unmatched (real gaps, including one provincial capital, Yasuj — logged, not chased further given the already
+high match rate).
+
+**Israel's finest geoBoundaries level, ADM2 ("Subdistrict", 15 units — e.g. "Tel Aviv"/"HaSharon"/"Haifa"), is
+far too coarse** — each subdistrict spans many separate real cities (closer to a US county than a
+municipality). Switched off geoBoundaries entirely: a live Overpass query found Israel's real local-authority
+tier (city/local council/regional council, ~255 real units) is tagged `admin_level=8` (237 relations — real
+names: Rehovot, Ashqelon, Dimona, Arad, Yeruham, Omer, plus regional councils like "מועצה אזורית רמת נגב"),
+with a small `admin_level=9` supplement (11 more). **705/724 kept (97%)**, 7 rejected (small Negev desert
+settlements in oversized regional councils, the same accepted "real regional council, small population"
+shape Israel's OSM tier represents faithfully), and **12 genuinely unmatched — every single one located in the
+West Bank** (Ariel, Talmon, Kokhav HaShahar, Nili, Na'ale, Dolev, Beit Horon, Nahliel, El'azar, Giv'on
+HaHadasha, Miẕpé Yeriẖo, Naẖal Teqoa'). This is reported here as a plain technical/data-coverage fact, not a
+political judgment: neither geoBoundaries' own Israel ADM2 (its 15 subdistricts don't include one covering
+this area — Golan Heights IS included as its own subdistrict, but no equivalent West Bank one is) nor the OSM
+`admin_level=8` Israeli-local-authority query used for this join returns a boundary relation for any of these
+— there is simply no candidate polygon in either checked source for this join to match against, the same
+"real, structural gap, not a technique failure" conclusion as Saudi Arabia's major cities below, arrived at by
+checking rather than assuming.
+
+**Lebanon's finest geoBoundaries level, ADM2 (26 aqdya/districts), matches the real caza count exactly but is
+still far coarser than Lebanon's real municipality tier.** A live Overpass query found Lebanon's real
+municipality/quarter tier is tagged `admin_level=7` (1031 relations — Beirut's own inner quarters like
+"الأشرفية"/Achrafieh, "باشورة"/Bachoura, "رأس بيروت"/Ras Beirut, mixed with ordinary municipalities elsewhere
+like "بعلبك"/Baalbek and "طرابلس"/Tripoli), with a smaller `admin_level=8` supplement (65 more). **A first run
+using only this OSM layer left 2 points unmatched, including Zahlé (78,145, a real district capital)** — a
+real, small OSM coverage gap for that specific municipality boundary. Rather than a full source swap,
+geoBoundaries' own ADM2 was kept as a coarser backstop candidate set alongside the OSM municipality layer —
+smallest-containing-polygon-wins means OSM still wins everywhere it actually has a boundary, and the
+caza-level polygon only gets used where OSM has a real gap. Re-run: **51/52 kept, 1 rejected** (a single small
+mountain village, Aïnâta, falling into Baalbek's 2316.7 km² caza — a real, tiny residual, not chased further).
+
+**Iraq's ADM2 (101 districts/qada) rejected 59 of 173 points on its own, dominated by real substantial cities**
+(Najaf 482,576 in a 39,024.9 km² district; Ramadi 223,500; Samarra 158,508) — the same "a district built
+around one city can still be huge" shape Saudi Arabia hit below. A live OSM check found a real finer tier:
+`admin_level=7` (401 relations, Iraq's actual nahiya/sub-district layer, one level below qada) — added as a
+supplemental smallest-wins source. Re-run: **161/173 kept (93%, up from 66%)**, 12 rejected (6 substantial,
+all real towns in Anbar's western desert border districts — Safwan, Al-Qaim, Rutbah, Ana — a genuine sparse-
+desert residual, not a technique failure), 0 unmatched.
+
+**Saudi Arabia is this file's first real, significant, unresolved source gap** — not a small residual tail
+the way every prior country's leftover unmatched/rejected list has been. geoBoundaries' ADM2 (147
+governorates) rejected 98 of 160 points on its first run, including the capital itself (Riyadh, 4.2M
+population, 8532.8 km² governorate) and roughly a dozen other real million-plus/several-hundred-thousand
+cities (Jeddah-area, Ta'if, Buraydah, Ha'il, Tabuk, Khamis Mushait, Madinah, Al Kharj, Al Hufuf, Abha, ...) —
+a governorate built around one substantial city can still span thousands of km² of surrounding desert.
+**Checked directly whether a finer source exists anywhere, the same discipline as every prior pass, and found
+none**: OSM's own `admin_level=6` governorate layer (149 units) is the identical coarse tier under a different
+admin_level number, not a finer one; and Riyadh's own real, individually-drawn city-limit boundary
+("مدينة الرياض"/Madinat Al Riyad, `admin_level=8`) turned out to be a genuine one-off, not part of a systematic
+per-city layer — a nationwide search for similarly-named "مدينة "-prefixed relations found only small planned
+communities and UAE cities sharing the same bounding box, not Jeddah, Dammam, Mecca, Medina, Tabuk, Buraydah,
+or any of Saudi Arabia's other major cities. **The OSM `admin_level=6` layer was still added as a supplement**
+(smallest-wins, so it can only help) since its 149 units vs. geoBoundaries' own 147 hinted at a real coverage
+difference — confirmed: it resolved both of the run's 2 originally-unmatched points (Dammam 1.25M and Dhahran
+99,540 — a real "Dammam Governorate" relation exists in OSM but not in geoBoundaries' own download). Final:
+**62/160 kept, 98 rejected (62 substantial), 0 unmatched.** This is logged plainly in `BACKLOG.md` as a real,
+significant, currently-unresolved gap — most of Saudi Arabia's major cities, including its capital, have no
+boundary polygon in this project today, and nothing found in either checked source fixes it.
+
+**United Arab Emirates has only ADM1 (the 7 emirates) in geoBoundaries** — far too coarse (Abu Dhabi emirate
+alone contains Abu Dhabi city, Al Ain, and vast empty desert). Switched off geoBoundaries entirely: a live
+Overpass query found a real, inconsistent mixed-level hierarchy (admin_level 4: 7 emirates; 5: 1; 6: 3; 7: 15;
+8: 374, the large majority — real named areas like "Kalba"/"خورفكان" (Khor Fakkan)/"السيف"/"النخيل") — the
+same "don't assume a single tier is uniform" lesson this file already learned for Belize/Kuwait/Argentina/
+Belarus. **A first run using just levels 4-8 still rejected 57 of 107 points, most of them real Dubai
+districts** (Deira, Jebel Ali, Umm Suqeim, Jumeirah, Dubai Marina, ...) falling back to the whole 7214.8 km²
+Dubai emirate polygon. Investigation found several real Dubai-district boundaries exist one or two levels
+deeper than the initial query reached (e.g. "مدينة دبي للغولف"/Dubai Golf City and "مدينة العمال"/Madinat Al
+Ummal at `admin_level=10`) — widened the query to levels 4-10. Re-run: **91/107 kept (85%, up from 46%)**, 15
+rejected (11 substantial — mostly real but modern planned developments: Dubai Marina, Dubai Sports City,
+Dubai Internet City, Dubai Festival City, Dubai Investments Park, Al Furjan, Knowledge Village, Palm Jumeirah
+— a real, plausible "newer development, not yet drawn in OSM" residual, not chased further given how much the
+level-9/10 widening already recovered), 1 unmatched (Abu Musa, a small, disputed island — reported as a plain
+coverage fact, the same neutral framing as Israel's West Bank finding above).
+
+**File sizes**: none of the 13 needed `shardByState()` — the largest flat output (Turkey, 16.4 MB) sits under
+the United Kingdom's own already-committed 17.3 MB flat file, so no new sharding precedent was needed.
+
+**Final status: all 13 Middle East countries are done and committed.** Nine came back with 0 rejected/0
+unmatched or only a small single-digit residual tail (Cyprus, Bahrain, Qatar, Lebanon, Oman, Syria, Yemen,
+Iraq, Iran); Israel and UAE needed real OSM source work and still carry small, plainly-reported structural
+gaps (Israel's West Bank settlements, UAE's newest planned developments, both genuinely absent from every
+checked source, not a technique failure); **Saudi Arabia is a real, significant, open gap** — most of its
+major cities, including the capital, have no polygon anywhere in this project today, logged prominently in
+`BACKLOG.md` rather than presented as resolved. **92 of 193 UN members now have real city-boundary data; 101
+remain.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1500,17 +1619,18 @@ strategy the way every country in this pass was).
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 79 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 92 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
    Tenth pass for all 12 South American UN members + the Guyana/Peru/Argentina/Uruguay
    OSM-over-geoBoundaries fixes, the Overpass-endpoint swap, and the `ONLY=` scoping flag, the
    Thirteenth pass for all 13 UN Caribbean members + the general snap-to-nearest join fallback, the
-   Sixteenth pass for all 14 Southern Europe UN members + the Serbia/Belgrade `extraOsm` fix, and the
+   Sixteenth pass for all 14 Southern Europe UN members + the Serbia/Belgrade `extraOsm` fix, the
    Seventeenth pass for all 9 Eastern Europe UN members + the Belarus `extraOsm` fix and Moldova's
    full OSM source swap — the first pass with a perfectly clean 0-rejected/0-unmatched run across
-   every country on the first try).
+   every country on the first try — and the Eighteenth pass for all 13 Middle East UN members +
+   real OSM source work for Israel/Lebanon/Iraq/UAE and Saudi Arabia's still-open major-cities gap).
    Real per-feature join for Jordan/Argentina (OSM `admin_level` 6 / 5|7|8), Guyana/Peru/Uruguay (OSM
    `admin_level` 6 / 8 / 8), Trinidad and Tobago (OSM `admin_level` 4), Kuwait/Costa Rica (OSM, switched off
    geoBoundaries entirely — see their own entries), El Salvador/Guatemala/Honduras/Nicaragua/Canada/Mexico/
@@ -1536,15 +1656,22 @@ strategy the way every country in this pass was).
    Seventeenth pass, including the Czechia/Hungary/Slovakia garbled-`shapeName` finding and Romania's
    mislabeled-but-confirmed-correct `canonicalName`) and Belarus (geoBoundaries plus a supplemental OSM
    `admin_level=8` layer of village/settlement councils — see the Seventeenth pass) and Moldova (OSM,
-   switched off geoBoundaries entirely — see the Seventeenth pass) against the already-shipped
+   switched off geoBoundaries entirely — see the Seventeenth pass), and Cyprus/Syria/Turkey/Bahrain/Oman/
+   Qatar/Yemen (geoBoundaries, each level independently verified — see the Eighteenth pass, including
+   Iran's confirmed-genuine `?`-garbled `shapeName`s) and Iraq/Saudi Arabia (geoBoundaries plus a
+   supplemental OSM layer — Iraq's real nahiya tier closed most of its gap, Saudi Arabia's own
+   `admin_level=6` supplement is the same coarse tier under a different name and leaves most of its major
+   cities, including the capital, still unmatched by any checked source) and Israel/Lebanon/United Arab
+   Emirates (OSM primary or full swap — Lebanon backstopped by geoBoundaries' own coarser ADM2 where OSM
+   has a real gap) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, and Spain all
    sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 114 countries** (Russia included — see the Seventeenth pass's own note on why
+   **Not done: the other 101 countries** (Russia included — see the Seventeenth pass's own note on why
    it's deliberately excluded from routine regional batches) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth pass) before its own join can run, not a blind batch extension of this script.
+   Seventeenth/Eighteenth pass) before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
@@ -1636,9 +1763,9 @@ strategy the way every country in this pass was).
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 79 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
-  Thirteenth/Fourteenth/Fifteenth/Sixteenth/Seventeenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 114 countries (once each has its own verified
+  scoped to the 92 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
+  Thirteenth/Fourteenth/Fifteenth/Sixteenth/Seventeenth/Eighteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 101 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

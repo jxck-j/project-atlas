@@ -18,8 +18,10 @@
 // 2026-09-17 Eastern Europe pass: Belarus, Bulgaria, Czechia, Hungary,
 // Moldova, Poland, Romania, Slovakia, Ukraine (Russia deliberately excluded —
 // see city-boundaries-architecture.md's own note on why it needs its own
-// dedicated investigation rather than folding into a routine regional batch))
-// — NOT the other 114 UN members yet. See that doc's "Fifth pass" section
+// dedicated investigation rather than folding into a routine regional batch),
+// plus the 2026-09-18 Middle East pass: Bahrain, Cyprus, Iran, Iraq, Israel,
+// Lebanon, Oman, Qatar, Saudi Arabia, Syria, Turkey, United Arab Emirates,
+// Yemen) — NOT the other 101 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -1805,6 +1807,247 @@ out geom;`),
   const moldovaJoin = joinCityPointsToPolygons('Moldova', moldovaCities, moldovaCandidates)
   writeCountryOutput('498', moldovaJoin.kept)
   report.moldova = moldovaJoin.report
+}
+
+// --- Eighteenth pass (2026-09-18): Middle East (Bahrain, Cyprus, Iran, Iraq,
+// Israel, Lebanon, Oman, Qatar, Saudi Arabia, Syria, Turkey, United Arab
+// Emirates, Yemen) — Jordan and Kuwait (already done, above) are
+// geographically part of this same region but were this file's very first
+// proof-of-concept, long before "pick the next contiguous region" became the
+// standing discipline.
+//
+// Nine straightforward-or-accepted geoBoundaries confirmations: Cyprus's
+// communities (ADM2, 610, real names like "Morfou"/"Kato Pyrgos" — matches a
+// real ~600 community count), Syria's sub-districts (ADM3, 272, matching the
+// real ~270 nawahi), Turkey's districts/ilçe (ADM2, 973, matching the real
+// count almost exactly), and six real but genuinely coarse district-level
+// tiers accepted as this file's usual "finest real option, not a technique
+// failure" call (Ecuador's cantones/Jordan's own qadas precedent): Bahrain's
+// 4 governorates (ADM1 — no finer level exists in geoBoundaries OR OSM,
+// confirmed by direct Overpass query; harmless here specifically because
+// Bahrain's entire land area is small enough that even a whole governorate
+// sits under `SOFT_MAX_SQKM`), Iraq's 101 districts (ADM2, matching the real
+// ~120 qada count within vintage drift), Oman's 61 wilayat (ADM2, an exact
+// count match — wilayat is genuinely Oman's base local-government unit, not
+// a coarser tier sitting above one), Qatar's 79 zones (ADM2 — ADM1's 8
+// matches Qatar's real 8 municipalities exactly, but ADM2's own real
+// per-feature names are bare cadastral zone numbers like `"76"`/`"97"`, not
+// named localities; harmless for the same reason Czechia/Hungary/Slovakia's
+// garbled names were harmless in the Seventeenth pass — the final output
+// always uses GeoNames' own name, never a candidate's — and finer-grained
+// zone polygons are if anything a better fit for Doha's dense urban core
+// than one flat municipality polygon would be), Saudi Arabia's 147
+// governorates (ADM2 — a real mix of true governorates and, for many smaller
+// entries, the town the governorate is centered on, at the same tier), and
+// Yemen's 335 districts (ADM2, matching the real ~333 count).
+if (shouldRun('196')) report.cyprus = await runGeoBoundariesCountry({ name: 'Cyprus', numericId: '196', alpha3: 'CYP', admLevel: 'ADM2' })
+if (shouldRun('760')) report.syria = await runGeoBoundariesCountry({ name: 'Syria', numericId: '760', alpha3: 'SYR', admLevel: 'ADM3' })
+if (shouldRun('792')) report.turkey = await runGeoBoundariesCountry({ name: 'Turkey', numericId: '792', alpha3: 'TUR', admLevel: 'ADM2' })
+if (shouldRun('048')) report.bahrain = await runGeoBoundariesCountry({ name: 'Bahrain', numericId: '048', alpha3: 'BHR', admLevel: 'ADM1' })
+// Iraq: geoBoundaries' ADM2 (101 districts/qada) rejected 59 of 173 points on
+// its own, dominated by real substantial cities (Najaf 482,576 in a 39,024.9
+// km² district; Ramadi 223,500; Samarra 158,508) — the same "a district
+// built around one city can still be huge" shape as Saudi Arabia above. A
+// live OSM check found a real finer tier: admin_level=7 (401 relations,
+// Iraq's actual nahiya/sub-district layer, one level below qada) —
+// added as a supplemental smallest-wins source rather than a full swap,
+// since qada already resolves every point OSM's own finer layer doesn't
+// reach.
+if (shouldRun('368'))
+  report.iraq = await runGeoBoundariesCountry({
+    name: 'Iraq',
+    numericId: '368',
+    alpha3: 'IRQ',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-admin7',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="IQ"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="7"];
+out geom;`,
+    },
+  })
+if (shouldRun('512')) report.oman = await runGeoBoundariesCountry({ name: 'Oman', numericId: '512', alpha3: 'OMN', admLevel: 'ADM2' })
+if (shouldRun('634')) report.qatar = await runGeoBoundariesCountry({ name: 'Qatar', numericId: '634', alpha3: 'QAT', admLevel: 'ADM2' })
+if (shouldRun('887')) report.yemen = await runGeoBoundariesCountry({ name: 'Yemen', numericId: '887', alpha3: 'YEM', admLevel: 'ADM2' })
+
+// Saudi Arabia: geoBoundaries' ADM2 (147 governorates) is real but far too
+// coarse for a country this size and this sparsely populated outside its
+// major cities — the first run rejected 98 of 160 points, including the
+// capital (Riyadh, 4.2M, 8532.8 km² governorate), Jeddah-area and half a
+// dozen other genuine million-plus cities, all for the same reason: a
+// governorate built around one substantial city can still span thousands of
+// km² of surrounding desert. Checked directly whether OSM has anything
+// finer nationwide (it doesn't — its own admin_level=6 governorate layer,
+// 149 units, is the same coarse tier under a different admin_level number)
+// and whether individual major cities have their own hand-drawn boundary
+// the way Riyadh's real "مدينة الرياض"/Madinat Al Riyad relation turned out
+// to (admin_level=8) — confirmed genuinely one-off, not a systematic
+// per-city layer: a nationwide search for similarly-named "مدينة "-prefixed
+// relations found Riyadh's and otherwise only small planned communities and
+// UAE cities that happen to fall in the same bounding box, not Jeddah,
+// Dammam, Mecca, Medina, Ta'if, Tabuk, Hail, Buraydah, or Khamis Mushait.
+// **This is a real, structural data gap, not a technique failure — logged
+// in BACKLOG.md rather than chased further.** The OSM admin_level=6
+// governorate layer IS added as a supplemental source anyway (smallest-wins,
+// so it can only help, never hurt) since its 149 units vs. geoBoundaries'
+// own 147 hinted at a real coverage difference — confirmed: it resolves
+// both of Dammam/Dhahran's original unmatched status (a real "Dammam
+// Governorate" relation exists in OSM but not in geoBoundaries' download).
+if (shouldRun('682'))
+  report.saudiArabia = await runGeoBoundariesCountry({
+    name: 'Saudi Arabia',
+    numericId: '682',
+    alpha3: 'SAU',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-admin6',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="SA"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="6"];
+out geom;`,
+    },
+  })
+
+// Iran: geoBoundaries' finest level, ADM4 ("Dehestan", 2772 units), is a real
+// mix of rural sub-district (dehestan) entries and actual named cities
+// (shahr) at the same tier — e.g. "Tehran", "Lordegan", "Shahr-e Kord",
+// "Bojnord", "Kazerun" all appear as their own features alongside the
+// Persian-labeled rural dehestani. **A real, confirmed upstream data bug**:
+// many of ADM4's own `shapeName` values are literal ASCII `?` characters
+// (verified via the raw response bytes, the same way the Seventeenth pass
+// verified Czechia/Hungary/Slovakia's garbled names — not a terminal/decode
+// artifact), presumably wherever geoBoundaries' own pipeline failed to
+// transliterate a Persian name. Harmless for the same reason every prior
+// garbled-name finding was: the join is real point-in-polygon containment
+// against real geometry, and the final output's `properties.name` always
+// comes from GeoNames, never from a candidate's own (possibly-garbled)
+// name.
+if (shouldRun('364')) report.iran = await runGeoBoundariesCountry({ name: 'Iran', numericId: '364', alpha3: 'IRN', admLevel: 'ADM4' })
+
+// Israel: geoBoundaries' finest level, ADM2 ("Subdistrict", 15 units, e.g.
+// "Tel Aviv"/"HaSharon"/"Haifa"), is far too coarse — each subdistrict spans
+// many separate real cities and towns (a subdistrict is closer to a US
+// county than a municipality). Switched off geoBoundaries entirely in favor
+// of OSM: a live Overpass query found Israel's real local-authority tier
+// (city/local council/regional council, ~255 real units) is tagged
+// `admin_level=8` (237 relations, real names — Rehovot, Ashqelon, Dimona,
+// Arad, Yeruham, Omer, plus regional councils like "מועצה אזורית רמת נגב") —
+// with a small `admin_level=9` supplement (11 more, likely finer
+// subdivisions of one or two larger local authorities). Queried together
+// since smallest-containing-polygon-wins makes this safe regardless of
+// whether the two levels ever actually overlap for the same point.
+if (!process.env.SKIP_OSM && shouldRun('376')) {
+  console.log('\n=== Israel ===')
+  const israelRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="IL"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(8|9)$"];
+out geom;`),
+  )
+  let israelUnclosedCount = 0
+  const israelCandidates = israelRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) israelUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8-9' }
+  })
+  if (israelUnclosedCount > 0) console.log(`  [warn] ${israelUnclosedCount} Israel relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const israelCities = loadCityPoints('376')
+  const israelJoin = joinCityPointsToPolygons('Israel', israelCities, israelCandidates)
+  writeCountryOutput('376', israelJoin.kept)
+  report.israel = israelJoin.report
+}
+
+// Lebanon: geoBoundaries' finest level, ADM2 (26 aqdya/districts), matches
+// the real caza count exactly but is still far coarser than Lebanon's real
+// municipality tier. A live Overpass query found Lebanon's real
+// municipality/quarter tier is tagged `admin_level=7` (1031 relations, real
+// names — Beirut's own inner quarters like "الأشرفية"/Achrafieh,
+// "باشورة"/Bachoura, "رأس بيروت"/Ras Beirut, mixed with ordinary
+// municipalities elsewhere like "بعلبك"/Baalbek and "طرابلس"/Tripoli), with a
+// smaller `admin_level=8` supplement (65 more). **A first run using only the
+// OSM layer left 2 points unmatched, including Zahlé (78,145, a real
+// district capital)** — a real, if small, OSM coverage gap for that specific
+// municipality boundary, the same shape as Argentina/Colombia/Panama's own
+// residual gaps elsewhere in this file. Rather than switch off geoBoundaries
+// entirely (as first tried, the same "the general regional convention
+// doesn't automatically apply, check directly" lesson as Moldova's own
+// admin_level=8 finding in the Seventeenth pass), geoBoundaries' own ADM2
+// (26 aqdya) is kept as a coarser backstop candidate set alongside OSM's
+// municipality layer — smallest-containing-polygon-wins means the OSM layer
+// still wins everywhere it actually has a boundary, and the caza-level
+// polygon only ever gets used where OSM has a real gap.
+if (!process.env.SKIP_OSM && shouldRun('422')) {
+  console.log('\n=== Lebanon ===')
+  const lebanonRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="LB"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(7|8)$"];
+out geom;`),
+  )
+  let lebanonUnclosedCount = 0
+  const lebanonCandidates = lebanonRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) lebanonUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin7-8' }
+  })
+  if (lebanonUnclosedCount > 0) console.log(`  [warn] ${lebanonUnclosedCount} Lebanon relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const lebanonGbMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/LBN/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const lebanonAdm2Meta = lebanonGbMeta.find((l) => l.boundaryType === 'ADM2')
+  const lebanonGb = await fetchWithRetry(async () => {
+    const res = await fetch(lebanonAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  for (const f of lebanonGb.features) lebanonCandidates.push({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' })
+  const lebanonCities = loadCityPoints('422')
+  const lebanonJoin = joinCityPointsToPolygons('Lebanon', lebanonCities, lebanonCandidates)
+  writeCountryOutput('422', lebanonJoin.kept)
+  report.lebanon = lebanonJoin.report
+}
+
+// United Arab Emirates: geoBoundaries has only ADM1 (the 7 emirates) — far
+// too coarse (Abu Dhabi emirate alone contains Abu Dhabi city, Al Ain, and
+// vast empty desert). Switched off geoBoundaries entirely in favor of OSM: a
+// live Overpass query found a real, if inconsistent, mixed-level hierarchy —
+// admin_level 4 (7, the emirates themselves, same as geoBoundaries' ADM1),
+// 5 (1, an Abu Dhabi-specific sub-layer), 6 (3), 7 (15), and 8 (374, the
+// large majority — real named areas/districts like "Kalba"/"خورفكان"
+// (Khor Fakkan)/"السيف"/"النخيل") — the same "don't assume a single tier is
+// uniform" lesson this file has already learned for Belize/Kuwait/Argentina/
+// Belarus. **A first run with just 4-8 still rejected 57 of 107 points, most
+// of them real Dubai districts (Deira, Jebel Ali, Umm Suqeim, Jumeirah, ...)
+// falling back to the whole 7214.8 km² Dubai emirate polygon** — a real,
+// verified gap: not every Dubai district has an admin_level 6-8 boundary,
+// but several do exist one or two levels deeper (e.g. "مدينة دبي للغولف"/
+// Dubai Golf City and "مدينة العمال"/Madinat Al Ummal at admin_level=10) that
+// the 4-8 query simply couldn't see. Widened to 4-10; smallest-containing-
+// polygon-wins makes this safe regardless of how deep a real boundary for
+// any given district happens to sit, and the emirate level (4) still
+// backstops anywhere none of the finer levels reach.
+if (!process.env.SKIP_OSM && shouldRun('784')) {
+  console.log('\n=== United Arab Emirates ===')
+  const uaeRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="AE"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(4|5|6|7|8|9|10)$"];
+out geom;`),
+  )
+  let uaeUnclosedCount = 0
+  const uaeCandidates = uaeRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) uaeUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin4-8' }
+  })
+  if (uaeUnclosedCount > 0) console.log(`  [warn] ${uaeUnclosedCount} UAE relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const uaeCities = loadCityPoints('784')
+  const uaeJoin = joinCityPointsToPolygons('United Arab Emirates', uaeCities, uaeCandidates)
+  writeCountryOutput('784', uaeJoin.kept)
+  report.unitedArabEmirates = uaeJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
