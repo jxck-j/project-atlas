@@ -2107,6 +2107,78 @@ residuals (remote atolls/islands, real geography) need no further entry.
 city-boundary data; 56 remain (India and Russia both still deliberately deferred to their own dedicated
 passes) — every UN member outside Africa, India, and Russia now has real city-boundary data.**
 
+### Twenty-fourth pass: North Africa + South Sudan (2026-09-18) — the first Africa batch: Algeria, Egypt,
+Libya, Morocco, Sudan, South Sudan, Tunisia
+
+The first slice of Africa, deliberately starting with the smallest/most-already-researched countries: Libya
+and South Sudan were directly investigated back in the Fourth pass (2026-09-04), before this file's real
+per-feature join even existed, and confirmed then to have genuine structural coverage gaps rather than a
+hidden finer level to discover. This pass reuses those findings rather than re-investigating from scratch,
+and turns them into real joins for the first time.
+
+**Four confirmed clean on recon's own reported finest level:** Algeria (ADM3, "Communes," 1,540 units —
+Algiers -> Sidi M'Hamed, a real 2.17 km² commune of the capital; Oran/Constantine each resolve to their own
+whole commune; 318/353 kept, 35 rejected, 13 substantial — real oversized Saharan communes, not chased
+further), Egypt (ADM2, "marakiz and aqsam" — markaz/qism, Egypt's real district tier for rural/urban areas
+respectively, 365 units — Cairo -> Qasr Al-Nile, 1.09 km²; Alexandria -> Bab Sharqi, 6.32 km²; Giza and Luxor
+each resolve to their own whole qism; 227/260 kept, 33 rejected, 25 substantial — Upper Egypt's own oversized
+rural marakiz), Morocco (ADM2, 75 prefectures/provinces — Morocco's real ADM2 tier, no finer level exists in
+this source at all — Casablanca -> its own 215.07 km² prefecture, Rabat -> 113.18 km²; Marrakesh's own
+prefecture is a genuinely large 2,617.43 km² urban-plus-rural unit, the finest available, not a technique
+failure; 176/480 kept, 304 rejected, 78 substantial — Morocco's rural "province"-level units, as opposed to
+its urban "prefecture"-level ones, routinely span large agricultural/desert hinterlands around one real town),
+and Sudan (ADM2, "District," 189 units — Omdurman -> Um Durman, 1,221.84 km²; Port Sudan -> its own 565.71
+km² district; Khartoum's own test coordinate landed in the adjacent Jebel Awlia district, 782.47 km², rather
+than central Khartoum's own — real coordinate imprecision on this pass's own manual check, not a data
+problem, given Omdurman/Port Sudan both resolved correctly; 52/112 kept, 60 rejected, 51 substantial — a live
+OSM check for a finer tier found `admin_level=6` returning only 129 relations, FEWER than geoBoundaries' own
+189 districts — not a finer comprehensive tier, just an incomplete alternative encoding of the same one — and
+`admin_level=7` returning zero nationwide, confirming no finer source exists, the same "not chased further"
+bar Kazakhstan/Afghanistan/Pakistan's own oversized-district residuals already established).
+
+**Tunisia needed the same override this file has now hit repeatedly:** recon's reported finest level (ADM3,
+"imada"/sector, 2,077 units, canonicalName blank/"Unknown" at every level in this download) resolves Tunis to
+a 1.76 km² sub-city sector ("الحدائق") and Sfax to a 0.83 km² one ("المدينة") — real named units, but
+neighborhood/ward scale, the same trap as Bangladesh/Sri Lanka/Cambodia/South Korea's own ADM-too-fine
+overrides. ADM2 ("delegation," Tunisia's real district tier, 264 units) resolves both to their own real
+delegation instead — Tunis -> "باب بحر" (Bab Bhar), 11.01 km²; Sfax -> "صفاقس المدينة" (Sfax Al-Madina), 28.84
+km² — and is used. Result: 280/286 kept (1 snapped), 6 rejected, none substantial — the cleanest result in
+this pass.
+
+**Libya's baladiyat (ADM1, 22 units — geoBoundaries has no ADM2 for LBY at all) is confirmed, per the Fourth
+pass's own direct OSM investigation, to be the finest tier that exists anywhere for Libya** — OSM's own
+`admin_level` 6/9/10 are all empty nationwide, no hidden finer government layer exists to discover. Genuinely
+coarse (Tripoli's own baladiya is 2,619.84 km², Benghazi's is 9,835.40 km² — both spanning the whole city plus
+a large rural hinterland). Result: only 16/119 kept, 103 rejected, 57 substantial (including Benghazi itself,
+757,490 population, and Misratah, 355,657, in a 49,770 km² baladiya) — this pass's worst ratio, expected and
+already predicted by the Fourth pass rather than a surprise.
+
+**South Sudan's counties (ADM2, 78 units, matching recon) are similarly confirmed coarse nationwide** (Juba's
+own county is 18,447.35 km², far past even the loose ceiling) — the Fourth pass's own exception (a genuine
+`admin_level=8` Juba-neighborhood tier, 37 relations, still current) was added as a supplemental candidate,
+the same Kazakhstan/Bhutan/South Korea "single-capital OSM supplement" pattern. **Worth being honest about:
+this supplement measured zero benefit in this specific run** — every one of the 7 kept South Sudan features
+came from the plain ADM2 source, none from the neighborhood supplement. Direct investigation found why:
+GeoNames' own "Juba" coordinate (31.58247, 4.85165) sits in a real gap between the neighborhood polygons — the
+nearest one, "Hai Nyakama," comes within roughly 0.02° of it but doesn't quite contain it, and since Juba's
+own ADM2 county polygon *does* contain the point, the join's snap-to-nearest fallback (which only activates
+when NO candidate contains the point at all) never triggers either — a real architecture nuance, not a bug:
+"a huge-but-real containing polygon beats no polygon," so a too-large match still wins over a nearby-but-
+non-containing smaller one. Kept in the code anyway (it's still the technique the Fourth pass called for, and
+correctly implemented), but the honest result is: 7/23 kept, 15 rejected (11 substantial, Juba's own 450,000-
+population point among them), 1 unmatched.
+
+**File sizes**: none of these seven needed `shardByState()` — Morocco's 1,172 KB is the largest.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: Libya (57 substantial rejects, the worst ratio in this
+pass, already predicted by the Fourth pass), Sudan (51 substantial rejects, confirmed via a fresh live OSM
+check that no finer tier exists), Morocco (78 substantial rejects, real rural-province scale), Algeria (13
+substantial rejects), Egypt (25 substantial rejects), and South Sudan (11 substantial rejects even with the
+Juba supplement, for the coordinate-gap reason explained above). Tunisia's clean result needs no entry.
+
+**Final status: 7 of Africa's 54 UN members are done and committed. 144 of 193 UN members now have real
+city-boundary data; 49 remain — all in Africa (47 more) plus India and Russia.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2123,7 +2195,7 @@ passes) — every UN member outside Africa, India, and Russia now has real city-
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 137 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 144 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2210,17 +2282,24 @@ passes) — every UN member outside Africa, India, and Russia now has real city-
    and deliberately left as-is, since the only whole-city OSM alternative is an even-less-plausible 16,153 km²)
    and Palau (geoBoundaries ADM2 with Koror's own internal-hamlet fragments dropped and replaced with the whole
    ADM1 Koror state, a real fix caught only once the actual join ran, not by the initial coordinate check — see
-   the Twenty-third pass) against the already-shipped
+   the Twenty-third pass) and Algeria/Egypt/Morocco/Sudan (geoBoundaries, each level independently verified,
+   the finest available for Morocco/Sudan specifically per a fresh live OSM check — see the Twenty-fourth pass)
+   and Tunisia (geoBoundaries, overriding recon's own "imada" reported finest level for the coarser real
+   "delegation" tier) and Libya (geoBoundaries ADM1, the only level that exists for LBY — its own baladiyat,
+   confirmed the finest tier anywhere back in the Fourth pass) and South Sudan (geoBoundaries ADM2 plus a
+   supplemental Juba-neighborhood OSM layer from that same Fourth pass — measured zero actual benefit in this
+   run, a real coordinate-gap finding logged rather than silently assumed to help — see the Twenty-fourth
+   pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 56 countries** (Russia and India both included — see the Seventeenth pass's own note
+   **Not done: the other 49 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third pass) before its own
-   join can run, not a blind batch extension of this script.
+   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth pass)
+   before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,

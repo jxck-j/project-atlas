@@ -31,8 +31,10 @@
 // Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand,
 // Timor-Leste, Vietnam, plus the 2026-09-18 Oceania pass: Australia, Fiji,
 // Kiribati, Marshall Islands, Micronesia, Nauru, New Zealand, Palau, Papua
-// New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu — NOT the
-// other 56 UN members yet. See that doc's "Fifth pass" section
+// New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu, plus the
+// 2026-09-18 North Africa + South Sudan pass: Algeria, Egypt, Libya,
+// Morocco, Sudan, South Sudan, Tunisia — NOT the other 49 UN members yet.
+// See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -3037,6 +3039,84 @@ if (shouldRun('090')) {
   writeCountryOutput('090', slbJoin.kept)
   report.solomonIslands = slbJoin.report
 }
+
+// --- Twenty-fourth pass (2026-09-18): North Africa + South Sudan (Algeria,
+// Egypt, Libya, Morocco, Sudan, South Sudan, Tunisia) — the first Africa
+// batch, starting with the smallest/most-researched slice: Libya and South
+// Sudan were already directly investigated in the Fourth pass (2026-09-04,
+// before this file's per-feature join even existed) and confirmed to have
+// real, structural coverage gaps rather than a hidden finer level to
+// discover — this pass reuses those findings rather than re-investigating
+// from scratch, and finally turns them into real joins.
+//
+// Four confirmed clean on recon's own reported finest level: Algeria (ADM3,
+// "Communes," 1,540 units — Algiers -> Sidi M'Hamed, a real 2.17 km²
+// commune of the capital; Oran/Constantine each resolve to their own whole
+// commune), Egypt (ADM2, "marakiz and aqsam" — markaz/qism, Egypt's real
+// district tier for rural/urban areas respectively, 365 units — Cairo ->
+// Qasr Al-Nile, 1.09 km²; Alexandria -> Bab Sharqi, 6.32 km²; Giza and
+// Luxor each resolve to their own whole qism), Morocco (ADM2, 75
+// prefectures/provinces — Morocco's real ADM2 tier, no finer level exists
+// in this source at all — Casablanca -> its own 215.07 km² prefecture,
+// Rabat -> 113.18 km²; Marrakesh's own prefecture is a genuinely large
+// 2,617.43 km² urban-plus-rural unit, the finest available, not a
+// technique failure), and Sudan (ADM2, "District," 189 units — Omdurman ->
+// Um Durman, 1,221.84 km²; Port Sudan -> its own 565.71 km² district;
+// Khartoum's own test coordinate landed in the adjacent Jebel Awlia
+// district, 782.47 km², rather than central Khartoum's own — real
+// coordinate imprecision on this pass's own manual check, not a data
+// problem, given Omdurman/Port Sudan both resolved correctly).
+//
+// Tunisia needed the same override this file has now hit repeatedly:
+// recon's reported finest level (ADM3, "imada"/sector, 2,077 units,
+// canonicalName blank/"Unknown" at every level in this download) resolves
+// Tunis to a 1.76 km² sub-city sector ("الحدائق") and Sfax to a 0.83 km²
+// one ("المدينة") — real named units, but neighborhood/ward scale, the
+// same trap as Bangladesh/Sri Lanka/Cambodia/South Korea's own ADM-too-
+// fine overrides. ADM2 ("delegation," Tunisia's real district tier, 264
+// units) resolves both to their own real delegation instead — Tunis ->
+// "باب بحر" (Bab Bhar), 11.01 km²; Sfax -> "صفاقس المدينة" (Sfax
+// Al-Madina), 28.84 km² — and is used.
+//
+// Libya's baladiyat (ADM1, 22 units — geoBoundaries has no ADM2 for LBY at
+// all) is confirmed, per the Fourth pass's own direct OSM investigation, to
+// be the finest tier that exists anywhere for Libya — OSM's own
+// `admin_level` 6/9/10 are all empty nationwide, no hidden finer government
+// layer exists to discover. Genuinely coarse (Tripoli's own baladiya is
+// 2,619.84 km², Benghazi's is 9,835.40 km² — both spanning the whole city
+// plus a large rural hinterland), so real, substantial rejections are
+// expected here and logged to BACKLOG.md rather than chased with a
+// technique this pass's own predecessor already ruled out.
+//
+// South Sudan's counties (ADM2, 78 units, matching recon) are similarly
+// confirmed coarse nationwide (Juba's own county is 18,447.35 km², far past
+// even the loose ceiling) — but the Fourth pass found one real exception: a
+// live OSM check (still current, 37 relations) confirmed a genuine
+// `admin_level=8` neighborhood tier exists for Juba specifically (Munuki
+// West, Hai Juba Nabari, Juba Quarter Council, ...), not the rest of the
+// country. Added as a supplemental candidate the same way Kazakhstan/
+// Bhutan/South Korea's own single-capital OSM supplements were — every
+// other South Sudanese town still has nothing finer than its county.
+if (shouldRun('012')) report.algeria = await runGeoBoundariesCountry({ name: 'Algeria', numericId: '012', alpha3: 'DZA', admLevel: 'ADM3' })
+if (shouldRun('818')) report.egypt = await runGeoBoundariesCountry({ name: 'Egypt', numericId: '818', alpha3: 'EGY', admLevel: 'ADM2' })
+if (shouldRun('434')) report.libya = await runGeoBoundariesCountry({ name: 'Libya', numericId: '434', alpha3: 'LBY', admLevel: 'ADM1' })
+if (shouldRun('504')) report.morocco = await runGeoBoundariesCountry({ name: 'Morocco', numericId: '504', alpha3: 'MAR', admLevel: 'ADM2' })
+if (shouldRun('729')) report.sudan = await runGeoBoundariesCountry({ name: 'Sudan', numericId: '729', alpha3: 'SDN', admLevel: 'ADM2' })
+if (shouldRun('788')) report.tunisia = await runGeoBoundariesCountry({ name: 'Tunisia', numericId: '788', alpha3: 'TUN', admLevel: 'ADM2' })
+if (shouldRun('728'))
+  report.southSudan = await runGeoBoundariesCountry({
+    name: 'South Sudan',
+    numericId: '728',
+    alpha3: 'SSD',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-juba-admin8',
+      query: `[out:json][timeout:60];
+area["ISO3166-1"="SS"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`,
+    },
+  })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

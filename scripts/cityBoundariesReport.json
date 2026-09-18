@@ -150303,5 +150303,3966 @@
         "snapDistanceKm": 0.014
       }
     ]
+  },
+  "algeria": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zaouiet ed Debarh",
+        "population": 5915,
+        "matchedTo": "Tinerkouk",
+        "areaSqKm": 20156.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsabit",
+        "population": 1224,
+        "matchedTo": "Tsabit",
+        "areaSqKm": 14593.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tilouline",
+        "population": 6120,
+        "matchedTo": "In Zghmir",
+        "areaSqKm": 5420.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tindouf",
+        "population": 45610,
+        "matchedTo": "Tinduf",
+        "areaSqKm": 74134.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Timokten",
+        "population": 1255,
+        "matchedTo": "Timokten",
+        "areaSqKm": 18313.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timimoun",
+        "population": 22086,
+        "matchedTo": "Timimoun",
+        "areaSqKm": 9769,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tidmaine",
+        "population": 4442,
+        "matchedTo": "In Zghmir",
+        "areaSqKm": 5420.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamest",
+        "population": 1133,
+        "matchedTo": "Tamast",
+        "areaSqKm": 6835.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamentit",
+        "population": 4835,
+        "matchedTo": "Tamantit",
+        "areaSqKm": 7006.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamanghasset",
+        "population": 81752,
+        "matchedTo": "Tamanghasset",
+        "areaSqKm": 39107.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sali",
+        "population": 3948,
+        "matchedTo": "Sali",
+        "areaSqKm": 17543.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rouissat",
+        "population": 80784,
+        "matchedTo": "Rouissat",
+        "areaSqKm": 7535.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Reggane",
+        "population": 32974,
+        "matchedTo": "Reggane",
+        "areaSqKm": 125025.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oulad Aïssa",
+        "population": 1350,
+        "matchedTo": "Ouled Aissa",
+        "areaSqKm": 4178.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "In Guezzam",
+        "population": 7045,
+        "matchedTo": "In Guezzam",
+        "areaSqKm": 51473,
+        "isSubstantial": false
+      },
+      {
+        "name": "Illizi",
+        "population": 13029,
+        "matchedTo": "Illizi",
+        "areaSqKm": 76154.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hassi Messaoud",
+        "population": 44478,
+        "matchedTo": "Hassi Messaoud",
+        "areaSqKm": 69578.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Fatis",
+        "population": 3209,
+        "matchedTo": "Tinerkouk",
+        "areaSqKm": 20156.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Menia",
+        "population": 57344,
+        "matchedTo": "El Menia",
+        "areaSqKm": 23966.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Abiodh Sidi Cheikh",
+        "population": 39283,
+        "matchedTo": "El Abiodh Sidi Cheikh",
+        "areaSqKm": 15996.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Djanet",
+        "population": 0,
+        "matchedTo": "Djanet",
+        "areaSqKm": 57585.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Charouine",
+        "population": 1536,
+        "matchedTo": "Charouine",
+        "areaSqKm": 2880.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brezina",
+        "population": 19084,
+        "matchedTo": "Brezina",
+        "areaSqKm": 15706.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Béni Abbès",
+        "population": 11416,
+        "matchedTo": "Bani Abbas",
+        "areaSqKm": 9805.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bouda",
+        "population": 2349,
+        "matchedTo": "Bouda",
+        "areaSqKm": 4263.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Béchar",
+        "population": 165241,
+        "matchedTo": "Bashar",
+        "areaSqKm": 5026.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aougrout",
+        "population": 7310,
+        "matchedTo": "Aougrout",
+        "areaSqKm": 14203.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timiaouine",
+        "population": 4493,
+        "matchedTo": "Timiaouine",
+        "areaSqKm": 12547.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "In Salah",
+        "population": 32518,
+        "matchedTo": "In Salah",
+        "areaSqKm": 44348.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ouled Ahmed Timmi",
+        "population": 3567,
+        "matchedTo": "Ouled Ahmed Tammi",
+        "areaSqKm": 4796.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kasbate El Djena",
+        "population": 8009,
+        "matchedTo": "Timokten",
+        "areaSqKm": 18313.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tinerkouk",
+        "population": 5915,
+        "matchedTo": "Tinerkouk",
+        "areaSqKm": 20156.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ksar Kaddour",
+        "population": 1016,
+        "matchedTo": "Ksar Kaddour",
+        "areaSqKm": 8089.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Talmine",
+        "population": 1067,
+        "matchedTo": "Talmine",
+        "areaSqKm": 2959,
+        "isSubstantial": false
+      },
+      {
+        "name": "In Zghmir",
+        "population": 4442,
+        "matchedTo": "In Zghmir",
+        "areaSqKm": 5420.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "egypt": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "6th of October City",
+        "population": 368650,
+        "matchedTo": "Zemam Out",
+        "areaSqKm": 35033.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hurghada",
+        "population": 207132,
+        "matchedTo": "Hurghada 1",
+        "areaSqKm": 6187.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zāwyat Umm ar Rakham",
+        "population": 2643,
+        "matchedTo": "Marsa Matruh",
+        "areaSqKm": 48054.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zaafarana",
+        "population": 46993,
+        "matchedTo": "Ras Gharib",
+        "areaSqKm": 10457.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sīwah",
+        "population": 25031,
+        "matchedTo": "Siwa",
+        "areaSqKm": 37987.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sīdī Barānī",
+        "population": 38253,
+        "matchedTo": "Sidi Barani",
+        "areaSqKm": 16325.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ras Gharib",
+        "population": 44852,
+        "matchedTo": "Ras Gharib",
+        "areaSqKm": 10457.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qaşr al Farāfirah",
+        "population": 5000,
+        "matchedTo": "Al Farafra Oasis",
+        "areaSqKm": 38319.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nuwaybi‘a",
+        "population": 5000,
+        "matchedTo": "Nuweiba",
+        "areaSqKm": 5583.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mūţ",
+        "population": 26820,
+        "matchedTo": "A-Dakhla Oasis",
+        "areaSqKm": 268554.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marsá Maţrūḩ",
+        "population": 176498,
+        "matchedTo": "Marsa Matruh",
+        "areaSqKm": 48054.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marsa Alam",
+        "population": 10000,
+        "matchedTo": "Marsa Alam",
+        "areaSqKm": 24443.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dahab",
+        "population": 8000,
+        "matchedTo": "Sant Katrin",
+        "areaSqKm": 3358.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al ‘Ayn as Sukhnah",
+        "population": 45552,
+        "matchedTo": "Ataqa",
+        "areaSqKm": 6954.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "As Sallūm",
+        "population": 16545,
+        "matchedTo": "Salloum",
+        "areaSqKm": 12891.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Quşayr",
+        "population": 24653,
+        "matchedTo": "Qusir",
+        "areaSqKm": 11665.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khārjah",
+        "population": 83108,
+        "matchedTo": "Al-Kharga Oasis",
+        "areaSqKm": 83252.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Ḩammām",
+        "population": 18407,
+        "matchedTo": "Al-Hammam",
+        "areaSqKm": 20406.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Bawīţī",
+        "population": 15653,
+        "matchedTo": "Zemam Out",
+        "areaSqKm": 35033.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Dabaa",
+        "population": 27697,
+        "matchedTo": "Daba",
+        "areaSqKm": 21433.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abu Simbel",
+        "population": 5000,
+        "matchedTo": "Zemam Out",
+        "areaSqKm": 56512,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hala'ib",
+        "population": 27000,
+        "matchedTo": "Halayib",
+        "areaSqKm": 7577.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bi’r al ‘Abd",
+        "population": 26330,
+        "matchedTo": "Bir Al-Abd",
+        "areaSqKm": 5231.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Gouna",
+        "population": 15000,
+        "matchedTo": "Hurghada 2",
+        "areaSqKm": 6831.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Makadi Bay",
+        "population": 4000,
+        "matchedTo": "Safaga",
+        "areaSqKm": 4760.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ain Sukhna",
+        "population": 45552,
+        "matchedTo": "Ataqa",
+        "areaSqKm": 6954.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Saint Catherine",
+        "population": 4603,
+        "matchedTo": "Sant Katrin",
+        "areaSqKm": 3358.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shalateen",
+        "population": 12443,
+        "matchedTo": "Shallatin",
+        "areaSqKm": 49668.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shalātīn",
+        "population": 12421,
+        "matchedTo": "Shallatin",
+        "areaSqKm": 49668.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sānt Kātrīnā",
+        "population": 0,
+        "matchedTo": "Sant Katrin",
+        "areaSqKm": 3358.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al-Khārijah",
+        "population": 83108,
+        "matchedTo": "Al-Kharga Oasis",
+        "areaSqKm": 83252.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al-Minyā al-Jadīdah",
+        "population": 17470,
+        "matchedTo": "Zemam Out",
+        "areaSqKm": 28836.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "An-Najaylah",
+        "population": 19768,
+        "matchedTo": "Marsa Matruh",
+        "areaSqKm": 48054.7,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Taba",
+        "population": 700,
+        "matchedTo": "Taba",
+        "snapDistanceKm": 0.008
+      },
+      {
+        "name": "Al Maţarīyah",
+        "population": 162045,
+        "matchedTo": "Matariyya",
+        "snapDistanceKm": 0.122
+      }
+    ]
+  },
+  "libya": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Benghazi",
+        "population": 757490,
+        "matchedTo": "Benghazi",
+        "areaSqKm": 9835.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zliten",
+        "population": 203790,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": true
+      },
+      {
+        "name": "Misratah",
+        "population": 355657,
+        "matchedTo": "Misratah",
+        "areaSqKm": 49769.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Khums",
+        "population": 201943,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Bardīyah",
+        "population": 9149,
+        "matchedTo": "Al Butnan",
+        "areaSqKm": 79237.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mukhaylá",
+        "population": 1764,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umm ar Rizam",
+        "population": 8742,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tobruk",
+        "population": 141499,
+        "matchedTo": "Al Butnan",
+        "areaSqKm": 79237.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sūsah",
+        "population": 7285,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qaryat Sulūq",
+        "population": 19918,
+        "matchedTo": "Benghazi",
+        "areaSqKm": 9835.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sulţān",
+        "population": 3672,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qirnādah",
+        "population": 4206,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qaşr Lībiyā",
+        "population": 5975,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qaryat ‘Umar al Mukhtār",
+        "population": 8031,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qandūlah",
+        "population": 7760,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qamīnis",
+        "population": 8688,
+        "matchedTo": "Benghazi",
+        "areaSqKm": 9835.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Massah",
+        "population": 7831,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Martūbah",
+        "population": 9357,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kambūt",
+        "population": 6973,
+        "matchedTo": "Al Butnan",
+        "areaSqKm": 79237.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jardas al ‘Abīd",
+        "population": 6744,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jālū",
+        "population": 13401,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Daryānah",
+        "population": 7558,
+        "matchedTo": "Benghazi",
+        "areaSqKm": 9835.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Darnah",
+        "population": 102581,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Az Zuwaytīnah",
+        "population": 21015,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Awjilah",
+        "population": 5125,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "At Tāj",
+        "population": 46050,
+        "matchedTo": "Al Kufrah",
+        "areaSqKm": 423870.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tūkrah",
+        "population": 12593,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qubbah",
+        "population": 24631,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Marj",
+        "population": 85315,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jawf",
+        "population": 42079,
+        "matchedTo": "Al Kufrah",
+        "areaSqKm": 423870.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jaghbūb",
+        "population": 2768,
+        "matchedTo": "Al Butnan",
+        "areaSqKm": 79237.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qaryat al Bayyāḑah",
+        "population": 5538,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Bayḑā’",
+        "population": 129439,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Abyār",
+        "population": 32563,
+        "matchedTo": "Al Marj",
+        "areaSqKm": 14859.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Abraq",
+        "population": 8276,
+        "matchedTo": "Al Qubbah",
+        "areaSqKm": 21210.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ajdabiya",
+        "population": 131773,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zuwarah",
+        "population": 33887,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zillah",
+        "population": 10030,
+        "matchedTo": "Al Jufrah",
+        "areaSqKm": 115245.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zawīlah",
+        "population": 4434,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zalţan",
+        "population": 14131,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yafran",
+        "population": 22680,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wāzin",
+        "population": 4715,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Waddān",
+        "population": 10150,
+        "matchedTo": "Al Jufrah",
+        "areaSqKm": 115245.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Umm al Arānib",
+        "population": 10493,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tījī",
+        "population": 6905,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tarhuna",
+        "population": 52420,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tarāghin",
+        "population": 8167,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamzāwah",
+        "population": 7410,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sirte",
+        "population": 106705,
+        "matchedTo": "Surt",
+        "areaSqKm": 46325.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sūknah",
+        "population": 12077,
+        "matchedTo": "Al Jufrah",
+        "areaSqKm": 115245.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sīnāwin",
+        "population": 4059,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sīdī aş Şayd",
+        "population": 9821,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": false
+      },
+      {
+        "name": "Samnū",
+        "population": 4492,
+        "matchedTo": "Sabha",
+        "areaSqKm": 17261.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Şabrātah",
+        "population": 83398,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sabha",
+        "population": 149329,
+        "matchedTo": "Sabha",
+        "areaSqKm": 17261.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sīdī Bin Zīnah",
+        "population": 31607,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qīrah",
+        "population": 6997,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nālūt",
+        "population": 28431,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Murzuk",
+        "population": 30491,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mizdah",
+        "population": 16735,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Burayqah",
+        "population": 31300,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marādah",
+        "population": 2229,
+        "matchedTo": "Ajdabiya",
+        "areaSqKm": 197568.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kiklah",
+        "population": 11776,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kābāw",
+        "population": 7686,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jādū",
+        "population": 12507,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hūn",
+        "population": 24431,
+        "matchedTo": "Al Jufrah",
+        "areaSqKm": 115245.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ghat",
+        "population": 14630,
+        "matchedTo": "Ghat",
+        "areaSqKm": 51433.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gharyan",
+        "population": 36110,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ghadames",
+        "population": 12096,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Daraj",
+        "population": 6051,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bi’r al Ghanam",
+        "population": 4182,
+        "matchedTo": "Az Zawiyah",
+        "areaSqKm": 3387.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brak",
+        "population": 16200,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bin Jawwād",
+        "population": 15509,
+        "matchedTo": "Surt",
+        "areaSqKm": 46325.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barqin",
+        "population": 5902,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bani Walid",
+        "population": 45734,
+        "matchedTo": "Misratah",
+        "areaSqKm": 49769.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qaryat al Qī‘ān",
+        "population": 3797,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zintan",
+        "population": 33000,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ubari",
+        "population": 33569,
+        "matchedTo": "Wadi al Hayaa",
+        "areaSqKm": 32436.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ar Rujbān",
+        "population": 6419,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ar Rayāyinah",
+        "population": 15031,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Āqār",
+        "population": 4832,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al ‘Awinat",
+        "population": 3881,
+        "matchedTo": "Ghat",
+        "areaSqKm": 51433.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ajaylat",
+        "population": 130546,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qawāsim",
+        "population": 15134,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qaţrūn",
+        "population": 7243,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Khaḑrā’",
+        "population": 9521,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Jumayl",
+        "population": 102000,
+        "matchedTo": "An Nuqat al Khams",
+        "areaSqKm": 6272.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Jadīd",
+        "population": 126386,
+        "matchedTo": "Sabha",
+        "areaSqKm": 17261.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Ḩawāmid",
+        "population": 4558,
+        "matchedTo": "Ghadamis",
+        "areaSqKm": 68025.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Ghurayfah",
+        "population": 23449,
+        "matchedTo": "Wadi al Hayaa",
+        "areaSqKm": 32436.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Barakāt",
+        "population": 9908,
+        "matchedTo": "Ghat",
+        "areaSqKm": 51433.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Aşābi‘ah",
+        "population": 27713,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Idrī",
+        "population": 4696,
+        "matchedTo": "Ash Shati'",
+        "areaSqKm": 96540.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abū Zayyān",
+        "population": 14332,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shahhat",
+        "population": 29206,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qasr Abu Hadi",
+        "population": 4890,
+        "matchedTo": "Surt",
+        "areaSqKm": 46325.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al-'Alūaṣ",
+        "population": 17122,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tāzirbū",
+        "population": 8085,
+        "matchedTo": "Al Kufrah",
+        "areaSqKm": 423870.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umm Sā'ad",
+        "population": 8614,
+        "matchedTo": "Al Butnan",
+        "areaSqKm": 79237.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wādī 'Utbah",
+        "population": 16746,
+        "matchedTo": "Murzuq",
+        "areaSqKm": 283954.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wardāmah",
+        "population": 11058,
+        "matchedTo": "Al Jabal al Akhdar",
+        "areaSqKm": 8448.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ar-Raḥaībāt",
+        "population": 9989,
+        "matchedTo": "Mizdah",
+        "areaSqKm": 88859.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Msalātah",
+        "population": 73907,
+        "matchedTo": "Al Marqab",
+        "areaSqKm": 8034,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": []
+  },
+  "morocco": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Smara",
+        "population": 42056,
+        "matchedTo": "Province d'Es-Semara إقليم السمارة",
+        "areaSqKm": 65024.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aousserd",
+        "population": 5832,
+        "matchedTo": "Province d'Aousserd إقليم أوسرد",
+        "areaSqKm": 60902.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zoumi",
+        "population": 4846,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boubker",
+        "population": 2068,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zayda",
+        "population": 7831,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Talmest",
+        "population": 4726,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Setti Fatma",
+        "population": 22283,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Za Bougrine",
+        "population": 4490,
+        "matchedTo": "Province de Sefrou إقليم صفرو",
+        "areaSqKm": 3461.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zaouïa Aït Ishak",
+        "population": 13299,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zagora",
+        "population": 43752,
+        "matchedTo": "Zagora Province",
+        "areaSqKm": 21048,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zag",
+        "population": 13936,
+        "matchedTo": "Assa-Zag Province",
+        "areaSqKm": 21245.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tounfit",
+        "population": 8920,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Touissite",
+        "population": 3425,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Touama",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tmourghout",
+        "population": 1250,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tlet Sidi Bouguedra",
+        "population": 2127,
+        "matchedTo": "Province de Safi إقليم أسفي",
+        "areaSqKm": 4096.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tlet Ighoud",
+        "population": 1993,
+        "matchedTo": "Province de Youssoufia إقليم اليوسفية",
+        "areaSqKm": 2953.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiztoutine",
+        "population": 5224,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiznit",
+        "population": 81569,
+        "matchedTo": "Tiznit Province",
+        "areaSqKm": 5104,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tizi Ouzli",
+        "population": 1831,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tizguine",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tissa",
+        "population": 12224,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tirhassaline",
+        "population": 9620,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiout",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiouli",
+        "population": 0,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tinghir",
+        "population": 45911,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tinajdad",
+        "population": 9764,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timoulilt",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timahdit",
+        "population": 3895,
+        "matchedTo": "Province d'Ifrane ⵜⴰⵙⴳⴰ ⵏ ⵉⴼⵔⴰⵏ إقليم إفران",
+        "areaSqKm": 3775.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timezgana",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Timezgadiouine",
+        "population": 0,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tilmi",
+        "population": 0,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tifni",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiflet",
+        "population": 94684,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tendrara",
+        "population": 9289,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Telouet",
+        "population": 0,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiddas",
+        "population": 3843,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tazouta",
+        "population": 0,
+        "matchedTo": "Province de Sefrou إقليم صفرو",
+        "areaSqKm": 3461.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taznakht",
+        "population": 7950,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tazemmourt",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tazarine",
+        "population": 0,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taza",
+        "population": 162110,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tata",
+        "population": 20322,
+        "matchedTo": "Tata Province",
+        "areaSqKm": 26547.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tarsouat",
+        "population": 0,
+        "matchedTo": "Tiznit Province",
+        "areaSqKm": 5104,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taroudant",
+        "population": 87520,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Teroual",
+        "population": 0,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tarhjicht",
+        "population": 7316,
+        "matchedTo": "Guelmim Province",
+        "areaSqKm": 10869.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tarfaya",
+        "population": 5615,
+        "matchedTo": "Tarfaya Province",
+        "areaSqKm": 12256.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taourirt",
+        "population": 112908,
+        "matchedTo": "Province de Taourirt إقليم تاوريرت",
+        "areaSqKm": 7538.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Taounza",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taounate",
+        "population": 41075,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Taouloukoult",
+        "population": 0,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taouima",
+        "population": 0,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tan-Tan",
+        "population": 79942,
+        "matchedTo": "Province de Tan-Tan إقليم طانطان",
+        "areaSqKm": 9531.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tanalt",
+        "population": 0,
+        "matchedTo": "Chtouka-Ait Baha Province",
+        "areaSqKm": 3503.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamorot",
+        "population": 0,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tameslouht",
+        "population": 9929,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamassint",
+        "population": 1999,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamanar",
+        "population": 11557,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Talzemt",
+        "population": 0,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Talsint",
+        "population": 9914,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taliouine",
+        "population": 7345,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Talat-n-Ya’qoub",
+        "population": 7702,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taïneste",
+        "population": 1850,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tahannout",
+        "population": 13215,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dhar Souk",
+        "population": 5658,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tahla",
+        "population": 30279,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tafraout",
+        "population": 6928,
+        "matchedTo": "Tiznit Province",
+        "areaSqKm": 5104,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tafersit",
+        "population": 3425,
+        "matchedTo": "Province de Driouch إقليم الدريوش",
+        "areaSqKm": 3000.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tadrart",
+        "population": 0,
+        "matchedTo": "Agadir Ida-Outanane Prefecture",
+        "areaSqKm": 2410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tabount",
+        "population": 33929,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tabouda",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tabia",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tabia",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tabant",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Souq at Tlata des Loulad",
+        "population": 6614,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tafetachte",
+        "population": 1387,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Souq Al Had Bradya",
+        "population": 9080,
+        "matchedTo": "Province de Fquih Ben Saleh إقليم الفقيه بن صالح",
+        "areaSqKm": 2465.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Foum Jam’a",
+        "population": 6359,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Senada",
+        "population": 0,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Skoura",
+        "population": 2479,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Skoura",
+        "population": 4730,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Skhour Rehamna",
+        "population": 5835,
+        "matchedTo": "Rhamna Province",
+        "areaSqKm": 5503.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Yahya Ou Saad",
+        "population": 0,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Smai’il",
+        "population": 6076,
+        "matchedTo": "El Jadida Province",
+        "areaSqKm": 3867.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Redouane",
+        "population": 0,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Moussa",
+        "population": 0,
+        "matchedTo": "Province d'El Kelâat Es-Sraghna إقليم قلعة السراغنة",
+        "areaSqKm": 4111.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Lmokhtar",
+        "population": 14803,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sidi Lamine",
+        "population": 0,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Jaber",
+        "population": 5100,
+        "matchedTo": "Province de Beni Mellal إقليم بني ملال",
+        "areaSqKm": 4474.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Bousber",
+        "population": 0,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Bou Othmane",
+        "population": 10025,
+        "matchedTo": "Rhamna Province",
+        "areaSqKm": 5503.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sidi Bibi",
+        "population": 6728,
+        "matchedTo": "Chtouka-Ait Baha Province",
+        "areaSqKm": 3503.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Amar",
+        "population": 0,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Allal Tazi",
+        "population": 5317,
+        "matchedTo": "Province de Kenitra إقليم القنيطرة",
+        "areaSqKm": 3366.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Allal El Bahraoui",
+        "population": 17325,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sidi Abdallah",
+        "population": 0,
+        "matchedTo": "Rhamna Province",
+        "areaSqKm": 5503.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Settat",
+        "population": 155333,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aç-çahrij",
+        "population": 2195,
+        "matchedTo": "Province d'El Kelâat Es-Sraghna إقليم قلعة السراغنة",
+        "areaSqKm": 4111.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rouadi",
+        "population": 0,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Reçani",
+        "population": 20469,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rich",
+        "population": 28382,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ghouazi",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Reggada",
+        "population": 0,
+        "matchedTo": "Tiznit Province",
+        "areaSqKm": 5104,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ratba",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ras Kebdana",
+        "population": 8277,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Outat Oulad Al Haj",
+        "population": 17895,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ourtzagh",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ounagha",
+        "population": 1347,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulmes",
+        "population": 19014,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oulad Teïma",
+        "population": 97608,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oulad Saïd",
+        "population": 2407,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulad Daoud",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulad Barhil",
+        "population": 26521,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oukaïmedene",
+        "population": 4440,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouijjane",
+        "population": 0,
+        "matchedTo": "Tiznit Province",
+        "areaSqKm": 5104,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oued el Himer",
+        "population": 1399,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oued Amlil",
+        "population": 11362,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ouarzazate",
+        "population": 77603,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aït Ouaoumana",
+        "population": 6001,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oualidia",
+        "population": 8484,
+        "matchedTo": "Province de Sidi Bennour إقليم سيدي بنور",
+        "areaSqKm": 3275.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moulay Brahim",
+        "population": 3401,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moulay Bousselham",
+        "population": 8050,
+        "matchedTo": "Province de Kenitra إقليم القنيطرة",
+        "areaSqKm": 3366.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moulay Bouchta",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moulay Bou ’azza",
+        "population": 5753,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mokrisset",
+        "population": 1784,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Missour",
+        "population": 27937,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mirleft",
+        "population": 5092,
+        "matchedTo": "Sidi Ifni Province",
+        "areaSqKm": 3069.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Midelt",
+        "population": 60390,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Messeïed",
+        "population": 1501,
+        "matchedTo": "Province de Tan-Tan إقليم طانطان",
+        "areaSqKm": 9531.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Melqa el Ouidane",
+        "population": 8009,
+        "matchedTo": "Province de Taourirt إقليم تاوريرت",
+        "areaSqKm": 7538.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matmata",
+        "population": 2620,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ifrane",
+        "population": 13000,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lake Lalla Takerkoust",
+        "population": 4455,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khenifra",
+        "population": 128318,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khemis Sahel",
+        "population": 6816,
+        "matchedTo": "Larache Province",
+        "areaSqKm": 2719.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kerrouchen",
+        "population": 2241,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dar Kebdani",
+        "population": 3939,
+        "matchedTo": "Province de Driouch إقليم الدريوش",
+        "areaSqKm": 3000.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kariat Arkmane",
+        "population": 5882,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karia Ba Mohamed",
+        "population": 20487,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Jorf",
+        "population": 13433,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Jerada",
+        "population": 47507,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mrirt",
+        "population": 46660,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Itzer",
+        "population": 6438,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Isseksi",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ighram",
+        "population": 4485,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Imouzzer des Marmoucha",
+        "population": 4600,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Imider",
+        "population": 0,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Imi-n-Tanout",
+        "population": 22753,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Imilchil",
+        "population": 0,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Iguidi",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hassi Berkane",
+        "population": 0,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zerkten",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Kourt",
+        "population": 8564,
+        "matchedTo": "Province de Sidi Kacem إقليم سيدي قاسم",
+        "areaSqKm": 3137.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Abdallah Rhiat",
+        "population": 1857,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Guisser",
+        "population": 2698,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Guercif",
+        "population": 99238,
+        "matchedTo": "Province de Guercif إقليم جرسيف",
+        "areaSqKm": 7182.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Guenfouda",
+        "population": 0,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Guelmim",
+        "population": 129200,
+        "matchedTo": "Guelmim Province",
+        "areaSqKm": 10869.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gourrama",
+        "population": 6129,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goulmima",
+        "population": 17929,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ghafsaï",
+        "population": 6946,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Galaz",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Foum Zguid",
+        "population": 9812,
+        "matchedTo": "Tata Province",
+        "areaSqKm": 26547.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Figuig",
+        "population": 12516,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Fifi",
+        "population": 0,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fezna",
+        "population": 0,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ezzhiliga",
+        "population": 4211,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bni Hadifa",
+        "population": 2370,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tlet El Hanchane",
+        "population": 5421,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Essaouira",
+        "population": 85137,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Arfoud",
+        "population": 31971,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kelaat Mgouna",
+        "population": 18515,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qbab",
+        "population": 9112,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jebha",
+        "population": 4102,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Hrara",
+        "population": 1387,
+        "matchedTo": "Province de Safi إقليم أسفي",
+        "areaSqKm": 4096.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Brouj",
+        "population": 21004,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Arbaa Laaounate",
+        "population": 5661,
+        "matchedTo": "Province de Sidi Bennour إقليم سيدي بنور",
+        "areaSqKm": 3275.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouaoula",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Laouamra",
+        "population": 8509,
+        "matchedTo": "Larache Province",
+        "areaSqKm": 2719.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Akarta",
+        "population": 4770,
+        "matchedTo": "Province de Safi إقليم أسفي",
+        "areaSqKm": 4096.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Aïoun",
+        "population": 45679,
+        "matchedTo": "Province de Taourirt إقليم تاوريرت",
+        "areaSqKm": 7538.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Douar el Caïd el Gueddari",
+        "population": 7254,
+        "matchedTo": "Province de Sidi Kacem إقليم سيدي قاسم",
+        "areaSqKm": 3137.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Derdara",
+        "population": 0,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demnate",
+        "population": 32217,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Debdou",
+        "population": 5416,
+        "matchedTo": "Province de Taourirt إقليم تاوريرت",
+        "areaSqKm": 7538.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riah",
+        "population": 0,
+        "matchedTo": "Berrechid Province",
+        "areaSqKm": 2550.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chichaoua",
+        "population": 30432,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bzou",
+        "population": 4588,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brikcha",
+        "population": 1274,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boureït",
+        "population": 5434,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boumia",
+        "population": 17091,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boumalne Dades",
+        "population": 13461,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boulemane",
+        "population": 7757,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boulaouane",
+        "population": 0,
+        "matchedTo": "El Jadida Province",
+        "areaSqKm": 3867.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bou Izakarn",
+        "population": 15536,
+        "matchedTo": "Guelmim Province",
+        "areaSqKm": 10869.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boudinar",
+        "population": 0,
+        "matchedTo": "Province de Driouch إقليم الدريوش",
+        "areaSqKm": 3000.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boudenib",
+        "population": 12419,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bouarfa",
+        "population": 31499,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bou’nane",
+        "population": 3635,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bouabout",
+        "population": 0,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bigoudine",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bni Tajjit",
+        "population": 9269,
+        "matchedTo": "Province de Figuig إقليم الناظور",
+        "areaSqKm": 34717.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ben Guerir",
+        "population": 96777,
+        "matchedTo": "Rhamna Province",
+        "areaSqKm": 5503.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ben Ahmed",
+        "population": 36149,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bab Taza",
+        "population": 6448,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Azilal",
+        "population": 42062,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Azgour",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Assoul",
+        "population": 0,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Assads",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Assa",
+        "population": 15910,
+        "matchedTo": "Assa-Zag Province",
+        "areaSqKm": 21245.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Asni",
+        "population": 18674,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ar Rommani",
+        "population": 13428,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aghbalou N Sardane",
+        "population": 2511,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aghbala",
+        "population": 7365,
+        "matchedTo": "Province de Beni Mellal إقليم بني ملال",
+        "areaSqKm": 4474.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Argana",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arbaoua",
+        "population": 3330,
+        "matchedTo": "Province de Kenitra إقليم القنيطرة",
+        "areaSqKm": 3366.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arazane",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aoulouz",
+        "population": 19010,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aoufous",
+        "population": 1295,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amouguer",
+        "population": 0,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amizmiz",
+        "population": 15685,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Amerzgane",
+        "population": 0,
+        "matchedTo": "Ouarzazate Province",
+        "areaSqKm": 12016.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amersid",
+        "population": 0,
+        "matchedTo": "Province de Midelt إقليم ميدلت",
+        "areaSqKm": 12729.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amalou",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alnif",
+        "population": 5162,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Almis du Guigou",
+        "population": 11060,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Almis Marmoucha",
+        "population": 0,
+        "matchedTo": "Province de Boulemane إقليم بولمان",
+        "areaSqKm": 14230.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al M’aziz",
+        "population": 9719,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khemisset",
+        "population": 143640,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aknoul",
+        "population": 4807,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akka",
+        "population": 7501,
+        "matchedTo": "Tata Province",
+        "areaSqKm": 26547.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ajdir",
+        "population": 5802,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ajdir",
+        "population": 1577,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ait Yazza",
+        "population": 15570,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ait Ourir",
+        "population": 42705,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Anergui",
+        "population": 0,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aïn Leuh",
+        "population": 5426,
+        "matchedTo": "Province d'Ifrane ⵜⴰⵙⴳⴰ ⵏ ⵉⴼⵔⴰⵏ إقليم إفران",
+        "areaSqKm": 3775.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ain Dourij",
+        "population": 3706,
+        "matchedTo": "Province d'Ouezzane إقليم وزان",
+        "areaSqKm": 2141.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aïn Beni Mathar",
+        "population": 17787,
+        "matchedTo": "Province de Jerada إقليم جرادة",
+        "areaSqKm": 6940.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ain Aicha",
+        "population": 7759,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aguelmous",
+        "population": 15480,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Agdz",
+        "population": 11663,
+        "matchedTo": "Zagora Province",
+        "areaSqKm": 21048,
+        "isSubstantial": true
+      },
+      {
+        "name": "Agadir Melloul",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Afourer",
+        "population": 14397,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Adassil",
+        "population": 0,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adar",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abadou",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Beni Chiker",
+        "population": 4852,
+        "matchedTo": "Province de Nador إقليم الناظور",
+        "areaSqKm": 3127.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mellila",
+        "population": 0,
+        "matchedTo": "Province de Benslimane إقليم بن سليمان",
+        "areaSqKm": 2504.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tidili Mesfioua",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mhamid",
+        "population": 10000,
+        "matchedTo": "Zagora Province",
+        "areaSqKm": 21048,
+        "isSubstantial": true
+      },
+      {
+        "name": "Taghazout",
+        "population": 5233,
+        "matchedTo": "Agadir Ida-Outanane Prefecture",
+        "areaSqKm": 2410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamri",
+        "population": 0,
+        "matchedTo": "Agadir Ida-Outanane Prefecture",
+        "areaSqKm": 2410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Smimou",
+        "population": 3505,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tizgane",
+        "population": 0,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bouarouss",
+        "population": 0,
+        "matchedTo": "Province de Taounate إقليم تاونات",
+        "areaSqKm": 5593.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jebel Tiskaouine",
+        "population": 1197,
+        "matchedTo": "Province de Tinghir إقليم تنغير",
+        "areaSqKm": 13432.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zerarda",
+        "population": 4573,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Errachidia",
+        "population": 100870,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sidi Abdallah Ghiat",
+        "population": 0,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aghmat",
+        "population": 1319,
+        "matchedTo": "Al Haouz Province",
+        "areaSqKm": 6094.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Bouzid",
+        "population": 6741,
+        "matchedTo": "El Jadida Province",
+        "areaSqKm": 3867.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Douar Sidi Bouafif",
+        "population": 3658,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akhfennir",
+        "population": 1583,
+        "matchedTo": "Tarfaya Province",
+        "areaSqKm": 12256.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gueltat Zemmour",
+        "population": 6740,
+        "matchedTo": "Boujdour Province",
+        "areaSqKm": 56354.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Ahmed",
+        "population": 7781,
+        "matchedTo": "Province de Youssoufia إقليم اليوسفية",
+        "areaSqKm": 2953.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sebt El Maarif",
+        "population": 2002,
+        "matchedTo": "Province de Sidi Bennour إقليم سيدي بنور",
+        "areaSqKm": 3275.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bellaa",
+        "population": 5186,
+        "matchedTo": "Chtouka-Ait Baha Province",
+        "areaSqKm": 3503.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zawit Al Bour",
+        "population": 0,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Oulad Zbair",
+        "population": 6099,
+        "matchedTo": "Province de Taza اقليم تازة",
+        "areaSqKm": 6096.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Souq Khmis Aït Yadine",
+        "population": 7908,
+        "matchedTo": "Province de Khémisset إقليم الخميسات",
+        "areaSqKm": 7728,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sebt Jahjouh",
+        "population": 4094,
+        "matchedTo": "Province d'El Hajeb إقليم الحاجب",
+        "areaSqKm": 2134.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bouderbala",
+        "population": 8634,
+        "matchedTo": "Province d'El Hajeb إقليم الحاجب",
+        "areaSqKm": 2134.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Imlili",
+        "population": 2269,
+        "matchedTo": "Oued Ed-Dahab Province",
+        "areaSqKm": 67924.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korouna",
+        "population": 2822,
+        "matchedTo": "Province de Driouch إقليم الدريوش",
+        "areaSqKm": 3000.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Souk El Arba Des Aït Baha",
+        "population": 6189,
+        "matchedTo": "Chtouka-Ait Baha Province",
+        "areaSqKm": 3503.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahroun",
+        "population": 600,
+        "matchedTo": "Chefchaouen Province",
+        "areaSqKm": 3891,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulad El Rhadabne",
+        "population": 6717,
+        "matchedTo": "El Jadida Province",
+        "areaSqKm": 3867.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tighza",
+        "population": 1950,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi ’Addi",
+        "population": 4604,
+        "matchedTo": "Province d'Ifrane ⵜⴰⵙⴳⴰ ⵏ ⵉⴼⵔⴰⵏ إقليم إفران",
+        "areaSqKm": 3775.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Souq al Had",
+        "population": 2973,
+        "matchedTo": "Province d'Ifrane ⵜⴰⵙⴳⴰ ⵏ ⵉⴼⵔⴰⵏ إقليم إفران",
+        "areaSqKm": 3775.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aït Lous",
+        "population": 3228,
+        "matchedTo": "Essaouira Province",
+        "areaSqKm": 6531.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ait Khallouf",
+        "population": 2109,
+        "matchedTo": "Chichaoua Province",
+        "areaSqKm": 7116.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Had Bouhssoussen",
+        "population": 3329,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kahf Nssar",
+        "population": 7821,
+        "matchedTo": "Province de Khénifra إقليم خنيفرة",
+        "areaSqKm": 6719.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ighram Laalam",
+        "population": 9467,
+        "matchedTo": "Province de Beni Mellal إقليم بني ملال",
+        "areaSqKm": 4474.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouaouizeght",
+        "population": 10318,
+        "matchedTo": "Province d'Azilal إقليم أزيلال",
+        "areaSqKm": 9596.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Moulay Ali Cherif",
+        "population": 24251,
+        "matchedTo": "Province d'Errachidia إقليم الرشيدية",
+        "areaSqKm": 26982.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kantina",
+        "population": 3976,
+        "matchedTo": "Province d'El Hajeb إقليم الحاجب",
+        "areaSqKm": 2134.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulad Amrane",
+        "population": 1964,
+        "matchedTo": "Province de Sidi Bennour إقليم سيدي بنور",
+        "areaSqKm": 3275.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ras El Aïn",
+        "population": 3946,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidi Ali Ben Hamdouche",
+        "population": 9463,
+        "matchedTo": "El Jadida Province",
+        "areaSqKm": 3867.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oulad M'Rah",
+        "population": 9496,
+        "matchedTo": "Settat Province",
+        "areaSqKm": 6880.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lakhsas",
+        "population": 5163,
+        "matchedTo": "Sidi Ifni Province",
+        "areaSqKm": 3069.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Ouatia",
+        "population": 10149,
+        "matchedTo": "Province de Tan-Tan إقليم طانطان",
+        "areaSqKm": 9531.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "M'Nabha",
+        "population": 1276,
+        "matchedTo": "Préfecture de Marrakech عمالة مراكش",
+        "areaSqKm": 2617.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kassita",
+        "population": 2921,
+        "matchedTo": "Province de Driouch إقليم الدريوش",
+        "areaSqKm": 3000.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zirara",
+        "population": 8735,
+        "matchedTo": "Province de Sidi Kacem إقليم سيدي قاسم",
+        "areaSqKm": 3137.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fam El Hisn",
+        "population": 6937,
+        "matchedTo": "Tata Province",
+        "areaSqKm": 26547.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Guerdane",
+        "population": 13445,
+        "matchedTo": "Taroudant Province",
+        "areaSqKm": 15860.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Issaguen",
+        "population": 2701,
+        "matchedTo": "Al Hoceima Province",
+        "areaSqKm": 3534.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Idmine",
+        "population": 4279,
+        "matchedTo": "Agadir Ida-Outanane Prefecture",
+        "areaSqKm": 2410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tah",
+        "population": 1516,
+        "matchedTo": "Tarfaya Province",
+        "areaSqKm": 12256.2,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "sudan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "El Obeid",
+        "population": 393311,
+        "matchedTo": "Sheikan",
+        "areaSqKm": 8439.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Fasher",
+        "population": 252609,
+        "matchedTo": "Al Fasher",
+        "areaSqKm": 8534,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dongola",
+        "population": 56167,
+        "matchedTo": "Dongola",
+        "areaSqKm": 48529.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zalinjay",
+        "population": 35061,
+        "matchedTo": "Zalingi",
+        "areaSqKm": 6177.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wagar",
+        "population": 11950,
+        "matchedTo": "Reifi Shamal Ad Delta",
+        "areaSqKm": 7468.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wad Rāwah",
+        "population": 10348,
+        "matchedTo": "Sharg Al Jazirah",
+        "areaSqKm": 6542.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wadi Halfa",
+        "population": 14675,
+        "matchedTo": "Halfa",
+        "areaSqKm": 129565.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wad az Zāki",
+        "population": 9271,
+        "matchedTo": "Al Gitaina",
+        "areaSqKm": 5612.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umm Ruwaba",
+        "population": 56833,
+        "matchedTo": "Um Rawaba",
+        "areaSqKm": 11715.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Umm Kaddadah",
+        "population": 10979,
+        "matchedTo": "Um Kadadah",
+        "areaSqKm": 13139.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Um Jar Al Gharbiyya",
+        "population": 9038,
+        "matchedTo": "Ad Diwaim",
+        "areaSqKm": 5893,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umm Dafog",
+        "population": 6700,
+        "matchedTo": "Um Dafoug",
+        "areaSqKm": 5206.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tokār",
+        "population": 37051,
+        "matchedTo": "Tawkar",
+        "areaSqKm": 11387.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sinkat",
+        "population": 35617,
+        "matchedTo": "Sinkat",
+        "areaSqKm": 8062.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shendi",
+        "population": 63746,
+        "matchedTo": "Shendi",
+        "areaSqKm": 11875.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sennar",
+        "population": 130122,
+        "matchedTo": "Sennar",
+        "areaSqKm": 5553.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rufā‘a",
+        "population": 28374,
+        "matchedTo": "Sharg Al Jazirah",
+        "areaSqKm": 6542.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rahad al Bardi",
+        "population": 24768,
+        "matchedTo": "Rehaid Albirdi",
+        "areaSqKm": 7505.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mellit",
+        "population": 50165,
+        "matchedTo": "Melit",
+        "areaSqKm": 16175.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Merowe",
+        "population": 10234,
+        "matchedTo": "Merwoe",
+        "areaSqKm": 17667.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marabba",
+        "population": 12108,
+        "matchedTo": "As Salam / Ar Rawat",
+        "areaSqKm": 8734.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maiurno",
+        "population": 28727,
+        "matchedTo": "Sennar",
+        "areaSqKm": 5553.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kutum",
+        "population": 34694,
+        "matchedTo": "Kutum",
+        "areaSqKm": 14051.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kurmuk",
+        "population": 10375,
+        "matchedTo": "Al Kurmuk",
+        "areaSqKm": 9766.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kuraymah",
+        "population": 19593,
+        "matchedTo": "Merwoe",
+        "areaSqKm": 17667.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kināna",
+        "population": 26233,
+        "matchedTo": "Sennar",
+        "areaSqKm": 5553.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khashm al Qirbah",
+        "population": 42900,
+        "matchedTo": "Reifi Khashm Elgirba",
+        "areaSqKm": 12123.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Jubayt",
+        "population": 30856,
+        "matchedTo": "Sinkat",
+        "areaSqKm": 8062.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ghubaysh",
+        "population": 22733,
+        "matchedTo": "Ghubaish",
+        "areaSqKm": 7274.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gebeit",
+        "population": 11095,
+        "matchedTo": "Jubayt Elma'aadin",
+        "areaSqKm": 40518.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Jalqani",
+        "population": 9472,
+        "matchedTo": "Abu Hujar",
+        "areaSqKm": 3844,
+        "isSubstantial": false
+      },
+      {
+        "name": "Berber",
+        "population": 26203,
+        "matchedTo": "Barbar",
+        "areaSqKm": 13491.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bārah",
+        "population": 16969,
+        "matchedTo": "Bara",
+        "areaSqKm": 11606.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Atbara",
+        "population": 112021,
+        "matchedTo": "Atbara",
+        "areaSqKm": 8645.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ar Rahad",
+        "population": 36518,
+        "matchedTo": "Ar Rahad",
+        "areaSqKm": 5696.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aroma",
+        "population": 12708,
+        "matchedTo": "Reifi Aroma",
+        "areaSqKm": 5971.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "An Nuhūd",
+        "population": 108008,
+        "matchedTo": "An Nuhud",
+        "areaSqKm": 12323.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Qiţena",
+        "population": 18321,
+        "matchedTo": "Al Gitaina",
+        "areaSqKm": 5612.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Masallamiyya",
+        "population": 9373,
+        "matchedTo": "Al Hasahisa",
+        "areaSqKm": 4178.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Matama",
+        "population": 11366,
+        "matchedTo": "Al Matama",
+        "areaSqKm": 9303.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Lagowa",
+        "population": 11024,
+        "matchedTo": "Al Lagowa",
+        "areaSqKm": 7417.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Kiremit al ‘Arakiyyīn",
+        "population": 9775,
+        "matchedTo": "Al Manaqil",
+        "areaSqKm": 3754.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al Kawa",
+        "population": 10167,
+        "matchedTo": "Al Gitaina",
+        "areaSqKm": 5612.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Hilāliyya",
+        "population": 17345,
+        "matchedTo": "Sharg Al Jazirah",
+        "areaSqKm": 6542.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al Fūlah",
+        "population": 26020,
+        "matchedTo": "As Salam - WK",
+        "areaSqKm": 9171.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Bauga",
+        "population": 19141,
+        "matchedTo": "Barbar",
+        "areaSqKm": 13491.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ad Douiem",
+        "population": 87068,
+        "matchedTo": "Ad Diwaim",
+        "areaSqKm": 5893,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ad Dindar",
+        "population": 15144,
+        "matchedTo": "Ad Dinder",
+        "areaSqKm": 14192.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ad-Damir",
+        "population": 103941,
+        "matchedTo": "Ad Damar",
+        "areaSqKm": 37143.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ad Dabbah",
+        "population": 11626,
+        "matchedTo": "Ad Dabbah",
+        "areaSqKm": 45344.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abyei",
+        "population": 20000,
+        "matchedTo": "Abyei PCA area",
+        "areaSqKm": 10580.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abū Zabad",
+        "population": 23317,
+        "matchedTo": "Abu Zabad",
+        "areaSqKm": 5231.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abu Jibeha",
+        "population": 47188,
+        "matchedTo": "Abu Jubayhah",
+        "areaSqKm": 21057.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Najaru",
+        "population": 1153,
+        "matchedTo": "Al Hasahisa",
+        "areaSqKm": 4178.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Al-Fulah",
+        "population": 0,
+        "matchedTo": "As Salam - WK",
+        "areaSqKm": 9171.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nagaro",
+        "population": 1109,
+        "matchedTo": "Al Hasahisa",
+        "areaSqKm": 4178.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "ALdinigila wad dhahi",
+        "population": 15000,
+        "matchedTo": "Al Gitaina",
+        "areaSqKm": 5612.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ad-Dindar",
+        "population": 25567,
+        "matchedTo": "Ad Dinder",
+        "areaSqKm": 14192.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al-Fashaqah",
+        "population": 21106,
+        "matchedTo": "Al Fashaga",
+        "areaSqKm": 5212.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Al-Quṭaynah",
+        "population": 26893,
+        "matchedTo": "Al Gitaina",
+        "areaSqKm": 5612.8,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": []
+  },
+  "tunisia": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zaafrane",
+        "population": 1094,
+        "matchedTo": "دوز الجنوبية",
+        "areaSqKm": 5208.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Remada",
+        "population": 6289,
+        "matchedTo": "رمادة",
+        "areaSqKm": 27617.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bou Attouche",
+        "population": 2700,
+        "matchedTo": "الحامة",
+        "areaSqKm": 2643,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Golaa",
+        "population": 7912,
+        "matchedTo": "دوز الشمالية",
+        "areaSqKm": 2650.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Borma",
+        "population": 3250,
+        "matchedTo": "رمادة",
+        "areaSqKm": 27617.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dehiba",
+        "population": 4295,
+        "matchedTo": "ذهيبة",
+        "areaSqKm": 3224.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Douar Tindja",
+        "population": 18551,
+        "matchedTo": "بنزرت الجنوبية",
+        "snapDistanceKm": 0.336
+      }
+    ]
+  },
+  "southSudan": {
+    "unmatched": [
+      {
+        "name": "Kafia Kingi",
+        "population": 16000,
+        "lat": 9.27345,
+        "lng": 24.41701
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Yei",
+        "population": 260720,
+        "matchedTo": "Yei",
+        "areaSqKm": 6750.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Winejok",
+        "population": 300000,
+        "matchedTo": "Aweil East",
+        "areaSqKm": 6394,
+        "isSubstantial": true
+      },
+      {
+        "name": "Juba",
+        "population": 450000,
+        "matchedTo": "Juba",
+        "areaSqKm": 18447.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yambio",
+        "population": 40382,
+        "matchedTo": "Yambio",
+        "areaSqKm": 8830.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wau",
+        "population": 127384,
+        "matchedTo": "Wau",
+        "areaSqKm": 19294.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aweil",
+        "population": 38745,
+        "matchedTo": "Aweil West",
+        "areaSqKm": 5028.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Torit",
+        "population": 20048,
+        "matchedTo": "Torit",
+        "areaSqKm": 5864.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tonj",
+        "population": 17338,
+        "matchedTo": "Tonj South",
+        "areaSqKm": 7455.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tambura",
+        "population": 9500,
+        "matchedTo": "Tambura",
+        "areaSqKm": 12508.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Raja",
+        "population": 3700,
+        "matchedTo": "Raga",
+        "areaSqKm": 62278.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maridi",
+        "population": 14224,
+        "matchedTo": "Maridi",
+        "areaSqKm": 7714.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kodok",
+        "population": 7709,
+        "matchedTo": "Fashoda",
+        "areaSqKm": 3609.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pajok",
+        "population": 49000,
+        "matchedTo": "Magwi",
+        "areaSqKm": 5228.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bor",
+        "population": 26782,
+        "matchedTo": "Bor South",
+        "areaSqKm": 14008.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bentiu",
+        "population": 7653,
+        "matchedTo": "Rubkona",
+        "areaSqKm": 3578.7,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
   }
 }

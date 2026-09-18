@@ -37,8 +37,10 @@
 // Myanmar, Philippines, Singapore, Thailand, Timor-Leste, Vietnam, plus the
 // 2026-09-18 Oceania pass: Australia, Fiji, Kiribati, Marshall Islands,
 // Micronesia, Nauru, New Zealand, Palau, Papua New Guinea, Samoa, Solomon
-// Islands, Tonga, Tuvalu, Vanuatu) — NOT the other 56 UN members yet (India
-// deliberately excluded, same reasoning as Russia). See that doc's
+// Islands, Tonga, Tuvalu, Vanuatu, plus the 2026-09-18 North Africa + South
+// Sudan pass: Algeria, Egypt, Libya, Morocco, Sudan, South Sudan, Tunisia)
+// — NOT the other 49 UN members yet (India deliberately excluded, same
+// reasoning as Russia). See that doc's
 // migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
@@ -173,6 +175,13 @@ const BOUNDARY_COUNTRIES = [
   { id: '776', name: 'Tonga' },
   { id: '798', name: 'Tuvalu' },
   { id: '548', name: 'Vanuatu' },
+  { id: '012', name: 'Algeria' },
+  { id: '818', name: 'Egypt' },
+  { id: '434', name: 'Libya' },
+  { id: '504', name: 'Morocco' },
+  { id: '729', name: 'Sudan' },
+  { id: '728', name: 'South Sudan' },
+  { id: '788', name: 'Tunisia' },
 ]
 
 function addFromBoundaryFile(countryId) {

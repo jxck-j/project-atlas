@@ -1189,6 +1189,32 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   atoll areas) and left 2 unmatched (Aur, Kili — small outlying atolls)** (found 2026-09-18, "Twenty-third
   pass") — same accepted atoll-lagoon-inclusion shape as this file's other Pacific/coastal findings; not
   chased further.
+- **Libya rejected 103 of 119 points, 57 substantial (Benghazi 757,490 in a 9,835 km² baladiya, Misratah
+  355,657 in 49,770 km², ...) — the worst ratio of any country in this file, already predicted by the Fourth
+  pass's own 2026-09-04 investigation, not a new finding** (found 2026-09-18,
+  `city-boundaries-architecture.md`'s "Twenty-fourth pass"). Libya's baladiyat (ADM1, 22 units — the country
+  has no ADM2 at all) is confirmed the finest tier that exists anywhere for Libya; not chased further.
+- **Sudan rejected 60 of 112 points, 51 substantial (El Obeid 393,311 in an 8,440 km² district, El Fasher
+  252,609 in 8,534 km², ...)** (found 2026-09-18, "Twenty-fourth pass") — a fresh live OSM check for a finer
+  tier found `admin_level=6` returning only 129 relations, fewer than geoBoundaries' own 189 districts (not a
+  finer comprehensive tier), and `admin_level=7` returning zero nationwide; confirmed no finer source exists,
+  not chased further.
+- **Morocco rejected 304 of 480 points, 78 substantial (Taza 162,110 in a 6,097 km² province, Settat 155,333
+  in 6,881 km², ...)** (found 2026-09-18, "Twenty-fourth pass") — Morocco's rural "province"-level ADM2 units
+  (as opposed to its urban "prefecture"-level ones) routinely span large agricultural/desert hinterlands
+  around one real town; no finer level exists in this source at all. Not chased further.
+- **Algeria rejected 35 of 353 points, 13 substantial** and **Egypt rejected 33 of 260 points, 25 substantial**
+  (found 2026-09-18, "Twenty-fourth pass") — real oversized Saharan communes/Upper Egypt marakiz respectively;
+  not chased further given the otherwise-clean results (both under 15% of total points).
+- **South Sudan's Juba-neighborhood OSM supplement (from the Fourth pass) measured zero actual benefit**:
+  every one of the 7 kept South Sudan features came from the plain ADM2 county source, none from the 37-
+  relation neighborhood layer added specifically for Juba (found 2026-09-18, "Twenty-fourth pass"). GeoNames'
+  own "Juba" coordinate (31.58247, 4.85165) sits in a real gap between neighborhood polygons — the nearest,
+  "Hai Nyakama," comes within ~0.02° but doesn't contain it — and since Juba's own ADM2 county polygon *does*
+  contain the point, the join's snap-to-nearest fallback (which only activates when no candidate contains the
+  point at all) never triggers either. Result: 7/23 kept, 15 rejected (11 substantial, Juba's own
+  450,000-population point among them), 1 unmatched. Kept in the code since it's still a theoretically sound,
+  correctly-implemented technique that could help a future GeoNames data refresh; not chased further now.
 
 ## Visualization
 
