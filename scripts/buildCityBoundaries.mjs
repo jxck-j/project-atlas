@@ -27,7 +27,9 @@
 // Nepal, Bhutan, Bangladesh, Sri Lanka, Maldives (India deliberately excluded,
 // same reasoning as Russia — see that block's own comment), plus the
 // 2026-09-18 East Asia pass: China, Japan, Mongolia, North Korea, South
-// Korea — NOT the other 81 UN members yet. See that doc's "Fifth pass" section
+// Korea, plus the 2026-09-18 Southeast Asia pass: Brunei, Cambodia,
+// Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand,
+// Timor-Leste, Vietnam — NOT the other 70 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -2617,6 +2619,202 @@ relation(area)["boundary"="administrative"]["name"="영광군"];
 out geom;`,
     },
   })
+
+// --- Twenty-second pass (2026-09-18): Southeast Asia (Brunei, Cambodia,
+// Indonesia, Laos, Malaysia, Myanmar, Philippines, Singapore, Thailand,
+// Timor-Leste, Vietnam) — completing continental/maritime Asia other than
+// the two deliberately-deferred giants (India, Russia). Every level below
+// was confirmed by a direct point-in-polygon check against real
+// coordinates, not just recon's own canonicalName field.
+//
+// Six countries confirmed clean on their recon-reported finest level with
+// no override needed: Brunei (ADM2, "Mukim," 38 units — Bandar Seri Begawan
+// and every other real mukim resolve correctly), Indonesia (ADM2, "regency,
+// city," 519 units — Jakarta splits cleanly into its 5 real "Kota" cities,
+// e.g. Kota Jakarta Pusat 48.09 km²; Surabaya/Bandung/Medan/Denpasar/
+// Makassar each resolve to their own whole "Kota" unit), Laos (ADM2,
+// "Districts," 148 units — Vientiane -> Xaysetha, a real district of the
+// prefecture), Singapore (ADM2, "Divisions," 55 real URA planning areas),
+// Thailand (ADM2, "districts," 928 units — Bangkok -> Phra Nakhon 5.41 km²,
+// a real historic district, not the whole 1,569 km² city), Timor-Leste
+// (ADM2, "Administrative Posts," 65 units — Dili -> Vera Cruz, a real
+// administrative post), and Vietnam (ADM2, "District," 708 units — Hanoi's
+// Hoan Kiem and Ho Chi Minh City's Quan 1 both resolve to their own real
+// central district).
+//
+// Cambodia needed the same override this file has now hit repeatedly
+// (Bangladesh/Sri Lanka's ADM4, South Korea's ADM3): recon's reported
+// finest level (ADM3, canonicalName blank/"Unknown" at every level in this
+// download, 1,633 units) turned out to be commune/sangkat scale — Phnom
+// Penh lands in an individual 1.00 km² sangkat ("Boeng Keng Kang Ti *"),
+// neighborhood scale, not a city boundary. ADM2 (197 units, real
+// district/khan tier despite also reporting "Unknown") puts Phnom Penh in
+// its own real khan (Chamkar Mon, 11.21 km²) and Siem Reap/Battambang in
+// their own real town-and-surrounding-district unit instead, and is used.
+//
+// Malaysia is the rare case where recon's reported finest level (ADM3,
+// "Mukim," 1,859 units) is the CORRECT city-plausible pick and the coarser
+// ADM2 ("Districts," 159 units) would have been the wrong, too-coarse
+// choice — confirmed directly: ADM2 puts Kuala Lumpur in the whole 242 km²
+// federal territory and Johor Bahru in its entire 1,145 km² district, while
+// ADM3 resolves each to its own real "Bandar" (town) mukim — Kuala Lumpur
+// -> BANDAR KUALA LUMPUR (47.36 km²), George Town -> BANDAR GEORGE TOWN
+// (26.10 km², matching real George Town's urban core), Johor Bahru ->
+// BANDAR JOHOR BAHRU (43.18 km²). Every other country in this pass (and
+// most before it) had recon's suggested finest level turn out too fine, not
+// too coarse — worth remembering that the override isn't always in the
+// same direction.
+//
+// Myanmar confirmed ADM3 ("Township," 330 units, matching recon) over the
+// coarser ADM2 ("District," 74 units) — Yangon's ADM2 unit ("Yangon
+// (West)," 71.82 km²) is already reasonably city-scale, but Naypyidaw's
+// ADM2 unit is a genuinely huge 3,526 km² region-tier polygon, while ADM3
+// resolves Yangon/Mandalay/Naypyidaw each to their own real township
+// (27.08/15.11/58.66 km²) — the finer, more consistent choice nationwide.
+//
+// Philippines needed a real fragment-vs-whole-city fix, the France
+// Paris/Lyon/Marseille shape at a smaller scale: ADM3 ("Municipalities,"
+// 1,647 units, matching recon) correctly resolves every other tested city
+// as one whole polygon — Quezon City (163.03 km², matching its real area),
+// Cebu City (292.08 km²), Davao City (2,351.44 km², correctly huge — it's
+// the country's largest city by land area), Baguio City (58.28 km²),
+// Zamboanga City (1,503.57 km²) — but Manila specifically has NO whole-city
+// feature in this download at all, only 35 named internal-district
+// fragments (Quiapo, Tondo, Binondo, ... several names like "Santa Cruz"/
+// "San Miguel"/"San Andres"/"San Nicolas" repeated 2-9 times each, since
+// those are also real, unrelated town names elsewhere in the archipelago —
+// a name-based filter like France's regex would incorrectly catch those
+// other towns too, so this pass instead identifies Manila's own fragments
+// geometrically, by point-in-polygon against a live-fetched OSM whole-city
+// candidate, and drops exactly those). Manila's own GeoNames point would
+// otherwise land in "Quiapo" alone (0.89 km²) despite the city's real 1.9M
+// population — a real, visually-broken mismatch, not merely a smaller
+// administrative unit the way Beijing/Shanghai's own district-level matches
+// are. The OSM relation (id 103703, `border_type=highly_urbanized_city`,
+// `official_name=City of Manila`, `population=1902590` — matching real
+// Manila almost exactly, confirming it's the right relation) computes to
+// 179.70 km², well over Manila's official 42.88 km² land area — accepted
+// as-is (likely includes Manila Bay-facing reclamation/port jurisdiction
+// the same way this file has already accepted sea-inclusive coastal
+// administrative boundaries elsewhere, e.g. South Korea's Yeonggwang in the
+// Twenty-first pass) rather than chased further, since it's still a single,
+// correctly-named, plausibly-sized whole-city polygon — a large
+// improvement over the previous 0.89 km² fragment regardless.
+if (shouldRun('096')) report.brunei = await runGeoBoundariesCountry({ name: 'Brunei', numericId: '096', alpha3: 'BRN', admLevel: 'ADM2' })
+if (shouldRun('116')) report.cambodia = await runGeoBoundariesCountry({ name: 'Cambodia', numericId: '116', alpha3: 'KHM', admLevel: 'ADM2' })
+// Indonesia's own GeoNames index carries 9,302 points — the same "one flat
+// country file becomes the huge-eager-fetch problem" shape China/Mexico/
+// Brazil/Italy/Spain/France/Germany already hit (49.8 MB unsharded before
+// this fix) — sharded via shardByState() using `iso_3166_2` (not `postal` —
+// Natural Earth's own IDN rows collide Maluku Utara and Lampung on the same
+// "LA" postal value, another instance of this file's now-recurring
+// unique-but-wrong or outright-colliding `postal` finding).
+if (shouldRun('360'))
+  report.indonesia = await runGeoBoundariesCountry({
+    name: 'Indonesia',
+    numericId: '360',
+    alpha3: 'IDN',
+    admLevel: 'ADM2',
+    onOutput: (kept) =>
+      shardByState('360', kept, { adm0A3: 'IDN', abbrevOf: (props) => props.iso_3166_2?.replace(/^ID-/, '') }),
+  })
+if (shouldRun('418')) report.laos = await runGeoBoundariesCountry({ name: 'Laos', numericId: '418', alpha3: 'LAO', admLevel: 'ADM2' })
+// Malaysia's ADM3 ("Mukim") is the right city-plausible level for
+// Peninsular Malaysia (see this pass's own top comment) but barely reaches
+// East Malaysia at all — only 16 of 1,859 mukim features fall anywhere in
+// Sabah/Sarawak's own longitude/latitude range, a real structural gap
+// (mukim is historically a Peninsular Malaysia administrative construct;
+// Sabah/Sarawak use a different "land district" tier, sparsely represented
+// here) rather than scattered misses — confirmed directly: this first left
+// 35 of 740 points unmatched, dominated by Sabah's own state capital and
+// major cities (Kota Kinabalu 500,421; Sandakan 439,050; Tawau 372,615).
+// ADM2 ("Districts," 159 units) resolves these correctly instead (Kota
+// Kinabalu -> its own 346.66 km² district, Sandakan/Tawau -> their own
+// ~2,100 km² districts) — added as a supplemental candidate alongside
+// ADM3, not a full swap, since ADM3 already correctly resolves Peninsular
+// Malaysia's much finer real "Bandar" town mukims and the join's own
+// smallest-containing-polygon-wins rule means ADM2 only ever gets picked
+// where ADM3 has nothing smaller to offer (i.e., exactly the Sabah/Sarawak
+// gap this was added for).
+if (shouldRun('458')) {
+  console.log('\n=== Malaysia ===')
+  const mysMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/MYS/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const mysAdm3Meta = mysMeta.find((l) => l.boundaryType === 'ADM3')
+  const mysAdm3 = await fetchWithRetry(async () => {
+    const res = await fetch(mysAdm3Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const mysAdm2Meta = mysMeta.find((l) => l.boundaryType === 'ADM2')
+  const mysAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(mysAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const mysCandidates = [
+    ...mysAdm3.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm3' })),
+    ...mysAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' })),
+  ]
+  const mysCities = loadCityPoints('458')
+  const mysJoin = joinCityPointsToPolygons('Malaysia', mysCities, mysCandidates)
+  writeCountryOutput('458', mysJoin.kept)
+  report.malaysia = mysJoin.report
+}
+if (shouldRun('104')) report.myanmar = await runGeoBoundariesCountry({ name: 'Myanmar', numericId: '104', alpha3: 'MMR', admLevel: 'ADM3' })
+if (shouldRun('702')) report.singapore = await runGeoBoundariesCountry({ name: 'Singapore', numericId: '702', alpha3: 'SGP', admLevel: 'ADM2' })
+if (shouldRun('764')) report.thailand = await runGeoBoundariesCountry({ name: 'Thailand', numericId: '764', alpha3: 'THA', admLevel: 'ADM2' })
+if (shouldRun('626')) report.timorLeste = await runGeoBoundariesCountry({ name: 'Timor-Leste', numericId: '626', alpha3: 'TLS', admLevel: 'ADM2' })
+if (shouldRun('704')) report.vietnam = await runGeoBoundariesCountry({ name: 'Vietnam', numericId: '704', alpha3: 'VNM', admLevel: 'ADM2' })
+
+if (!process.env.SKIP_OSM && shouldRun('608')) {
+  console.log('\n=== Philippines ===')
+  const phlMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/PHL/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const phlAdm3Meta = phlMeta.find((l) => l.boundaryType === 'ADM3')
+  const phlAdm3 = await fetchWithRetry(async () => {
+    const res = await fetch(phlAdm3Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const manilaRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:60];
+area["ISO3166-1"="PH"][admin_level=2];
+relation(area)["boundary"="administrative"]["name"="Manila"]["admin_level"="6"];
+out geom;`),
+  )
+  if (manilaRaw.elements.length !== 1) console.log(`  [warn] expected exactly 1 Manila OSM relation, got ${manilaRaw.elements.length}`)
+  const manilaRel = manilaRaw.elements[0]
+  const { geometry: manilaGeometry } = relationToGeometry(manilaRel)
+  const manilaCentroid = (f) => geometryCentroid(f.geometry)
+  let droppedManilaFragments = 0
+  const phlCandidates = phlAdm3.features
+    .filter((f) => {
+      const { lat, lng } = manilaCentroid(f)
+      let inManila = false
+      try {
+        inManila = pointInGeometry([lng, lat], manilaGeometry)
+      } catch {
+        inManila = false
+      }
+      if (inManila) droppedManilaFragments++
+      return !inManila
+    })
+    .map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm3' }))
+  console.log(`  dropping ${droppedManilaFragments} Manila internal-district fragments (real areas, wrong kind of unit for this join — no whole-Manila feature exists at ADM3 — see this block's own comment)`)
+  phlCandidates.push({ name: manilaRel.tags?.name ?? 'Manila', geometry: manilaGeometry, source: 'osm-admin6-manila' })
+  console.log('  +1 supplemental whole-city OSM candidate (Manila)')
+  const phlCities = loadCityPoints('608')
+  const phlJoin = joinCityPointsToPolygons('Philippines', phlCities, phlCandidates)
+  writeCountryOutput('608', phlJoin.kept)
+  report.philippines = phlJoin.report
+}
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

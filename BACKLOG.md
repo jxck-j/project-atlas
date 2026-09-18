@@ -1161,6 +1161,22 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   run 2,000-15,000+ km². A live OSM check for a finer "bag" tier (`admin_level=8`) found zero relations
   nationwide, confirming soum-level really is the finest comprehensive tier available from any checked source;
   not chased further.
+- **Indonesia rejected 4,172 of 9,302 points, 40 substantial, dominated by Kalimantan/Papua/remote outer
+  islands' own genuinely enormous rural regencies** (found 2026-09-18, `city-boundaries-architecture.md`'s
+  "Twenty-second pass") — Merauke's own Papua regency alone is 44,201 km², larger than Denmark. Same accepted
+  "real geography, not a technique failure" shape as China/Kazakhstan/Mongolia above; not chased further.
+- **Myanmar rejected 80 of 576 points, 11 substantial (Dawei 136,783 in 6,855 km², Ann 119,714 in 6,279 km²,
+  Myitkyina 90,894 in 6,239 km², ...), concentrated in remote Rakhine/Kachin/Sagaing border townships** (found
+  2026-09-18, "Twenty-second pass") — same accepted shape as the countries above, not chased further.
+- **Malaysia's Sabah/Sarawak residual: 13 of 740 points rejected, 3 substantial (Lahad Datu 105,622 in a 7,392
+  km² district, Bandar Nabawan 31,807 in 6,250 km², Kinabatangan 10,256 in 7,339 km²), after adding a
+  supplemental ADM2 layer already fixed the much larger initial 35-unmatched gap (Kota Kinabalu, Sandakan,
+  Tawau, and 32 other Sabah towns — the Peninsular Malaysia "Mukim" tier barely reaches East Malaysia at all,
+  only 16 of 1,859 features)** (found 2026-09-18, "Twenty-second pass") — real genuinely huge Sabah interior
+  districts remaining after the fix; not chased further.
+- **Vietnam left 1 of 913 points unmatched: Thổ Châu, population 1,829, a small offshore island** (found
+  2026-09-18, "Twenty-second pass") — a genuine small-island gap, not chased further given the country's
+  otherwise clean result (907/913 kept, 0 substantial rejects).
 
 ## Visualization
 

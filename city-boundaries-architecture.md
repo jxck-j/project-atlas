@@ -1882,6 +1882,118 @@ explained in-line above and need no further entry.
 city-boundary data; 81 remain (India and Russia both still deliberately deferred to their own dedicated
 passes).**
 
+### Twenty-second pass: Southeast Asia (2026-09-18) — Brunei, Cambodia, Indonesia, Laos, Malaysia, Myanmar,
+Philippines, Singapore, Thailand, Timor-Leste, Vietnam — completing continental/maritime Asia other than
+India and Russia
+
+Every level below was confirmed by a direct point-in-polygon check against real coordinates, not just
+recon's own canonicalName field.
+
+**Six countries confirmed clean on their recon-reported finest level with no override needed:** Brunei (ADM2,
+"Mukim," 38 units — Bandar Seri Begawan and every other real mukim resolve correctly; 3 snapped, 0 rejected, 0
+unmatched), Indonesia (ADM2, "regency, city," 519 units — Jakarta splits cleanly into its 5 real "Kota"
+cities, e.g. Kota Jakarta Pusat 48.09 km²; Surabaya/Bandung/Medan/Denpasar/Makassar each resolve to their own
+whole "Kota" unit), Laos (ADM2, "Districts," 148 units — Vientiane -> Xaysetha, a real district of the
+prefecture; 38 rejected, none substantial), Singapore (ADM2, "Divisions," 55 real URA planning areas — clean
+121/121), Thailand (ADM2, "districts," 928 units — Bangkok -> Phra Nakhon 5.41 km², a real historic district,
+not the whole 1,569 km² city; 24 rejected, none substantial), and Vietnam (ADM2, "District," 708 units —
+Hanoi's Hoan Kiem and Ho Chi Minh City's Quan 1 both resolve to their own real central district; 1 unmatched —
+Thổ Châu, population 1,829, a small offshore island — and 0 substantial rejects).
+
+**Cambodia needed the same override this file has now hit repeatedly** (Bangladesh/Sri Lanka's ADM4, South
+Korea's ADM3): recon's reported finest level (ADM3, canonicalName blank/"Unknown" at every level in this
+download, 1,633 units) turned out to be commune/sangkat scale — Phnom Penh lands in an individual 1.00 km²
+sangkat ("Boeng Keng Kang Ti *"), neighborhood scale, not a city boundary. ADM2 (197 units, real district/khan
+tier despite also reporting "Unknown") puts Phnom Penh in its own real khan (Chamkar Mon, 11.21 km²) and Siem
+Reap/Battambang in their own real town-and-surrounding-district unit instead, and is used. Result: 304/341
+kept (1 snapped), 37 rejected, none substantial, 0 unmatched.
+
+**Malaysia is the rare case where recon's reported finest level (ADM3, "Mukim," 1,859 units) is the CORRECT
+city-plausible pick and the coarser ADM2 ("Districts," 159 units) would have been the wrong, too-coarse
+choice** — confirmed directly: ADM2 puts Kuala Lumpur in the whole 242 km² federal territory and Johor Bahru
+in its entire 1,145 km² district, while ADM3 resolves each to its own real "Bandar" (town) mukim — Kuala
+Lumpur -> BANDAR KUALA LUMPUR (47.36 km²), George Town -> BANDAR GEORGE TOWN (26.10 km², matching real George
+Town's urban core), Johor Bahru -> BANDAR JOHOR BAHRU (43.18 km²). Every other country in this pass (and most
+before it) had recon's suggested finest level turn out too fine, not too coarse — worth remembering the
+override isn't always in the same direction. **But ADM3 barely reaches East Malaysia at all** — only 16 of
+1,859 mukim features fall anywhere in Sabah/Sarawak's own longitude/latitude range, a real structural gap
+(mukim is historically a Peninsular Malaysia administrative construct; Sabah/Sarawak use a different "land
+district" tier, sparsely represented here), not scattered misses — confirmed directly: ADM3 alone left 35 of
+740 points unmatched, dominated by Sabah's own state capital and major cities (Kota Kinabalu 500,421; Sandakan
+439,050; Tawau 372,615). Fixed by adding ADM2 as a supplemental candidate alongside ADM3 (not a full swap,
+since ADM3 already correctly resolves Peninsular Malaysia's much finer real mukims, and the join's own
+smallest-containing-polygon-wins rule means ADM2 only ever gets picked where ADM3 has nothing smaller to
+offer). Result: 727/740 kept (3 snapped), 0 unmatched, 13 rejected (3 substantial — Lahad Datu 105,622 in a
+7,392 km² district, Bandar Nabawan 31,807 in 6,250 km², Kinabatangan 10,256 in 7,339 km², all genuinely huge
+rural Sabah interior districts, the same accepted shape as Kazakhstan/Afghanistan/Pakistan/Mongolia/China's
+own oversized-district residuals).
+
+**Myanmar confirmed ADM3 ("Township," 330 units, matching recon) over the coarser ADM2 ("District," 74
+units)** — Yangon's ADM2 unit ("Yangon (West)," 71.82 km²) is already reasonably city-scale, but Naypyidaw's
+ADM2 unit is a genuinely huge 3,526 km² region-tier polygon, while ADM3 resolves Yangon/Mandalay/Naypyidaw
+each to their own real township (27.08/15.11/58.66 km²) — the finer, more consistent choice nationwide.
+Result: 496/576 kept, 80 rejected (11 substantial — Dawei 136,783 in 6,855 km², Ann 119,714 in 6,279 km²,
+Myitkyina 90,894 in 6,239 km², ... concentrated in Myanmar's remote Rakhine/Kachin/Sagaing border townships),
+0 unmatched.
+
+**Philippines needed a real fragment-vs-whole-city fix, the France Paris/Lyon/Marseille shape at a smaller
+scale.** ADM3 ("Municipalities," 1,647 units, matching recon) correctly resolves every other tested city as
+one whole polygon — Quezon City (163.03 km², matching its real area), Cebu City (292.08 km²), Davao City
+(2,351.44 km², correctly huge — it's the country's largest city by land area), Baguio City (58.28 km²),
+Zamboanga City (1,503.57 km²) — but Manila specifically has NO whole-city feature in this download at all,
+only internal-district fragments (Quiapo, Tondo, Binondo, ... several names like "Santa Cruz"/"San Miguel"/
+"San Andres"/"San Nicolas" repeated 2-9 times each, since those are also real, unrelated town names elsewhere
+in the archipelago — a name-based filter like France's regex would incorrectly catch those other towns too).
+Fixed by identifying Manila's own fragments geometrically instead — point-in-polygon against a live-fetched
+OSM whole-city candidate — and dropping exactly those (14 of them, fewer than an initial by-name scan of ~35
+suggested, confirming the geometric approach was necessary, not just more elegant). Manila's own GeoNames
+point would otherwise land in "Quiapo" alone (0.89 km²) despite the city's real 1.9M population — a real,
+visually-broken mismatch, not merely a smaller administrative unit the way Beijing/Shanghai's own
+district-level matches are. The OSM relation (id 103703, `border_type=highly_urbanized_city`,
+`official_name=City of Manila`, `population=1902590` — matching real Manila almost exactly, confirming it's
+the right relation) computes to 179.70 km², well over Manila's official 42.88 km² land area — accepted as-is
+(likely includes Manila Bay-facing reclamation/port jurisdiction the same way this file has already accepted
+sea-inclusive coastal administrative boundaries elsewhere, e.g. South Korea's Yeonggwang in the Twenty-first
+pass) rather than chased further, since it's still a single, correctly-named, plausibly-sized whole-city
+polygon — a large improvement over the previous 0.89 km² fragment regardless. Result: 4,500/4,529 kept (62
+snapped), 28 rejected (0 substantial), 1 unmatched (Cambarus, population 0).
+
+**Indonesia needed real sharding**, the same "one flat country file becomes the huge-eager-fetch problem"
+shape China/Mexico/Brazil/Italy/Spain/France/Germany already hit: its own 9,302 GeoNames points produced a
+49.8 MB unsharded file. Sharded via `shardByState()` using `iso_3166_2` (not `postal` — Natural Earth's own
+IDN rows collide Maluku Utara and Lampung on the same "LA" postal value, another instance of this file's
+now-recurring unique-but-wrong-or-colliding `postal` finding, following China's `iso_3166_2` fix in the same
+vein). Result: 5,130/9,302 kept (15 snapped), 4,172 rejected (40 substantial — Loa Janan 212,816 in a 25,333
+km² East Kalimantan regency, Sampit 166,773 in 15,771 km², Timika 142,909 in 17,906 km², Merauke 116,864 in a
+44,201 km² Papua regency larger than Denmark — the same accepted "real geography, not a technique failure"
+shape as China/Kazakhstan/Mongolia's own oversized-rural-unit residuals, here spread across Kalimantan/
+Papua/remote outer islands), 0 unmatched. 234 of 5,130 kept features matched no Natural Earth province polygon
+directly and fell back to nearest-province-by-centroid (real archipelago coastline/small-island simplification
+artifacts, the same `shardByState()` fallback path every prior sharded country has also exercised at a smaller
+scale). Sharded into 33 real province files, 48.7 MB combined, largest single shard (East Java, "ji.json")
+15.6 MB — bigger than any prior sharded country's own largest shard (China's Zhejiang was 6.9 MB), consistent
+with Java being the most densely populated large island on Earth; still a per-province lazy load, not the
+whole country eagerly fetched, so not chased further.
+
+**File sizes**: none of Brunei/Cambodia/Laos/Malaysia/Myanmar/Singapore/Thailand/Timor-Leste/Vietnam needed
+`shardByState()` — Thailand's 4,811 KB is the largest of the nine. Philippines (12,669 KB) also didn't need
+it, despite its raw ADM3 download being an enormous 532 MB (the heaviest single geoBoundaries download this
+file has ever pulled, ahead of Thailand's own 265 MB ADM2 and Indonesia's 158 MB ADM2 — all three archipelago/
+peninsula nations with very fine coastline vertex density at their respective candidate levels, confirmed to
+parse and join fine under this environment's available memory without any `--max-old-space-size` override
+needed). Indonesia did need sharding, per above.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: Indonesia's 40 substantial rejects (oversized
+Kalimantan/Papua/outer-island regencies), Myanmar's 11 substantial rejects (remote Rakhine/Kachin/Sagaing
+border townships), Malaysia's 3 substantial rejects (Sabah interior districts, after the ADM2 supplement
+already fixed the much larger initial 35-unmatched gap), and Vietnam's single Thổ Châu unmatched (a small
+offshore island). Cambodia/Laos/Thailand/Singapore/Brunei/Timor-Leste's own clean-or-small-non-substantial
+results need no further entry.
+
+**Final status: all 11 Southeast Asia countries are done and committed. 123 of 193 UN members now have real
+city-boundary data; 70 remain (India and Russia both still deliberately deferred to their own dedicated
+passes) — every UN member in continental and maritime Asia now has real city-boundary data except those two.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1898,7 +2010,7 @@ passes).**
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 112 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 123 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -1964,17 +2076,26 @@ passes).**
    OSM `admin_level=6` polygon for Yeonggwang County, entirely missing from the geoBoundaries download — see
    the Twenty-first pass) and China (geoBoundaries ADM3, independently verified against 7 major cities, sharded
    by province via `iso_3166_2` after catching a real chained `postal`-field mislabeling bug across 4
-   provinces — see the Twenty-first pass) against the already-shipped
+   provinces — see the Twenty-first pass) and Brunei/Indonesia/Laos/Singapore/Thailand/Vietnam (geoBoundaries,
+   each level independently verified — see the Twenty-second pass) and Cambodia (geoBoundaries, overriding
+   recon's own reported "finest" level — a real commune/sangkat-scale mismatch, the same trap Bangladesh/Sri
+   Lanka/South Korea's recon hit — see the Twenty-second pass) and Malaysia (geoBoundaries ADM3, the rare case
+   where recon's suggested finest level was the CORRECT city-plausible pick, plus a supplemental ADM2 layer for
+   Sabah/Sarawak, where the ADM3 "Mukim" tier barely reaches at all — see the Twenty-second pass) and Myanmar
+   (geoBoundaries ADM3, confirmed finer and more consistent than the coarser ADM2 — see the Twenty-second pass)
+   and Philippines (geoBoundaries ADM3 with Manila's own internal-district fragments dropped, identified
+   geometrically rather than by name, and replaced with a single whole-city OSM polygon — the France
+   Paris/Lyon/Marseille shape at a smaller scale — see the Twenty-second pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
-   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, and China all
-   sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 81 countries** (Russia and India both included — see the Seventeenth pass's own note
+   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
+   Indonesia all sharded by state/province/department — see `shardByState()`).
+   **Not done: the other 70 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first pass) before its own join can run, not a blind
-   batch extension of this script.
+   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second pass) before its own join can run,
+   not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
