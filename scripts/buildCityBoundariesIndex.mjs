@@ -23,8 +23,10 @@
 // Belgium, France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands,
 // Switzerland, plus the 2026-09-17 Southern Europe pass: Albania, Andorra,
 // Bosnia and Herzegovina, Croatia, Greece, Italy, Malta, Montenegro, North
-// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain) — NOT the other
-// 123 UN members yet. See that doc's migration plan.
+// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain, plus the
+// 2026-09-17 Eastern Europe pass: Belarus, Bulgaria, Czechia, Hungary,
+// Moldova, Poland, Romania, Slovakia, Ukraine) — NOT the other 114 UN
+// members yet. See that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -93,6 +95,15 @@ const BOUNDARY_COUNTRIES = [
   { id: '688', name: 'Serbia' },
   { id: '705', name: 'Slovenia' },
   { id: '620', name: 'Portugal' },
+  { id: '112', name: 'Belarus' },
+  { id: '100', name: 'Bulgaria' },
+  { id: '203', name: 'Czechia' },
+  { id: '348', name: 'Hungary' },
+  { id: '498', name: 'Moldova' },
+  { id: '616', name: 'Poland' },
+  { id: '642', name: 'Romania' },
+  { id: '703', name: 'Slovakia' },
+  { id: '804', name: 'Ukraine' },
 ]
 
 function addFromBoundaryFile(countryId) {

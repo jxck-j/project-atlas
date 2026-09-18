@@ -14,8 +14,12 @@
 // France, Germany, Liechtenstein, Luxembourg, Monaco, Netherlands,
 // Switzerland, plus the 2026-09-17 Southern Europe pass: Albania, Andorra,
 // Bosnia and Herzegovina, Croatia, Greece, Italy, Malta, Montenegro, North
-// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain) — NOT the other
-// 123 UN members yet. See that doc's "Fifth pass" section
+// Macedonia, Portugal, San Marino, Serbia, Slovenia, Spain, plus the
+// 2026-09-17 Eastern Europe pass: Belarus, Bulgaria, Czechia, Hungary,
+// Moldova, Poland, Romania, Slovakia, Ukraine (Russia deliberately excluded —
+// see city-boundaries-architecture.md's own note on why it needs its own
+// dedicated investigation rather than folding into a routine regional batch))
+// — NOT the other 114 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -1659,6 +1663,149 @@ if (shouldRun('724'))
     admLevel: 'ADM3',
     onOutput: (kept) => shardByState('724', kept, { adm0A3: 'ESP', abbrevOf: (props) => props.iso_3166_2?.replace(/^ES-/, '') }),
   })
+
+// --- Seventeenth pass (2026-09-17): Eastern Europe (Belarus, Bulgaria,
+// Czechia, Hungary, Moldova, Poland, Romania, Slovakia, Ukraine) — the
+// fourth and last Europe batch this file's own "next logical scope" note
+// called for, minus Russia (deliberately excluded — its transcontinental
+// scale warrants its own dedicated investigation, not folding into a
+// routine regional batch; see city-boundaries-architecture.md). Same
+// discipline as every prior pass: every candidate level's real per-feature
+// names checked directly against a live geoBoundaries download, not
+// trusted from recon metadata alone.
+//
+// Five straightforward confirmations, real per-feature names matching each
+// country's genuine municipality-equivalent tier and admUnitCount matching
+// (within the usual vintage drift) an independently known real count:
+// Bulgaria's obshtini (ADM2, 265 — exact match), Poland's gminy (ADM3, 2480
+// vs. a real ~2477), Czechia's obce (ADM3, 6257 vs. a real ~6254-6258),
+// Slovakia's obce (ADM3, 2941 vs. a real ~2890), and Hungary's települések
+// (ADM3, 3357 vs. a real ~3178) — the last three all sit one level below a
+// coarser district/county tier that was checked and correctly rejected as
+// too coarse (Czechia's ADM2 "District" is only 77 units; Hungary's ADM2 is
+// really Hungary's 198 járás/districts, each named after its seat town in a
+// way that could be mistaken for a settlement list at a glance — confirmed
+// coarse by cross-checking the real count, 198, against Hungary's actual
+// number of districts, not settlements).
+//
+// **Czechia, Hungary, and Slovakia's own ADM3 downloads have real, garbled
+// diacritics in their raw shapeName values** (e.g. Czechia: "Kri63nky",
+// "Uhr6nov"; Hungary: "Szí© zhalombatta"; Slovakia: "Doln  Srnie") — verified
+// as a genuine upstream data bug, not a terminal/encoding artifact on this
+// project's end (checked the raw response bytes directly: the literal ASCII
+// digits/symbols are baked into geoBoundaries' own file, not a decode
+// error). Harmless here specifically because `joinCityPointsToPolygons`
+// never uses a candidate's own name for the final output — `properties.name`
+// on every kept feature is always the GeoNames point's own (correctly
+// spelled) name; a candidate's name is only ever used for `matchedAdminUnit`
+// (a diagnostic field) and the >2km snap fallback's name tie-break, so the
+// corruption can't reach anything a user actually sees. Also confirmed each
+// level's finer ADM4 sibling (Czechia and Slovakia both have one) is a
+// sub-municipal cadastral-territory tier, not a finer settlement tier — real
+// per-feature names there repeat the same municipality split into several
+// numbered/disambiguated pieces (Czechia: "Loucky u Turnova"-style "X u Y"
+// disambiguation is itself the standard Czech naming convention for
+// cadastral units, not settlements; Slovakia: "Male Ko eckn Podhradie" /
+// "Velk  Koeeck  Podhradie" are two halves of one real village) — using
+// ADM4 would have split real single cities across several candidate
+// polygons for no benefit, so ADM3 is correctly the finer of the two
+// genuinely-checked options, not merely the first one that looked plausible.
+if (shouldRun('100')) report.bulgaria = await runGeoBoundariesCountry({ name: 'Bulgaria', numericId: '100', alpha3: 'BGR', admLevel: 'ADM2' })
+if (shouldRun('203')) report.czechia = await runGeoBoundariesCountry({ name: 'Czechia', numericId: '203', alpha3: 'CZE', admLevel: 'ADM3' })
+if (shouldRun('348')) report.hungary = await runGeoBoundariesCountry({ name: 'Hungary', numericId: '348', alpha3: 'HUN', admLevel: 'ADM3' })
+if (shouldRun('616')) report.poland = await runGeoBoundariesCountry({ name: 'Poland', numericId: '616', alpha3: 'POL', admLevel: 'ADM3' })
+if (shouldRun('703')) report.slovakia = await runGeoBoundariesCountry({ name: 'Slovakia', numericId: '703', alpha3: 'SVK', admLevel: 'ADM3' })
+
+// Romania: geoBoundaries' only sub-national level below its 42 counties is
+// ADM2 (3235 units), mislabeled "municipalities" in geoBoundaries' own
+// metadata but confirmed by real per-feature inspection to actually be
+// Romania's full LAU2 tier (comune + orașe + municipii combined — real
+// count ~3181, matching within the usual vintage drift) — the same
+// "trust the real feature names/count over a wrong metadata label" call
+// already made for Paraguay's mislabeled "barrios y localidades" and
+// Bosnia's blank canonicalName. Real per-feature names are ALL CAPS with
+// genuine duplicates across different counties (e.g. "BUJORU", "ISLAZ",
+// "CIUPERCENI" each appear twice) — harmless for the same reason Portugal's
+// freguesia name collisions were harmless: the join is real point-in-polygon
+// containment, never name-based, except for the >2km snap fallback's name
+// tie-break, which only ever compares within whatever set of candidates a
+// single unmatched point is actually near.
+if (shouldRun('642')) report.romania = await runGeoBoundariesCountry({ name: 'Romania', numericId: '642', alpha3: 'ROU', admLevel: 'ADM2' })
+
+// Ukraine: geoBoundaries' finest level, ADM3 (10375 units, canonicalName
+// "Village Councils"), is real per-feature-checked as genuine — names are
+// the standard Ukrainian adjectival council-name form (e.g. "Tinystivska",
+// "Pushkinska"). This is the pre-2020-reform silski/miski rady tier
+// (matching ADM2's own 495-unit "Raions" count to the old, pre-reform raion
+// structure too, not the post-2020 amalgamated hromada system) — the same
+// "accept the vintage the source actually has" call already made for every
+// other country in this file with a real but dated administrative
+// snapshot (Panama's corregimientos, Costa Rica's distritos). No finer
+// level exists in geoBoundaries for Ukraine, so this is simply the finest
+// real option, the same as Ecuador's cantones/Jordan's qadas.
+if (shouldRun('804')) report.ukraine = await runGeoBoundariesCountry({ name: 'Ukraine', numericId: '804', alpha3: 'UKR', admLevel: 'ADM3' })
+
+// Belarus: geoBoundaries' only sub-national level, ADM2 ("Raion", 118
+// units), is real but coarse — it mixes ordinary rural raions with the 10
+// oblast-significance cities (Brest, Gomel, Grodno, Mogilev, Vitebsk,
+// Babruysk, Pinsk, Baranavichy, Zhodzina, Navapolatsk — all independent of
+// any raion, correctly sized as their own city-scale polygons) at the same
+// tier, confirmed directly via a live OSM admin_level=4-6 query (the same
+// mixed tier this file's own Serbia/Argentina/Ireland blocks already
+// established isn't safe to assume uniform). A supplemental OSM
+// admin_level=8 layer (1287 real village/settlement councils — сельсаветы —
+// e.g. "Орша", "Ліда", "Глыбокае", real Belarusian names, not garbled) fills
+// in the rural raions the same way Panama/Canada/Venezuela/Serbia's own
+// extraOsm supplements already do: smallest-containing-polygon-wins, so a
+// сельсавет only ever displaces its own enclosing raion where it's actually
+// smaller, and the raion/city tier still backstops anywhere the councils
+// layer doesn't reach.
+if (!process.env.SKIP_OSM && shouldRun('112'))
+  report.belarus = await runGeoBoundariesCountry({
+    name: 'Belarus',
+    numericId: '112',
+    alpha3: 'BLR',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-admin8',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="BY"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`,
+    },
+  })
+
+// Moldova: geoBoundaries has only ADM1 (37 real raion-equivalent districts,
+// min area 38 km2) — far too coarse for city-scale matching, the same
+// "geoBoundaries alone won't get there" shape as Jordan's original finding,
+// so this switches off geoBoundaries entirely (like Costa Rica/Kuwait
+// before it) in favor of a direct OSM query. Confirmed via live Overpass
+// recon: Moldova's real base local-government tier (comună/oraș) is tagged
+// admin_level=8 in OSM, not the =6 the general Eastern-European convention
+// might suggest (a direct =6 query returned zero results) — 982 relations,
+// real Romanian and (for Transnistria's own settlements) Cyrillic names
+// (Hîrbovăț, Copceac, Кременчуг, ...), covering both rural comune and towns
+// alike.
+if (!process.env.SKIP_OSM && shouldRun('498')) {
+  console.log('\n=== Moldova ===')
+  const moldovaRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="MD"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"="8"];
+out geom;`),
+  )
+  let moldovaUnclosedCount = 0
+  const moldovaCandidates = moldovaRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) moldovaUnclosedCount++
+    return { name: rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin8' }
+  })
+  if (moldovaUnclosedCount > 0) console.log(`  [warn] ${moldovaUnclosedCount} Moldova relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const moldovaCities = loadCityPoints('498')
+  const moldovaJoin = joinCityPointsToPolygons('Moldova', moldovaCities, moldovaCandidates)
+  writeCountryOutput('498', moldovaJoin.kept)
+  report.moldova = moldovaJoin.report
+}
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

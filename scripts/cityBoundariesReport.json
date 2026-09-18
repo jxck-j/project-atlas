@@ -42982,5 +42982,87 @@
         "snapDistanceKm": 0.263
       }
     ]
+  },
+  "bulgaria": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Svishtov",
+        "population": 30157,
+        "matchedTo": "Svishtov",
+        "snapDistanceKm": 0.315
+      },
+      {
+        "name": "Primorsko",
+        "population": 3531,
+        "matchedTo": "Primorsko",
+        "snapDistanceKm": 0.213
+      },
+      {
+        "name": "Obzor",
+        "population": 2002,
+        "matchedTo": "Nesebar",
+        "snapDistanceKm": 0.503
+      },
+      {
+        "name": "Nesebar",
+        "population": 13347,
+        "matchedTo": "Nesebar",
+        "snapDistanceKm": 1.399
+      },
+      {
+        "name": "Chernomorets",
+        "population": 2194,
+        "matchedTo": "Sozopol",
+        "snapDistanceKm": 0.127
+      },
+      {
+        "name": "Belene",
+        "population": 7487,
+        "matchedTo": "Belene",
+        "snapDistanceKm": 1.162
+      }
+    ]
+  },
+  "czechia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "hungary": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "poland": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "slovakia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "romania": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "ukraine": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "belarus": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "moldova": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
   }
 }
