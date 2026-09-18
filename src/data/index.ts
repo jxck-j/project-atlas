@@ -29,6 +29,15 @@ export type {
   DataProvenance,
   ConflictParticipant,
 } from './types'
+export type {
+  NewsItem,
+  NewsSource,
+  NewsTopicTag,
+  NewsSeverity,
+  NewsCorroboration,
+  NewsReviewStatus,
+  NewsLeaning,
+} from './newsTypes'
 
 export { registerCountry, getCountry, getCountries, removeCountry } from './registry/CountryRegistry'
 export {
@@ -38,3 +47,10 @@ export {
   getEntitiesByType,
   getRelatedEntities,
 } from './registry/GeoEntityRegistry'
+export {
+  registerNewsItem,
+  getNewsItem,
+  getNewsItems,
+  getNewsItemsByEntityId,
+  getNewsItemsByTag,
+} from './registry/NewsRegistry'

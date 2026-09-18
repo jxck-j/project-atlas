@@ -1,16 +1,26 @@
 import { toggleHudPanel, useHudPanel } from './hudPanelStore'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
-import { setSideNavSection, toggleSideRail, useSideNavSection, useSideRailCollapsed } from './navStore'
+import { setSideNavSection, toggleSideRail, useSideNavSection, useSideRailCollapsed, useTopNavTab } from './navStore'
 import { SIDE_NAV_ITEMS } from './sideNavItems'
 import { PANEL_SURFACE } from './panelStyles'
 
 // The reference's left rail. Section-to-layer-category mapping lives in
 // sideNavItems.ts; this file only renders it.
+//
+// Map-only (direct request): every SIDE_NAV_ITEMS row filters LayerPanel's
+// globe overlays, which have no meaning while News/Analytics's full-screen
+// views cover the globe entirely — those two tabs' own content (a country
+// filter, a metric drill-down) isn't a Layer Engine category, so this rail
+// would sit there controlling something not currently visible. DATABASE has
+// no view at all yet, so this never actually matters for it either way.
 export function SideRail() {
   const active = useSideNavSection()
   const currentPanel = useHudPanel()
   const collapsed = useSideRailCollapsed()
+  const activeTab = useTopNavTab()
+
+  if (activeTab !== 'map') return null
 
   return (
     // Outer wrapper is the fixed anchor; `.relative` inside it is what the

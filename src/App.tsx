@@ -9,6 +9,7 @@ import { AlliancesPanel } from './hud/AlliancesPanel'
 import { LegendPanel } from './hud/LegendPanel'
 import { IntelligencePanel } from './hud/IntelligencePanel'
 import { AnalyticsPanel } from './hud/AnalyticsPanel'
+import { NewsPanel } from './hud/NewsPanel'
 import { InputManager } from './input/InputManager'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
       </div>
       <CommandBar />
       <AnalyticsPanel />
+      <NewsPanel />
       <SettingsPanel />
       <LayerPanel />
       <LayerPresetsPanel />

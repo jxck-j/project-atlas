@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useCountryFeatures } from '../scene/useCountryFeatures'
-import { clearSelection, flyToSelectedCountry, useSelection, type SelectedEntity } from './selectionStore'
+import { clearSelection, closeInspector, flyToSelectedCountry, useSelection, type SelectedEntity } from './selectionStore'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
 import { PRIMARY_ECONOMIC_YEAR } from '../data/countryEconomics'
 import { ALLIANCES } from '../data/allianceMemberships'
@@ -23,6 +23,11 @@ import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
 import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
 import { SegmentedBar } from './SegmentedBar'
+import { usePublishedNewsItems } from '../data/useNewsFeatures'
+import type { NewsItem } from '../data'
+import { NEWS_SEVERITY_STYLE } from './newsSeverityStyles'
+import { setPendingNewsCountryId } from './newsFilterStore'
+import { setTopNavTab } from './navStore'
 
 // `.cp-row` — label left, value right-aligned on the same baseline, rather
 // than the stacked label-over-value the pre-restyle panel used. The
@@ -1086,6 +1091,22 @@ export function IntelligencePanel() {
   // at all rather than falling back to the plain unsourced IntelRow.
   const currentStatusCountryId = selected?.id
 
+  // Recent News section (below) — same `selected.id`-keyed, kind-agnostic
+  // lookup Military/Economy/Current Status already use, so it "just works"
+  // for any future entity kind buildNews.mjs's country resolution reaches.
+  // Top 3, severity then recency — same rule NewsPanel.tsx's country-scoped
+  // ranking uses, just STACKED here instead of side-by-side (see
+  // news-engine-design.md's "Two ranking logics" section).
+  const newsSeverityRank: Record<NewsItem['severity'], number> = { routine: 0, significant: 1, 'high-stakes': 2 }
+  const recentNews = usePublishedNewsItems()
+    .filter((item) => currentStatusCountryId != null && item.linkedEntityIds.includes(currentStatusCountryId))
+    .sort(
+      (a, b) =>
+        newsSeverityRank[b.severity] - newsSeverityRank[a.severity] ||
+        new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime()
+    )
+    .slice(0, 3)
+
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
   // (MILITARY, ECONOMY, TECHNOLOGY) collapses the other rows and drops down
   // its component sources. Only a metric with a real score record for the
@@ -1292,6 +1313,55 @@ export function IntelligencePanel() {
                 </>
               )}
             </div>
+
+            {/* Recent News — see news-engine-design.md. Its own top-level
+                section (not folded into INTELLIGENCE SUMMARY above) since
+                a news item has no 0-100 score and isn't part of that
+                category set; gated on there being anything to show at all,
+                same as DEMOGRAPHICS/RELATIONSHIPS below. "MORE ››" hands off
+                to NewsPanel.tsx pre-filtered to this entity via
+                newsFilterStore.ts, the one piece of cross-tab state this
+                needed (see that file's own comment). */}
+            {recentNews.length > 0 && currentStatusCountryId && (
+              <div className="border-b border-[#16233c] px-4 py-3">
+                <div className={`${PANEL_SECTION_LABEL} mb-2 flex items-center justify-between`}>
+                  <span>RECENT NEWS</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingNewsCountryId(currentStatusCountryId)
+                      setTopNavTab('news')
+                      closeInspector()
+                    }}
+                    className="text-[9.5px] font-bold tracking-[0.08em] text-[#3f8bff] transition-colors hover:text-white"
+                  >
+                    MORE ››
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {recentNews.map((item) => (
+                    <a
+                      key={item.id}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded border border-[#16233c] bg-[rgba(10,16,28,0.4)] p-2 transition-colors hover:border-[#3f8bff]"
+                    >
+                      <div className="mb-1 flex items-center gap-1.5">
+                        <span
+                          className="rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em]"
+                          style={{ color: NEWS_SEVERITY_STYLE[item.severity].color }}
+                        >
+                          {NEWS_SEVERITY_STYLE[item.severity].label.toUpperCase()}
+                        </span>
+                        <span className="text-[8.5px] text-[#51648a]">{item.source.outlet}</span>
+                      </div>
+                      <div className="text-[11px] leading-snug text-[#e6efff]">{item.headline}</div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Demographics — CIA World Factbook ethnicity/religion
                 breakdowns (src/data/currentStatus.ts's ethnicGroups/
