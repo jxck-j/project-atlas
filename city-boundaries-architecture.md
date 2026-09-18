@@ -2382,6 +2382,72 @@ and Burundi/Comoros/Madagascar/Rwanda/Seychelles/Uganda's own clean results need
 city-boundary data; 8 remain — all in Africa (6 more: Angola, Botswana, Eswatini, Lesotho, Namibia, South
 Africa) plus India and Russia.**
 
+### Twenty-eighth pass: Southern Africa (2026-09-18) — Angola, Botswana, Eswatini, Lesotho, Namibia, South
+Africa — completing Africa
+
+The fifth and final Africa batch. Every level confirmed by a direct point-in-polygon check against real
+coordinates, not just recon's own canonicalName field.
+
+**Four confirmed clean on recon's own reported finest level:** Angola (ADM3, "Communes," 558 units — Luanda
+resolves to Maianga, 28.07 km², one of its real communes; 397/565 kept, 12 substantial rejects), Eswatini
+(ADM2, 53 units — Mbabane resolves to its own real "Inkhundla Mbabane," 103.12 km², Eswatini's real
+administrative term; clean 25/25), Lesotho (ADM2, "constituencies," 78 units — Maseru resolves to its own
+142.11 km² constituency; clean 47/47), and South Africa (ADM3, "Local municipality," 213 units, NOT recon's
+own ADM4 "Ward" cityPlausible pick — Johannesburg resolves to the whole "City of Johannesburg," 1,648.02 km²;
+Cape Town to "City of Cape Town," 2,446.43 km²; Durban to "eThekwini," 2,558.90 km² — all correctly whole, not
+fragmented into their own thousands of wards).
+
+**South Africa's own residual is this pass's largest and most systemic**: 341/989 kept, 648 rejected, 153
+substantial — including Pretoria itself (2,112,693 population), whose own "City of Tshwane" metro is a real
+6,310.24 km² unit, just over the loose ceiling. Unlike Auckland/Manila's own fragment-vs-whole-city problem,
+this isn't a data gap or a wrong level — South Africa's real post-1994 municipal demarcation genuinely
+consolidated most of the country's cities into large multi-town "local municipalities" spanning that much
+area (Bloemfontein/Mangaung 9,898.8 km², Welkom/Matjhabeng 5,699.1 km², Polokwane 5,065.4 km², George 5,192.9
+km², Potchefstroom/Ventersdorp-Tlokwe 6,409.7 km²) — a well-documented real fact about South African local
+government, the same shape as Christchurch/Brisbane's own genuinely-huge amalgamated council areas elsewhere
+in this file, just far more pervasive here (affecting the majority of the country's mid-size cities, not one
+or two outliers). ADM4 ("Ward," 4,392 units) would fragment every one of these into sub-few-km² pieces — the
+same over-fragmentation this file has rejected everywhere else it's appeared (Bangladesh, Kenya, Zimbabwe,
+...) — so ADM3 stays the right choice despite the high rejection count.
+
+**Botswana's ADM2 (25 units) was already directly investigated back in the Fourth pass (2026-09-04)** and
+confirmed to be the finest tier that exists anywhere for this country — OSM's own real sub-district tier is
+almost entirely unmapped (2 of 23 sub-districts). This pass turns that finding into a real join for the first
+time: confirmed again directly (Gaborone resolves to its own whole 1,326.81 km² district; Francistown, the
+country's second city, has no unit of its own name in this download at all — it lands in the surrounding
+"Masungu" sub-district instead, the same real, already-documented gap, not a new finding). Result: 15/139
+kept, 26 substantial rejects.
+
+**Namibia surfaced a fourth instance of the shapeName/geometry misalignment bug** (Burkina Faso, Twenty-fifth
+pass; Congo, Twenty-sixth pass) — narrower in scope than either of those, but real: the feature named "Opuwo"
+in ADM2 has a bounding box sitting exactly where Walvis Bay is (14.48-14.55°E, -22.98 to -22.92°S), nowhere
+near the real Opuwo (a Kunene-region town roughly 5° of latitude further north), while the two features
+actually named "Walvisbay Urban"/"Walvisbay Rural" are themselves wildly oversized (36,683 km² and 10,958
+km², both with bounding boxes well inland/south of the real coastal town) — a real, three-feature
+swap/corruption, not a two-feature isolated case the way Windhoek's own correctly-positioned "Windhoek Rural"
+(209.08 km², confirmed to actually contain Windhoek's real coordinates) shows the rest of the file isn't
+uniformly broken. A live OSM check found no separate Walvis Bay or Opuwo administrative boundary to
+substitute either. All three confirmed-corrupted features were dropped from the candidate list entirely
+(rather than left in to risk silently mislabeling some other real town's point under a wrong name) — Walvis
+Bay and Opuwo's own GeoNames points become an honest, logged gap instead of a silently wrong match. Result:
+23/93 kept, 67 rejected (12 substantial), 3 unmatched (Schlip, Kalkrand, Groot Aub — small towns near the
+excluded Walvis Bay/Opuwo area).
+
+**File sizes**: none of these six needed `shardByState()` — South Africa's 2,099 KB is the largest, despite a
+46 MB raw ADM3 download (the geoBoundaries fetch hit a real transient network termination on its first
+attempt — `[retry 1/6] terminated` — and succeeded cleanly on retry, the existing retry infrastructure working
+exactly as designed).
+
+**Real, accepted residuals, all logged to BACKLOG.md**: South Africa (153 substantial — the largest count of
+any single country in this entire project, a real reflection of nationwide municipal consolidation, not a
+technique failure), Botswana (26 substantial, an already-documented structural gap), Angola (12 substantial),
+and Namibia (12 substantial, 3 unmatched from the shapeName-misalignment exclusion). Eswatini/Lesotho's own
+clean results need no further entry.
+
+**Final status: all 54 of Africa's UN members are done and committed — Africa is complete. 191 of 193 UN
+members now have real city-boundary data; only India and Russia remain, both still deliberately deferred to
+their own dedicated investigations.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2398,7 +2464,7 @@ Africa) plus India and Russia.**
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 185 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 191 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2514,17 +2580,23 @@ Africa) plus India and Russia.**
    (geoBoundaries ADM2, after recon's own ADM3 pick turned out to be the wrong administrative concept for a
    city with uneven coverage — Malawi's cities are legally separate from the rural Traditional Authority
    structure this level represents; Lilongwe itself stays a real, confirmed gap even at ADM2, no finer source
-   found anywhere) against the already-shipped
+   found anywhere) and Angola/Eswatini/Lesotho (geoBoundaries, each level independently verified — see the
+   Twenty-eighth pass) and South Africa (geoBoundaries ADM3, not recon's own ADM4 "Ward" pick — a real,
+   pervasive residual from South Africa's own post-1994 municipal consolidation, the largest substantial-
+   reject count of any single country in this project) and Botswana (geoBoundaries ADM2, the finest tier
+   confirmed to exist anywhere back in the Fourth pass) and Namibia (geoBoundaries ADM2 with 3 confirmed
+   shapeName/geometry-misaligned features dropped — a fourth instance of the Twenty-fifth/Twenty-sixth passes'
+   own misalignment bug — see the Twenty-eighth pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 8 countries** (Russia and India both included — see the Seventeenth pass's own note
-   on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
-   why India got the same treatment) — each needs the same
+   **Not done: India and Russia**, both deliberately deferred to their own dedicated investigations (see the
+   Seventeenth pass's own note on why Russia is excluded from routine regional batches, and the Twentieth
+   pass's own note on why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
    Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
-   Twenty-fifth/Twenty-sixth/Twenty-seventh pass)
+   Twenty-fifth/Twenty-sixth/Twenty-seventh/Twenty-eighth pass)
    before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the

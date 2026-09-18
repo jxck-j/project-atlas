@@ -162333,5 +162333,7126 @@
       }
     ],
     "snapped": []
+  },
+  "angola": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Saurimo",
+        "population": 393000,
+        "matchedTo": "Saurimo",
+        "areaSqKm": 8289.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mossamedes",
+        "population": 255000,
+        "matchedTo": "Namibe (Moçâmedes)",
+        "areaSqKm": 6827.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Menongue",
+        "population": 251178,
+        "matchedTo": "Menongue",
+        "areaSqKm": 7891.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Luena",
+        "population": 273675,
+        "matchedTo": "Luena",
+        "areaSqKm": 7533.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sombo",
+        "population": 0,
+        "matchedTo": "Sombo",
+        "areaSqKm": 9082.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muriege",
+        "population": 0,
+        "matchedTo": "Murieje",
+        "areaSqKm": 8455.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mona Quimbundo",
+        "population": 0,
+        "matchedTo": "Mona Quimbundo",
+        "areaSqKm": 6454.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lóvua",
+        "population": 0,
+        "matchedTo": "Lóvua",
+        "areaSqKm": 7104.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiluage",
+        "population": 0,
+        "matchedTo": "Chiluanje",
+        "areaSqKm": 9046.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Capaia",
+        "population": 0,
+        "matchedTo": "Capaia",
+        "areaSqKm": 7984.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Canzar",
+        "population": 0,
+        "matchedTo": "Canzar",
+        "areaSqKm": 3712.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Camissombo",
+        "population": 0,
+        "matchedTo": "Lucapa",
+        "areaSqKm": 3054.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caita",
+        "population": 0,
+        "matchedTo": "Luachimo",
+        "areaSqKm": 3965.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cachimo",
+        "population": 0,
+        "matchedTo": "Cachimo",
+        "areaSqKm": 2105.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xamavera",
+        "population": 0,
+        "matchedTo": "Dirico",
+        "areaSqKm": 7689.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sessa",
+        "population": 0,
+        "matchedTo": "Sessa",
+        "areaSqKm": 3287.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rivungo",
+        "population": 0,
+        "matchedTo": "Rivungo",
+        "areaSqKm": 4296.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ninda",
+        "population": 0,
+        "matchedTo": "Ninda",
+        "areaSqKm": 9669.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mussuma Mitete",
+        "population": 0,
+        "matchedTo": "Mussuma",
+        "areaSqKm": 3333.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muié",
+        "population": 0,
+        "matchedTo": "Muié",
+        "areaSqKm": 4502.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mucusso",
+        "population": 0,
+        "matchedTo": "Mucusso",
+        "areaSqKm": 5312.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muconda",
+        "population": 8000,
+        "matchedTo": "Muconda",
+        "areaSqKm": 6073.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mavinga",
+        "population": 10000,
+        "matchedTo": "Mavinga",
+        "areaSqKm": 12494.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Macondo",
+        "population": 0,
+        "matchedTo": "Macondo",
+        "areaSqKm": 8290.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luvuei",
+        "population": 0,
+        "matchedTo": "Luvuei",
+        "areaSqKm": 5419.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lutuai",
+        "population": 0,
+        "matchedTo": "Lutuai",
+        "areaSqKm": 10892,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lutembo",
+        "population": 0,
+        "matchedTo": "Lutembo",
+        "areaSqKm": 7114.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cameia",
+        "population": 4972,
+        "matchedTo": "Cameia",
+        "areaSqKm": 7709.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lumbala Caquengue",
+        "population": 0,
+        "matchedTo": "Caquengue",
+        "areaSqKm": 17304.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luiana",
+        "population": 0,
+        "matchedTo": "Luiana",
+        "areaSqKm": 12769.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luengue",
+        "population": 0,
+        "matchedTo": "Luengue",
+        "areaSqKm": 19077,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lucusse",
+        "population": 0,
+        "matchedTo": "Lucusse",
+        "areaSqKm": 11852.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassongo",
+        "population": 0,
+        "matchedTo": "Lucusse",
+        "areaSqKm": 11852.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luacano",
+        "population": 0,
+        "matchedTo": "Luacano",
+        "areaSqKm": 4664.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lóvua do Zambeze",
+        "population": 0,
+        "matchedTo": "Lóvua",
+        "areaSqKm": 2928.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lago Dilolo",
+        "population": 0,
+        "matchedTo": "Lago-Dilolo",
+        "areaSqKm": 9058,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nana Candundo",
+        "population": 0,
+        "matchedTo": "Cavungo",
+        "areaSqKm": 5155.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jamba",
+        "population": 12000,
+        "matchedTo": "Luiana",
+        "areaSqKm": 12769.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dirico",
+        "population": 0,
+        "matchedTo": "Dirico",
+        "areaSqKm": 7689.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dala",
+        "population": 7514,
+        "matchedTo": "Dala",
+        "areaSqKm": 7288.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cutuile",
+        "population": 0,
+        "matchedTo": "Cutuile",
+        "areaSqKm": 6325.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cunjamba",
+        "population": 0,
+        "matchedTo": "Cunjamba-Dima",
+        "areaSqKm": 6138,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiúme",
+        "population": 0,
+        "matchedTo": "Chiume",
+        "areaSqKm": 7758.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cazombo",
+        "population": 34000,
+        "matchedTo": "Cazombo (Alto Zambeze)",
+        "areaSqKm": 5412.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Cazage",
+        "population": 4764,
+        "matchedTo": "Cazaje",
+        "areaSqKm": 5141.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassamba",
+        "population": 0,
+        "matchedTo": "Cassamba",
+        "areaSqKm": 4766.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassai-Sul",
+        "population": 0,
+        "matchedTo": "Cassai-Sul",
+        "areaSqKm": 4043.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cangombe",
+        "population": 0,
+        "matchedTo": "Cangombe",
+        "areaSqKm": 7073.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Calunda",
+        "population": 0,
+        "matchedTo": "Calunda",
+        "areaSqKm": 4233.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caianda",
+        "population": 0,
+        "matchedTo": "Caianda",
+        "areaSqKm": 3856.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xinge",
+        "population": 0,
+        "matchedTo": "Xinge",
+        "areaSqKm": 4105,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xá Muteba",
+        "population": 0,
+        "matchedTo": "Xá-Muteba",
+        "areaSqKm": 6027.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nsosso",
+        "population": 0,
+        "matchedTo": "Lombe (N'sosso)",
+        "areaSqKm": 2444.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quihuhu",
+        "population": 0,
+        "matchedTo": "Kihuhu",
+        "areaSqKm": 2746.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pungo a Ndongo",
+        "population": 0,
+        "matchedTo": "Pungo-Andongo",
+        "areaSqKm": 2135.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pedra do Feitiço",
+        "population": 0,
+        "matchedTo": "Pedra de Feitiço",
+        "areaSqKm": 2675.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ambiula",
+        "population": 0,
+        "matchedTo": "Ambuíla (Sede Mantoyo)",
+        "areaSqKm": 2028.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muxima",
+        "population": 8166,
+        "matchedTo": "Muxima",
+        "areaSqKm": 2694.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muvulege",
+        "population": 0,
+        "matchedTo": "Muvulege",
+        "areaSqKm": 4301.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mussende",
+        "population": 33558,
+        "matchedTo": "Mussende",
+        "areaSqKm": 5506.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Massango",
+        "population": 0,
+        "matchedTo": "Massango",
+        "areaSqKm": 3393.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mangando",
+        "population": 0,
+        "matchedTo": "Tembo-Aluma",
+        "areaSqKm": 2803.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luremo",
+        "population": 0,
+        "matchedTo": "Luremo",
+        "areaSqKm": 3741.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luangue",
+        "population": 0,
+        "matchedTo": "Luangue",
+        "areaSqKm": 4935.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quindeje",
+        "population": 0,
+        "matchedTo": "Kindege (Kindenje)",
+        "areaSqKm": 2049.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demba Chio",
+        "population": 0,
+        "matchedTo": "Demba Chio",
+        "areaSqKm": 2812.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cuilo",
+        "population": 26577,
+        "matchedTo": "Cuilo",
+        "areaSqKm": 6022.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Cuale",
+        "population": 0,
+        "matchedTo": "Cuale",
+        "areaSqKm": 2912.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caungula",
+        "population": 0,
+        "matchedTo": "Caungula",
+        "areaSqKm": 6126.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Capenda Camulemba",
+        "population": 0,
+        "matchedTo": "Capenda-Camulemba",
+        "areaSqKm": 2744.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Camaxilo",
+        "population": 0,
+        "matchedTo": "Camaxilo",
+        "areaSqKm": 5123.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caluango",
+        "population": 0,
+        "matchedTo": "Cuilo",
+        "areaSqKm": 6022.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cabo Ledo",
+        "population": 0,
+        "matchedTo": "Cabo Ledo",
+        "areaSqKm": 4018.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bungo",
+        "population": 0,
+        "matchedTo": "Bungo",
+        "areaSqKm": 2161.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Béu",
+        "population": 0,
+        "matchedTo": "Beu",
+        "areaSqKm": 2570,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bengo",
+        "population": 0,
+        "matchedTo": "Cuale",
+        "areaSqKm": 2912.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lucunga",
+        "population": 0,
+        "matchedTo": "Bungo",
+        "areaSqKm": 2161.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xassengue",
+        "population": 0,
+        "matchedTo": "Xassengue",
+        "areaSqKm": 2193.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Virei",
+        "population": 42607,
+        "matchedTo": "Virei",
+        "areaSqKm": 10140.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Umpulo",
+        "population": 0,
+        "matchedTo": "Umpulo",
+        "areaSqKm": 5420.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tômbua",
+        "population": 46573,
+        "matchedTo": "Iona",
+        "areaSqKm": 16697.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Alto Cuito",
+        "population": 0,
+        "matchedTo": "Tempué",
+        "areaSqKm": 17011.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Soma Cuanza",
+        "population": 0,
+        "matchedTo": "Soma Cuanza",
+        "areaSqKm": 2906.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Savate",
+        "population": 0,
+        "matchedTo": "Bondo",
+        "areaSqKm": 6329,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sautar",
+        "population": 0,
+        "matchedTo": "Sautar",
+        "areaSqKm": 6837.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sanga",
+        "population": 0,
+        "matchedTo": "Sanga",
+        "areaSqKm": 2056.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rito",
+        "population": 0,
+        "matchedTo": "Rito",
+        "areaSqKm": 2660.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quitapa",
+        "population": 0,
+        "matchedTo": "Kitapa Sede (Quitapa)",
+        "areaSqKm": 6277.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quissongo",
+        "population": 0,
+        "matchedTo": "Kissongo",
+        "areaSqKm": 2112,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quirima",
+        "population": 0,
+        "matchedTo": "Quirima",
+        "areaSqKm": 3056.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quimbango",
+        "population": 0,
+        "matchedTo": "Kimbango",
+        "areaSqKm": 3576.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quenha",
+        "population": 0,
+        "matchedTo": "Kienha",
+        "areaSqKm": 4309.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Otchindjau",
+        "population": 0,
+        "matchedTo": "Otchinjau",
+        "areaSqKm": 5215.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nehone",
+        "population": 0,
+        "matchedTo": "Cafima-Nehone",
+        "areaSqKm": 3496.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Naulila",
+        "population": 0,
+        "matchedTo": "Naulila",
+        "areaSqKm": 2139.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nancova",
+        "population": 0,
+        "matchedTo": "Nancova",
+        "areaSqKm": 7493.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mutumbo",
+        "population": 0,
+        "matchedTo": "Mutumbo",
+        "areaSqKm": 4663.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mupa",
+        "population": 0,
+        "matchedTo": "Omunda (Mupa)",
+        "areaSqKm": 2208.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Munhango",
+        "population": 0,
+        "matchedTo": "Munhango",
+        "areaSqKm": 3723.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mumbué",
+        "population": 0,
+        "matchedTo": "Mumbué",
+        "areaSqKm": 3304.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mulondo",
+        "population": 0,
+        "matchedTo": "Mulondo",
+        "areaSqKm": 5331.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mucope",
+        "population": 0,
+        "matchedTo": "Mucope (Mucoma)",
+        "areaSqKm": 3009.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Môngua",
+        "population": 0,
+        "matchedTo": "Môngua",
+        "areaSqKm": 2503.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maué",
+        "population": 0,
+        "matchedTo": "Maue",
+        "areaSqKm": 2119,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mamué",
+        "population": 0,
+        "matchedTo": "Mamúe (Chinquite)",
+        "areaSqKm": 2736.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malengue",
+        "population": 0,
+        "matchedTo": "Malengue",
+        "areaSqKm": 3144.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lupire",
+        "population": 0,
+        "matchedTo": "Lupire",
+        "areaSqKm": 5944.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luma Cassai",
+        "population": 0,
+        "matchedTo": "Luma Cassai",
+        "areaSqKm": 2300.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lúbia",
+        "population": 0,
+        "matchedTo": "Lúbia",
+        "areaSqKm": 2089.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luando",
+        "population": 0,
+        "matchedTo": "Luando",
+        "areaSqKm": 5646.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Longa",
+        "population": 0,
+        "matchedTo": "Longa",
+        "areaSqKm": 13976.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cuvango",
+        "population": 0,
+        "matchedTo": "Cuvango",
+        "areaSqKm": 4162.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jamba Mineira",
+        "population": 0,
+        "matchedTo": "Jamba",
+        "areaSqKm": 3245.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Iona",
+        "population": 0,
+        "matchedTo": "Iona",
+        "areaSqKm": 16697.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lonhe",
+        "population": 0,
+        "matchedTo": "Lonhe",
+        "areaSqKm": 2727.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Galangue",
+        "population": 0,
+        "matchedTo": "Galangue",
+        "areaSqKm": 3581.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Evale",
+        "population": 0,
+        "matchedTo": "Evale",
+        "areaSqKm": 2064,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dumba Cambango",
+        "population": 0,
+        "matchedTo": "Dumba Kabango",
+        "areaSqKm": 2565.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dongo",
+        "population": 0,
+        "matchedTo": "Dongo",
+        "areaSqKm": 4374.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dala",
+        "population": 7514,
+        "matchedTo": "Malengue",
+        "areaSqKm": 3144.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cuvelai",
+        "population": 0,
+        "matchedTo": "Omukolongonjo (Cuvelai)",
+        "areaSqKm": 6573.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cuíto Cuanavale",
+        "population": 0,
+        "matchedTo": "Cuito Cuanavale",
+        "areaSqKm": 10277.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cucumbi",
+        "population": 0,
+        "matchedTo": "Cucumbi",
+        "areaSqKm": 2162.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cuchi",
+        "population": 15000,
+        "matchedTo": "Cuchi",
+        "areaSqKm": 5058.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Cuangar",
+        "population": 0,
+        "matchedTo": "Cuangar",
+        "areaSqKm": 4239.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiuca",
+        "population": 0,
+        "matchedTo": "Luando",
+        "areaSqKm": 5646.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chitado",
+        "population": 0,
+        "matchedTo": "Chitado",
+        "areaSqKm": 4208.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chinguanja",
+        "population": 0,
+        "matchedTo": "Chinguanja",
+        "areaSqKm": 3992.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chingo",
+        "population": 0,
+        "matchedTo": "Chingo",
+        "areaSqKm": 2452.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiéde",
+        "population": 0,
+        "matchedTo": "Melunga Chiede",
+        "areaSqKm": 9778.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chibemba",
+        "population": 0,
+        "matchedTo": "Chimbemba",
+        "areaSqKm": 4436.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiange",
+        "population": 0,
+        "matchedTo": "Gambos (Chiange)",
+        "areaSqKm": 3835.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassumbe",
+        "population": 0,
+        "matchedTo": "Cassumbe",
+        "areaSqKm": 2489.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassinga",
+        "population": 0,
+        "matchedTo": "Tchamutete (Cassinga)",
+        "areaSqKm": 4304.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cariango",
+        "population": 0,
+        "matchedTo": "Kariango",
+        "areaSqKm": 2801,
+        "isSubstantial": false
+      },
+      {
+        "name": "Capunda",
+        "population": 0,
+        "matchedTo": "Kapunda",
+        "areaSqKm": 2159.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Capelongo",
+        "population": 0,
+        "matchedTo": "Capelongo",
+        "areaSqKm": 2329.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Capangombe",
+        "population": 0,
+        "matchedTo": "Kapangombe (Munhino)",
+        "areaSqKm": 3884.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cangumbe",
+        "population": 0,
+        "matchedTo": "Cangumbe (Kachipoque)",
+        "areaSqKm": 8735.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cangamba",
+        "population": 0,
+        "matchedTo": "Luchazes",
+        "areaSqKm": 9893,
+        "isSubstantial": false
+      },
+      {
+        "name": "Calandula",
+        "population": 9000,
+        "matchedTo": "Luchazes",
+        "areaSqKm": 9893,
+        "isSubstantial": false
+      },
+      {
+        "name": "Calai",
+        "population": 8741,
+        "matchedTo": "Calai",
+        "areaSqKm": 3287.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Caiundo",
+        "population": 0,
+        "matchedTo": "Caiundo",
+        "areaSqKm": 6130.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cainde",
+        "population": 0,
+        "matchedTo": "Cainde",
+        "areaSqKm": 5458.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cachingues",
+        "population": 0,
+        "matchedTo": "Cachingues",
+        "areaSqKm": 3931.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bondo Caíla",
+        "population": 0,
+        "matchedTo": "Savate",
+        "areaSqKm": 8466.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bolonguera",
+        "population": 0,
+        "matchedTo": "Bolonguera",
+        "areaSqKm": 3215.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baixo Longa",
+        "population": 0,
+        "matchedTo": "Baixo Longa",
+        "areaSqKm": 5412,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alto Chicapa",
+        "population": 0,
+        "matchedTo": "Alto-Chicapa",
+        "areaSqKm": 6778.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sacomar",
+        "population": 0,
+        "matchedTo": "Namibe (Moçâmedes)",
+        "areaSqKm": 6827.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nzaji",
+        "population": 0,
+        "matchedTo": "Cambulo",
+        "areaSqKm": 2194.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassanje Calucala",
+        "population": 0,
+        "matchedTo": "Cassange-Calucala",
+        "areaSqKm": 2303.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quixinge",
+        "population": 0,
+        "matchedTo": "Kixinge",
+        "areaSqKm": 2858.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muangueji",
+        "population": 0,
+        "matchedTo": "Saurimo",
+        "areaSqKm": 8289.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moma",
+        "population": 0,
+        "matchedTo": "Dumba Kabango",
+        "areaSqKm": 2565.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cunga Palanga",
+        "population": 0,
+        "matchedTo": "Cunga-Palanca",
+        "areaSqKm": 2901.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lumbala Nguimbo",
+        "population": 0,
+        "matchedTo": "Lumbala-Nguimbo",
+        "areaSqKm": 4120.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zone (Zona) E",
+        "population": 0,
+        "matchedTo": "Benguela",
+        "areaSqKm": 2383.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jamba Cueio",
+        "population": 0,
+        "matchedTo": "Cueio",
+        "areaSqKm": 6454.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oncócua",
+        "population": 0,
+        "matchedTo": "Curoca (Onkokwa)",
+        "areaSqKm": 3637,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xipundo",
+        "population": 0,
+        "matchedTo": "Chipundo",
+        "areaSqKm": 7606.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mussungue",
+        "population": 0,
+        "matchedTo": "Luachimo",
+        "areaSqKm": 3965.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sachinemuna",
+        "population": 0,
+        "matchedTo": "Sachinemuna",
+        "areaSqKm": 2161.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tchimporo-Yonde",
+        "population": 0,
+        "matchedTo": "Tchimporo-Yonde (Oximolo)",
+        "areaSqKm": 10589.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chissuata",
+        "population": 0,
+        "matchedTo": "Kuvati (Kubati)",
+        "areaSqKm": 4556.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mavengue",
+        "population": 0,
+        "matchedTo": "Mavengue",
+        "areaSqKm": 2608.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Quibala Norte",
+        "population": 0,
+        "matchedTo": "Kindege (Kindenje)",
+        "areaSqKm": 2049.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cassengo",
+        "population": 0,
+        "matchedTo": "Saurimo",
+        "areaSqKm": 8289.9,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Miconje",
+        "population": 0,
+        "matchedTo": "Miconge",
+        "snapDistanceKm": 0.326
+      },
+      {
+        "name": "Luali",
+        "population": 0,
+        "matchedTo": "Necuto",
+        "snapDistanceKm": 0.381
+      },
+      {
+        "name": "Sambizanga",
+        "population": 177808,
+        "matchedTo": "Sambizanga",
+        "snapDistanceKm": 0.192
+      }
+    ]
+  },
+  "botswana": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Werda",
+        "population": 2149,
+        "matchedTo": "Tshabong",
+        "areaSqKm": 33229.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tshane",
+        "population": 969,
+        "matchedTo": "Hukunsti",
+        "areaSqKm": 46081.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tshabong",
+        "population": 11651,
+        "matchedTo": "Tshabong",
+        "areaSqKm": 33229.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tsau",
+        "population": 1409,
+        "matchedTo": "Ngamiland West",
+        "areaSqKm": 58935.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toteng",
+        "population": 556,
+        "matchedTo": "Ngamiland East",
+        "areaSqKm": 52738,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tonota",
+        "population": 23296,
+        "matchedTo": "Serowe",
+        "areaSqKm": 30926.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Thamaga",
+        "population": 25300,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tamasane",
+        "population": 1070,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sua",
+        "population": 3141,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shoshong",
+        "population": 8887,
+        "matchedTo": "Mahalapye",
+        "areaSqKm": 11481.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shakgwe",
+        "population": 893,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shakawe",
+        "population": 10589,
+        "matchedTo": "Ngamiland West",
+        "areaSqKm": 58935.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Serowe",
+        "population": 55676,
+        "matchedTo": "Serowe",
+        "areaSqKm": 30926.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Selebi-Phikwe",
+        "population": 42488,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sehithwa",
+        "population": 1614,
+        "matchedTo": "Ngamiland West",
+        "areaSqKm": 58935.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sefophe",
+        "population": 6001,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sebina",
+        "population": 3030,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ratholo",
+        "population": 2377,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ramokgonami",
+        "population": 3681,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pilikwe",
+        "population": 1375,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pilane",
+        "population": 1277,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pandamatenga",
+        "population": 1685,
+        "matchedTo": "Chobe",
+        "areaSqKm": 21029.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Palapye",
+        "population": 52636,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Orapa",
+        "population": 8648,
+        "matchedTo": "Lethlakane",
+        "areaSqKm": 28882.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nokaneng",
+        "population": 1763,
+        "matchedTo": "Ngamiland West",
+        "areaSqKm": 58935.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nata",
+        "population": 7779,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mosopa",
+        "population": 23858,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mosetse",
+        "population": 1780,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moremi",
+        "population": 546,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mopipi",
+        "population": 3301,
+        "matchedTo": "Lethlakane",
+        "areaSqKm": 28882.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mookane",
+        "population": 2397,
+        "matchedTo": "Mahalapye",
+        "areaSqKm": 11481.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maunatlala",
+        "population": 3361,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Molepolole",
+        "population": 74861,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Makobeng",
+        "population": 1822,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mogapinyana",
+        "population": 1400,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moijabana",
+        "population": 2768,
+        "matchedTo": "Serowe",
+        "areaSqKm": 30926.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mogapi",
+        "population": 1917,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mochudi",
+        "population": 50321,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mmathubudukwane",
+        "population": 2221,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maun",
+        "population": 85350,
+        "matchedTo": "Ngamiland East",
+        "areaSqKm": 52738,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mathakola",
+        "population": 1159,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mathathane",
+        "population": 1987,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mathambgwane",
+        "population": 4675,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Masunga",
+        "population": 6216,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Manyana",
+        "population": 3338,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malaka",
+        "population": 798,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Makwata",
+        "population": 1660,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Makoba",
+        "population": 1006,
+        "matchedTo": "Tuli",
+        "areaSqKm": 4688.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Makaleng",
+        "population": 1166,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahalapye",
+        "population": 48431,
+        "matchedTo": "Mahalapye",
+        "areaSqKm": 11481.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Magothla",
+        "population": 1174,
+        "matchedTo": "Tuli",
+        "areaSqKm": 4688.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Machaneng",
+        "population": 2139,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mabuli",
+        "population": 1665,
+        "matchedTo": "Ngwaketse South",
+        "areaSqKm": 6722.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maapi",
+        "population": 1275,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lotlhakane",
+        "population": 6045,
+        "matchedTo": "Ngwaketse Central",
+        "areaSqKm": 4916,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lokwabe",
+        "population": 1473,
+        "matchedTo": "Hukunsti",
+        "areaSqKm": 46081.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Letlhakeng",
+        "population": 8343,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Letlhakane",
+        "population": 36404,
+        "matchedTo": "Lethlakane",
+        "areaSqKm": 28882.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lenchwe Le Tau",
+        "population": 4992,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lehututu",
+        "population": 1942,
+        "matchedTo": "Hukunsti",
+        "areaSqKm": 46081.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Letsheng",
+        "population": 2696,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kurametsi",
+        "population": 1397,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuli",
+        "population": 819,
+        "matchedTo": "Ghanzi",
+        "areaSqKm": 114700.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kopong",
+        "population": 13823,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khuis",
+        "population": 827,
+        "matchedTo": "Tshabong",
+        "areaSqKm": 33229.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khudumelapye",
+        "population": 2035,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Xumo",
+        "population": 1684,
+        "matchedTo": "Lethlakane",
+        "areaSqKm": 28882.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khakhea",
+        "population": 2133,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kavimba",
+        "population": 566,
+        "matchedTo": "Chobe",
+        "areaSqKm": 21029.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kasane",
+        "population": 9143,
+        "matchedTo": "Chobe",
+        "areaSqKm": 21029.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kanye",
+        "population": 48028,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kang",
+        "population": 6764,
+        "matchedTo": "Hukunsti",
+        "areaSqKm": 46081.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalamare",
+        "population": 2339,
+        "matchedTo": "Mahalapye",
+        "areaSqKm": 11481.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalakamate",
+        "population": 962,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kachikau",
+        "population": 961,
+        "matchedTo": "Chobe",
+        "areaSqKm": 21029.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hukuntsi",
+        "population": 5224,
+        "matchedTo": "Hukunsti",
+        "areaSqKm": 46081.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gweta",
+        "population": 5548,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gobojango",
+        "population": 1756,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ghanzi",
+        "population": 19012,
+        "matchedTo": "Ghanzi",
+        "areaSqKm": 114700.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gabane",
+        "population": 20027,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Francistown",
+        "population": 103417,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dutlwe",
+        "population": 1126,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dukwe",
+        "population": 2037,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dekar",
+        "population": 1043,
+        "matchedTo": "Ghanzi",
+        "areaSqKm": 114700.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Botlhapatlou",
+        "population": 1013,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bonwapitse",
+        "population": 568,
+        "matchedTo": "Mahalapye",
+        "areaSqKm": 11481.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bokspits",
+        "population": 547,
+        "matchedTo": "Tshabong",
+        "areaSqKm": 33229.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bokaa",
+        "population": 9146,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bobonong",
+        "population": 21216,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boatlaname",
+        "population": 853,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gaphatshwe",
+        "population": 1678,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mononyane",
+        "population": 718,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Galekgatshwane",
+        "population": 719,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Metsemotlhaba",
+        "population": 11617,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mmopone",
+        "population": 25460,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maitengwe",
+        "population": 5929,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tutume",
+        "population": 18582,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": true
+      },
+      {
+        "name": "Artesia",
+        "population": 1871,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mmathete",
+        "population": 5421,
+        "matchedTo": "Ngwaketse South",
+        "areaSqKm": 6722.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kumakwane",
+        "population": 6826,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mmankgodi",
+        "population": 7396,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chadibe",
+        "population": 5371,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shashe Mooke",
+        "population": 5897,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsetsebjwe",
+        "population": 5248,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sefhare",
+        "population": 5381,
+        "matchedTo": "Machaneng",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lentsweletau",
+        "population": 6653,
+        "matchedTo": "Kweneng North",
+        "areaSqKm": 9831.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Siviya",
+        "population": 1288,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jwaneng",
+        "population": 18784,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Charles Hill",
+        "population": 5164,
+        "matchedTo": "Ghanzi",
+        "areaSqKm": 114700.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tati Siding",
+        "population": 12404,
+        "matchedTo": "Masungu",
+        "areaSqKm": 5356.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gumare",
+        "population": 11572,
+        "matchedTo": "Ngamiland West",
+        "areaSqKm": 58935.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sese",
+        "population": 6798,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Borolong",
+        "population": 8917,
+        "matchedTo": "Serowe",
+        "areaSqKm": 30926.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ncojane",
+        "population": 1439,
+        "matchedTo": "Ghanzi",
+        "areaSqKm": 114700.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Salajwe",
+        "population": 1705,
+        "matchedTo": "Kweneng South",
+        "areaSqKm": 27191.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rasesa",
+        "population": 5966,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mathangwane",
+        "population": 5918,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Morwa",
+        "population": 4988,
+        "matchedTo": "Kgatleng",
+        "areaSqKm": 7838,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lerala",
+        "population": 7204,
+        "matchedTo": "Palapye",
+        "areaSqKm": 7586.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sowa",
+        "population": 2914,
+        "matchedTo": "Tutume",
+        "areaSqKm": 44117,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mmadinare",
+        "population": 13198,
+        "matchedTo": "Bobonong",
+        "areaSqKm": 14059.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kgomokasitwa",
+        "population": 1669,
+        "matchedTo": "Ngwaketse Central",
+        "areaSqKm": 4916,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lorolwana",
+        "population": 2225,
+        "matchedTo": "Ngwaketse South",
+        "areaSqKm": 6722.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pitseng",
+        "population": 1526,
+        "matchedTo": "Ngwaketse North",
+        "areaSqKm": 14677.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "eswatini": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "lesotho": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "southAfrica": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Welkom",
+        "population": 431944,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Soshanguve",
+        "population": 872309,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Pretoria",
+        "population": 2112693,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Polokwane",
+        "population": 272461,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Botshabelo",
+        "population": 309714,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bloemfontein",
+        "population": 556637,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Centurion",
+        "population": 236580,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zoar",
+        "population": 5582,
+        "matchedTo": "Kannaland",
+        "areaSqKm": 4767.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zeerust",
+        "population": 19154,
+        "matchedTo": "Ramotshere Moiloa",
+        "areaSqKm": 7337.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zastron",
+        "population": 18699,
+        "matchedTo": "Mohokare",
+        "areaSqKm": 8785.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Xanthia",
+        "population": 3615,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "White River",
+        "population": 25607,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Witpoort",
+        "population": 2120,
+        "matchedTo": "Maquassi Hills",
+        "areaSqKm": 4678.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Winterton",
+        "population": 7224,
+        "matchedTo": "Okhahlamba",
+        "areaSqKm": 3976.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Winburg",
+        "population": 16862,
+        "matchedTo": "Masilonyana",
+        "areaSqKm": 6627.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Willowvale",
+        "population": 3021,
+        "matchedTo": "Mbhashe",
+        "areaSqKm": 3304.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Willowmore",
+        "population": 9199,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Williston",
+        "population": 3368,
+        "matchedTo": "Karoo Hoogland",
+        "areaSqKm": 30253.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wilderness",
+        "population": 7385,
+        "matchedTo": "George",
+        "areaSqKm": 5192.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Whittlesea",
+        "population": 33844,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Westbrook",
+        "population": 1828,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wesley",
+        "population": 1957,
+        "matchedTo": "Ngqushwa",
+        "areaSqKm": 2115.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wepener",
+        "population": 11446,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Welverdiend",
+        "population": 7601,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Weenen",
+        "population": 8183,
+        "matchedTo": "Inkosi Langalibalele",
+        "areaSqKm": 3403.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Waterval",
+        "population": 1674,
+        "matchedTo": "Emadlangeni",
+        "areaSqKm": 3545,
+        "isSubstantial": false
+      },
+      {
+        "name": "Warden",
+        "population": 13152,
+        "matchedTo": "Phumelela",
+        "areaSqKm": 8209,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wales",
+        "population": 2949,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wakkerstroom",
+        "population": 8209,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arniston",
+        "population": 1518,
+        "matchedTo": "Cape Agulhas",
+        "areaSqKm": 3471.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Waay Hoek",
+        "population": 1944,
+        "matchedTo": "Alfred Duma",
+        "areaSqKm": 3769.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vryburg",
+        "population": 55879,
+        "matchedTo": "Naledi",
+        "areaSqKm": 7042.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Vredefort",
+        "population": 17515,
+        "matchedTo": "Ngwathe",
+        "areaSqKm": 7066.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Vrede",
+        "population": 21193,
+        "matchedTo": "Phumelela",
+        "areaSqKm": 8209,
+        "isSubstantial": true
+      },
+      {
+        "name": "Volksrust",
+        "population": 43378,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Virginia",
+        "population": 122502,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Viljoenskroon",
+        "population": 54955,
+        "matchedTo": "Moqhaka",
+        "areaSqKm": 7937.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Victoria West",
+        "population": 8254,
+        "matchedTo": "Ubuntu",
+        "areaSqKm": 20410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Verkeerdevlei",
+        "population": 2557,
+        "matchedTo": "Masilonyana",
+        "areaSqKm": 6627.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Venterstad",
+        "population": 5977,
+        "matchedTo": "Walter Sisulu",
+        "areaSqKm": 13281,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ventersdorp",
+        "population": 26446,
+        "matchedTo": "Ventersdorp/Tlokwe",
+        "areaSqKm": 6409.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ventersburg",
+        "population": 13490,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Van Wyksvlei",
+        "population": 1721,
+        "matchedTo": "Kareeberg",
+        "areaSqKm": 17718.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Van Stadensrus",
+        "population": 2090,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vaalwater",
+        "population": 19723,
+        "matchedTo": "Modimolle/Mookgophong",
+        "areaSqKm": 10389.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Utrecht",
+        "population": 8486,
+        "matchedTo": "Emadlangeni",
+        "areaSqKm": 3545,
+        "isSubstantial": false
+      },
+      {
+        "name": "Upington",
+        "population": 71373,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Uniondale",
+        "population": 5421,
+        "matchedTo": "George",
+        "areaSqKm": 5192.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Underberg",
+        "population": 3227,
+        "matchedTo": "Dr Nkosazana Dlamini Zuma",
+        "areaSqKm": 3606.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "eMdloti",
+        "population": 2130,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ugie",
+        "population": 16133,
+        "matchedTo": "Elundini",
+        "areaSqKm": 5023.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tyusha",
+        "population": 1544,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tweespruit",
+        "population": 6939,
+        "matchedTo": "Mantsopa",
+        "areaSqKm": 4296.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tweeling",
+        "population": 7745,
+        "matchedTo": "Mafube",
+        "areaSqKm": 3977.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tutuka",
+        "population": 3191,
+        "matchedTo": "Lekwa",
+        "areaSqKm": 4564.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tugela Ferry",
+        "population": 0,
+        "matchedTo": "Msinga",
+        "areaSqKm": 2378.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tswafeng",
+        "population": 1660,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsomo",
+        "population": 2525,
+        "matchedTo": "Intsika Yethu",
+        "areaSqKm": 2875.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsolo",
+        "population": 6860,
+        "matchedTo": "Mhlontlo",
+        "areaSqKm": 2882.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tshituni",
+        "population": 2039,
+        "matchedTo": "Makhado",
+        "areaSqKm": 7623.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tshandama",
+        "population": 5842,
+        "matchedTo": "Thulamela",
+        "areaSqKm": 2648.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Trompsburg",
+        "population": 6395,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Touwsrivier",
+        "population": 9735,
+        "matchedTo": "Breede Valley",
+        "areaSqKm": 3835.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thulani",
+        "population": 1551,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thulamahashi",
+        "population": 15974,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Theunissen",
+        "population": 34718,
+        "matchedTo": "Masilonyana",
+        "areaSqKm": 6627.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Thabazimbi",
+        "population": 34561,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Thaba Nchu",
+        "population": 72721,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Teko Springs",
+        "population": 1905,
+        "matchedTo": "Mnquma",
+        "areaSqKm": 3139.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taung",
+        "population": 0,
+        "matchedTo": "Greater Taung",
+        "areaSqKm": 5647.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tarkastad",
+        "population": 7260,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Swartklip",
+        "population": 4213,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Suurbraak",
+        "population": 2698,
+        "matchedTo": "Swellendam",
+        "areaSqKm": 3836.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Struisbaai",
+        "population": 5301,
+        "matchedTo": "Cape Agulhas",
+        "areaSqKm": 3471.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Stormsrivier",
+        "population": 2000,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Stilbaai",
+        "population": 8000,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Steytlerville",
+        "population": 4812,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Steynsrus",
+        "population": 10910,
+        "matchedTo": "Moqhaka",
+        "areaSqKm": 7937.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Steynsburg",
+        "population": 8642,
+        "matchedTo": "Walter Sisulu",
+        "areaSqKm": 13281,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sterkstroom",
+        "population": 8584,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Stella",
+        "population": 5620,
+        "matchedTo": "Naledi",
+        "areaSqKm": 7042.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Steelpoort",
+        "population": 1323,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Springfontein",
+        "population": 4431,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Somerset East",
+        "population": 22553,
+        "matchedTo": "Blue Crane Route",
+        "areaSqKm": 11074.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Smithfield",
+        "population": 5725,
+        "matchedTo": "Mohokare",
+        "areaSqKm": 8785.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sheepmoor",
+        "population": 3267,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seymour",
+        "population": 2954,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": false
+      },
+      {
+        "name": "Senekal",
+        "population": 39584,
+        "matchedTo": "Setsoto",
+        "areaSqKm": 5439.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sebayeng",
+        "population": 10917,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hlengesha",
+        "population": 3966,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sannieshof",
+        "population": 13198,
+        "matchedTo": "Tswaing",
+        "areaSqKm": 5885.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sanddrif",
+        "population": 4065,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sabie",
+        "population": 18903,
+        "matchedTo": "Thaba Chweu",
+        "areaSqKm": 5730.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rouxville",
+        "population": 8759,
+        "matchedTo": "Mohokare",
+        "areaSqKm": 8785.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rosendal",
+        "population": 4950,
+        "matchedTo": "Dihlabeng",
+        "areaSqKm": 4874.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Roossenekal",
+        "population": 3145,
+        "matchedTo": "Elias Motsoaledi",
+        "areaSqKm": 3721,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rooiboklaagte B",
+        "population": 3650,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rooiberg",
+        "population": 2767,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riversdale",
+        "population": 19382,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ritchie",
+        "population": 9960,
+        "matchedTo": "Sol Plaatjie",
+        "areaSqKm": 3149.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rietvlei",
+        "population": 3006,
+        "matchedTo": "Umzimkhulu",
+        "areaSqKm": 2438.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rietkuil",
+        "population": 4355,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rietbron",
+        "population": 1418,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Reitz",
+        "population": 24181,
+        "matchedTo": "Nketoana",
+        "areaSqKm": 5619.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Reddersburg",
+        "population": 5854,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rayton",
+        "population": 4812,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qumbu",
+        "population": 5904,
+        "matchedTo": "Mhlontlo",
+        "areaSqKm": 2882.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Queenstown",
+        "population": 118599,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Queensdale",
+        "population": 20009,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Prince Albert",
+        "population": 13136,
+        "matchedTo": "Prince Albert",
+        "areaSqKm": 8156.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Prieska",
+        "population": 11236,
+        "matchedTo": "Siyathemba",
+        "areaSqKm": 14744.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mokopane",
+        "population": 101090,
+        "matchedTo": "Mogalakwena",
+        "areaSqKm": 6170.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Potchefstroom",
+        "population": 178285,
+        "matchedTo": "Ventersdorp/Tlokwe",
+        "areaSqKm": 6409.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Postmasburg",
+        "population": 30089,
+        "matchedTo": "Tsantsabane",
+        "areaSqKm": 18317.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Pongola",
+        "population": 1680,
+        "matchedTo": "uPhongolo",
+        "areaSqKm": 3115.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pomfret",
+        "population": 2323,
+        "matchedTo": "Kagisano/Molopo",
+        "areaSqKm": 23872.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Solomon Linda",
+        "population": 1942,
+        "matchedTo": "Msinga",
+        "areaSqKm": 2378.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pilgrim’s Rest",
+        "population": 2061,
+        "matchedTo": "Thaba Chweu",
+        "areaSqKm": 5730.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Piet Plessis",
+        "population": 1982,
+        "matchedTo": "Kagisano/Molopo",
+        "areaSqKm": 23872.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pienaarsrivier",
+        "population": 2272,
+        "matchedTo": "Bela-Bela",
+        "areaSqKm": 3413.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Philipstown",
+        "population": 3365,
+        "matchedTo": "Renosterberg",
+        "areaSqKm": 5534.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Philippolis",
+        "population": 4370,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Phalaborwa",
+        "population": 109468,
+        "matchedTo": "Ba-Phalaborwa",
+        "areaSqKm": 7506.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Petrusville",
+        "population": 0,
+        "matchedTo": "Renosterberg",
+        "areaSqKm": 5534.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mamafubedu",
+        "population": 15447,
+        "matchedTo": "Nketoana",
+        "areaSqKm": 5619.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Petrusburg",
+        "population": 10106,
+        "matchedTo": "Letsemeng",
+        "areaSqKm": 9840.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Perdekop",
+        "population": 6087,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Penge",
+        "population": 3377,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Peddie",
+        "population": 5580,
+        "matchedTo": "Ngqushwa",
+        "areaSqKm": 2115.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pearston",
+        "population": 5410,
+        "matchedTo": "Blue Crane Route",
+        "areaSqKm": 11074.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Paul Roux",
+        "population": 7370,
+        "matchedTo": "Dihlabeng",
+        "areaSqKm": 4874.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Paterson",
+        "population": 6687,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Patensie",
+        "population": 6304,
+        "matchedTo": "Kouga",
+        "areaSqKm": 2671.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Parys",
+        "population": 71319,
+        "matchedTo": "Ngwathe",
+        "areaSqKm": 7066.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ottosdal",
+        "population": 22011,
+        "matchedTo": "Tswaing",
+        "areaSqKm": 5885.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Orania",
+        "population": 2066,
+        "matchedTo": "Thembelihle",
+        "areaSqKm": 8032.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ogies",
+        "population": 4265,
+        "matchedTo": "Emalahleni",
+        "areaSqKm": 2682.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Odendaalsrus",
+        "population": 76371,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oakley",
+        "population": 12064,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Modimolle",
+        "population": 50306,
+        "matchedTo": "Modimolle/Mookgophong",
+        "areaSqKm": 10389.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ngqamakhwe",
+        "population": 1866,
+        "matchedTo": "Mnquma",
+        "areaSqKm": 3139.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Noupoort",
+        "population": 3924,
+        "matchedTo": "Umsobomvu",
+        "areaSqKm": 6820,
+        "isSubstantial": false
+      },
+      {
+        "name": "Northam",
+        "population": 15598,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nongoma",
+        "population": 9140,
+        "matchedTo": "Nongoma",
+        "areaSqKm": 2185.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nieu-Bethesda",
+        "population": 1845,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ngqeleni",
+        "population": 3151,
+        "matchedTo": "Nyandeni",
+        "areaSqKm": 2476,
+        "isSubstantial": false
+      },
+      {
+        "name": "New Forest A",
+        "population": 1731,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mbombela",
+        "population": 110159,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nelspoort",
+        "population": 2035,
+        "matchedTo": "Beaufort West",
+        "areaSqKm": 21931,
+        "isSubstantial": false
+      },
+      {
+        "name": "Namakgale",
+        "population": 14588,
+        "matchedTo": "Ba-Phalaborwa",
+        "areaSqKm": 7506.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mookgophong",
+        "population": 29778,
+        "matchedTo": "Modimolle/Mookgophong",
+        "areaSqKm": 10389.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mutale",
+        "population": 0,
+        "matchedTo": "Musina",
+        "areaSqKm": 10372.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Murraysburg",
+        "population": 6073,
+        "matchedTo": "Beaufort West",
+        "areaSqKm": 21931,
+        "isSubstantial": false
+      },
+      {
+        "name": "Murchison",
+        "population": 1543,
+        "matchedTo": "Ba-Phalaborwa",
+        "areaSqKm": 7506.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mtunzini",
+        "population": 2635,
+        "matchedTo": "uMlalazi",
+        "areaSqKm": 2216.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mtititi",
+        "population": 1450,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mqanduli",
+        "population": 3171,
+        "matchedTo": "King Sabata Dalindyebo",
+        "areaSqKm": 3021.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mpakeni",
+        "population": 1670,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tlokoeng",
+        "population": 15884,
+        "matchedTo": "Elundini",
+        "areaSqKm": 5023.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mount Ayliff",
+        "population": 6431,
+        "matchedTo": "Umzimvubu",
+        "areaSqKm": 2581.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Morolaneng",
+        "population": 4055,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Morgenzon",
+        "population": 9162,
+        "matchedTo": "Lekwa",
+        "areaSqKm": 4564.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mooinooi",
+        "population": 5670,
+        "matchedTo": "Local Municipality of Madibeng",
+        "areaSqKm": 3727.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Monnakato",
+        "population": 9676,
+        "matchedTo": "Rustenburg",
+        "areaSqKm": 3422.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Molteno",
+        "population": 13840,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Moloro",
+        "population": 2053,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mogwase",
+        "population": 0,
+        "matchedTo": "Moses Kotane",
+        "areaSqKm": 5738.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mogwase",
+        "population": 12871,
+        "matchedTo": "Moses Kotane",
+        "areaSqKm": 5738.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "eMkhuze",
+        "population": 5288,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mkuze",
+        "population": 0,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Migdol",
+        "population": 4224,
+        "matchedTo": "Mamusa",
+        "areaSqKm": 3620.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Middledrift",
+        "population": 2563,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": false
+      },
+      {
+        "name": "Middelplaas",
+        "population": 4365,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Middelburg",
+        "population": 22380,
+        "matchedTo": "Inxuba Yethemba",
+        "areaSqKm": 11672.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Merweville",
+        "population": 1907,
+        "matchedTo": "Beaufort West",
+        "areaSqKm": 21931,
+        "isSubstantial": false
+      },
+      {
+        "name": "Merry Pebble Stream",
+        "population": 6905,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Memel",
+        "population": 8556,
+        "matchedTo": "Phumelela",
+        "areaSqKm": 8209,
+        "isSubstantial": false
+      },
+      {
+        "name": "Melkhoutfontein",
+        "population": 3034,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Meetse",
+        "population": 1809,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maviljan A",
+        "population": 6829,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matsulu",
+        "population": 47306,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marquard",
+        "population": 18573,
+        "matchedTo": "Setsoto",
+        "areaSqKm": 5439.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Marite",
+        "population": 8657,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marble Hall",
+        "population": 3219,
+        "matchedTo": "Ephraim Mogale",
+        "areaSqKm": 2015.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mankoeng",
+        "population": 12499,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Manguzi",
+        "population": 5534,
+        "matchedTo": "Umhlabuyalingana",
+        "areaSqKm": 4985.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malelane",
+        "population": 4176,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahlabatini",
+        "population": 1810,
+        "matchedTo": "Ulundi",
+        "areaSqKm": 3255.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Magogeni",
+        "population": 7396,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Magabeni",
+        "population": 5904,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Madyembeni",
+        "population": 7210,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Madras A",
+        "population": 6635,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Madikwe",
+        "population": 4340,
+        "matchedTo": "Moses Kotane",
+        "areaSqKm": 5738.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maclear",
+        "population": 12604,
+        "matchedTo": "Elundini",
+        "areaSqKm": 5023.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mabopane",
+        "population": 110972,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lydenburg",
+        "population": 49605,
+        "matchedTo": "Thaba Chweu",
+        "areaSqKm": 5730.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lusikisiki",
+        "population": 7396,
+        "matchedTo": "Ngquza Hill",
+        "areaSqKm": 2479,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luphisi",
+        "population": 3487,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ludlow",
+        "population": 5766,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Luckhoff",
+        "population": 4430,
+        "matchedTo": "Letsemeng",
+        "areaSqKm": 9840.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Louwsburg",
+        "population": 4865,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Louterwater",
+        "population": 5785,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Louis Trichardt",
+        "population": 86854,
+        "matchedTo": "Makhado",
+        "areaSqKm": 7623.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lothair",
+        "population": 7306,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Masakeng",
+        "population": 1051,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "eMbangweni",
+        "population": 3449,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lindley",
+        "population": 14377,
+        "matchedTo": "Nketoana",
+        "areaSqKm": 5619.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lillydale",
+        "population": 6799,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lichtenburg",
+        "population": 65863,
+        "matchedTo": "Ditsobotla",
+        "areaSqKm": 6398.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Libode",
+        "population": 5464,
+        "matchedTo": "Nyandeni",
+        "areaSqKm": 2476,
+        "isSubstantial": false
+      },
+      {
+        "name": "Leeupoort",
+        "population": 1214,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Leeu-Gamka",
+        "population": 3267,
+        "matchedTo": "Prince Albert",
+        "areaSqKm": 8156.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thuli",
+        "population": 2023,
+        "matchedTo": "Govan Mbeki",
+        "areaSqKm": 2960.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "La Mercy",
+        "population": 3061,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Laingsburg",
+        "population": 6789,
+        "matchedTo": "Laingsburg",
+        "areaSqKm": 8788.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lady Grey",
+        "population": 8414,
+        "matchedTo": "Senqu",
+        "areaSqKm": 7336.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ladismith",
+        "population": 8539,
+        "matchedTo": "Kannaland",
+        "areaSqKm": 4767.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kutloanong",
+        "population": 95008,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kuruman",
+        "population": 9093,
+        "matchedTo": "Ga-Segonyana",
+        "areaSqKm": 4502,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kroonstad",
+        "population": 117152,
+        "matchedTo": "Moqhaka",
+        "areaSqKm": 7937.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kranskop",
+        "population": 1813,
+        "matchedTo": "Umvoti",
+        "areaSqKm": 2708.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Krakeelrivier",
+        "population": 2313,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koppies",
+        "population": 16537,
+        "matchedTo": "Ngwathe",
+        "areaSqKm": 7066.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Komati",
+        "population": 2181,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koffiefontein",
+        "population": 12464,
+        "matchedTo": "Letsemeng",
+        "areaSqKm": 9840.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Klipplaat",
+        "population": 3554,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kirkwood",
+        "population": 10148,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kestell",
+        "population": 9907,
+        "matchedTo": "Maluti a Phofung",
+        "areaSqKm": 4344,
+        "isSubstantial": false
+      },
+      {
+        "name": "Centane",
+        "population": 1744,
+        "matchedTo": "Mnquma",
+        "areaSqKm": 3139.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kenhardt",
+        "population": 4842,
+        "matchedTo": "Kai Garib",
+        "areaSqKm": 26412.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Keiskammahoek",
+        "population": 3276,
+        "matchedTo": "Amahlathi",
+        "areaSqKm": 4508.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kei Road",
+        "population": 1605,
+        "matchedTo": "Amahlathi",
+        "areaSqKm": 4508.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kathu",
+        "population": 9219,
+        "matchedTo": "Gamagara",
+        "areaSqKm": 2652.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kareedouw",
+        "population": 5972,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ka-Mhinga",
+        "population": 12609,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kakamas",
+        "population": 9538,
+        "matchedTo": "Kai Garib",
+        "areaSqKm": 26412.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Justicia",
+        "population": 6221,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jozini",
+        "population": 0,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Joubertina",
+        "population": 7472,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jansenville",
+        "population": 6723,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jane Furse",
+        "population": 0,
+        "matchedTo": "Makhuduthamaga",
+        "areaSqKm": 2114.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "James Calata",
+        "population": 5590,
+        "matchedTo": "Walter Sisulu",
+        "areaSqKm": 13281,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jagersfontein",
+        "population": 6865,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jacobsdal",
+        "population": 10497,
+        "matchedTo": "Letsemeng",
+        "areaSqKm": 9840.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Itsoseng",
+        "population": 23913,
+        "matchedTo": "Ditsobotla",
+        "areaSqKm": 6398.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ingwavuma",
+        "population": 1561,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Indwe",
+        "population": 9505,
+        "matchedTo": "Emalahleni",
+        "areaSqKm": 3487,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ilinge",
+        "population": 12806,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hundzukani",
+        "population": 2947,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hopetown",
+        "population": 0,
+        "matchedTo": "Thembelihle",
+        "areaSqKm": 8032.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hoopstad",
+        "population": 19209,
+        "matchedTo": "Tswelopele",
+        "areaSqKm": 6534,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hogsback",
+        "population": 1232,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hofmeyr",
+        "population": 4410,
+        "matchedTo": "Enoch Mgijima",
+        "areaSqKm": 13594.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hoedspruit",
+        "population": 3782,
+        "matchedTo": "Maruleng",
+        "areaSqKm": 3570.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hobhouse",
+        "population": 4768,
+        "matchedTo": "Mantsopa",
+        "areaSqKm": 4296.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hluvukani",
+        "population": 9631,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hluhluwe",
+        "population": 4588,
+        "matchedTo": "Big Five Hlabisa",
+        "areaSqKm": 3471.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hlobane",
+        "population": 4502,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hlabisa",
+        "population": 2958,
+        "matchedTo": "Big Five Hlabisa",
+        "areaSqKm": 3471.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Himeville",
+        "population": 2033,
+        "matchedTo": "Dr Nkosazana Dlamini Zuma",
+        "areaSqKm": 3606.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hertzogville",
+        "population": 11289,
+        "matchedTo": "Tokologo",
+        "areaSqKm": 9339.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hennenman",
+        "population": 22847,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Heilbron",
+        "population": 32836,
+        "matchedTo": "Ngwathe",
+        "areaSqKm": 7066.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Heidelberg",
+        "population": 9895,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hectorspruit",
+        "population": 3709,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hazyview",
+        "population": 5074,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hanover",
+        "population": 1437,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hammanskraal",
+        "population": 112950,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hamburg",
+        "population": 1615,
+        "matchedTo": "Ngqushwa",
+        "areaSqKm": 2115.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ha-Mavhunga",
+        "population": 2124,
+        "matchedTo": "Makhado",
+        "areaSqKm": 7623.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Haarlem",
+        "population": 2846,
+        "matchedTo": "George",
+        "areaSqKm": 5192.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Grootvlei",
+        "population": 6487,
+        "matchedTo": "Dipaleseng",
+        "areaSqKm": 2649.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Groot-Marico",
+        "population": 4054,
+        "matchedTo": "Ramotshere Moiloa",
+        "areaSqKm": 7337.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Groblershoop",
+        "population": 0,
+        "matchedTo": "Kheis",
+        "areaSqKm": 11121.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Groblersdal",
+        "population": 4925,
+        "matchedTo": "Elias Motsoaledi",
+        "areaSqKm": 3721,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nthrowane",
+        "population": 8336,
+        "matchedTo": "Dipaleseng",
+        "areaSqKm": 2649.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gravelotte",
+        "population": 1315,
+        "matchedTo": "Ba-Phalaborwa",
+        "areaSqKm": 7506.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Graskop",
+        "population": 4788,
+        "matchedTo": "Thaba Chweu",
+        "areaSqKm": 5730.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Graaff Reinet",
+        "population": 62896,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Glaudina",
+        "population": 2837,
+        "matchedTo": "Mamusa",
+        "areaSqKm": 3620.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "KwaGingindlovu",
+        "population": 1328,
+        "matchedTo": "uMlalazi",
+        "areaSqKm": 2216.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Geysdorp",
+        "population": 1635,
+        "matchedTo": "Tswaing",
+        "areaSqKm": 5885.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "George",
+        "population": 188580,
+        "matchedTo": "George",
+        "areaSqKm": 5192.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ga-Rankuwa",
+        "population": 90945,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ganyesa",
+        "population": 0,
+        "matchedTo": "Kagisano/Molopo",
+        "areaSqKm": 23872.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ga-Maotole",
+        "population": 3834,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ga-Boelang",
+        "population": 3696,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fraserburg",
+        "population": 3029,
+        "matchedTo": "Karoo Hoogland",
+        "areaSqKm": 30253.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Franklin",
+        "population": 2417,
+        "matchedTo": "Greater Kokstad",
+        "areaSqKm": 2682.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Frankfort",
+        "population": 2447,
+        "matchedTo": "Amahlathi",
+        "areaSqKm": 4508.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fort Beaufort",
+        "population": 58419,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ficksburg",
+        "population": 49420,
+        "matchedTo": "Setsoto",
+        "areaSqKm": 5439.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Fauresmith",
+        "population": 4346,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Excelsior",
+        "population": 7594,
+        "matchedTo": "Mantsopa",
+        "areaSqKm": 4296.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ermelo",
+        "population": 100324,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Enon",
+        "population": 2587,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elliotdale",
+        "population": 2716,
+        "matchedTo": "Mbhashe",
+        "areaSqKm": 3304.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elandshoek",
+        "population": 1410,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Edenville",
+        "population": 7540,
+        "matchedTo": "Ngwathe",
+        "areaSqKm": 7066.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Edenburg",
+        "population": 7739,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dwarsloop",
+        "population": 35397,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dullstroom",
+        "population": 6256,
+        "matchedTo": "Emakhazeni",
+        "areaSqKm": 4745,
+        "isSubstantial": false
+      },
+      {
+        "name": "Douglas",
+        "population": 0,
+        "matchedTo": "Siyancuma",
+        "areaSqKm": 16775,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dirkiesdorp",
+        "population": 2913,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dewetsdorp",
+        "population": 11379,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "De Rust",
+        "population": 4272,
+        "matchedTo": "Oudtshoorn",
+        "areaSqKm": 3541.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Derby",
+        "population": 4157,
+        "matchedTo": "Kgetlengrivier",
+        "areaSqKm": 3980.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dendron",
+        "population": 4846,
+        "matchedTo": "Molemole",
+        "areaSqKm": 3636,
+        "isSubstantial": false
+      },
+      {
+        "name": "Delareyville",
+        "population": 12736,
+        "matchedTo": "Tswaing",
+        "areaSqKm": 5885.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dealesville",
+        "population": 6524,
+        "matchedTo": "Tokologo",
+        "areaSqKm": 9339.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "De Aar",
+        "population": 32318,
+        "matchedTo": "Emthanjeni",
+        "areaSqKm": 13485.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Davel",
+        "population": 1429,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cullinan",
+        "population": 34087,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Creighton",
+        "population": 0,
+        "matchedTo": "Dr Nkosazana Dlamini Zuma",
+        "areaSqKm": 3606.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cradock",
+        "population": 43936,
+        "matchedTo": "Inxuba Yethemba",
+        "areaSqKm": 11672.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Coronation",
+        "population": 4422,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cornelia",
+        "population": 3551,
+        "matchedTo": "Mafube",
+        "areaSqKm": 3977.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cookhouse",
+        "population": 6837,
+        "matchedTo": "Blue Crane Route",
+        "areaSqKm": 11074.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Coligny",
+        "population": 20701,
+        "matchedTo": "Ditsobotla",
+        "areaSqKm": 6398.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Colesberg",
+        "population": 12423,
+        "matchedTo": "Umsobomvu",
+        "areaSqKm": 6820,
+        "isSubstantial": true
+      },
+      {
+        "name": "Colenso",
+        "population": 7653,
+        "matchedTo": "Alfred Duma",
+        "areaSqKm": 3769.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Coldstream",
+        "population": 1985,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hlohlolwane",
+        "population": 21089,
+        "matchedTo": "Setsoto",
+        "areaSqKm": 5439.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Clarkson",
+        "population": 2185,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Clarens",
+        "population": 7644,
+        "matchedTo": "Dihlabeng",
+        "areaSqKm": 4874.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chrissiesmeer",
+        "population": 4806,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Charl Cilliers",
+        "population": 771,
+        "matchedTo": "Govan Mbeki",
+        "areaSqKm": 2960.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cedarville",
+        "population": 5286,
+        "matchedTo": "Matatiele",
+        "areaSqKm": 4356.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cato Ridge",
+        "population": 5168,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cathcart",
+        "population": 8818,
+        "matchedTo": "Amahlathi",
+        "areaSqKm": 4508.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Carolina",
+        "population": 20184,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Carnarvon",
+        "population": 5785,
+        "matchedTo": "Kareeberg",
+        "areaSqKm": 17718.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Camden",
+        "population": 674,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Calitzdorp",
+        "population": 5133,
+        "matchedTo": "Kannaland",
+        "areaSqKm": 4767.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Calcutta",
+        "population": 35864,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Burgersfort",
+        "population": 7630,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burgersdorp",
+        "population": 19159,
+        "matchedTo": "Walter Sisulu",
+        "areaSqKm": 13281,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bulwer",
+        "population": 1285,
+        "matchedTo": "Dr Nkosazana Dlamini Zuma",
+        "areaSqKm": 3606.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bultfontein",
+        "population": 27994,
+        "matchedTo": "Tswelopele",
+        "areaSqKm": 6534,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mhlambanyatsi",
+        "population": 9219,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Buffeljagsrivier",
+        "population": 1724,
+        "matchedTo": "Swellendam",
+        "areaSqKm": 3836.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bronkhorstspruit",
+        "population": 41209,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Breyten",
+        "population": 17189,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Brandwag",
+        "population": 1761,
+        "matchedTo": "Mossel Bay",
+        "areaSqKm": 2001.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brandvlei",
+        "population": 2859,
+        "matchedTo": "Hantam",
+        "areaSqKm": 39121.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Winnie Mandela",
+        "population": 15454,
+        "matchedTo": "Masilonyana",
+        "areaSqKm": 6627.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Botha’s Hill",
+        "population": 2623,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boshof",
+        "population": 10194,
+        "matchedTo": "Tokologo",
+        "areaSqKm": 9339.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bosfontein",
+        "population": 7811,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bosbokrand",
+        "population": 2109,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bontrug",
+        "population": 10057,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bochum",
+        "population": 12000,
+        "matchedTo": "Blouberg",
+        "areaSqKm": 9563.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Blinkpan",
+        "population": 1446,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bizana",
+        "population": 9553,
+        "matchedTo": "Mbizana",
+        "areaSqKm": 2417.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bethulie",
+        "population": 7783,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ntabozuko",
+        "population": 3650,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bergville",
+        "population": 1405,
+        "matchedTo": "Okhahlamba",
+        "areaSqKm": 3976.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bergnek",
+        "population": 1698,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bedford",
+        "population": 10506,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": true
+      },
+      {
+        "name": "Beaufort West",
+        "population": 44737,
+        "matchedTo": "Beaufort West",
+        "areaSqKm": 21931,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barrydale",
+        "population": 4979,
+        "matchedTo": "Swellendam",
+        "areaSqKm": 3836.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Barkly West",
+        "population": 11621,
+        "matchedTo": "Dikgatlong",
+        "areaSqKm": 7326.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barkly East",
+        "population": 11965,
+        "matchedTo": "Senqu",
+        "areaSqKm": 7336.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barberton",
+        "population": 67927,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Balfour",
+        "population": 3187,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": false
+      },
+      {
+        "name": "eManzana",
+        "population": 8293,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Babanango",
+        "population": 2259,
+        "matchedTo": "Ulundi",
+        "areaSqKm": 3255.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Augrabies",
+        "population": 3627,
+        "matchedTo": "Kai Garib",
+        "areaSqKm": 26412.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arthur’s Seat",
+        "population": 1569,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arlington",
+        "population": 4714,
+        "matchedTo": "Nketoana",
+        "areaSqKm": 5619.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Apel",
+        "population": 0,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "eMvelo",
+        "population": 8110,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amersfoort",
+        "population": 14778,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Amandelbult",
+        "population": 25587,
+        "matchedTo": "Thabazimbi",
+        "areaSqKm": 11214.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Amalia",
+        "population": 6566,
+        "matchedTo": "Mamusa",
+        "areaSqKm": 3620.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alldays",
+        "population": 3578,
+        "matchedTo": "Blouberg",
+        "areaSqKm": 9563.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Allanridge",
+        "population": 31700,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Allandale A",
+        "population": 2743,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aliwal North",
+        "population": 44436,
+        "matchedTo": "Walter Sisulu",
+        "areaSqKm": 13281,
+        "isSubstantial": true
+      },
+      {
+        "name": "Alicedale",
+        "population": 4639,
+        "matchedTo": "Makana",
+        "areaSqKm": 4377.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alice",
+        "population": 18141,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hlanganani",
+        "population": 21506,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Albertina",
+        "population": 7634,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adelaide",
+        "population": 14606,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": true
+      },
+      {
+        "name": "Addo",
+        "population": 7475,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Acornhoek",
+        "population": 33529,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aberdeen",
+        "population": 8580,
+        "matchedTo": "Dr Beyers Naude",
+        "areaSqKm": 28668.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ekangala",
+        "population": 58099,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kwamhlanga",
+        "population": 8535,
+        "matchedTo": "Thembisile",
+        "areaSqKm": 2389.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yzerfontein",
+        "population": 1365,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wolseley",
+        "population": 14533,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Vredendal",
+        "population": 21769,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Vanrhynsdorp",
+        "population": 7515,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tulbagh",
+        "population": 10745,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tesselaarsdal",
+        "population": 1500,
+        "matchedTo": "Theewaterskloof",
+        "areaSqKm": 3260,
+        "isSubstantial": false
+      },
+      {
+        "name": "Springbok",
+        "population": 10438,
+        "matchedTo": "Nama Khoi",
+        "areaSqKm": 18012.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Simon's Town",
+        "population": 6569,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riviersonderend",
+        "population": 6284,
+        "matchedTo": "Theewaterskloof",
+        "areaSqKm": 3260,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riebeek West",
+        "population": 5211,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riebeek-Kasteel",
+        "population": 5704,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rawsonville",
+        "population": 3712,
+        "matchedTo": "Breede Valley",
+        "areaSqKm": 3835.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Prince Alfred Hamlet",
+        "population": 8159,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Port Nolloth",
+        "population": 0,
+        "matchedTo": "Richtersveld",
+        "areaSqKm": 9620.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Porterville",
+        "population": 8455,
+        "matchedTo": "Bergrivier",
+        "areaSqKm": 4409.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pofadder",
+        "population": 3287,
+        "matchedTo": "Khâi-Ma",
+        "areaSqKm": 15734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Philadelphia",
+        "population": 570,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Paternoster",
+        "population": 2360,
+        "matchedTo": "Saldanha Bay",
+        "areaSqKm": 2016.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Op-die-Berg",
+        "population": 1834,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Napier",
+        "population": 5048,
+        "matchedTo": "Cape Agulhas",
+        "areaSqKm": 3471.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nababeep",
+        "population": 5374,
+        "matchedTo": "Nama Khoi",
+        "areaSqKm": 18012.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "McGregor",
+        "population": 3744,
+        "matchedTo": "Langeberg",
+        "areaSqKm": 4519.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lutzville",
+        "population": 6268,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Langebaan",
+        "population": 9940,
+        "matchedTo": "Saldanha Bay",
+        "areaSqKm": 2016.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lamberts Bay",
+        "population": 7332,
+        "matchedTo": "Cederberg",
+        "areaSqKm": 8012.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koringberg",
+        "population": 1454,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koekenaap",
+        "population": 1858,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Klipheuwel",
+        "population": 2748,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Klawer",
+        "population": 7469,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalbaskraal",
+        "population": 2888,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hopefield",
+        "population": 7457,
+        "matchedTo": "Saldanha Bay",
+        "areaSqKm": 2016.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Greyton",
+        "population": 3329,
+        "matchedTo": "Theewaterskloof",
+        "areaSqKm": 3260,
+        "isSubstantial": false
+      },
+      {
+        "name": "Graafwater",
+        "population": 2708,
+        "matchedTo": "Cederberg",
+        "areaSqKm": 8012.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goedverwag",
+        "population": 2371,
+        "matchedTo": "Bergrivier",
+        "areaSqKm": 4409.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Genadendal",
+        "population": 6784,
+        "matchedTo": "Theewaterskloof",
+        "areaSqKm": 3260,
+        "isSubstantial": false
+      },
+      {
+        "name": "Garies",
+        "population": 0,
+        "matchedTo": "Kamiesberg",
+        "areaSqKm": 14223.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "eNduli",
+        "population": 11203,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Elim",
+        "population": 1691,
+        "matchedTo": "Cape Agulhas",
+        "areaSqKm": 3471.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elandsbaai",
+        "population": 1827,
+        "matchedTo": "Cederberg",
+        "areaSqKm": 8012.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Eendekuil",
+        "population": 1833,
+        "matchedTo": "Bergrivier",
+        "areaSqKm": 4409.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ebenhaeser",
+        "population": 1563,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doringbaai",
+        "population": 1509,
+        "matchedTo": "Matzikama",
+        "areaSqKm": 12992.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Constantia",
+        "population": 6922,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Clanwilliam",
+        "population": 9194,
+        "matchedTo": "Cederberg",
+        "areaSqKm": 8012.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Citrusdal",
+        "population": 8598,
+        "matchedTo": "Cederberg",
+        "areaSqKm": 8012.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chatsworth",
+        "population": 4854,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ceres",
+        "population": 41596,
+        "matchedTo": "Witzenberg",
+        "areaSqKm": 10758.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Calvinia",
+        "population": 8146,
+        "matchedTo": "Hantam",
+        "areaSqKm": 39121.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Brandvlei",
+        "population": 1171,
+        "matchedTo": "Breede Valley",
+        "areaSqKm": 3835.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Botrivier",
+        "population": 6594,
+        "matchedTo": "Theewaterskloof",
+        "areaSqKm": 3260,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bergvliet",
+        "population": 3902,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alexander Bay",
+        "population": 1736,
+        "matchedTo": "Richtersveld",
+        "areaSqKm": 9620.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Century City",
+        "population": 4239,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sunset Beach",
+        "population": 2000,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marloth Park",
+        "population": 1198,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Herolds Bay",
+        "population": 1268,
+        "matchedTo": "George",
+        "areaSqKm": 5192.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Newlands",
+        "population": 5343,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bela-Bela",
+        "population": 0,
+        "matchedTo": "Bela-Bela",
+        "areaSqKm": 3413.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lephalale",
+        "population": 21133,
+        "matchedTo": "Lephalale",
+        "areaSqKm": 13826.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Musina",
+        "population": 51132,
+        "matchedTo": "Musina",
+        "areaSqKm": 10372.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "St Francis Bay",
+        "population": 5910,
+        "matchedTo": "Kouga",
+        "areaSqKm": 2671.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vierlanden",
+        "population": 1157,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marapong",
+        "population": 31424,
+        "matchedTo": "Lephalale",
+        "areaSqKm": 13826.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tjakastad",
+        "population": 12711,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lukwatini",
+        "population": 37362,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mankweng",
+        "population": 49480,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Phatsima",
+        "population": 8796,
+        "matchedTo": "Rustenburg",
+        "areaSqKm": 3422.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mkhuhlu",
+        "population": 42969,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Skoonplaas",
+        "population": 2757,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lehurutshe",
+        "population": 8252,
+        "matchedTo": "Ramotshere Moiloa",
+        "areaSqKm": 7337.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malamulele",
+        "population": 15659,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maluti",
+        "population": 8654,
+        "matchedTo": "Matatiele",
+        "areaSqKm": 4356.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tukakgomo",
+        "population": 13472,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shatale",
+        "population": 9155,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tongaat Beach",
+        "population": 3962,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mathibela",
+        "population": 6943,
+        "matchedTo": "Lepele-Nkumpi",
+        "areaSqKm": 3492,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thornhill",
+        "population": 5000,
+        "matchedTo": "Kouga",
+        "areaSqKm": 2671.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gariep Dam",
+        "population": 1878,
+        "matchedTo": "Kopanong",
+        "areaSqKm": 15663.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Santombe",
+        "population": 1299,
+        "matchedTo": "Umzimvubu",
+        "areaSqKm": 2581.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Glenmore",
+        "population": 1491,
+        "matchedTo": "Ngqushwa",
+        "areaSqKm": 2115.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mkukwini",
+        "population": 1970,
+        "matchedTo": "Intsika Yethu",
+        "areaSqKm": 2875.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Msobomvu",
+        "population": 2114,
+        "matchedTo": "Raymond Mhlaba",
+        "areaSqKm": 6361,
+        "isSubstantial": false
+      },
+      {
+        "name": "Woodlands",
+        "population": 2254,
+        "matchedTo": "Kou-Kamma",
+        "areaSqKm": 3643,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ngabangu",
+        "population": 2826,
+        "matchedTo": "Amahlathi",
+        "areaSqKm": 4508.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Loerieheuwel",
+        "population": 3339,
+        "matchedTo": "Kouga",
+        "areaSqKm": 2671.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ducats",
+        "population": 4248,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Phakamisa",
+        "population": 8806,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ilitha",
+        "population": 9757,
+        "matchedTo": "Buffalo City",
+        "areaSqKm": 2751.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nomathamasanqa",
+        "population": 12815,
+        "matchedTo": "Sundays River Valley",
+        "areaSqKm": 5997.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ikgomotseng",
+        "population": 3897,
+        "matchedTo": "Mangaung",
+        "areaSqKm": 9898.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Phomolong",
+        "population": 24635,
+        "matchedTo": "Matjhabeng",
+        "areaSqKm": 5699.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kameelkraal",
+        "population": 1464,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Onverwacht",
+        "population": 1818,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thembisile",
+        "population": 2167,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rethabiseng",
+        "population": 13136,
+        "matchedTo": "City of Tshwane",
+        "areaSqKm": 6310.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hlalanathi",
+        "population": 1281,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Loss",
+        "population": 1290,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ocean Drive-In",
+        "population": 1299,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thembalethu",
+        "population": 1471,
+        "matchedTo": "Jozini",
+        "areaSqKm": 3447.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hambanathi",
+        "population": 1520,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Drummond",
+        "population": 1823,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mpungamhlophe",
+        "population": 2161,
+        "matchedTo": "Ulundi",
+        "areaSqKm": 3255.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Emona",
+        "population": 2590,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Greylands",
+        "population": 2617,
+        "matchedTo": "eThekwini",
+        "areaSqKm": 2558.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Emaqeleni",
+        "population": 2741,
+        "matchedTo": "uMlalazi",
+        "areaSqKm": 2216.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ezibomvu",
+        "population": 2893,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nkongolwane",
+        "population": 3213,
+        "matchedTo": "Abaqulusi",
+        "areaSqKm": 4320.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ibisikululwa",
+        "population": 3554,
+        "matchedTo": "Umzimkhulu",
+        "areaSqKm": 2438.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "KaNdengeza",
+        "population": 1267,
+        "matchedTo": "Greater Giyani",
+        "areaSqKm": 4181.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thusang",
+        "population": 1299,
+        "matchedTo": "Modimolle/Mookgophong",
+        "areaSqKm": 10389.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Louis Trichardt Airforce Base",
+        "population": 1345,
+        "matchedTo": "Makhado",
+        "areaSqKm": 7623.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lwamondo",
+        "population": 1557,
+        "matchedTo": "Thulamela",
+        "areaSqKm": 2648.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moshate",
+        "population": 1834,
+        "matchedTo": "Polokwane",
+        "areaSqKm": 5065.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mvelaphanda",
+        "population": 1872,
+        "matchedTo": "Thulamela",
+        "areaSqKm": 2648.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Phaweni",
+        "population": 2077,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Laersdrift",
+        "population": 2657,
+        "matchedTo": "Elias Motsoaledi",
+        "areaSqKm": 3721,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thabo Mbeki",
+        "population": 2700,
+        "matchedTo": "Lephalale",
+        "areaSqKm": 13826.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Morbeng",
+        "population": 2841,
+        "matchedTo": "Molemole",
+        "areaSqKm": 3636,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ka-Xihosana",
+        "population": 3050,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nthabiseng",
+        "population": 3210,
+        "matchedTo": "Molemole",
+        "areaSqKm": 3636,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vuwani",
+        "population": 3343,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saselamani",
+        "population": 4465,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ka-Mahonisi",
+        "population": 4490,
+        "matchedTo": "Collins Chabane",
+        "areaSqKm": 5015.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Babirwa",
+        "population": 5006,
+        "matchedTo": "Mogalakwena",
+        "areaSqKm": 6170.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "GaSekhaolelo",
+        "population": 5232,
+        "matchedTo": "Mogalakwena",
+        "areaSqKm": 6170.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nthabalala",
+        "population": 5969,
+        "matchedTo": "Makhado",
+        "areaSqKm": 7623.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elandskraal",
+        "population": 7621,
+        "matchedTo": "Ephraim Mogale",
+        "areaSqKm": 2015.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Praktiseer",
+        "population": 26675,
+        "matchedTo": "Greater Tubatse/Fetakgomo",
+        "areaSqKm": 5705.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bosoord",
+        "population": 1353,
+        "matchedTo": "Thaba Chweu",
+        "areaSqKm": 5730.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sizanane",
+        "population": 1383,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Betty's Goed",
+        "population": 1784,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kriel Power Station",
+        "population": 1939,
+        "matchedTo": "Emalahleni",
+        "areaSqKm": 2682.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Iswepe",
+        "population": 3394,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Warburton",
+        "population": 3411,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wolfenkop",
+        "population": 3660,
+        "matchedTo": "Thembisile",
+        "areaSqKm": 2389.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pullens Hope",
+        "population": 4120,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ngodwana",
+        "population": 4173,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "KwaDela",
+        "population": 4530,
+        "matchedTo": "Msukaligwa",
+        "areaSqKm": 6026.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mapulaneng View",
+        "population": 4600,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Masakhane",
+        "population": 4811,
+        "matchedTo": "Emalahleni",
+        "areaSqKm": 2682.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ekulindeni",
+        "population": 5416,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Doornkop",
+        "population": 6037,
+        "matchedTo": "Steve Tshwete",
+        "areaSqKm": 3984.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Emgwenya",
+        "population": 7410,
+        "matchedTo": "Emakhazeni",
+        "areaSqKm": 4745,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kamhlushwa",
+        "population": 7917,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gemsbokspruit",
+        "population": 8138,
+        "matchedTo": "Thembisile",
+        "areaSqKm": 2389.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Empuluzu",
+        "population": 15008,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Daggakraal",
+        "population": 15793,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tekwane",
+        "population": 17846,
+        "matchedTo": "Mbombela",
+        "areaSqKm": 7155.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Redhill",
+        "population": 23153,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sun City",
+        "population": 1556,
+        "matchedTo": "Moses Kotane",
+        "areaSqKm": 5738.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sun Village",
+        "population": 1592,
+        "matchedTo": "Moses Kotane",
+        "areaSqKm": 5738.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bray",
+        "population": 1625,
+        "matchedTo": "Kagisano/Molopo",
+        "areaSqKm": 23872.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boipelo",
+        "population": 5010,
+        "matchedTo": "Greater Taung",
+        "areaSqKm": 5647.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Itekeng",
+        "population": 6740,
+        "matchedTo": "Ditsobotla",
+        "areaSqKm": 6398.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Umzimhle",
+        "population": 7352,
+        "matchedTo": "City of Matlosana",
+        "areaSqKm": 3608.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Philandersbron",
+        "population": 1295,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Leerkrans",
+        "population": 1657,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gannaput",
+        "population": 1674,
+        "matchedTo": "Kheis",
+        "areaSqKm": 11121.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Swartkop",
+        "population": 1979,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cillie",
+        "population": 2359,
+        "matchedTo": "Kai Garib",
+        "areaSqKm": 26412.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wegdraai",
+        "population": 2622,
+        "matchedTo": "Kheis",
+        "areaSqKm": 11121.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Grootdrink",
+        "population": 3169,
+        "matchedTo": "Kheis",
+        "areaSqKm": 11121.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Raaswater",
+        "population": 3352,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oakglen",
+        "population": 5504,
+        "matchedTo": "Emthanjeni",
+        "areaSqKm": 13485.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nuwerus NC",
+        "population": 8531,
+        "matchedTo": "Dawid Kruiper",
+        "areaSqKm": 44306.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Friemersheim",
+        "population": 1479,
+        "matchedTo": "Mossel Bay",
+        "areaSqKm": 2001.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pella WC",
+        "population": 2014,
+        "matchedTo": "City of Cape Town",
+        "areaSqKm": 2446.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Slangrivier",
+        "population": 3607,
+        "matchedTo": "Hessequa",
+        "areaSqKm": 5734.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abbotsdale",
+        "population": 4507,
+        "matchedTo": "Swartland",
+        "areaSqKm": 3709,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nhlazatje",
+        "population": 28224,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mooiplaas",
+        "population": 4196,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Swalluwnest",
+        "population": 2520,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Glenmore",
+        "population": 7180,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dundonald",
+        "population": 4764,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fernie",
+        "population": 15693,
+        "matchedTo": "Chief Albert Luthuli",
+        "areaSqKm": 5569.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "KwaThandeka",
+        "population": 7289,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "KwaNgema",
+        "population": 1006,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ngema Tribal Trust",
+        "population": 5590,
+        "matchedTo": "Mkhondo",
+        "areaSqKm": 4890.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Palmietfontein",
+        "population": 1670,
+        "matchedTo": "Dr Pixley Ka Isaka Seme",
+        "areaSqKm": 5236.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sidlamafa",
+        "population": 4316,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matsamo",
+        "population": 2289,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Louieville",
+        "population": 1364,
+        "matchedTo": "Nkomazi",
+        "areaSqKm": 4796.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hlalakahle",
+        "population": 992,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thorndale",
+        "population": 514,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seville A",
+        "population": 588,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seville B",
+        "population": 1149,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Utlha B",
+        "population": 650,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Utlha A",
+        "population": 880,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hlavekisa",
+        "population": 2563,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Eglington A",
+        "population": 1457,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Humulani",
+        "population": 2694,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Clare C",
+        "population": 804,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Clare A",
+        "population": 2518,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Eglington B",
+        "population": 1054,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Islington",
+        "population": 4560,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burlington",
+        "population": 4154,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Edinburgh B",
+        "population": 2978,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Edinburgh A",
+        "population": 7305,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dumfries C",
+        "population": 813,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dumfries A",
+        "population": 1950,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dumfries B",
+        "population": 1804,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kumana",
+        "population": 5235,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thulamahashe",
+        "population": 13333,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Godide",
+        "population": 6291,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "New Forest B",
+        "population": 4386,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dingleydale A",
+        "population": 3401,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dingleydale B",
+        "population": 1444,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bolla-Tau",
+        "population": 12703,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Xikhusese",
+        "population": 13324,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mapaleng B",
+        "population": 836,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rooiboklaagte A",
+        "population": 1723,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsakani",
+        "population": 8907,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kgapamadi",
+        "population": 5049,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mamelodi",
+        "population": 3619,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mapaleng A",
+        "population": 2206,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pelindaba",
+        "population": 1768,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "New Line",
+        "population": 1843,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Motlamogatsane",
+        "population": 2169,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ga-Josepha",
+        "population": 4329,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Setlhake",
+        "population": 741,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Graigieburn",
+        "population": 1394,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Motlamogale",
+        "population": 4702,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maboke",
+        "population": 12752,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Violetbank D",
+        "population": 3815,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rivoni",
+        "population": 1424,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Orinoco A",
+        "population": 5884,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Relani",
+        "population": 1989,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shata",
+        "population": 3073,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Thabakgolo",
+        "population": 5939,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mafemani",
+        "population": 20389,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Orinoco B",
+        "population": 2062,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Orinoco C",
+        "population": 2858,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Buyisonto",
+        "population": 10472,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maviljan B",
+        "population": 4717,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Masana",
+        "population": 1616,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mphenyatsatsi",
+        "population": 2159,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matsavana",
+        "population": 5157,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Manyakatana",
+        "population": 4532,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Croquet Lawn B",
+        "population": 560,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Croquet Lawn A",
+        "population": 2816,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matshaye",
+        "population": 1640,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khomanani",
+        "population": 3276,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sabi-Sand Game Reserve",
+        "population": 1242,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rulani",
+        "population": 2485,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mabharule",
+        "population": 2200,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahlobyanini",
+        "population": 3908,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "eMakhazeni B",
+        "population": 6118,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khokhamoya",
+        "population": 9466,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kamalamule",
+        "population": 8766,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malamule",
+        "population": 813,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiyimeleni B",
+        "population": 2992,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiyimeleni A",
+        "population": 4989,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fayini",
+        "population": 1722,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Teka Mahala",
+        "population": 2301,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahukule B",
+        "population": 2432,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jim Brown",
+        "population": 2552,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sekrepeng",
+        "population": 2024,
+        "matchedTo": "Bushbuckridge",
+        "areaSqKm": 10270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Cacadu",
+        "population": 0,
+        "matchedTo": "Emalahleni",
+        "areaSqKm": 3487,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ekhephini",
+        "population": 0,
+        "matchedTo": "Senqu",
+        "areaSqKm": 7336.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "namibia": {
+    "unmatched": [
+      {
+        "name": "Schlip",
+        "population": 1141,
+        "lat": -24.04631,
+        "lng": 17.12844
+      },
+      {
+        "name": "Kalkrand",
+        "population": 1467,
+        "lat": -24.07367,
+        "lng": 17.58635
+      },
+      {
+        "name": "Groot Aub",
+        "population": 3452,
+        "lat": -22.9385,
+        "lng": 17.19534
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Tsumkwe",
+        "population": 1664,
+        "matchedTo": "Mariental Urban",
+        "areaSqKm": 27911.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ndiyona",
+        "population": 20633,
+        "matchedTo": "Grootfontein",
+        "areaSqKm": 8166.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Linyanti",
+        "population": 1061,
+        "matchedTo": "Sibinda",
+        "areaSqKm": 3793.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bagani",
+        "population": 2000,
+        "matchedTo": "Arandis",
+        "areaSqKm": 5524.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Witvlei",
+        "population": 2095,
+        "matchedTo": "Keetmanshoop Urban",
+        "areaSqKm": 17541.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Warmbad",
+        "population": 6700,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Usakos",
+        "population": 9147,
+        "matchedTo": "Wanaheda",
+        "areaSqKm": 14574.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uis",
+        "population": 1771,
+        "matchedTo": "Sesfontein",
+        "areaSqKm": 17815.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsintsabis",
+        "population": 4000,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 10241,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tses",
+        "population": 2000,
+        "matchedTo": "Daures",
+        "areaSqKm": 31823.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tsandi",
+        "population": 1056,
+        "matchedTo": "Ruacana",
+        "areaSqKm": 2367.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Stampriet",
+        "population": 2307,
+        "matchedTo": "Onyaanya",
+        "areaSqKm": 41875,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sesfontein",
+        "population": 1088,
+        "matchedTo": "Endola",
+        "areaSqKm": 20284.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ruacana",
+        "population": 3537,
+        "matchedTo": "Omuntele",
+        "areaSqKm": 5402.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Outjo",
+        "population": 10009,
+        "matchedTo": "Kapako",
+        "areaSqKm": 7488.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Otjiwarongo",
+        "population": 33481,
+        "matchedTo": "Kahenge",
+        "areaSqKm": 5931.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Otjinene",
+        "population": 2491,
+        "matchedTo": "Keetmanshoop Rural",
+        "areaSqKm": 17510.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Otjimbingwe",
+        "population": 7677,
+        "matchedTo": "Wanaheda",
+        "areaSqKm": 14574.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Otavi",
+        "population": 6213,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 12994.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oshivelo",
+        "population": 2287,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 10241,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oranjemund",
+        "population": 8496,
+        "matchedTo": "Omuthiyagwipundi",
+        "areaSqKm": 4283.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Opuwo",
+        "population": 9075,
+        "matchedTo": "Tsumkwe",
+        "areaSqKm": 25829.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ongandjera",
+        "population": 2719,
+        "matchedTo": "Anamulenge",
+        "areaSqKm": 13960.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Omuthiya",
+        "population": 5000,
+        "matchedTo": "Mashare",
+        "areaSqKm": 13431.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Omitara",
+        "population": 833,
+        "matchedTo": "Keetmanshoop Urban",
+        "areaSqKm": 17541.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Omawewozonyanda",
+        "population": 690,
+        "matchedTo": "Keetmanshoop Rural",
+        "areaSqKm": 17510.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Omaruru",
+        "population": 11547,
+        "matchedTo": "Oranjemund",
+        "areaSqKm": 8448.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ekongo",
+        "population": 2650,
+        "matchedTo": "Rundu Rural",
+        "areaSqKm": 4616.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okondjatu",
+        "population": 1386,
+        "matchedTo": "Rehoboth East",
+        "areaSqKm": 14681,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okombahe",
+        "population": 1295,
+        "matchedTo": "Sesfontein",
+        "areaSqKm": 17815.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okakarara",
+        "population": 5581,
+        "matchedTo": "Rehoboth East",
+        "areaSqKm": 14681,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okahao",
+        "population": 7000,
+        "matchedTo": "Anamulenge",
+        "areaSqKm": 13960.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okahandja",
+        "population": 26832,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 5892.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Noordoewer",
+        "population": 2401,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nkurenkuru",
+        "population": 732,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 8150.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mariental",
+        "population": 14789,
+        "matchedTo": "Swakopmund",
+        "areaSqKm": 5929.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maltahöhe",
+        "population": 2819,
+        "matchedTo": "Omaruru",
+        "areaSqKm": 50564.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lüderitz",
+        "population": 15137,
+        "matchedTo": "Mariental Rural",
+        "areaSqKm": 48701.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Leonardville",
+        "population": 1411,
+        "matchedTo": "Gibeon",
+        "areaSqKm": 13007.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koës",
+        "population": 1813,
+        "matchedTo": "Onayena",
+        "areaSqKm": 37957.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khorixas",
+        "population": 12021,
+        "matchedTo": "Omatako",
+        "areaSqKm": 21463.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karibib",
+        "population": 6898,
+        "matchedTo": "Wanaheda",
+        "areaSqKm": 14574.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karasburg",
+        "population": 6054,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kamanjab",
+        "population": 2127,
+        "matchedTo": "Engela",
+        "areaSqKm": 17166.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalkfeld",
+        "population": 1656,
+        "matchedTo": "Kahenge",
+        "areaSqKm": 5931.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hoachanas",
+        "population": 3000,
+        "matchedTo": "Onyaanya",
+        "areaSqKm": 41875,
+        "isSubstantial": false
+      },
+      {
+        "name": "Henties Bay",
+        "population": 5594,
+        "matchedTo": "Soweto",
+        "areaSqKm": 13543.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Grünau",
+        "population": 509,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Grootfontein",
+        "population": 24099,
+        "matchedTo": "Rehoboth Rural",
+        "areaSqKm": 11299.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gochas",
+        "population": 1378,
+        "matchedTo": "Onyaanya",
+        "areaSqKm": 41875,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gobabis",
+        "population": 22639,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 5678.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gibeon",
+        "population": 3118,
+        "matchedTo": "Omaruru",
+        "areaSqKm": 50564.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fransfontein",
+        "population": 655,
+        "matchedTo": "Omatako",
+        "areaSqKm": 21463.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bethanie",
+        "population": 10363,
+        "matchedTo": "Daures",
+        "areaSqKm": 31823.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Berseba",
+        "population": 929,
+        "matchedTo": "Daures",
+        "areaSqKm": 31823.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aus",
+        "population": 1263,
+        "matchedTo": "Mariental Rural",
+        "areaSqKm": 48701.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aroab",
+        "population": 1967,
+        "matchedTo": "Onayena",
+        "areaSqKm": 37957.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ariamsvlei",
+        "population": 737,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aranos",
+        "population": 4365,
+        "matchedTo": "Onyaanya",
+        "areaSqKm": 41875,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arandis",
+        "population": 6127,
+        "matchedTo": "Soweto",
+        "areaSqKm": 13543.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Walvis Bay",
+        "population": 73598,
+        "matchedTo": "Khomasdal North",
+        "areaSqKm": 9123.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Rosh Pinah",
+        "population": 6540,
+        "matchedTo": "Omuthiyagwipundi",
+        "areaSqKm": 4283.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okanguati",
+        "population": 856,
+        "matchedTo": "Olukonda",
+        "areaSqKm": 23756.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Divundu",
+        "population": 884,
+        "matchedTo": "Arandis",
+        "areaSqKm": 5524.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aussenkehr",
+        "population": 5359,
+        "matchedTo": "Oniipa",
+        "areaSqKm": 38357.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Osire",
+        "population": 5941,
+        "matchedTo": "Luderitz",
+        "areaSqKm": 26222.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Otjituuo",
+        "population": 624,
+        "matchedTo": "Rehoboth East",
+        "areaSqKm": 14681,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
   }
 }

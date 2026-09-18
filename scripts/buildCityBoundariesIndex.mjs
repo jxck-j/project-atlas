@@ -46,10 +46,11 @@
 // Chad, Congo, DR Congo, Equatorial Guinea, Gabon, São Tomé and Príncipe,
 // plus the 2026-09-18 East Africa pass: Burundi, Comoros, Djibouti,
 // Eritrea, Ethiopia, Kenya, Madagascar, Malawi, Mauritius, Mozambique,
-// Rwanda, Seychelles, Somalia, Tanzania, Uganda, Zambia, Zimbabwe) — NOT
-// the other 8 UN members yet (India deliberately excluded, same
-// reasoning as Russia). See that doc's
-// migration plan.
+// Rwanda, Seychelles, Somalia, Tanzania, Uganda, Zambia, Zimbabwe, plus the
+// 2026-09-18 Southern Africa pass: Angola, Botswana, Eswatini, Lesotho,
+// Namibia, South Africa — completing all of Africa) — NOT India or Russia
+// yet, both deliberately deferred to their own dedicated passes. See that
+// doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -231,6 +232,12 @@ const BOUNDARY_COUNTRIES = [
   { id: '800', name: 'Uganda' },
   { id: '894', name: 'Zambia' },
   { id: '716', name: 'Zimbabwe' },
+  { id: '024', name: 'Angola' },
+  { id: '072', name: 'Botswana' },
+  { id: '748', name: 'Eswatini' },
+  { id: '426', name: 'Lesotho' },
+  { id: '710', name: 'South Africa' },
+  { id: '516', name: 'Namibia' },
 ]
 
 function addFromBoundaryFile(countryId) {

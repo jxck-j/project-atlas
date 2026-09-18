@@ -41,7 +41,9 @@
 // Guinea, Gabon, São Tomé and Príncipe, plus the 2026-09-18 East Africa
 // pass: Burundi, Comoros, Djibouti, Eritrea, Ethiopia, Kenya, Madagascar,
 // Malawi, Mauritius, Mozambique, Rwanda, Seychelles, Somalia, Tanzania,
-// Uganda, Zambia, Zimbabwe — NOT the other 8 UN members yet.
+// Uganda, Zambia, Zimbabwe, plus the 2026-09-18 Southern Africa pass:
+// Angola, Botswana, Eswatini, Lesotho, Namibia, South Africa — NOT the
+// other 2 UN members yet (India, Russia).
 // See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
@@ -3412,6 +3414,90 @@ if (shouldRun('834')) report.tanzania = await runGeoBoundariesCountry({ name: 'T
 if (shouldRun('800')) report.uganda = await runGeoBoundariesCountry({ name: 'Uganda', numericId: '800', alpha3: 'UGA', admLevel: 'ADM4' })
 if (shouldRun('894')) report.zambia = await runGeoBoundariesCountry({ name: 'Zambia', numericId: '894', alpha3: 'ZMB', admLevel: 'ADM2' })
 if (shouldRun('716')) report.zimbabwe = await runGeoBoundariesCountry({ name: 'Zimbabwe', numericId: '716', alpha3: 'ZWE', admLevel: 'ADM2' })
+
+// --- Twenty-eighth pass (2026-09-18): Southern Africa (Angola, Botswana,
+// Eswatini, Lesotho, Namibia, South Africa) — the fifth and final Africa
+// batch, completing the continent. Every level confirmed by a direct
+// point-in-polygon check against real coordinates, not just recon's own
+// canonicalName field.
+//
+// Four confirmed clean on recon's own reported finest level: Angola (ADM3,
+// "Communes," 558 units — Luanda resolves to Maianga, 28.07 km², one of
+// its real communes; Huambo to its own whole 581.00 km² commune), Eswatini
+// (ADM2, 53 units — Mbabane resolves to its own real "Inkhundla Mbabane,"
+// 103.12 km², Eswatini's real administrative term; Manzini likewise),
+// Lesotho (ADM2, "constituencies," 78 units — Maseru resolves to its own
+// 142.11 km² constituency), and South Africa (ADM3, "Local municipality,"
+// 213 units, NOT recon's own ADM4 "Ward" cityPlausible pick — Johannesburg
+// resolves to the whole "City of Johannesburg," 1,648.02 km²; Cape Town to
+// "City of Cape Town," 2,446.43 km²; Durban to "eThekwini," 2,558.90 km²;
+// Pretoria to "City of Tshwane," 6,310.24 km² — all four of South Africa's
+// real metropolitan municipalities, correctly whole, not fragmented into
+// their own thousands of wards).
+//
+// Botswana's ADM2 (25 units) was already directly investigated back in the
+// Fourth pass (2026-09-04) and confirmed to be the finest tier that exists
+// anywhere for this country — OSM's own real sub-district tier is almost
+// entirely unmapped (2 of 23 sub-districts). This pass turns that finding
+// into a real join for the first time: confirmed again directly (Gaborone
+// resolves to its own whole 1,326.81 km² district; Francistown, the
+// country's second city, has no unit of its own name in this download at
+// all — it lands in the surrounding "Masungu" sub-district instead, the
+// same real, already-documented gap, not a new finding).
+//
+// **Namibia surfaced a fourth instance of the shapeName/geometry
+// misalignment bug** (Burkina Faso, Twenty-fifth pass; Congo, Twenty-sixth
+// pass) — narrower in scope than either of those, but real: the feature
+// named "Opuwo" in ADM2 has a bounding box sitting exactly where Walvis
+// Bay is (14.48-14.55°E, -22.98 to -22.92°S), nowhere near the real Opuwo
+// (a Kunene-region town roughly 5° of latitude further north), while the
+// two features actually named "Walvisbay Urban"/"Walvisbay Rural" are
+// themselves wildly oversized (36,683 km² and 10,958 km², both with
+// bounding boxes well inland/south of the real coastal town) — a real,
+// three-feature swap/corruption, not a two-feature isolated case the way
+// Windhoek's own correctly-positioned "Windhoek Rural" (209.08 km²,
+// confirmed to actually contain Windhoek's real coordinates) shows the
+// rest of the file isn't uniformly broken. A live OSM check found no
+// separate Walvis Bay or Opuwo administrative boundary to substitute
+// either. All three confirmed-corrupted features are dropped from the
+// candidate list entirely (rather than left in to risk silently
+// mislabeling some other real town's point under a wrong name) — Walvis
+// Bay and Opuwo's own GeoNames points become an honest, logged gap instead
+// of a silently wrong match; every other Namibian town keeps ADM2's real,
+// unaffected coverage.
+if (shouldRun('024')) report.angola = await runGeoBoundariesCountry({ name: 'Angola', numericId: '024', alpha3: 'AGO', admLevel: 'ADM3' })
+if (shouldRun('072')) report.botswana = await runGeoBoundariesCountry({ name: 'Botswana', numericId: '072', alpha3: 'BWA', admLevel: 'ADM2' })
+if (shouldRun('748')) report.eswatini = await runGeoBoundariesCountry({ name: 'Eswatini', numericId: '748', alpha3: 'SWZ', admLevel: 'ADM2' })
+if (shouldRun('426')) report.lesotho = await runGeoBoundariesCountry({ name: 'Lesotho', numericId: '426', alpha3: 'LSO', admLevel: 'ADM2' })
+if (shouldRun('710')) report.southAfrica = await runGeoBoundariesCountry({ name: 'South Africa', numericId: '710', alpha3: 'ZAF', admLevel: 'ADM3' })
+
+// Namibia: drop the 3 confirmed shapeName/geometry-misaligned ADM2
+// features ("Opuwo," "Walvisbay Urban," "Walvisbay Rural") — see this
+// pass's own top comment.
+if (shouldRun('516')) {
+  console.log('\n=== Namibia ===')
+  const namMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/NAM/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const namAdm2Meta = namMeta.find((l) => l.boundaryType === 'ADM2')
+  const namAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(namAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const namCorruptedNames = new Set(['Opuwo', 'Walvisbay Urban', 'Walvisbay Rural'])
+  const namDropped = namAdm2.features.filter((f) => namCorruptedNames.has(f.properties.shapeName)).length
+  console.log(`  dropping ${namDropped} confirmed shapeName/geometry-misaligned features (Opuwo, Walvisbay Urban, Walvisbay Rural — see this block's own comment)`)
+  const namCandidates = namAdm2.features
+    .filter((f) => !namCorruptedNames.has(f.properties.shapeName))
+    .map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  const namCities = loadCityPoints('516')
+  const namJoin = joinCityPointsToPolygons('Namibia', namCities, namCandidates)
+  writeCountryOutput('516', namJoin.kept)
+  report.namibia = namJoin.report
+}
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

@@ -1251,6 +1251,26 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   chased further.
 - **Zimbabwe rejected 37 of 69 points, only 5 substantial** (found 2026-09-18, "Twenty-seventh pass") — real
   district-scale coarseness; not chased further given the low substantial count.
+- **South Africa rejected 648 of 989 points, 153 substantial — the largest substantial-reject count of any
+  single country in this project — including the capital, Pretoria (2,112,693, in the 6,310.24 km² "City of
+  Tshwane" metro)** (found 2026-09-18, `city-boundaries-architecture.md`'s "Twenty-eighth pass") — a real,
+  well-documented fact about South Africa's post-1994 municipal consolidation (Bloemfontein/Mangaung 9,898.8
+  km², Welkom/Matjhabeng 5,699.1 km², Polokwane 5,065.4 km², George 5,192.9 km², Potchefstroom/
+  Ventersdorp-Tlokwe 6,409.7 km²), not a technique failure; the only finer level (ADM4 "Ward," 4,392 units)
+  would fragment every city into sub-few-km² pieces, the same over-fragmentation problem this file has
+  rejected everywhere else. Not chased further.
+- **Botswana rejected 124 of 139 points, 26 substantial, including Francistown (the country's second city, no
+  unit of its own name in this source)** (found 2026-09-18, "Twenty-eighth pass") — an already-documented
+  structural gap from the Fourth pass (2026-09-04): no city-scale boundary source exists for Botswana from
+  either geoBoundaries or OSM. Not a new finding, not chased further.
+- **Angola rejected 168 of 565 points, 12 substantial** (found 2026-09-18, "Twenty-eighth pass") — real
+  oversized rural commune residuals; not chased further.
+- **Namibia rejected 67 of 93 points, 12 substantial, and left 3 unmatched (Schlip, Kalkrand, Groot Aub) after
+  excluding 3 confirmed shapeName/geometry-misaligned ADM2 features (a fourth instance of the Twenty-fifth/
+  Twenty-sixth passes' own misalignment bug — "Opuwo" is geometrically Walvis Bay, "Walvisbay Urban"/"Walvisbay
+  Rural" are both wildly oversized and displaced inland)** (found 2026-09-18, "Twenty-eighth pass") — a live
+  OSM check found no substitute boundary for either Walvis Bay or the real Opuwo; a real, honestly-logged gap
+  rather than a silently wrong match. Not chased further.
 
 ## Visualization
 
