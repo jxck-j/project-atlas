@@ -43,8 +43,11 @@
 // Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia, Mali,
 // Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo, plus the
 // 2026-09-18 Central Africa pass: Cameroon, Central African Republic,
-// Chad, Congo, DR Congo, Equatorial Guinea, Gabon, São Tomé and Príncipe)
-// — NOT the other 25 UN members yet (India deliberately excluded, same
+// Chad, Congo, DR Congo, Equatorial Guinea, Gabon, São Tomé and Príncipe,
+// plus the 2026-09-18 East Africa pass: Burundi, Comoros, Djibouti,
+// Eritrea, Ethiopia, Kenya, Madagascar, Malawi, Mauritius, Mozambique,
+// Rwanda, Seychelles, Somalia, Tanzania, Uganda, Zambia, Zimbabwe) — NOT
+// the other 8 UN members yet (India deliberately excluded, same
 // reasoning as Russia). See that doc's
 // migration plan.
 import fs from 'node:fs'
@@ -211,6 +214,23 @@ const BOUNDARY_COUNTRIES = [
   { id: '226', name: 'Equatorial Guinea' },
   { id: '266', name: 'Gabon' },
   { id: '678', name: 'Sao Tome and Principe' },
+  { id: '108', name: 'Burundi' },
+  { id: '174', name: 'Comoros' },
+  { id: '262', name: 'Djibouti' },
+  { id: '232', name: 'Eritrea' },
+  { id: '231', name: 'Ethiopia' },
+  { id: '404', name: 'Kenya' },
+  { id: '450', name: 'Madagascar' },
+  { id: '454', name: 'Malawi' },
+  { id: '480', name: 'Mauritius' },
+  { id: '508', name: 'Mozambique' },
+  { id: '646', name: 'Rwanda' },
+  { id: '690', name: 'Seychelles' },
+  { id: '706', name: 'Somalia' },
+  { id: '834', name: 'Tanzania' },
+  { id: '800', name: 'Uganda' },
+  { id: '894', name: 'Zambia' },
+  { id: '716', name: 'Zimbabwe' },
 ]
 
 function addFromBoundaryFile(countryId) {

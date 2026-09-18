@@ -2313,6 +2313,75 @@ no further entry.
 **Final status: 31 of Africa's 54 UN members are done and committed. 168 of 193 UN members now have real
 city-boundary data; 25 remain — all in Africa (23 more) plus India and Russia.**
 
+### Twenty-seventh pass: East Africa (2026-09-18) — Burundi, Comoros, Djibouti, Eritrea, Ethiopia, Kenya,
+Madagascar, Malawi, Mauritius, Mozambique, Rwanda, Seychelles, Somalia, Tanzania, Uganda, Zambia, Zimbabwe
+
+The fourth Africa batch, and the largest single-pass country count in this file's history (17). Every level
+confirmed by a direct point-in-polygon check against real coordinates, not just recon's own canonicalName
+field.
+
+**Eight confirmed clean on recon's own reported finest level:** Comoros (ADM3, "Commune," 55 units — clean
+119/119, 11 snapped), Djibouti (ADM2, "Districts," 11 units — 19/32 kept, 13 rejected, none substantial),
+Eritrea (ADM2, "districts," 58 units — 16/19 kept, 1 unmatched, a small offshore island), Ethiopia (ADM3, 690
+units — Addis Ababa resolves to Lideta, 11.02 km², one of its 10 real sub-cities; 224/255 kept, 26
+substantial rejects), Mauritius (ADM1, 12 units — this file's only level for MUS; 115/116 kept, 1 unmatched),
+Mozambique (ADM3, "Administrative Postos," 411 units — 89/94 kept), Seychelles (ADM3, "Districts," 27 units —
+clean 26/26), and Somalia (ADM2, "Districts," 118 units — Mogadishu resolves to HODAN, 8.11 km²; Hargeisa's
+own district a genuinely huge 8,459 km²; 24/76 kept, 27 substantial rejects — real district-scale coarseness
+across a country with limited comprehensive mapping, not chased further).
+
+**Three confirmed clean at a level OTHER than recon's own "cityPlausible" flag:** Tanzania (ADM3, 3,644
+units, matching recon's actual "finest" flag rather than its cityPlausible pick — Dar es Salaam resolves to
+Ubungo, 10.04 km², one of its real 5 municipal districts; 322/324 kept), Uganda (ADM4, "Sub-counties," 1,521
+units, matching recon's own suggestion despite geoBoundaries' own confusingly-swapped canonicalNames for this
+country — ADM2 labeled "Counties," ADM3 labeled "District," backwards from Uganda's real Region > District >
+County > Sub-county hierarchy — Kampala resolves to Kawempe Division, 30.98 km², one of its own real 5 city
+divisions; ADM2 and ADM3 both just return the same whole "Kampala" at two different, overlapping scales,
+confirming those two levels are unusable for this city regardless of their real meaning elsewhere in the
+country; clean 212/212), and Zambia (ADM2, "Districts," 116 units — Lusaka/Kitwe each resolve to their own
+whole district; 54/98 kept, 35 substantial rejects, real vast rural districts).
+
+**Zimbabwe confirmed ADM2** ("District," 91 units) over its own recon-flagged ADM3 ("Ward") — Harare/Bulawayo
+each resolve to their own whole, comfortably-under-the-loose-ceiling district (662.42/547.35 km²); ADM3's real
+numbered wards (e.g. "Harare 6," 8.23 km²) are genuine Zimbabwean administrative units, not an enumeration
+artifact the way Vanuatu's numeric ADM3 was, but fragment the two cities into 40+ pieces apiece for no benefit
+ADM2 doesn't already provide at whole-city scale. Result: 32/69 kept, 5 substantial rejects.
+
+**Burundi, Kenya, Madagascar, and Rwanda all needed the same override this file has now hit repeatedly** —
+recon's own area-heuristic pick was one level too fine. Burundi's ADM3 ("Collines," 2,615 units) is a rural
+hill-cluster tier, while ADM2 (119 units) resolves Bujumbura to Mukaza, 16.50 km², one of its real communes —
+clean 33/33. Kenya's ADM3 ("Ward," 1,452 units) resolves Nairobi to a 3.94 km² ward — sub-city scale — while
+ADM2 ("Sub-Counties," 290 units) resolves it to Starehe, 16.91 km², and Mombasa to Mvita, 14.78 km², both real
+sub-counties at a more consistent city-district scale; 268/336 kept, 26 substantial rejects. Madagascar's
+ADM4 ("fokontany," 17,465 units) is village/neighborhood scale, while ADM3 ("commune," 1,579 units, matching
+its own recon-reported canonicalName) resolves Antananarivo to its own real 6e Arrondissement, 17.65 km²;
+151/152 kept. Rwanda's ADM5 ("Villages," 14,815 units) is obviously far too fine, while ADM2 (30 units —
+Rwanda's real district tier; Kigali City itself splits into 3 of these districts) resolves Kigali to
+Nyarugenge, 133.06 km², one of its own 3 real constituent districts; clean 51/51.
+
+**Malawi's override is a different shape from the others**: recon's own pick, ADM3 ("Traditional
+Authorities," 245 units), turned out to have real, uneven coverage on top of being the wrong administrative
+concept for a city — Malawi's 4 main cities are legally separate from the rural Traditional Authority
+structure, and this download only carries an explicit "City" unit for Blantyre (350.10 km², itself not
+containing a direct coordinate check — likely a real but imperfectly-digitized boundary), with no equivalent
+unit for Lilongwe, the capital, at all. ADM2 ("district," 28 units) at least resolves every city to a real,
+unambiguous whole district — Blantyre to its own 2,033.05 km² district — though Lilongwe's own district
+(6,247.85 km², combining the city with a large rural hinterland) is genuinely past even the loose ceiling, and
+a live OSM check found no separate Lilongwe-city-only boundary either (OSM's own "Lilongwe" relation is the
+same coarse admin_level=4 district) — a real, confirmed gap for the capital specifically, not chased further.
+Result: 25/39 kept, 6 substantial rejects (Lilongwe, Mzuzu, Mzimba, Mangochi, Monkey Bay, Kasungu).
+
+**File sizes**: none of these seventeen needed `shardByState()` — Kenya's 953 KB is the largest.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: Zambia (35 substantial), Somalia (27 substantial),
+Kenya (26 substantial), Ethiopia (26 substantial), Malawi (6 substantial, including the capital), and
+Zimbabwe (5 substantial). Djibouti/Eritrea/Mauritius/Mozambique/Tanzania's own small non-substantial residuals
+and Burundi/Comoros/Madagascar/Rwanda/Seychelles/Uganda's own clean results need no further entry.
+
+**Final status: 48 of Africa's 54 UN members are done and committed. 185 of 193 UN members now have real
+city-boundary data; 8 remain — all in Africa (6 more: Angola, Botswana, Eswatini, Lesotho, Namibia, South
+Africa) plus India and Russia.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2329,7 +2398,7 @@ city-boundary data; 25 remain — all in Africa (23 more) plus India and Russia.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 168 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 185 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2437,17 +2506,25 @@ city-boundary data; 25 remain — all in Africa (23 more) plus India and Russia.
    two-feature patch — plus a single supplemental OSM commune for Brazzaville itself, otherwise rejected as
    too large even at the correct ADM1 department) and DR Congo (geoBoundaries ADM2 plus a supplemental OSM
    commune layer for Kinshasa, without which the capital — 16,000,000 population, one of the largest cities on
-   Earth — would have been silently dropped entirely — see the Twenty-sixth pass) against the already-shipped
+   Earth — would have been silently dropped entirely — see the Twenty-sixth pass) and
+   Comoros/Djibouti/Eritrea/Ethiopia/Mauritius/Mozambique/Seychelles/Somalia/Tanzania/Uganda/Zambia/Zimbabwe
+   (geoBoundaries, each level independently verified — see the Twenty-seventh pass) and
+   Burundi/Kenya/Madagascar/Rwanda (geoBoundaries, overriding recon's own reported finest level for a coarser
+   real tier — recon's area heuristic picked something one level too fine in each case) and Malawi
+   (geoBoundaries ADM2, after recon's own ADM3 pick turned out to be the wrong administrative concept for a
+   city with uneven coverage — Malawi's cities are legally separate from the rural Traditional Authority
+   structure this level represents; Lilongwe itself stays a real, confirmed gap even at ADM2, no finer source
+   found anywhere) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 25 countries** (Russia and India both included — see the Seventeenth pass's own note
+   **Not done: the other 8 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
    Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
-   Twenty-fifth/Twenty-sixth pass)
+   Twenty-fifth/Twenty-sixth/Twenty-seventh pass)
    before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the

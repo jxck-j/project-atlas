@@ -38,7 +38,10 @@
 // Guinea, Guinea-Bissau, Liberia, Mali, Mauritania, Niger, Nigeria,
 // Senegal, Sierra Leone, Togo, plus the 2026-09-18 Central Africa pass:
 // Cameroon, Central African Republic, Chad, Congo, DR Congo, Equatorial
-// Guinea, Gabon, São Tomé and Príncipe — NOT the other 25 UN members yet.
+// Guinea, Gabon, São Tomé and Príncipe, plus the 2026-09-18 East Africa
+// pass: Burundi, Comoros, Djibouti, Eritrea, Ethiopia, Kenya, Madagascar,
+// Malawi, Mauritius, Mozambique, Rwanda, Seychelles, Somalia, Tanzania,
+// Uganda, Zambia, Zimbabwe — NOT the other 8 UN members yet.
 // See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
@@ -3308,6 +3311,107 @@ out geom;`,
 if (shouldRun('226')) report.equatorialGuinea = await runGeoBoundariesCountry({ name: 'Equatorial Guinea', numericId: '226', alpha3: 'GNQ', admLevel: 'ADM2' })
 if (shouldRun('266')) report.gabon = await runGeoBoundariesCountry({ name: 'Gabon', numericId: '266', alpha3: 'GAB', admLevel: 'ADM2' })
 if (shouldRun('678')) report.saoTomeAndPrincipe = await runGeoBoundariesCountry({ name: 'Sao Tome and Principe', numericId: '678', alpha3: 'STP', admLevel: 'ADM2' })
+
+// --- Twenty-seventh pass (2026-09-18): East Africa (Burundi, Comoros,
+// Djibouti, Eritrea, Ethiopia, Kenya, Madagascar, Malawi, Mauritius,
+// Mozambique, Rwanda, Seychelles, Somalia, Tanzania, Uganda, Zambia,
+// Zimbabwe) — the fourth Africa batch, and the largest single-pass country
+// count in this file's history. Every level confirmed by a direct
+// point-in-polygon check against real coordinates, not just recon's own
+// canonicalName field.
+//
+// Eight confirmed clean on recon's own reported finest level: Comoros
+// (ADM3, "Commune," 55 units — Moroni is present by name, a first
+// coordinate check just missed its own small 10.57 km² polygon), Djibouti
+// (ADM2, "Districts," 11 units — the whole capital resolves to its own
+// 783.42 km² district, the only level that exists beyond the coarser ADM1
+// recon's own "cityPlausible" flag oddly preferred), Eritrea (ADM2,
+// "districts," 58 units — Asmara resolves to Debubawi Mibrak, 26.04 km²,
+// one of its own real zoba subdivisions), Ethiopia (ADM3, 690 units —
+// Addis Ababa resolves to Lideta, 11.02 km², one of its 10 real
+// sub-cities; Dire Dawa to its own whole 969.51 km² unit), Mauritius
+// (ADM1, 12 units — this file's only level for MUS — Port Louis resolves
+// to its own 40.53 km² district), Mozambique (ADM3, "Administrative
+// Postos," 411 units — Maputo/Beira each resolve to their own whole city
+// unit), Seychelles (ADM3, "Districts," 27 units — Victoria resolves to
+// Mont Buxton, 1.17 km², one of several real urban districts inside a
+// country whose entire population is ~100,000), and Somalia (ADM2,
+// "Districts," 118 units — Mogadishu resolves to HODAN, 8.11 km², one of
+// its real districts; Hargeisa's own district is a genuinely huge 8,459
+// km², the finest available for that city).
+//
+// Four confirmed clean at a level OTHER than recon's own "cityPlausible"
+// flag, each independently verified rather than assumed: Tanzania (ADM3,
+// 3,644 units, matching recon's actual "finest" flag — Dar es Salaam
+// resolves to Ubungo, 10.04 km², one of its real 5 municipal districts),
+// and — despite geoBoundaries' own confusingly-swapped canonicalNames for
+// this country (ADM2 labeled "Counties," ADM3 labeled "District," backwards
+// from Uganda's real Region > District > County > Sub-county hierarchy) —
+// Uganda (ADM4, "Sub-counties," 1,521 units, matching recon's own
+// suggestion despite the confusing intermediate labels — Kampala resolves
+// to Kawempe Division, 30.98 km², one of its own real 5 city divisions;
+// ADM2 and ADM3 both just return the same whole "Kampala" at two
+// different, overlapping scales, confirming those two levels are unusable
+// for this specific city regardless of their real meaning elsewhere in the
+// country), Zambia (ADM2, "Districts," 116 units — Lusaka/Kitwe each
+// resolve to their own whole district), and Zimbabwe (ADM2, "District,"
+// 91 units — Harare/Bulawayo each resolve to their own whole,
+// comfortably-under-the-loose-ceiling district; ADM3's real numbered wards,
+// e.g. "Harare 6," 8.23 km², are genuine Zimbabwean administrative units,
+// not an enumeration artifact the way Vanuatu's numeric ADM3 was, but
+// fragment the two cities into ~40+ pieces apiece for no benefit ADM2
+// doesn't already provide at whole-city scale).
+//
+// Burundi, Kenya, Madagascar, Rwanda, and Malawi all needed the same
+// override this file has now hit repeatedly — recon's own area-heuristic
+// pick was one level too fine: Burundi's ADM3 ("Collines," 2,615 units) is
+// a rural hill-cluster tier, while ADM2 (119 units) resolves Bujumbura to
+// Mukaza, 16.50 km², one of its real communes, and Gitega to its own whole
+// commune. Kenya's ADM3 ("Ward," 1,452 units) resolves Nairobi to a 3.94
+// km² ward — sub-city scale — while ADM2 ("Sub-Counties," 290 units)
+// resolves it to Starehe, 16.91 km², and Mombasa to Mvita, 14.78 km²,
+// both real sub-counties at a more consistent city-district scale.
+// Madagascar's ADM4 ("fokontany," 17,465 units) is village/neighborhood
+// scale, while ADM3 ("commune," 1,579 units, matching its own recon-
+// reported canonicalName) resolves Antananarivo to its own real 6e
+// Arrondissement, 17.65 km². Rwanda's ADM5 ("Villages," 14,815 units) is
+// obviously far too fine, while ADM2 (30 units — Rwanda's real district
+// tier; Kigali City itself splits into 3 of these districts) resolves
+// Kigali to Nyarugenge, 133.06 km², one of its own 3 real constituent
+// districts.
+//
+// Malawi's override is a different shape from the others: recon's own
+// pick, ADM3 ("Traditional Authorities," 245 units), turned out to have
+// real, uneven coverage on top of being the wrong administrative concept
+// for a city — Malawi's 4 main cities are legally separate from the rural
+// Traditional Authority structure, and this download only carries an
+// explicit "City" unit for Blantyre (350.10 km², still doesn't contain a
+// direct coordinate check — likely a real but imperfectly-digitized
+// boundary), with no equivalent unit for Lilongwe, the capital, at all.
+// ADM2 ("district," 28 units) at least resolves every city to a real,
+// unambiguous whole district — Blantyre to its own 2,033.05 km² district —
+// though Lilongwe's own district (6,247.85 km², combining the city with a
+// large rural hinterland) is genuinely past even the loose ceiling, and a
+// live OSM check found no separate Lilongwe-city-only boundary either
+// (OSM's own "Lilongwe" relation is the same coarse admin_level=4 district)
+// — a real, confirmed gap for the capital specifically, not chased further.
+if (shouldRun('108')) report.burundi = await runGeoBoundariesCountry({ name: 'Burundi', numericId: '108', alpha3: 'BDI', admLevel: 'ADM2' })
+if (shouldRun('174')) report.comoros = await runGeoBoundariesCountry({ name: 'Comoros', numericId: '174', alpha3: 'COM', admLevel: 'ADM3' })
+if (shouldRun('262')) report.djibouti = await runGeoBoundariesCountry({ name: 'Djibouti', numericId: '262', alpha3: 'DJI', admLevel: 'ADM2' })
+if (shouldRun('232')) report.eritrea = await runGeoBoundariesCountry({ name: 'Eritrea', numericId: '232', alpha3: 'ERI', admLevel: 'ADM2' })
+if (shouldRun('231')) report.ethiopia = await runGeoBoundariesCountry({ name: 'Ethiopia', numericId: '231', alpha3: 'ETH', admLevel: 'ADM3' })
+if (shouldRun('404')) report.kenya = await runGeoBoundariesCountry({ name: 'Kenya', numericId: '404', alpha3: 'KEN', admLevel: 'ADM2' })
+if (shouldRun('450')) report.madagascar = await runGeoBoundariesCountry({ name: 'Madagascar', numericId: '450', alpha3: 'MDG', admLevel: 'ADM3' })
+if (shouldRun('454')) report.malawi = await runGeoBoundariesCountry({ name: 'Malawi', numericId: '454', alpha3: 'MWI', admLevel: 'ADM2' })
+if (shouldRun('480')) report.mauritius = await runGeoBoundariesCountry({ name: 'Mauritius', numericId: '480', alpha3: 'MUS', admLevel: 'ADM1' })
+if (shouldRun('508')) report.mozambique = await runGeoBoundariesCountry({ name: 'Mozambique', numericId: '508', alpha3: 'MOZ', admLevel: 'ADM3' })
+if (shouldRun('646')) report.rwanda = await runGeoBoundariesCountry({ name: 'Rwanda', numericId: '646', alpha3: 'RWA', admLevel: 'ADM2' })
+if (shouldRun('690')) report.seychelles = await runGeoBoundariesCountry({ name: 'Seychelles', numericId: '690', alpha3: 'SYC', admLevel: 'ADM3' })
+if (shouldRun('706')) report.somalia = await runGeoBoundariesCountry({ name: 'Somalia', numericId: '706', alpha3: 'SOM', admLevel: 'ADM2' })
+if (shouldRun('834')) report.tanzania = await runGeoBoundariesCountry({ name: 'Tanzania', numericId: '834', alpha3: 'TZA', admLevel: 'ADM3' })
+if (shouldRun('800')) report.uganda = await runGeoBoundariesCountry({ name: 'Uganda', numericId: '800', alpha3: 'UGA', admLevel: 'ADM4' })
+if (shouldRun('894')) report.zambia = await runGeoBoundariesCountry({ name: 'Zambia', numericId: '894', alpha3: 'ZMB', admLevel: 'ADM2' })
+if (shouldRun('716')) report.zimbabwe = await runGeoBoundariesCountry({ name: 'Zimbabwe', numericId: '716', alpha3: 'ZWE', admLevel: 'ADM2' })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

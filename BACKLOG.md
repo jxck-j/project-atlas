@@ -1239,6 +1239,18 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   rejected 13 of 51, 6 substantial** (found 2026-09-18, "Twenty-sixth pass") — real oversized rural
   department/territory residuals across Central Africa's sparse, forested/Sahelian interior; not chased
   further.
+- **Zambia rejected 44 of 98 points, 35 substantial; Somalia rejected 52 of 76, 27 substantial (concentrated
+  in Somaliland's own Hargeisa-scale districts and limited comprehensive mapping); Kenya rejected 68 of 336,
+  26 substantial; Ethiopia rejected 31 of 255, 26 substantial** (found 2026-09-18,
+  `city-boundaries-architecture.md`'s "Twenty-seventh pass") — real oversized rural district residuals across
+  East Africa; not chased further.
+- **Malawi rejected 14 of 39 points, 6 substantial, including the capital itself (Lilongwe, 1,115,815, in a
+  6,247.85 km² district combining the city with a large rural hinterland)** (found 2026-09-18, "Twenty-seventh
+  pass") — a live OSM check found no separate Lilongwe-city-only boundary either (OSM's own "Lilongwe"
+  relation is the same coarse admin_level=4 district); a real, confirmed gap for the capital specifically, not
+  chased further.
+- **Zimbabwe rejected 37 of 69 points, only 5 substantial** (found 2026-09-18, "Twenty-seventh pass") — real
+  district-scale coarseness; not chased further given the low substantial count.
 
 ## Visualization
 
