@@ -31,9 +31,10 @@
 // 2026-09-18 Central Asia + Caucasus pass: Armenia, Azerbaijan, Georgia,
 // Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan, Uzbekistan, plus the
 // 2026-09-18 South Asia pass: Afghanistan, Pakistan, Nepal, Bhutan,
-// Bangladesh, Sri Lanka, Maldives) — NOT the other 86 UN members yet
-// (India deliberately excluded, same reasoning as Russia). See that doc's
-// migration plan.
+// Bangladesh, Sri Lanka, Maldives, plus the 2026-09-18 East Asia pass:
+// China, Japan, Mongolia, North Korea, South Korea) — NOT the other 81 UN
+// members yet (India deliberately excluded, same reasoning as Russia). See
+// that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -139,6 +140,10 @@ const BOUNDARY_COUNTRIES = [
   { id: '050', name: 'Bangladesh' },
   { id: '144', name: 'Sri Lanka' },
   { id: '462', name: 'Maldives' },
+  { id: '392', name: 'Japan' },
+  { id: '496', name: 'Mongolia' },
+  { id: '408', name: 'North Korea' },
+  { id: '410', name: 'South Korea' },
 ]
 
 function addFromBoundaryFile(countryId) {
@@ -194,6 +199,7 @@ addFromShardedDir('250')
 addFromShardedDir('276')
 addFromShardedDir('380')
 addFromShardedDir('724')
+addFromShardedDir('156')
 
 const usIndex = JSON.parse(fs.readFileSync('public/geo/us-cities-index.json', 'utf8'))
 for (const e of usIndex) {
@@ -215,5 +221,5 @@ const perCountryCounts = BOUNDARY_COUNTRIES.map(
   (c) => `${c.name} ${entries.filter((e) => e.countryId === c.id).length}`,
 ).join(', ')
 console.log(
-  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, Germany ${entries.filter((e) => e.countryId === '276').length}, Italy ${entries.filter((e) => e.countryId === '380').length}, Spain ${entries.filter((e) => e.countryId === '724').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
+  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, Germany ${entries.filter((e) => e.countryId === '276').length}, Italy ${entries.filter((e) => e.countryId === '380').length}, Spain ${entries.filter((e) => e.countryId === '724').length}, China ${entries.filter((e) => e.countryId === '156').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
 )

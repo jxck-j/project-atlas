@@ -9,10 +9,10 @@ import { useSyncExternalStore } from 'react'
 //
 // Generalizes what was useUsCitiesIndex.ts (US-only) into every country
 // city-boundaries-architecture.md's per-feature join has actually verified
-// so far — Jordan, Kuwait, the US, Costa Rica, El Salvador, Guatemala,
-// Honduras, Nicaragua, Panama, Belize, Canada, Mexico — NOT all 193 UN
-// members yet; see that doc's migration plan for why the other 181 aren't
-// included.
+// so far — 112 of 193 UN members as of the Twenty-first pass (2026-09-18,
+// East Asia) — NOT all 193 yet; see that doc's migration plan for the full
+// per-country list and why the remaining 81 (Russia and India both
+// deliberately deferred to their own dedicated passes) aren't included.
 export interface CityIndexEntry {
   id: string
   name: string
@@ -28,9 +28,10 @@ export interface CityIndexEntry {
   // (Montpelier, Pierre, ...) alike — both get the same low-population
   // floor treatment in CityLabels.tsx.
   isCapital: boolean
-  // Only present for state-sharded countries (US 840, Mexico 484) — which
-  // state shard (public/geo/city-boundaries/{countryId}/{stateAbbrev}.json)
-  // holds this city's boundary geometry. See useCityOutline.ts.
+  // Only present for state-sharded countries (see useCityOutline.ts's own
+  // STATE_SHARDED_COUNTRIES) — which state shard
+  // (public/geo/city-boundaries/{countryId}/{stateAbbrev}.json) holds this
+  // city's boundary geometry. See useCityOutline.ts.
   stateAbbrev?: string
 }
 

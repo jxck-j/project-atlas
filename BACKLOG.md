@@ -1144,6 +1144,23 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   border** (found 2026-09-18, "Twentieth pass") — a genuine small-border-town gap, not chased further given
   the country's overall clean result (33/34 kept; Thimphu and Phuntsholing, its two real municipalities, both
   matched correctly — see `city-boundaries-architecture.md`'s Twentieth pass).
+- **China rejected 7,195 of 16,055 points, 278 substantial, dominated by Xinjiang/Inner Mongolia/Tibet/remote
+  Heilongjiang/Yunnan's own genuinely enormous desert/plateau county-level cities** (found 2026-09-18,
+  `city-boundaries-architecture.md`'s "Twenty-first pass") — Hami's own Yizhou District alone is 81,117 km²,
+  larger than several UN member states in this dataset. A live OSM check for a finer township tier
+  (`admin_level=9`) in Xinjiang specifically found exactly 1 relation province-wide, confirming no
+  comprehensive finer tier exists anywhere close to this scale; same accepted "real geography, not a
+  technique failure" shape as Kazakhstan/Afghanistan/Pakistan above, not chased further.
+- **Japan left 1 of 2,190 points unmatched: Minamichita, population 16,617, a small peninsula town in Aichi
+  Prefecture** (found 2026-09-18, "Twenty-first pass") — a genuine small residual (not resolved by the 2km
+  snap fallback either), not chased further given the country's otherwise clean result (2,189/2,190 kept, 0
+  rejected).
+- **Mongolia rejected 269 of 332 points, only 1 substantial (Tosontsengel, 9,526, just over the non-substantial
+  area ceiling)** (found 2026-09-18, "Twenty-first pass") — the world's most sparsely populated sovereign
+  country, and most of its GeoNames points are population-0 bag-center villages inside soums that routinely
+  run 2,000-15,000+ km². A live OSM check for a finer "bag" tier (`admin_level=8`) found zero relations
+  nationwide, confirming soum-level really is the finest comprehensive tier available from any checked source;
+  not chased further.
 
 ## Visualization
 

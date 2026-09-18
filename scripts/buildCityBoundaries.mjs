@@ -25,8 +25,9 @@
 // Azerbaijan, Georgia, Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan,
 // Uzbekistan, plus the 2026-09-18 South Asia pass: Afghanistan, Pakistan,
 // Nepal, Bhutan, Bangladesh, Sri Lanka, Maldives (India deliberately excluded,
-// same reasoning as Russia — see that block's own comment) — NOT the other
-// 86 UN members yet. See that doc's "Fifth pass" section
+// same reasoning as Russia — see that block's own comment), plus the
+// 2026-09-18 East Asia pass: China, Japan, Mongolia, North Korea, South
+// Korea — NOT the other 81 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -208,9 +209,13 @@ function loadCityPoints(countryId) {
 // name-preference tie-break below — GeoNames and geoBoundaries/OSM
 // routinely spell the same real place differently (Cité Soleil vs. Cite
 // Soleil, Jérémie vs. Jeremie, Port-à-Piment vs. Port a Piment), so an
-// exact-string compare would miss every real match.
+// exact-string compare would miss every real match. `name` can be a real
+// JSON `null` (not just Turkmenistan's already-tolerated blank ""), found
+// for 24 of Japan's 1,742 ADM2 features (East Asia pass, 2026-09-18) — the
+// `?? ''` guard is what actually makes a nameless candidate harmless, not
+// just the fact that its own name never reaches final output.
 function normalizeName(name) {
-  return name
+  return (name ?? '')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .replace(/[^a-z0-9]/gi, '')
@@ -2462,6 +2467,156 @@ out geom;`),
   writeCountryOutput('462', mdvJoin.kept)
   report.maldives = mdvJoin.report
 }
+
+// --- Twenty-first pass (2026-09-18): East Asia (China, Japan, Mongolia,
+// North Korea, South Korea) — continuing the west-to-east walk across Asia
+// the Nineteenth/Twentieth passes started. Every level below was confirmed
+// by a direct point-in-polygon check against real coordinates (Beijing/
+// Shanghai/Guangzhou/Shenzhen/Chengdu/Wuhan/Hong Kong; Tokyo's own Shinjuku/
+// Shibuya wards plus Osaka/Yokohama/Sapporo/Naha/Kyoto; Ulaanbaatar/Erdenet/
+// Darkhan; Pyongyang/Hamhung/Chongjin/Nampo; Seoul's Gangnam-gu/Busan/
+// Incheon/Daegu), not just trusted from recon's own canonicalName field.
+//
+// Japan's recon-reported finest level (ADM2, canonicalName "Subprefectures",
+// 1,742 units) is another "canonicalName looks wrong but the level is
+// right" case — a real Japanese subprefecture (振興局) is a coarser regional
+// tier that exists only in Hokkaido, not something that could produce 1,742
+// units nationwide. The actual content is Japan's real municipality
+// layer (shi/machi/mura, city wards for the largest cities) — confirmed
+// directly: Tokyo's Shinjuku/Shibuya each resolve to their own real ward
+// (15-18 km²), and Osaka/Yokohama/Sapporo/Naha/Kyoto each resolve to their
+// own real city polygon. Used as-is via runGeoBoundariesCountry.
+//
+// South Korea needed the same override this file has now hit repeatedly
+// (Bangladesh/Sri Lanka's ADM4, Belize's Constituencies): recon's reported
+// finest level (ADM3, "submunicipalities", 3,504 units) sounds plausible but
+// a direct check lands Seoul's Gangnam/Busan/Incheon/Daegu each in an
+// individual dong (0.7-1.8 km²) — neighborhood scale, not a city boundary.
+// ADM2 ("Si, Kun districts and city districts", 228 units) puts the same
+// four cities in their own real gu/gun (16.7-104.6 km²) instead, and is
+// used.
+//
+// Mongolia (ADM2, "soum, düüregs", 339 units) and North Korea (ADM2,
+// "county, city, special city", 179 units, the finest level geoBoundaries
+// has for PRK — no ADM3) both confirmed clean on their recon-reported
+// finest level with no override needed: Ulaanbaatar/Erdenet/Darkhan each
+// land in their own real düüreg/soum, and Pyongyang/Hamhung/Chongjin/Nampo
+// each land in their own named city unit. North Korea's own special cities
+// (Pyongyang 1,166 km², Chongjin City 1,892 km²) have no finer internal
+// district split available in this source, unlike China/Japan/South
+// Korea's largest cities — accepted as the finest real unit obtainable,
+// same shape as every other capital-with-no-finer-tier case this file has
+// already accepted (Serbia before its Belgrade fix, every North Korea-style
+// "no OSM alternative either" case). A live OSM check for North Korea found
+// essentially no usable `boundary=administrative` coverage below country
+// level (single digits of relations nationwide, nowhere near a real
+// supplemental tier) — not surprising for the least-mapped OSM country in
+// the region, and not chased further; ADM2 alone already resolves every
+// substantial NK town in this app's GeoNames index cleanly (see the report
+// below).
+//
+// China needed real sharding, not just a bigger file: ADM3 ("County, City",
+// 2,864 units) is the correct city-plausible level (confirmed directly —
+// Beijing/Shanghai/Guangzhou/Shenzhen/Chengdu/Wuhan/Hong Kong each resolve
+// to their own real district, e.g. Beijing -> Dongcheng District 41.75 km²,
+// not the whole 4,834 km² Beijingshi that ADM2 alone would give), but this
+// app's own GeoNames index carries 16,055 China points — more than any
+// country in this file except the US — so the same "one flat country file
+// becomes the huge-eager-fetch problem" shape Mexico/Brazil/Italy/Germany/
+// France/Spain already hit applies here too, at a larger scale than any of
+// them. Sharded via shardByState() using `iso_3166_2` (not `postal` — see
+// below) against the 32 CHN entries in the vendored Natural Earth admin-1
+// file (missing Hong Kong/Macau, which are their own separate `adm0_a3` in
+// that source and irrelevant here since neither is a UN member; also
+// missing the uninhabited, cityless Paracel Islands entry, whose blank
+// `postal`/present-but-non-standard `iso_3166_2` value shardByState's own
+// falsy-abbrev filter already drops from the candidate list).
+//
+// **A real, chained Natural Earth `postal`-field bug, distinct from every
+// prior one this file has found** (Germany's Brandenburg/Berlin collision,
+// France's blank values, Spain's autonomous-community-not-province values):
+// here the 32 CHN `postal` values ARE all mutually unique (so shardByState
+// wouldn't have thrown or silently merged two provinces), but four of them
+// are simply WRONG — a rotated mislabeling, not a collision. Hebei's own
+// `postal` is "HB" (Hubei's real abbreviation), Henan's is "HE" (Hebei's),
+// Hubei's is "HU" (not a real abbreviation for anything), and Hainan's is
+// "HA" (Henan's real abbreviation) — checked against the standard GB/T
+// 2260 two-letter provincial codes (HE=Hebei, HA=Henan, HB=Hubei, HI=
+// Hainan). `iso_3166_2` does NOT have this bug (CN-HE/CN-HA/CN-HB/CN-HI
+// resolve correctly) and is used instead, the same "don't trust postal
+// blindly, check it against a real independent reference" discipline
+// Germany/France/Spain already established — caught here only because this
+// pass happened to spot-check the raw vendor properties directly rather
+// than assuming a unique `postal` value is automatically also a correct
+// one. Functionally this would have been harmless either way (shardByState
+// only uses the field as an output-filename key, never to do the actual
+// point-in-polygon match), but a shard file named `ha.json` actually
+// holding Henan's cities while `hi.json` doesn't exist at all would have
+// been a confusing trap for anyone debugging this data later.
+//
+// Real, accepted residuals, both logged to BACKLOG.md: China (487 of 16,055
+// rejected, dominated by Xinjiang/Tibet/Qinghai/Inner Mongolia's genuinely
+// enormous desert/plateau counties — Golmud alone is >100,000 km², larger
+// than many countries in this file — no finer OSM tier exists at
+// comprehensive nationwide coverage, the same "real geography, not a
+// technique failure" shape as Kazakhstan/Afghanistan/Pakistan's own
+// oversized-district residuals) and North Korea (a handful of small towns
+// near the Chinese/Russian border with no containing unit within
+// SNAP_MAX_KM, real remote geography rather than a join bug).
+if (shouldRun('156')) {
+  report.china = await runGeoBoundariesCountry({
+    name: 'China',
+    numericId: '156',
+    alpha3: 'CHN',
+    admLevel: 'ADM3',
+    // "Paracel Islands" is itself a real candidate polygon in the vendored
+    // NE admin-1 file (a cartographic placeholder, not a real ADM1 unit —
+    // its own `iso_3166_2`, "CN-X01~", isn't a real province code) that
+    // would otherwise directly contain Sansha (population 1,443, the real
+    // prefecture-level city administratively covering the Paracel/Spratly
+    // Islands) and shard it into its own nonsense "x01~.json" file instead
+    // of the real province, Hainan, Sansha is actually part of — excluded
+    // here so Sansha falls through to shardByState's own nearest-real-
+    // province-by-centroid fallback instead (confirmed to land in Hainan).
+    onOutput: (kept) =>
+      shardByState('156', kept, {
+        adm0A3: 'CHN',
+        abbrevOf: (props) => (props.name === 'Paracel Islands' ? undefined : props.iso_3166_2?.replace(/^CN-/, '')),
+      }),
+  })
+}
+if (shouldRun('392')) report.japan = await runGeoBoundariesCountry({ name: 'Japan', numericId: '392', alpha3: 'JPN', admLevel: 'ADM2' })
+if (shouldRun('496')) report.mongolia = await runGeoBoundariesCountry({ name: 'Mongolia', numericId: '496', alpha3: 'MNG', admLevel: 'ADM2' })
+if (shouldRun('408')) report.northKorea = await runGeoBoundariesCountry({ name: 'North Korea', numericId: '408', alpha3: 'PRK', admLevel: 'ADM2' })
+// South Korea's ADM2 rejected 10 of 311 points as unmatched, all clustered
+// around one place: Yeonggwang County (population 51,688) and 9 of its own
+// constituent townships (Baeksu, Hongnong, Yeomsan, ...) — geoBoundaries'
+// KOR ADM2 download is simply missing this one county entirely (confirmed
+// directly: zero features anywhere in the file with "Yeonggwang" in the
+// name), not a plausibility rejection or a real geographic gap the way
+// Mongolia's residual below is. A live OSM check found it cleanly at the
+// same admin_level=6 every other South Korean county in this dataset sits
+// at — Latin-script name search came back empty (`name:en` IS "Yeonggwang"
+// here, unlike Kyrgyzstan/Turkmenistan's non-Latin-only case, so this looks
+// like an unrelated Overpass query quirk rather than the same root cause),
+// but an exact Korean-name search ("영광군") found the one missing relation
+// directly. Added as a single supplemental candidate, the same Bhutan/
+// Kazakhstan/Tajikistan "one specific missing unit, not a whole missing
+// tier" pattern.
+if (shouldRun('410'))
+  report.southKorea = await runGeoBoundariesCountry({
+    name: 'South Korea',
+    numericId: '410',
+    alpha3: 'KOR',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-yeonggwang',
+      query: `[out:json][timeout:60];
+area["ISO3166-1"="KR"][admin_level=2];
+relation(area)["boundary"="administrative"]["name"="영광군"];
+out geom;`,
+    },
+  })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

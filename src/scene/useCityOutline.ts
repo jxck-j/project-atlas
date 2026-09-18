@@ -9,14 +9,20 @@ import { useSelection } from '../hud/selectionStore'
 // doesn't re-fetch. Generalizes what was useUsCityOutline.ts: a country
 // large enough that even its per-country file is itself a "huge eager-
 // shaped file" (US, then Mexico, then Brazil, then Peru, then Argentina,
-// then France, then Germany — see buildCityBoundaries.mjs's own
-// shardByState() comment) stays sharded by state
-// (public/geo/city-boundaries/{countryId}/{state}.json, matching
+// then France, then Germany, then Italy, then Spain, then China — see
+// buildCityBoundaries.mjs's own shardByState() comment) stays sharded by
+// state (public/geo/city-boundaries/{countryId}/{state}.json, matching
 // us-cities/{state}.json's existing per-state granularity); every other
 // verified country (Jordan, Kuwait, Central America, the rest of South
-// America, the rest of Europe) is small enough to ship as one file per
-// country.
-const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250', '276'])
+// America, the rest of Europe, the rest of Asia) is small enough to ship as
+// one file per country.
+//
+// '380' (Italy) and '724' (Spain) were missing here despite being sharded
+// since the Sixteenth pass (2026-09-17) — caught only while adding '156'
+// (China) for the Twenty-first pass (2026-09-18), a real pre-existing gap
+// that would have made shardUrl() silently 404 against a whole-country file
+// that doesn't exist for any Italian or Spanish city outline lookup.
+const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250', '276', '380', '724', '156'])
 
 const shardCache = new Map<string, Feature[]>()
 const inFlight = new Map<string, Promise<void>>()
