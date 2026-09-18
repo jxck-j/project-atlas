@@ -1085,6 +1085,23 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **Iran left 17 of 2,632 points unmatched, including one provincial capital (Yasuj, 96,786)** (found
   2026-09-18, "Eighteenth pass") — not investigated further given the pass's overall 96% match rate; worth a
   closer look if Iran's own coverage is ever revisited.
+- **Oman rejected 7 of 39 points, 3 substantial** — Thamarīt (10,552), Adam (17,283), and 'Ibrī (163,473, a
+  real, sizeable city) — all matched to wilayat polygons over 20,000 km² (found 2026-09-18, "Eighteenth
+  pass"). Oman's 61 wilayat are geoBoundaries' only level and genuinely the country's real base
+  local-government unit (not a coarser tier sitting above a municipality layer that doesn't exist), so this
+  is the same "real desert district, no finer real tier" shape as Jordan's qadas — not investigated against
+  OSM for a possible finer layer the way Iraq/Lebanon/Saudi Arabia were, so worth a check if Oman's own
+  coverage is ever revisited.
+- **Turkey left 1 of 4,028 points unmatched (Çey, a small town near the Iraq border) and rejected 317, none
+  substantial** (found 2026-09-18, "Eighteenth pass") — the usual small-village-in-oversized-rural-ilçe
+  residual tail this file has already logged for Ecuador/Ireland/Sweden/Greece; not chased further since no
+  real city was affected.
+- **Syria rejected 16 of 310 points, 1 substantial (Tadmur/Palmyra, 51,015, in a 17,173.9 km² desert
+  sub-district) and left 0 unmatched** (found 2026-09-18, "Eighteenth pass") — same accepted desert-district
+  shape as Oman/Jordan above, not chased further.
+- **Yemen rejected 47 of 316 points, 1 substantial (Al Ghaydhah, 10,948, in a 7,182 km² district) and left 0
+  unmatched** (found 2026-09-18, "Eighteenth pass") — same accepted desert-district shape, not chased
+  further.
 
 ## Visualization
 
