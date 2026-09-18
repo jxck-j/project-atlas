@@ -47815,5 +47815,2915 @@
       }
     ],
     "snapped": []
+  },
+  "armenia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "azerbaijan": {
+    "unmatched": [
+      {
+        "name": "Neft Daşları",
+        "population": 916,
+        "lat": 40.25213,
+        "lng": 50.84003
+      }
+    ],
+    "rejected": [
+      {
+        "name": "İstisu",
+        "population": 929,
+        "matchedTo": "Kalbajar District",
+        "areaSqKm": 2857.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vank",
+        "population": 1335,
+        "matchedTo": "Kalbajar District",
+        "areaSqKm": 2857.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Türkan",
+        "population": 9699,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shongar",
+        "population": 730,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sanqaçal",
+        "population": 4200,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Puta",
+        "population": 1018,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nardaran",
+        "population": 7700,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lahij",
+        "population": 800,
+        "matchedTo": "Ismailli District",
+        "areaSqKm": 2047.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyurdakhany",
+        "population": 6600,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyudyurlyu",
+        "population": 547,
+        "matchedTo": "Shaki District",
+        "areaSqKm": 2302.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qudula",
+        "population": 870,
+        "matchedTo": "Shaki District",
+        "areaSqKm": 2302.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khojasan",
+        "population": 5089,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korgöz",
+        "population": 2036,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kalbajar",
+        "population": 8400,
+        "matchedTo": "Kalbajar District",
+        "areaSqKm": 2857.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qala",
+        "population": 2709,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gyurgyan",
+        "population": 712,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goradil",
+        "population": 2000,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fatmayı",
+        "population": 1816,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bilajer",
+        "population": 8983,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Basgal",
+        "population": 1500,
+        "matchedTo": "Ismailli District",
+        "areaSqKm": 2047.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baş Göynük",
+        "population": 1658,
+        "matchedTo": "Shaki District",
+        "areaSqKm": 2302.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aşağı Küngüt",
+        "population": 1298,
+        "matchedTo": "Shaki District",
+        "areaSqKm": 2302.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Daşüz",
+        "population": 1243,
+        "matchedTo": "Shaki District",
+        "areaSqKm": 2302.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hacıhüseynli",
+        "population": 1731,
+        "matchedTo": "Quba District",
+        "areaSqKm": 2568.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ramana",
+        "population": 8855,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "28 May",
+        "population": 7100,
+        "matchedTo": "Baku City",
+        "areaSqKm": 2111.3,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "georgia": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zhinvali",
+        "population": 2643,
+        "matchedTo": "Dusheti",
+        "areaSqKm": 3000.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uplistsikhe",
+        "population": 728,
+        "matchedTo": "Gori",
+        "areaSqKm": 2206,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tbeti",
+        "population": 530,
+        "matchedTo": "Gori",
+        "areaSqKm": 2206,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pasanauri",
+        "population": 1084,
+        "matchedTo": "Dusheti",
+        "areaSqKm": 3000.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mestia",
+        "population": 1689,
+        "matchedTo": "Mestia",
+        "areaSqKm": 3232.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mat’ani",
+        "population": 4451,
+        "matchedTo": "Akhmeta",
+        "areaSqKm": 2285.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khet’agurovi",
+        "population": 850,
+        "matchedTo": "Gori",
+        "areaSqKm": 2206,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dusheti",
+        "population": 7389,
+        "matchedTo": "Dusheti",
+        "areaSqKm": 3000.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dedoplistsqaro",
+        "population": 5460,
+        "matchedTo": "Dedoplis Tskaro",
+        "areaSqKm": 2574.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akhmeta",
+        "population": 5664,
+        "matchedTo": "Akhmeta",
+        "areaSqKm": 2285.8,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "uzbekistan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Mŭynoq",
+        "population": 13500,
+        "matchedTo": "Moynaq rayonı",
+        "areaSqKm": 37627.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qŭnghirot",
+        "population": 80090,
+        "matchedTo": "Kungrad",
+        "areaSqKm": 75138.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karakalpakiya",
+        "population": 3013,
+        "matchedTo": "Kungrad",
+        "areaSqKm": 75138.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oltinko‘l",
+        "population": 59122,
+        "matchedTo": "Kungrad",
+        "areaSqKm": 75138.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qo‘ng‘irot Shahri",
+        "population": 0,
+        "matchedTo": "Kungrad",
+        "areaSqKm": 75138.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mo‘ynoq Shahri",
+        "population": 0,
+        "matchedTo": "Moynaq rayonı",
+        "areaSqKm": 37627.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jondor Shaharchasi",
+        "population": 0,
+        "matchedTo": "Jondor tumani",
+        "areaSqKm": 5029.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nurobod Shahri",
+        "population": 0,
+        "matchedTo": "Nurabad",
+        "areaSqKm": 4759.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yangi Mirishkor",
+        "population": 0,
+        "matchedTo": "Mirishkar",
+        "areaSqKm": 2919,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qorovulbozor",
+        "population": 9200,
+        "matchedTo": "Qorovulbozor tumani",
+        "areaSqKm": 2260.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karakul’",
+        "population": 22487,
+        "matchedTo": "Karakul",
+        "areaSqKm": 5801.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qorako‘l Shahri",
+        "population": 0,
+        "matchedTo": "Karakul",
+        "areaSqKm": 5801.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qorovulbozor Shahri",
+        "population": 0,
+        "matchedTo": "Qorovulbozor tumani",
+        "areaSqKm": 2260.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qorashina",
+        "population": 0,
+        "matchedTo": "Dehkanabad",
+        "areaSqKm": 3900.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Muborak Shahri",
+        "population": 0,
+        "matchedTo": "Mubarek",
+        "areaSqKm": 3119.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "G‘uzor Shahri",
+        "population": 0,
+        "matchedTo": "Gʻuzor tumani",
+        "areaSqKm": 2594.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qamashi Shahri",
+        "population": 0,
+        "matchedTo": "Qamashi tumani",
+        "areaSqKm": 2627.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yangi-Nishon Shahri",
+        "population": 0,
+        "matchedTo": "Nishan",
+        "areaSqKm": 2022.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yangibozor Qishlog’i",
+        "population": 0,
+        "matchedTo": "Shafirkan",
+        "areaSqKm": 3805.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uchkuduk",
+        "population": 26800,
+        "matchedTo": "Peshku",
+        "areaSqKm": 8496.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tomdibuloq",
+        "population": 0,
+        "matchedTo": "Tomdi tumani",
+        "areaSqKm": 41346.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taxtako‘pir",
+        "population": 0,
+        "matchedTo": "Taxtakópir rayonı",
+        "areaSqKm": 16620.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nurota",
+        "population": 32300,
+        "matchedTo": "Nurota tumani",
+        "areaSqKm": 6846.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Novyy Turtkul’",
+        "population": 48908,
+        "matchedTo": "Turtkul",
+        "areaSqKm": 6406.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Qorao‘zak",
+        "population": 0,
+        "matchedTo": "Karauzyak",
+        "areaSqKm": 5441.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konimex",
+        "population": 0,
+        "matchedTo": "Gijduvan",
+        "areaSqKm": 3881.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gazli",
+        "population": 8100,
+        "matchedTo": "Romitan tumani",
+        "areaSqKm": 3803,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyldzhar",
+        "population": 3000,
+        "matchedTo": "Bo'stonliq Tumani",
+        "areaSqKm": 4910.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burchmulla",
+        "population": 4000,
+        "matchedTo": "Bo'stonliq Tumani",
+        "areaSqKm": 4910.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qizilcha",
+        "population": 3400,
+        "matchedTo": "Nurota tumani",
+        "areaSqKm": 6846.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beruniy Shahri",
+        "population": 0,
+        "matchedTo": "Beruniy",
+        "areaSqKm": 3772.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "To‘rtko‘l Shahri",
+        "population": 0,
+        "matchedTo": "Turtkul",
+        "areaSqKm": 6406.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bo‘ston Shahri",
+        "population": 0,
+        "matchedTo": "Ellikkala",
+        "areaSqKm": 5017.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uchquduq Shahri",
+        "population": 0,
+        "matchedTo": "Uchquduq tumani",
+        "areaSqKm": 47518.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qiziltepa Shahri",
+        "population": 0,
+        "matchedTo": "Qiziltepa tumani",
+        "areaSqKm": 2067.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nurota Shahri",
+        "population": 0,
+        "matchedTo": "Nurota tumani",
+        "areaSqKm": 6846.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pop Shahri",
+        "population": 0,
+        "matchedTo": "Pap",
+        "areaSqKm": 2909.3,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "kyrgyzstan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Tayan",
+        "population": 1693,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Eshme",
+        "population": 1100,
+        "matchedTo": "Chong-Alay District",
+        "areaSqKm": 4786.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korgon",
+        "population": 2204,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aydarken",
+        "population": 11857,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Katran",
+        "population": 7149,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Daroot-Korgon",
+        "population": 6421,
+        "matchedTo": "Chong-Alay District",
+        "areaSqKm": 4786.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Andarak",
+        "population": 8001,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uch-Korgon",
+        "population": 14708,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tossor",
+        "population": 900,
+        "matchedTo": "Jeti-Ögüz District",
+        "areaSqKm": 13547,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tortkël’",
+        "population": 4825,
+        "matchedTo": "Toktogul District",
+        "areaSqKm": 8611.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Suu",
+        "population": 14009,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tegizchil",
+        "population": 1791,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sosnovka",
+        "population": 5885,
+        "matchedTo": "Jayyl District",
+        "areaSqKm": 3094.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Suu",
+        "population": 15075,
+        "matchedTo": "Jeti-Ögüz District",
+        "areaSqKm": 13547,
+        "isSubstantial": true
+      },
+      {
+        "name": "Orozbekovo",
+        "population": 3503,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bakai-Ata",
+        "population": 0,
+        "matchedTo": "Bakay-Ata District",
+        "areaSqKm": 2331.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Tuu",
+        "population": 1703,
+        "matchedTo": "Tong District",
+        "areaSqKm": 7188.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kochkor",
+        "population": 0,
+        "matchedTo": "Koçkor district",
+        "areaSqKm": 6607.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khalmion",
+        "population": 6274,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayirma",
+        "population": 2554,
+        "matchedTo": "Toktogul District",
+        "areaSqKm": 8611.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karavan",
+        "population": 1100,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kara-Dzhygach",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kanysh-Kyya",
+        "population": 4805,
+        "matchedTo": "Chatkal District",
+        "areaSqKm": 6118.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaindy",
+        "population": 9561,
+        "matchedTo": "Panfilov District",
+        "areaSqKm": 4935.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kadzhi-Say",
+        "population": 4000,
+        "matchedTo": "Tong District",
+        "areaSqKm": 7188.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ivanovo-Alekseyevka",
+        "population": 0,
+        "matchedTo": "Talas District",
+        "areaSqKm": 5044.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kolkhoz Imeni Kirova",
+        "population": 5518,
+        "matchedTo": "Toktogul District",
+        "areaSqKm": 8611.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gul’cha",
+        "population": 13755,
+        "matchedTo": "Alay District",
+        "areaSqKm": 7510.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Chayek",
+        "population": 3762,
+        "matchedTo": "Jumgal District",
+        "areaSqKm": 5355.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Birbash",
+        "population": 2535,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boz-Beshik",
+        "population": 5237,
+        "matchedTo": "Jeti-Ögüz District",
+        "areaSqKm": 13547,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bokombayevskoye",
+        "population": 14267,
+        "matchedTo": "Tong District",
+        "areaSqKm": 7188.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Baetovo",
+        "population": 10682,
+        "matchedTo": "Ak-Talaa District",
+        "areaSqKm": 6315,
+        "isSubstantial": true
+      },
+      {
+        "name": "At-Bashi",
+        "population": 14655,
+        "matchedTo": "At-Bashy District",
+        "areaSqKm": 18520.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Alga",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Dzhar",
+        "population": 5559,
+        "matchedTo": "At-Bashy District",
+        "areaSqKm": 18520.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akbulun",
+        "population": 2546,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Bulung",
+        "population": 2498,
+        "matchedTo": "Tüp District",
+        "areaSqKm": 2122.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beshkent",
+        "population": 0,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toktogul",
+        "population": 20577,
+        "matchedTo": "Toktogul District",
+        "areaSqKm": 8611.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Talas",
+        "population": 0,
+        "matchedTo": "Talas District",
+        "areaSqKm": 5044.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Üch-Terek",
+        "population": 0,
+        "matchedTo": "Toktogul District",
+        "areaSqKm": 8611.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kara-Dëbë",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kara-Kulja",
+        "population": 15616,
+        "matchedTo": "Kara-Kulja District",
+        "areaSqKm": 5812.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ak-Jol",
+        "population": 3046,
+        "matchedTo": "Aksy District",
+        "areaSqKm": 4612.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bozbulun",
+        "population": 1183,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akbulek",
+        "population": 2498,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zyndan",
+        "population": 1425,
+        "matchedTo": "Ak-Suu District",
+        "areaSqKm": 9525.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chek",
+        "population": 0,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kara-Bak",
+        "population": 0,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Samarkandyk",
+        "population": 8015,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Bel’",
+        "population": 7481,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Korgon",
+        "population": 908,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyrgyz-Kyshtak",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzyl-Bulak",
+        "population": 2272,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boz-Adyr",
+        "population": 0,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Markaz",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kulundu",
+        "population": 8250,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Suu",
+        "population": 0,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toguz-Bulak",
+        "population": 0,
+        "matchedTo": "Leylek District",
+        "areaSqKm": 4615.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Tatyr",
+        "population": 0,
+        "matchedTo": "Batken District",
+        "areaSqKm": 5884.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ormosh",
+        "population": 0,
+        "matchedTo": "Kadamjay District",
+        "areaSqKm": 6409.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ak-Say",
+        "population": 0,
+        "matchedTo": "Batken Region",
+        "areaSqKm": 16960.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "turkmenistan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Ýaşlyk",
+        "population": 8172,
+        "matchedTo": "Ak bugday District",
+        "areaSqKm": 22520.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ýaňgala",
+        "population": 8657,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gulmaç",
+        "population": 1998,
+        "matchedTo": "Bereket District",
+        "areaSqKm": 19534,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nowata",
+        "population": 892,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Balkanabat",
+        "population": 87822,
+        "matchedTo": "Balkanabat City",
+        "areaSqKm": 16029.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kaka",
+        "population": 33315,
+        "matchedTo": "Kaka District",
+        "areaSqKm": 8889,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yzgant",
+        "population": 6547,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gämi",
+        "population": 18148,
+        "matchedTo": "Ak bugday District",
+        "areaSqKm": 22520.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gökdepe",
+        "population": 33381,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bokurdak",
+        "population": 7726,
+        "matchedTo": "Ak bugday District",
+        "areaSqKm": 22520.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bäherden",
+        "population": 37588,
+        "matchedTo": "Baherden District",
+        "areaSqKm": 14896.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Babaarap",
+        "population": 9681,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Berkarar",
+        "population": 2747,
+        "matchedTo": "Ak bugday District",
+        "areaSqKm": 22520.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arçman",
+        "population": 6014,
+        "matchedTo": "Baherden District",
+        "areaSqKm": 14896.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Änew",
+        "population": 28653,
+        "matchedTo": "Ak bugday District",
+        "areaSqKm": 22520.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yylanly",
+        "population": 36594,
+        "matchedTo": "Akdepe District",
+        "areaSqKm": 11246,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ýaňyajy",
+        "population": 970,
+        "matchedTo": "Türkmenbaşy District",
+        "areaSqKm": 71794.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Görogly",
+        "population": 26770,
+        "matchedTo": "Gorogly District",
+        "areaSqKm": 15120.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Saparmurat Turkmenbashy",
+        "population": 6770,
+        "matchedTo": "Saparmurat Turkmenbashy District",
+        "areaSqKm": 18922.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oýrat",
+        "population": 21160,
+        "matchedTo": "Şabat District",
+        "areaSqKm": 7643.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Akdepe",
+        "population": 14177,
+        "matchedTo": "Akdepe District",
+        "areaSqKm": 11246,
+        "isSubstantial": true
+      },
+      {
+        "name": "Guwlymaýak",
+        "population": 1853,
+        "matchedTo": "Türkmenbaşy District",
+        "areaSqKm": 71794.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yolöten",
+        "population": 37705,
+        "matchedTo": "Yoloten District",
+        "areaSqKm": 8438.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Garlyk",
+        "population": 879,
+        "matchedTo": "Köýtendag District",
+        "areaSqKm": 4757.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bagtyýarlyk",
+        "population": 1727,
+        "matchedTo": "Bayramaly District",
+        "areaSqKm": 11570.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Türkmengala",
+        "population": 16696,
+        "matchedTo": "Turkmengala District",
+        "areaSqKm": 9512.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tejen",
+        "population": 67488,
+        "matchedTo": "Tejen District",
+        "areaSqKm": 9290.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gaňňaly",
+        "population": 3580,
+        "matchedTo": "Sarahs District",
+        "areaSqKm": 6265.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tallymerjen",
+        "population": 3399,
+        "matchedTo": "Döwletli District",
+        "areaSqKm": 4061.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shatlyk",
+        "population": 7000,
+        "matchedTo": "Oguzhan District",
+        "areaSqKm": 2043.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Seydi",
+        "population": 17762,
+        "matchedTo": "Danew District",
+        "areaSqKm": 16719.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Saýat",
+        "population": 17762,
+        "matchedTo": "Saýat District",
+        "areaSqKm": 12459.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Berkarar",
+        "population": 1408,
+        "matchedTo": "Bayramaly District",
+        "areaSqKm": 11570.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Murgap",
+        "population": 14822,
+        "matchedTo": "Murgap District",
+        "areaSqKm": 5018.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Serhetçi",
+        "population": 3372,
+        "matchedTo": "Tagtabazar District",
+        "areaSqKm": 27960.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mekan",
+        "population": 2618,
+        "matchedTo": "Hojambaz District",
+        "areaSqKm": 5774.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Künjek",
+        "population": 735,
+        "matchedTo": "Köýtendag District",
+        "areaSqKm": 4757.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Garaşsyzlyk",
+        "population": 8673,
+        "matchedTo": "Tejen District",
+        "areaSqKm": 9290.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kommunizm",
+        "population": 1674,
+        "matchedTo": "Wekilbazar District",
+        "areaSqKm": 9553.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hojambaz",
+        "population": 13485,
+        "matchedTo": "Hojambaz District",
+        "areaSqKm": 5774.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Halaç",
+        "population": 20778,
+        "matchedTo": "Halaç District",
+        "areaSqKm": 5464.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kerki",
+        "population": 33242,
+        "matchedTo": "Kerki District",
+        "areaSqKm": 7916.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karabekaul",
+        "population": 5509,
+        "matchedTo": "Garabekewül etraby",
+        "areaSqKm": 3232.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Serhetabat",
+        "population": 5200,
+        "matchedTo": "Tagtabazar District",
+        "areaSqKm": 27960.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Duşak",
+        "population": 8405,
+        "matchedTo": "Kaka District",
+        "areaSqKm": 8889,
+        "isSubstantial": false
+      },
+      {
+        "name": "Galkynyş",
+        "population": 7932,
+        "matchedTo": "Danew District",
+        "areaSqKm": 16719.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çaşgyn",
+        "population": 15470,
+        "matchedTo": "Sakarçäge District",
+        "areaSqKm": 9014.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Köýtendag",
+        "population": 8654,
+        "matchedTo": "Köýtendag District",
+        "areaSqKm": 4757.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Burdalyk",
+        "population": 4558,
+        "matchedTo": "Hojambaz District",
+        "areaSqKm": 5774.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Babadaykhan",
+        "population": 13440,
+        "matchedTo": "Babadayhan District",
+        "areaSqKm": 13496.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Babadaýhan",
+        "population": 13440,
+        "matchedTo": "Babadayhan District",
+        "areaSqKm": 13496.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Astanababa",
+        "population": 11466,
+        "matchedTo": "Kerki District",
+        "areaSqKm": 7916.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Alnyş",
+        "population": 1539,
+        "matchedTo": "Yoloten District",
+        "areaSqKm": 8438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akgüzer",
+        "population": 2926,
+        "matchedTo": "Yoloten District",
+        "areaSqKm": 8438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çaçe",
+        "population": 5067,
+        "matchedTo": "Altyn asyr District",
+        "areaSqKm": 5180.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oguzhan",
+        "population": 6430,
+        "matchedTo": "Oguzhan District",
+        "areaSqKm": 2043.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tagtabazar",
+        "population": 13312,
+        "matchedTo": "Tagtabazar District",
+        "areaSqKm": 27960.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nyyazow",
+        "population": 7291,
+        "matchedTo": "Şabat District",
+        "areaSqKm": 7643.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gazojak",
+        "population": 21021,
+        "matchedTo": "Darganata District",
+        "areaSqKm": 17324.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Birata",
+        "population": 13777,
+        "matchedTo": "Darganata District",
+        "areaSqKm": 17324.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bowga",
+        "population": 4094,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bükri",
+        "population": 2316,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hasan",
+        "population": 508,
+        "matchedTo": "Türkmenbaşy District",
+        "areaSqKm": 71794.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Isgender",
+        "population": 858,
+        "matchedTo": "Bereket District",
+        "areaSqKm": 19534,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gyzylgaýa",
+        "population": 4278,
+        "matchedTo": "Saýat District",
+        "areaSqKm": 12459.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Garaköl",
+        "population": 2474,
+        "matchedTo": "Yoloten District",
+        "areaSqKm": 8438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aşyr Kakabaýew",
+        "population": 9603,
+        "matchedTo": "Saparmurat Turkmenbashy District",
+        "areaSqKm": 18922.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Täze eýýam",
+        "population": 5196,
+        "matchedTo": "Gökdepe District",
+        "areaSqKm": 15860.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bagtyýarlyk",
+        "population": 9804,
+        "matchedTo": "Tejen District",
+        "areaSqKm": 9290.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Parahat",
+        "population": 2494,
+        "matchedTo": "Oguzhan District",
+        "areaSqKm": 2043.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lälezar",
+        "population": 1336,
+        "matchedTo": "Yoloten District",
+        "areaSqKm": 8438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çärjew",
+        "population": 1825,
+        "matchedTo": "Çärjew District",
+        "areaSqKm": 11956.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Döwletli",
+        "population": 4942,
+        "matchedTo": "Döwletli District",
+        "areaSqKm": 4061.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gökdepe",
+        "population": 6767,
+        "matchedTo": "Murgap District",
+        "areaSqKm": 5018.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zynhary",
+        "population": 2311,
+        "matchedTo": "Halaç District",
+        "areaSqKm": 5464.2,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "kazakhstan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zhetybay",
+        "population": 11731,
+        "matchedTo": "Qaraqïya District",
+        "areaSqKm": 64224.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zhanama",
+        "population": 760,
+        "matchedTo": "Сарытоғай ауылдық округі",
+        "areaSqKm": 2247.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Temir",
+        "population": 2560,
+        "matchedTo": "Temirskiy",
+        "areaSqKm": 12470,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taūshyq",
+        "population": 2600,
+        "matchedTo": "Таушық ауылдық округі",
+        "areaSqKm": 4824.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shubarshi",
+        "population": 8651,
+        "matchedTo": "Temirskiy",
+        "areaSqKm": 12470,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shubarkuduk",
+        "population": 11733,
+        "matchedTo": "Temirskiy",
+        "areaSqKm": 12470,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shetpe",
+        "population": 11836,
+        "matchedTo": "Mangystau District",
+        "areaSqKm": 45771.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shalqar",
+        "population": 27399,
+        "matchedTo": "Shalkarskiy",
+        "areaSqKm": 61826.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shalkar",
+        "population": 27072,
+        "matchedTo": "Kurmangazinskiy",
+        "areaSqKm": 20913.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Say-Otes",
+        "population": 1571,
+        "matchedTo": "Mangystau District",
+        "areaSqKm": 45771.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oyyl",
+        "population": 6472,
+        "matchedTo": "Uilskiy",
+        "areaSqKm": 10770.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qobda",
+        "population": 0,
+        "matchedTo": "Khobdinskiy",
+        "areaSqKm": 13571.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Munayshy",
+        "population": 4085,
+        "matchedTo": "Qaraqïya District",
+        "areaSqKm": 64224.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Miyaly",
+        "population": 6213,
+        "matchedTo": "Миялы ауылдық округі",
+        "areaSqKm": 2087,
+        "isSubstantial": false
+      },
+      {
+        "name": "Martuk",
+        "population": 7756,
+        "matchedTo": "Martök district",
+        "areaSqKm": 6438.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khromtau",
+        "population": 23715,
+        "matchedTo": "Xromtaw district",
+        "areaSqKm": 12583.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karaton",
+        "population": 8905,
+        "matchedTo": "Қосшағыл ауылдық округі",
+        "areaSqKm": 16323.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuryk",
+        "population": 11836,
+        "matchedTo": "Qaraqïya District",
+        "areaSqKm": 64224.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Embi",
+        "population": 18760,
+        "matchedTo": "Muğaljar district",
+        "areaSqKm": 29288.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dossor",
+        "population": 9526,
+        "matchedTo": "Makatskiy",
+        "areaSqKm": 4632.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bayganin",
+        "population": 7657,
+        "matchedTo": "Bayğanïn District",
+        "areaSqKm": 59901.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baychunas",
+        "population": 1864,
+        "matchedTo": "Makatskiy",
+        "areaSqKm": 4632.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Badamsha",
+        "population": 5668,
+        "matchedTo": "Kargalinskiy",
+        "areaSqKm": 4816.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Algha",
+        "population": 0,
+        "matchedTo": "Alğa district",
+        "areaSqKm": 7415.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Biikzhal",
+        "population": 828,
+        "matchedTo": "Қосшағыл ауылдық округі",
+        "areaSqKm": 16323.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qasym Qaysenov",
+        "population": 0,
+        "matchedTo": "Ulan District",
+        "areaSqKm": 9641.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Altay",
+        "population": 44929,
+        "matchedTo": "Altai District",
+        "areaSqKm": 10430.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zhosaly",
+        "population": 20065,
+        "matchedTo": "Karmakshy District",
+        "areaSqKm": 29966.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zholymbet",
+        "population": 6876,
+        "matchedTo": "Shortandinskiy",
+        "areaSqKm": 4571.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhezqazghan",
+        "population": 104357,
+        "matchedTo": "Jezqazğan",
+        "areaSqKm": 8517.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zharyk",
+        "population": 2940,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhansugurov",
+        "population": 0,
+        "matchedTo": "Aqsu District",
+        "areaSqKm": 12676,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhangatas",
+        "population": 33492,
+        "matchedTo": "Sarysuskiy",
+        "areaSqKm": 30889.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Novokazalinsk",
+        "population": 35883,
+        "matchedTo": "Qazalı district",
+        "areaSqKm": 38035.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zhaksy",
+        "population": 5001,
+        "matchedTo": "Jaqsy district",
+        "areaSqKm": 9666.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zaysan",
+        "population": 17600,
+        "matchedTo": "Zaysanskiy",
+        "areaSqKm": 9534.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zaporozhye",
+        "population": 1835,
+        "matchedTo": "Jaqsy district",
+        "areaSqKm": 9666.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yul’yevka",
+        "population": 0,
+        "matchedTo": "Auliekol`skiy",
+        "areaSqKm": 11001.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yrghyz",
+        "population": 4673,
+        "matchedTo": "Irgizskiy",
+        "areaSqKm": 41314.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhangaqorghan",
+        "population": 21339,
+        "matchedTo": "Jañaqorğan District",
+        "areaSqKm": 16717.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Arshaly",
+        "population": 0,
+        "matchedTo": "Arşalı district",
+        "areaSqKm": 5825.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Atameken",
+        "population": 5081,
+        "matchedTo": "Panfilov District",
+        "areaSqKm": 10313.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Verkhniye Kayrakty",
+        "population": 1158,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Uzunagach",
+        "population": 0,
+        "matchedTo": "Zhambylskiy",
+        "areaSqKm": 18437.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ushtobe",
+        "population": 20492,
+        "matchedTo": "Karatal`skiy",
+        "areaSqKm": 23926.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Saryköl",
+        "population": 0,
+        "matchedTo": "Sarıköl district",
+        "areaSqKm": 6152.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Urzhar",
+        "population": 14826,
+        "matchedTo": "Urzhar District",
+        "areaSqKm": 12099.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ulytau",
+        "population": 2055,
+        "matchedTo": "Ulytau District",
+        "areaSqKm": 114999.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Botaqara",
+        "population": 0,
+        "matchedTo": "Buqar Jıraw District",
+        "areaSqKm": 14373.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ul’ba",
+        "population": 4759,
+        "matchedTo": "Leninogorsk",
+        "areaSqKm": 3224.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Usharal",
+        "population": 0,
+        "matchedTo": "Alaköl District",
+        "areaSqKm": 23226.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Turgen",
+        "population": 13000,
+        "matchedTo": "Enbekshikazakh District",
+        "areaSqKm": 8713.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Troyebratskiy",
+        "population": 2951,
+        "matchedTo": "Uzınköl District",
+        "areaSqKm": 7081.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Torghay",
+        "population": 5277,
+        "matchedTo": "Zhangeldin District",
+        "areaSqKm": 37485.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tokarevka",
+        "population": 4098,
+        "matchedTo": "Buqar Jıraw District",
+        "areaSqKm": 14373.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tobol",
+        "population": 7155,
+        "matchedTo": "Beimbet Mailin District",
+        "areaSqKm": 7570.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Terenozek",
+        "population": 9661,
+        "matchedTo": "Sırdarïya District",
+        "areaSqKm": 29285.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tasty",
+        "population": 1187,
+        "matchedTo": "Amangeldi District",
+        "areaSqKm": 22410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayat",
+        "population": 3130,
+        "matchedTo": "Beimbet Mailin District",
+        "areaSqKm": 7570.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shu",
+        "population": 39785,
+        "matchedTo": "Shuskiy",
+        "areaSqKm": 11595.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shortandy",
+        "population": 6980,
+        "matchedTo": "Shortandinskiy",
+        "areaSqKm": 4571.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chernak",
+        "population": 0,
+        "matchedTo": "Sauran District",
+        "areaSqKm": 7097.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shelek",
+        "population": 29032,
+        "matchedTo": "Enbekshikazakh District",
+        "areaSqKm": 8713.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shar",
+        "population": 9087,
+        "matchedTo": "Шар қалалық әкімдігі",
+        "areaSqKm": 2548.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sevastopol’",
+        "population": 850,
+        "matchedTo": "Sarıköl district",
+        "areaSqKm": 6152.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Serebryansk",
+        "population": 0,
+        "matchedTo": "Altai District",
+        "areaSqKm": 10430.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Äūlīeköl",
+        "population": 0,
+        "matchedTo": "Auliekol`skiy",
+        "areaSqKm": 11001.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sayaq",
+        "population": 4543,
+        "matchedTo": "Balkhash",
+        "areaSqKm": 6055.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sastobe",
+        "population": 6827,
+        "matchedTo": "Tyul`kubaskiy",
+        "areaSqKm": 2150.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saryshaghan",
+        "population": 4365,
+        "matchedTo": "Aqtoğay District",
+        "areaSqKm": 50785.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saryozek",
+        "population": 13930,
+        "matchedTo": "Kerbulakskiy",
+        "areaSqKm": 11134.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sarykamys",
+        "population": 4038,
+        "matchedTo": "Бидайық ауылдық округі",
+        "areaSqKm": 5551.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarqant",
+        "population": 76919,
+        "matchedTo": "Sarkandskiy",
+        "areaSqKm": 10174.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Samarskoye",
+        "population": 0,
+        "matchedTo": "Samar district",
+        "areaSqKm": 5368.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saksaul’skiy",
+        "population": 9296,
+        "matchedTo": "Aral`skiy",
+        "areaSqKm": 55130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qusmuryn",
+        "population": 8049,
+        "matchedTo": "Auliekol`skiy",
+        "areaSqKm": 11001.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qarsaqbay",
+        "population": 1668,
+        "matchedTo": "Ulytau District",
+        "areaSqKm": 114999.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qarqaraly",
+        "population": 8195,
+        "matchedTo": "Karkaralinskiy",
+        "areaSqKm": 35111.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karatau",
+        "population": 37881,
+        "matchedTo": "Talasskiy",
+        "areaSqKm": 11717.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tughyl",
+        "population": 6696,
+        "matchedTo": "Tarbağatay district",
+        "areaSqKm": 9736.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pervorossiyskoye",
+        "population": 2583,
+        "matchedTo": "Altai District",
+        "areaSqKm": 10430.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zharkent",
+        "population": 34422,
+        "matchedTo": "Panfilov District",
+        "areaSqKm": 10313.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Osakarovka",
+        "population": 7305,
+        "matchedTo": "Osakarovskiy",
+        "areaSqKm": 11084.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Denisovka",
+        "population": 4919,
+        "matchedTo": "Denisovskiy",
+        "areaSqKm": 6484.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oktyabr’skoye",
+        "population": 0,
+        "matchedTo": "Karasu District",
+        "areaSqKm": 12725.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ognyovka",
+        "population": 1722,
+        "matchedTo": "Ulan District",
+        "areaSqKm": 9641.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhabagly",
+        "population": 2000,
+        "matchedTo": "Tyul`kubaskiy",
+        "areaSqKm": 2150.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Novaya Bukhtarma",
+        "population": 6026,
+        "matchedTo": "Altai District",
+        "areaSqKm": 10430.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Narynkol",
+        "population": 7731,
+        "matchedTo": "Rayımbek district",
+        "areaSqKm": 7386.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mynaral",
+        "population": 1303,
+        "matchedTo": "Moyınqum District",
+        "areaSqKm": 49286.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mulaly",
+        "population": 707,
+        "matchedTo": "Aqsu District",
+        "areaSqKm": 12676,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moyynty",
+        "population": 2049,
+        "matchedTo": "Aktogayskiy",
+        "areaSqKm": 56325.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Matay",
+        "population": 4139,
+        "matchedTo": "Aqsu District",
+        "areaSqKm": 12676,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aqmol",
+        "population": 0,
+        "matchedTo": "Celïnograd District",
+        "areaSqKm": 7639,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lepsi",
+        "population": 933,
+        "matchedTo": "Sarkandskiy",
+        "areaSqKm": 10174.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyzylzhar",
+        "population": 1514,
+        "matchedTo": "Buqar Jıraw District",
+        "areaSqKm": 14373.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kushoky",
+        "population": 3920,
+        "matchedTo": "Osakarovskiy",
+        "areaSqKm": 11084.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qorghalzhyn",
+        "population": 0,
+        "matchedTo": "Korgalzhynskiy",
+        "areaSqKm": 9141,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kurchum",
+        "population": 8800,
+        "matchedTo": "Kurshim district",
+        "areaSqKm": 13867.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Egindiköl",
+        "population": 3751,
+        "matchedTo": "Egindykol`skiy",
+        "areaSqKm": 5257.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Krasnogorskiy",
+        "population": 3646,
+        "matchedTo": "Esil District",
+        "areaSqKm": 7935.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Selo Temirbeka Zhurgenova",
+        "population": 0,
+        "matchedTo": "Aytekebiyskiy",
+        "areaSqKm": 36006.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qarabalyq",
+        "population": 9838,
+        "matchedTo": "Qarabalyq District",
+        "areaSqKm": 6824.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kokterek",
+        "population": 2384,
+        "matchedTo": "Tyul`kubaskiy",
+        "areaSqKm": 2150.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koktal",
+        "population": 1403,
+        "matchedTo": "Buqar Jıraw District",
+        "areaSqKm": 14373.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kokpekty",
+        "population": 5165,
+        "matchedTo": "Kökpekti district",
+        "areaSqKm": 8733.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kokpekty",
+        "population": 3651,
+        "matchedTo": "Kökpekti district",
+        "areaSqKm": 8733.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nura",
+        "population": 7037,
+        "matchedTo": "Nura District",
+        "areaSqKm": 46273,
+        "isSubstantial": false
+      },
+      {
+        "name": "Balpyk Bi",
+        "population": 11810,
+        "matchedTo": "Koksuskiy",
+        "areaSqKm": 6931.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khorgos",
+        "population": 1148,
+        "matchedTo": "Panfilov District",
+        "areaSqKm": 10313.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Khantau",
+        "population": 1403,
+        "matchedTo": "Moyınqum District",
+        "areaSqKm": 49286.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karabulak",
+        "population": 0,
+        "matchedTo": "Eskeldi District",
+        "areaSqKm": 4036.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kegen",
+        "population": 9993,
+        "matchedTo": "Kegen District",
+        "areaSqKm": 6738.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karasu",
+        "population": 3220,
+        "matchedTo": "Karasu District",
+        "areaSqKm": 12725.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karabas",
+        "population": 2672,
+        "matchedTo": "Balqaş District",
+        "areaSqKm": 37417.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qamysty",
+        "population": 0,
+        "matchedTo": "Qamysty district",
+        "areaSqKm": 11996.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Esik",
+        "population": 32995,
+        "matchedTo": "Enbekshikazakh District",
+        "areaSqKm": 8713.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Altynemel",
+        "population": 1040,
+        "matchedTo": "Kerbulakskiy",
+        "areaSqKm": 11134.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gülshat",
+        "population": 891,
+        "matchedTo": "Aqtoğay District",
+        "areaSqKm": 50785.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Glubokoye",
+        "population": 11192,
+        "matchedTo": "Glubokoe District",
+        "areaSqKm": 7200.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Korday",
+        "population": 9821,
+        "matchedTo": "Kordayskiy",
+        "areaSqKm": 8609.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moyynkum",
+        "population": 10923,
+        "matchedTo": "Moyınqum District",
+        "areaSqKm": 49286.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Fyodorov",
+        "population": 8317,
+        "matchedTo": "Fyodorovskiy",
+        "areaSqKm": 6738.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Esil",
+        "population": 13504,
+        "matchedTo": "Esil District",
+        "areaSqKm": 7935.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Otegen Batyra",
+        "population": 18864,
+        "matchedTo": "Ile District",
+        "areaSqKm": 7127.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dzhambul",
+        "population": 1336,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhalagash",
+        "population": 14226,
+        "matchedTo": "Jalağaş District",
+        "areaSqKm": 22899.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dzerzhinskoye",
+        "population": 2682,
+        "matchedTo": "Alaköl District",
+        "areaSqKm": 23226.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Druzhba",
+        "population": 2930,
+        "matchedTo": "Alaköl District",
+        "areaSqKm": 23226.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Derzhavinsk",
+        "population": 13856,
+        "matchedTo": "Zharkain District",
+        "areaSqKm": 12002.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Chundzha",
+        "population": 0,
+        "matchedTo": "Uygurskiy",
+        "areaSqKm": 8446.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sholakkorgan",
+        "population": 10836,
+        "matchedTo": "Suzakskiy",
+        "areaSqKm": 40708.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shiyeli",
+        "population": 29832,
+        "matchedTo": "Şïeli District",
+        "areaSqKm": 30690.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Shayan",
+        "population": 9536,
+        "matchedTo": "Baydibekskiy",
+        "areaSqKm": 6950,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shardara",
+        "population": 25356,
+        "matchedTo": "Chardarinskiy",
+        "areaSqKm": 12091.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Borovskoy",
+        "population": 9659,
+        "matchedTo": "Meñdiqara District",
+        "areaSqKm": 6589,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ulken Naryn",
+        "population": 5236,
+        "matchedTo": "Ulken Naryn District",
+        "areaSqKm": 3754.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Belousovka",
+        "population": 9948,
+        "matchedTo": "Glubokoe District",
+        "areaSqKm": 7200.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Belogorskiy",
+        "population": 1530,
+        "matchedTo": "Ulan District",
+        "areaSqKm": 9641.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bayzhansay",
+        "population": 2384,
+        "matchedTo": "Baydibekskiy",
+        "areaSqKm": 6950,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qogham",
+        "population": 2276,
+        "matchedTo": "Otyrar District",
+        "areaSqKm": 17913.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Balqash",
+        "population": 81364,
+        "matchedTo": "Balkhash",
+        "areaSqKm": 6055.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bakanas",
+        "population": 6965,
+        "matchedTo": "Balqaş District",
+        "areaSqKm": 37417.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayatskiy",
+        "population": 3221,
+        "matchedTo": "Denisovskiy",
+        "areaSqKm": 6484.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Atbasar",
+        "population": 34797,
+        "matchedTo": "Atbasar District",
+        "areaSqKm": 10562.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zhangaarqa",
+        "population": 13184,
+        "matchedTo": "Janaarqa District",
+        "areaSqKm": 62637.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Asubulak",
+        "population": 5644,
+        "matchedTo": "Ulan District",
+        "areaSqKm": 9641.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Astrakhanka",
+        "population": 6459,
+        "matchedTo": "Astrakhansiy",
+        "areaSqKm": 7191.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Asa",
+        "population": 0,
+        "matchedTo": "Zhambylskiy",
+        "areaSqKm": 2903.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Arys",
+        "population": 36285,
+        "matchedTo": "Arysskiy",
+        "areaSqKm": 6333.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Arkalyk",
+        "population": 42000,
+        "matchedTo": "Arkalyk",
+        "areaSqKm": 11247.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aral",
+        "population": 33017,
+        "matchedTo": "Aral`skiy",
+        "areaSqKm": 55130.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aktau",
+        "population": 9500,
+        "matchedTo": "Buqar Jıraw District",
+        "areaSqKm": 14373.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aqshataū",
+        "population": 4899,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aqadyr",
+        "population": 9710,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amangeldi",
+        "population": 0,
+        "matchedTo": "Amangeldi District",
+        "areaSqKm": 22410.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Marqaköl",
+        "population": 0,
+        "matchedTo": "Marqakol Rural District",
+        "areaSqKm": 3562.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Prigorodnoye",
+        "population": 3563,
+        "matchedTo": "Karkaralinskiy",
+        "areaSqKm": 35111.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aktogay",
+        "population": 0,
+        "matchedTo": "Aqtoğay District",
+        "areaSqKm": 50785.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aktogay",
+        "population": 3741,
+        "matchedTo": "Aqtoğay District",
+        "areaSqKm": 50785.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aktau",
+        "population": 9977,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aksu-Ayuly",
+        "population": 4721,
+        "matchedTo": "Shet District",
+        "areaSqKm": 65627.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Aksuat",
+        "population": 6696,
+        "matchedTo": "Kurshim district",
+        "areaSqKm": 13867.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akbakay",
+        "population": 1804,
+        "matchedTo": "Moyınqum District",
+        "areaSqKm": 49286.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kazakhstan",
+        "population": 3050,
+        "matchedTo": "Enbekshikazakh District",
+        "areaSqKm": 8713.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shalqīya",
+        "population": 3822,
+        "matchedTo": "Jañaqorğan District",
+        "areaSqKm": 16717.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maleyevsk",
+        "population": 2678,
+        "matchedTo": "Altai District",
+        "areaSqKm": 10430.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Belköl",
+        "population": 1486,
+        "matchedTo": "Qyzylorda",
+        "areaSqKm": 2311,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ozernyy",
+        "population": 3563,
+        "matchedTo": "Aqtoğay District",
+        "areaSqKm": 50785.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Atbasar",
+        "population": 0,
+        "matchedTo": "Atbasar District",
+        "areaSqKm": 10562.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chiganak",
+        "population": 2405,
+        "matchedTo": "Sarysuskiy",
+        "areaSqKm": 30889.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shubarköl",
+        "population": 1247,
+        "matchedTo": "Nura District",
+        "areaSqKm": 46273,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zhana Kiima",
+        "population": 0,
+        "matchedTo": "Jaqsy district",
+        "areaSqKm": 9666.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ülken",
+        "population": 3735,
+        "matchedTo": "Balqaş District",
+        "areaSqKm": 37417.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Altayskiy",
+        "population": 2678,
+        "matchedTo": "Glubokoe District",
+        "areaSqKm": 7200.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tyuratam",
+        "population": 9548,
+        "matchedTo": "Karmakshy District",
+        "areaSqKm": 29966.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Obaghan",
+        "population": 0,
+        "matchedTo": "Altynsarinskiy",
+        "areaSqKm": 5334.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kengir",
+        "population": 2393,
+        "matchedTo": "Jezqazğan",
+        "areaSqKm": 8517.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tasty-Taldy",
+        "population": 692,
+        "matchedTo": "Zharkain District",
+        "areaSqKm": 12002.8,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "tajikistan": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Vanj",
+        "population": 2636,
+        "matchedTo": "Vanj District",
+        "areaSqKm": 4411.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tavildara",
+        "population": 6071,
+        "matchedTo": "Tavildara District",
+        "areaSqKm": 5387.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rŭshon",
+        "population": 4031,
+        "matchedTo": "Rushon District",
+        "areaSqKm": 5877,
+        "isSubstantial": false
+      },
+      {
+        "name": "Roshtqal’a",
+        "population": 0,
+        "matchedTo": "Roshtqal'a District",
+        "areaSqKm": 3901.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Novobod",
+        "population": 5352,
+        "matchedTo": "Rasht District",
+        "areaSqKm": 4711.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Murghob",
+        "population": 10815,
+        "matchedTo": "Murghob District",
+        "areaSqKm": 36843,
+        "isSubstantial": true
+      },
+      {
+        "name": "Khorugh",
+        "population": 30500,
+        "matchedTo": "Shughnon District",
+        "areaSqKm": 5078.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karakenja",
+        "population": 2899,
+        "matchedTo": "Lakhsh",
+        "areaSqKm": 4630.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Qalaikhumb",
+        "population": 1611,
+        "matchedTo": "Darvoz District",
+        "areaSqKm": 2860.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ghonchí",
+        "population": 0,
+        "matchedTo": "Ghonchi District",
+        "areaSqKm": 2039.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vahdat",
+        "population": 6400,
+        "matchedTo": "Lakhsh",
+        "areaSqKm": 4630.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chorbogh",
+        "population": 6357,
+        "matchedTo": "Panjakent District",
+        "areaSqKm": 3921.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayní",
+        "population": 2128,
+        "matchedTo": "Ayni District",
+        "areaSqKm": 4987.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Palos",
+        "population": 3288,
+        "matchedTo": "Ghafurov District",
+        "areaSqKm": 2700.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konsoy",
+        "population": 6000,
+        "matchedTo": "Ghafurov District",
+        "areaSqKm": 2700.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ghafurov",
+        "population": 0,
+        "matchedTo": "Ghafurov District",
+        "areaSqKm": 2700.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mehron",
+        "population": 0,
+        "matchedTo": "Kuhistoni Mastchoh District",
+        "areaSqKm": 3335.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shhriston",
+        "population": 4029,
+        "matchedTo": "Vahdat District",
+        "areaSqKm": 3577.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
   }
 }

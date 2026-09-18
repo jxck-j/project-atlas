@@ -27,8 +27,10 @@
 // 2026-09-17 Eastern Europe pass: Belarus, Bulgaria, Czechia, Hungary,
 // Moldova, Poland, Romania, Slovakia, Ukraine, plus the 2026-09-18 Middle
 // East pass: Bahrain, Cyprus, Iran, Iraq, Israel, Lebanon, Oman, Qatar,
-// Saudi Arabia, Syria, Turkey, United Arab Emirates, Yemen) — NOT the other
-// 101 UN members yet. See that doc's migration plan.
+// Saudi Arabia, Syria, Turkey, United Arab Emirates, Yemen, plus the
+// 2026-09-18 Central Asia + Caucasus pass: Armenia, Azerbaijan, Georgia,
+// Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan, Uzbekistan) — NOT the
+// other 93 UN members yet. See that doc's migration plan.
 import fs from 'node:fs'
 import { geometryCentroid } from './lib/sphericalGeometry.mjs'
 
@@ -119,6 +121,14 @@ const BOUNDARY_COUNTRIES = [
   { id: '376', name: 'Israel' },
   { id: '422', name: 'Lebanon' },
   { id: '784', name: 'United Arab Emirates' },
+  { id: '051', name: 'Armenia' },
+  { id: '031', name: 'Azerbaijan' },
+  { id: '268', name: 'Georgia' },
+  { id: '860', name: 'Uzbekistan' },
+  { id: '417', name: 'Kyrgyzstan' },
+  { id: '795', name: 'Turkmenistan' },
+  { id: '398', name: 'Kazakhstan' },
+  { id: '762', name: 'Tajikistan' },
 ]
 
 function addFromBoundaryFile(countryId) {

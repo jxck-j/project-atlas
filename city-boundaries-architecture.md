@@ -1603,6 +1603,91 @@ major cities, including the capital, have no polygon anywhere in this project to
 `BACKLOG.md` rather than presented as resolved. **92 of 193 UN members now have real city-boundary data; 101
 remain.**
 
+### Nineteenth pass: Central Asia + Caucasus (2026-09-18) — a real "Latin-script search bug, not a data gap" lesson
+
+Armenia, Azerbaijan, Georgia, Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan, Uzbekistan — the westernmost
+slice of a west-to-east walk across the rest of Asia (Western Asia/Middle East already done above).
+Armenia/Azerbaijan/Georgia are geographically the Caucasus, not Central Asia proper, but folded into this
+same pass rather than given their own 3-country batch.
+
+A recurring administrative shape across the whole region: several capitals are "cities of republican/state
+significance," administratively independent of any ADM2 district — Armenia's Yerevan, Georgia's Tbilisi, and
+Uzbekistan's Tashkent all correctly appear as their own ADM2 feature anyway (confirmed by direct inspection,
+no special-casing needed), but Kazakhstan's Astana and Tajikistan's Dushanbe do not, and needed a real
+backstop.
+
+**Four straightforward confirmations**, each ADM2 already covering its own capital directly: Armenia's
+municipal communities (39, real names like "Stepanavan"/"Hrazdan"/"Gavar"), Azerbaijan's districts/cities (79
+— real names carry their own "District"/"City" suffix, e.g. "Baku City"/"Ganja City"), Georgia's
+municipalities (68 — real names like "Zugdidi"/"Gudauta", including for Abkhazia, which Georgia doesn't
+actually control but geoBoundaries' download still carries), and — after a real fix, see below — Uzbekistan's
+tumans (199, an exact count match, Tashkent included).
+
+**Kazakhstan's ADM2 (174 districts) already includes Almaty and Shymkent as their own feature, but not
+Astana** (administratively independent, the same shape as every capital in this pass) **— and, far more
+significantly, rejected 324 of 352 points on its first run, 92 of them substantial: real major regional
+cities** (Karagandy 497,777; Pavlodar 329,002; Oral 330,000; Semey 292,780; Ust-Kamenogorsk 319,067; Atyrau
+290,700; ...) **lost to districts spanning thousands to tens of thousands of km², the largest a genuinely
+enormous 128,664 km².** Astana itself DOES have a real polygon one level up (geoBoundaries' own ADM1, mixing
+oblasts and 3 independent cities) — added as a single supplemental candidate, the Monaco-style capital-vs-rest
+hybrid. For the much bigger city-loss problem, a live OSM check found a real, comprehensive finer tier: real
+raions at `admin_level=6` (226, closely matching geoBoundaries' own 174) plus a genuinely fine sub-district
+layer at `admin_level=8` (907 relations) — Kazakhstan's own "ауыл округі" (rural-district/village-council)
+tier, fine enough that a real city inside a huge raion gets its own much smaller polygon separate from the
+surrounding rural area. Added as a supplemental smallest-wins source (levels 6|8|9|10) rather than a full
+swap. Re-run: **173/352 kept (up from 8%, now 49%), 179 rejected, 41 of them still substantial** — every
+regional-capital-scale city from the original list (Karagandy, Pavlodar, Oral, Semey, Ust-Kamenogorsk, Atyrau,
+Kostanay, Petropavl, Turkistan) is now kept; what remains is smaller towns (mostly 10,000-40,000 population)
+spread across a country large and sparse enough that even a real, comprehensive OSM sub-district layer still
+leaves genuine gaps — logged in `BACKLOG.md` as a real, large, but honestly characterized residual, not
+chased further given how much the fix already recovered.
+
+**Kyrgyzstan and Turkmenistan surfaced a real bug in this file's OWN investigation technique, not a real data
+gap.** Both countries' capitals (Bishkek/Osh; Ashgabat) appeared completely absent from every checked source
+on a first pass — geoBoundaries at any level, and a direct Overpass name-search query for "Bishkek"/"Osh"/
+"Ashgabat"/"Asgabat" that came back with zero results. **Both cities' real OSM name is in the local script**
+(Kyrgyz Cyrillic "Бишкек шаары"/"Ош шаары"; Turkmen Latin-with-diacritics "Aşgabat") — the ASCII name-search
+query only ever matched the primary `name` tag directly, never noticing the `name:en` field that actually
+carried the Latin transliteration this search was looking for. **A broader, unfiltered area-scoped query (the
+same "don't just check by name, check what's actually there" discipline this file has followed since its very
+first Jordan/Kuwait findings) found both cities immediately** — Bishkek and Osh at `admin_level=4` (their own
+tier, alongside Kyrgyzstan's 7 oblasts), Ashgabat at `admin_level=5`. This also surfaced that BOTH countries'
+real city coverage is far richer in OSM than geoBoundaries had suggested: Kyrgyzstan's real `admin_level=6`
+tier mixes ordinary raions with real cities carrying their own name (e.g. "Талас шаары"/Talas City, "Каракол
+шаары"/Karakol City — none of which geoBoundaries' own ADM2 download included at all), and Turkmenistan's
+`admin_level=6` carries real city-level boundaries with their own "şäheri" (city) suffix
+("Türkmenbaşy şäheri"/Turkmenbashy, "Baýramaly şäheri"/Bayramaly). Both switched off geoBoundaries entirely in
+favor of OSM (Kyrgyzstan: levels 4|6|8|9; Turkmenistan: levels 5|6|7|8, which also sidesteps geoBoundaries'
+own ADM2 data-quality issues — 12 of 59 features with a genuinely blank `shapeName`, harmless for this
+project's join since the final output's name always comes from GeoNames, but a real upstream data-quality
+finding worth recording). Kyrgyzstan: **49/112 kept (up from 0 usable — the original run's "40 kept" already
+excluded both capitals), 63 rejected (10 substantial), 0 unmatched.** Turkmenistan: **49/124 kept (up from
+15), 75 rejected (26 substantial), 0 unmatched.** Both still carry a real, sizeable residual of smaller towns
+in oversized rural districts — the same accepted shape as Kazakhstan above, just at each country's own
+smaller scale — logged in `BACKLOG.md`.
+
+**Uzbekistan** (7 remaining substantial rejections after a supplemental OSM layer, levels 6-10, brought it
+from 172/221 to 184/221 kept) **and Tajikistan** (2 substantial rejections, largely unchanged by its own
+supplemental OSM layer given the residual was already small, plus a Kazakhstan-style ADM1 backstop for
+Dushanbe) both close out with small, accepted residuals — real towns in Uzbekistan's own oversized rural
+tumans (Mŭynoq, Qŭnghirot, Nurota, ...) and Tajikistan's own remote Pamir highlands (Murghob, Khorugh),
+logged in `BACKLOG.md` rather than chased further.
+
+**Azerbaijan and Georgia were left as their original single-source geoBoundaries joins** (26 rejected/0
+substantial/1 unmatched, and 10 rejected/0 substantial respectively) — not investigated against OSM the way
+every other country in this pass was, since neither had a single substantial rejection to chase; worth a
+closer look if either country's own coverage is ever revisited.
+
+**File sizes**: none of the 8 needed `shardByState()` — every output is well under 2 MB.
+
+**Final status: all 8 Central Asia + Caucasus countries are done and committed.** Armenia is a clean 0/0/0;
+Azerbaijan and Georgia carry only small, non-substantial residual tails; Uzbekistan, Kyrgyzstan, Turkmenistan,
+and Tajikistan each needed real OSM investigation and now carry honestly-reported, sparse-country residuals of
+varying size; Kazakhstan needed the most work and still carries the largest remaining residual in this pass
+(41 substantial towns) despite a 6x improvement in points kept — a real, large, but no longer indefinitely
+chaseable gap given how comprehensive the OSM supplement already is. **100 of 193 UN members now have real
+city-boundary data; 93 remain.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -1619,7 +1704,7 @@ remain.**
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 92 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 100 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -1663,15 +1748,21 @@ remain.**
    `admin_level=6` supplement is the same coarse tier under a different name and leaves most of its major
    cities, including the capital, still unmatched by any checked source) and Israel/Lebanon/United Arab
    Emirates (OSM primary or full swap — Lebanon backstopped by geoBoundaries' own coarser ADM2 where OSM
-   has a real gap) against the already-shipped
+   has a real gap), and Armenia/Georgia (geoBoundaries, no supplement needed) and Azerbaijan (geoBoundaries,
+   small residual not chased) and Uzbekistan/Kazakhstan/Tajikistan (geoBoundaries plus a supplemental OSM
+   layer, Kazakhstan's the largest fix in this file's history — 8% to 49% kept — and still the largest
+   remaining residual) and Kyrgyzstan/Turkmenistan (OSM, switched off geoBoundaries entirely after a
+   Latin-script name-search bug briefly made both capitals look like a real data gap — see the Nineteenth
+   pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, and Spain all
    sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 101 countries** (Russia included — see the Seventeenth pass's own note on why
+   **Not done: the other 93 countries** (Russia included — see the Seventeenth pass's own note on why
    it's deliberately excluded from routine regional batches) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth pass) before its own join can run, not a blind batch extension of this script.
+   Seventeenth/Eighteenth/Nineteenth pass) before its own join can run, not a blind batch extension of this
+   script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,
@@ -1763,9 +1854,9 @@ remain.**
   `scripts/buildGlobalCitiesData.mjs`. **Still not consumed by anything** —
   `CityLabels.tsx`/`CityOutlineHighlight.tsx` read a separate, much smaller
   `city-boundaries-index.json` (`scripts/buildCityBoundariesIndex.mjs`)
-  scoped to the 92 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
-  Thirteenth/Fourteenth/Fifteenth/Sixteenth/Seventeenth/Eighteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
-  this file for the other 101 countries (once each has its own verified
+  scoped to the 100 countries with real boundary data committed so far (Seventh/Eighth/Ninth/Tenth/
+  Thirteenth/Fourteenth/Fifteenth/Sixteenth/Seventeenth/Eighteenth/Nineteenth passes), not this 193-country GeoNames index. Wiring the label/reveal layer up to
+  this file for the other 93 countries (once each has its own verified
   boundary source) is still open — this only produces the two-tier data
   shape a future pass would consume.
 - ~~Attribution UI still genuinely unresolved~~ — **built and mounted**,

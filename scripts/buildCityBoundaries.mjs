@@ -21,7 +21,9 @@
 // dedicated investigation rather than folding into a routine regional batch),
 // plus the 2026-09-18 Middle East pass: Bahrain, Cyprus, Iran, Iraq, Israel,
 // Lebanon, Oman, Qatar, Saudi Arabia, Syria, Turkey, United Arab Emirates,
-// Yemen) — NOT the other 101 UN members yet. See that doc's "Fifth pass" section
+// Yemen, plus the 2026-09-18 Central Asia + Caucasus pass: Armenia,
+// Azerbaijan, Georgia, Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan,
+// Uzbekistan) — NOT the other 93 UN members yet. See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
 // a real, logged judgment call below, not a settled constant).
@@ -2048,6 +2050,260 @@ out geom;`),
   const uaeJoin = joinCityPointsToPolygons('United Arab Emirates', uaeCities, uaeCandidates)
   writeCountryOutput('784', uaeJoin.kept)
   report.unitedArabEmirates = uaeJoin.report
+}
+
+// --- Nineteenth pass (2026-09-18): Central Asia + Caucasus (Armenia,
+// Azerbaijan, Georgia, Kazakhstan, Kyrgyzstan, Tajikistan, Turkmenistan,
+// Uzbekistan) — the westernmost slice of a west-to-east walk across the rest
+// of Asia (Western Asia/Middle East already done above). Armenia/Azerbaijan/
+// Georgia are geographically the Caucasus, not Central Asia proper, but
+// folded into this same pass rather than given their own tiny 3-country
+// batch.
+//
+// A recurring shape across this whole region: several capitals are
+// administratively independent "cities of republican/state significance,"
+// not part of any ADM2 district — the same structure Armenia's Yerevan/
+// Georgia's Tbilisi/Uzbekistan's Tashkent already have correctly, confirmed
+// by direct inspection to also appear as their own ADM2 feature (so no
+// special-casing needed for those three), but Kazakhstan's Astana and
+// Tajikistan's Dushanbe do NOT appear at ADM2 (only at ADM1, as their own
+// unit) and needed a real backstop (see their own blocks below). Kyrgyzstan
+// (Bishkek, Osh) and Turkmenistan (Ashgabat) went a step further: their
+// capitals don't appear in geoBoundaries at ANY level, and a direct
+// name-search Overpass query found zero OSM administrative boundary
+// relations for any of the three either — a genuine, structural "no
+// candidate polygon exists in any checked source" gap, the same conclusion
+// as Saudi Arabia's major cities and Israel's West Bank settlements in the
+// Eighteenth pass, not a technique failure.
+//
+// Four straightforward confirmations, each ADM2 already covering its own
+// capital directly: Armenia's municipal communities (39, "Municipal
+// Communities" — real names like "Stepanavan"/"Hrazdan"/"Gavar", Yerevan
+// included), Azerbaijan's districts/cities (79 — real names carry their own
+// "District"/"City" suffix, e.g. "Baku City"/"Ganja City"/"Sumqayit City"),
+// Georgia's municipalities (68 — Tbilisi included, real names like
+// "Zugdidi"/"Gudauta" even for Abkhazia, which Georgia doesn't actually
+// control but geoBoundaries' download still carries), and Uzbekistan's
+// tumans (199, an exact match to the real count — Tashkent included, many
+// entries carry their own "city" suffix like "Bukhara city"/"Kagan city").
+if (shouldRun('051')) report.armenia = await runGeoBoundariesCountry({ name: 'Armenia', numericId: '051', alpha3: 'ARM', admLevel: 'ADM2' })
+if (shouldRun('031')) report.azerbaijan = await runGeoBoundariesCountry({ name: 'Azerbaijan', numericId: '031', alpha3: 'AZE', admLevel: 'ADM2' })
+if (shouldRun('268')) report.georgia = await runGeoBoundariesCountry({ name: 'Georgia', numericId: '268', alpha3: 'GEO', admLevel: 'ADM2' })
+// Uzbekistan: geoBoundaries' ADM2 (199 tumans) already includes Tashkent
+// directly, but still rejected 49 of 221 points (10 substantial — real
+// cities inside oversized rural tumans). A live OSM check found a much
+// richer real hierarchy nationwide (viloyat/level 4, tuman/level 6 — closely
+// matching geoBoundaries' own 199 — plus real finer layers at levels 8 and
+// 10, including Tashkent's own internal city districts like "Yashnobod
+// Tumani"). Added as a supplemental smallest-wins source alongside
+// geoBoundaries' ADM2 rather than a full swap, since ADM2 already resolves
+// the large majority cleanly.
+if (shouldRun('860'))
+  report.uzbekistan = await runGeoBoundariesCountry({
+    name: 'Uzbekistan',
+    numericId: '860',
+    alpha3: 'UZB',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-admin6-10',
+      query: `[out:json][timeout:180];
+area["ISO3166-1"="UZ"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(6|7|8|9|10)$"];
+out geom;`,
+    },
+  })
+
+// Kyrgyzstan: geoBoundaries' ADM2 (41 raions) doesn't include Bishkek or
+// Osh — both cities of republican significance, administratively
+// independent of any raion — and, checked further, doesn't include most of
+// Kyrgyzstan's other real cities either (Talas, Naryn, Karakol, Tokmok,
+// Kyzyl-Kyya, ... all missing from the ADM2 download entirely). **A first
+// Overpass search for "Bishkek"/"Osh" by name came back with zero results —
+// a real bug in that search, not a real data gap**: both cities' primary
+// OSM `name` tag is Cyrillic ("Бишкек шаары"/"Ош шаары"), and the search
+// only matched the Latin `name` tag directly rather than `name:en`. A
+// broader area-scoped query (not filtered by name) found both cities
+// clearly, at `admin_level=4` — the same tier as Kyrgyzstan's 7 oblasts —
+// alongside a real, comprehensive city/district layer at `admin_level=6`
+// (raions AND real cities like "Талас шаары"/Talas City, "Каракол
+// шаары"/Karakol City, sharing the tier the way Azerbaijan's own
+// District/City-suffixed ADM2 already does). Switched off geoBoundaries
+// entirely in favor of this — levels 4|6|8|9 together (8/9 are Bishkek's own
+// internal city-district subdivisions, a handful of relations).
+if (!process.env.SKIP_OSM && shouldRun('417')) {
+  console.log('\n=== Kyrgyzstan ===')
+  const kgzRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="KG"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(4|6|8|9)$"];
+out geom;`),
+  )
+  let kgzUnclosedCount = 0
+  const kgzCandidates = kgzRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) kgzUnclosedCount++
+    return { name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin4-6-8-9' }
+  })
+  if (kgzUnclosedCount > 0) console.log(`  [warn] ${kgzUnclosedCount} Kyrgyzstan relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const kgzCities = loadCityPoints('417')
+  const kgzJoin = joinCityPointsToPolygons('Kyrgyzstan', kgzCities, kgzCandidates)
+  writeCountryOutput('417', kgzJoin.kept)
+  report.kyrgyzstan = kgzJoin.report
+}
+
+// Turkmenistan: geoBoundaries' ADM2 (59 units) has real data-quality issues
+// (12 of 59 features have a genuinely blank `shapeName` — harmless for this
+// project's join, since a candidate's own name never reaches the final
+// output — and a few real names repeat across separate features) on top of
+// missing Ashgabat entirely, at any geoBoundaries level. **A first Overpass
+// name search for "Ashgabat"/"Asgabat" came back with zero results — the
+// same Latin-vs-native-script search bug as Kyrgyzstan above**: Ashgabat's
+// real OSM name is "Aşgabat" (with a Turkmen-alphabet ş), which a plain
+// ASCII regex never matches. A broader area-scoped query found it clearly,
+// at `admin_level=5` (its own tier, one level below the 5 welayat), plus
+// real city-level boundaries at `admin_level=6` carrying their own "şäheri"
+// (city) suffix — "Türkmenbaşy şäheri"/Turkmenbashy, "Türkmenabat
+// şäheri"/Turkmenabat, "Baýramaly şäheri"/Bayramaly. Switched off
+// geoBoundaries entirely in favor of OSM levels 5|6|7|8 together (5 catches
+// Ashgabat specifically; 6 is the real district/city-mixed tier; 7/8 are
+// smaller supplemental layers).
+if (!process.env.SKIP_OSM && shouldRun('795')) {
+  console.log('\n=== Turkmenistan ===')
+  const tkmRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="TM"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(5|6|7|8)$"];
+out geom;`),
+  )
+  let tkmUnclosedCount = 0
+  const tkmCandidates = tkmRaw.elements.map((rel) => {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) tkmUnclosedCount++
+    return { name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin5-8' }
+  })
+  if (tkmUnclosedCount > 0) console.log(`  [warn] ${tkmUnclosedCount} Turkmenistan relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  const tkmCities = loadCityPoints('795')
+  const tkmJoin = joinCityPointsToPolygons('Turkmenistan', tkmCities, tkmCandidates)
+  writeCountryOutput('795', tkmJoin.kept)
+  report.turkmenistan = tkmJoin.report
+}
+
+// Kazakhstan: geoBoundaries' ADM2 (174 districts) already includes several
+// major cities as their own feature (confirmed directly: "Almaty
+// (Alma-Ata)" and "Shymkent" both present) but NOT Astana, the actual
+// capital (~1.2M) — administratively independent of any district, the same
+// shape as every other capital in this pass. Astana DOES have a real
+// polygon one level up: geoBoundaries' own ADM1 carries it as its own unit
+// (Kazakhstan's 16 ADM1 units are a mix of oblasts and 3 independent
+// cities) — added as a single supplemental candidate, the same "capital
+// point against a coarser official polygon, everything else against the
+// finer tier" shape as Monaco's ADM1/ADM2 hybrid. **This still left 324 of
+// 352 points rejected, 92 of them substantial — real major regional cities
+// (Karagandy 497,777; Pavlodar 329,002; Oral 330,000; Semey 292,780;
+// Ust-Kamenogorsk 319,067; Atyrau 290,700; ...) lost to districts spanning
+// thousands to tens of thousands of km², the largest a genuinely enormous
+// 128,664 km².** A live OSM check found a much finer real tier: raions
+// (`admin_level=6`, 226, closely matching geoBoundaries' own 174) plus a
+// real, comprehensive sub-district layer at `admin_level=8` (907 relations)
+// — Kazakhstan's own "ауыл округі" (rural-district/village-council) tier,
+// fine enough that real cities inside a huge raion get their own much
+// smaller polygon separate from the surrounding rural area. Added as a
+// supplemental smallest-wins source (levels 6|8|9|10 together) rather than
+// a full swap, since geoBoundaries' ADM2 already correctly includes Almaty/
+// Shymkent as their own feature.
+if (shouldRun('398')) {
+  console.log('\n=== Kazakhstan ===')
+  const kazMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/KAZ/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const kazAdm2Meta = kazMeta.find((l) => l.boundaryType === 'ADM2')
+  const kazAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(kazAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const kazAdm1Meta = kazMeta.find((l) => l.boundaryType === 'ADM1')
+  const kazAdm1 = await fetchWithRetry(async () => {
+    const res = await fetch(kazAdm1Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const kazCandidates = kazAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  const astana = kazAdm1.features.find((f) => f.properties.shapeName === 'Astana')
+  if (astana) kazCandidates.push({ name: astana.properties.shapeName, geometry: astana.geometry, source: 'geoboundaries-adm1' })
+  else console.log('  [warn] "Astana" not found in Kazakhstan ADM1 — capital city may be unmatched')
+  const kazOsmRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="KZ"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(6|8|9|10)$"];
+out geom;`),
+  )
+  let kazOsmUnclosedCount = 0
+  for (const rel of kazOsmRaw.elements) {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) kazOsmUnclosedCount++
+    kazCandidates.push({ name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6-10' })
+  }
+  if (kazOsmUnclosedCount > 0) console.log(`  [warn] ${kazOsmUnclosedCount} Kazakhstan OSM relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  console.log(`  +${kazOsmRaw.elements.length} supplemental OSM candidates (osm-admin6-10)`)
+  const kazCities = loadCityPoints('398')
+  const kazJoin = joinCityPointsToPolygons('Kazakhstan', kazCities, kazCandidates)
+  writeCountryOutput('398', kazJoin.kept)
+  report.kazakhstan = kazJoin.report
+}
+
+// Tajikistan: geoBoundaries' ADM2 (58 districts) doesn't include Dushanbe,
+// the capital — the same administratively-independent-city shape as every
+// other capital in this pass. Confirmed it DOES have a real polygon at
+// ADM1 (Tajikistan's 5 ADM1 units are a mix of regions and Dushanbe itself)
+// — added as a single supplemental candidate, the same Kazakhstan/Monaco
+// pattern immediately above. A live OSM check found a real, if smaller,
+// finer layer too (`admin_level` 6|7|8|10, 121 relations total) — added as
+// a further supplement, though this pass's rejection count for Tajikistan
+// was already small (2 substantial) before this fix.
+if (shouldRun('762')) {
+  console.log('\n=== Tajikistan ===')
+  const tjkMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/TJK/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const tjkAdm2Meta = tjkMeta.find((l) => l.boundaryType === 'ADM2')
+  const tjkAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(tjkAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const tjkAdm1Meta = tjkMeta.find((l) => l.boundaryType === 'ADM1')
+  const tjkAdm1 = await fetchWithRetry(async () => {
+    const res = await fetch(tjkAdm1Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const tjkCandidates = tjkAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' }))
+  const dushanbe = tjkAdm1.features.find((f) => f.properties.shapeName === 'Dushanbe')
+  if (dushanbe) tjkCandidates.push({ name: dushanbe.properties.shapeName, geometry: dushanbe.geometry, source: 'geoboundaries-adm1' })
+  else console.log('  [warn] "Dushanbe" not found in Tajikistan ADM1 — capital city may be unmatched')
+  const tjkOsmRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:180];
+area["ISO3166-1"="TJ"][admin_level=2];
+relation(area)["boundary"="administrative"]["admin_level"~"^(6|7|8|10)$"];
+out geom;`),
+  )
+  let tjkOsmUnclosedCount = 0
+  for (const rel of tjkOsmRaw.elements) {
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) tjkOsmUnclosedCount++
+    tjkCandidates.push({ name: rel.tags?.['name:en'] ?? rel.tags?.name ?? `relation/${rel.id}`, geometry, source: 'osm-admin6-8-10' })
+  }
+  if (tjkOsmUnclosedCount > 0) console.log(`  [warn] ${tjkOsmUnclosedCount} Tajikistan OSM relations had an unclosed ring — kept anyway, area may be inaccurate for those`)
+  console.log(`  +${tjkOsmRaw.elements.length} supplemental OSM candidates (osm-admin6-8-10)`)
+  const tjkCities = loadCityPoints('762')
+  const tjkJoin = joinCityPointsToPolygons('Tajikistan', tjkCities, tjkCandidates)
+  writeCountryOutput('762', tjkJoin.kept)
+  report.tajikistan = tjkJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census

@@ -1102,6 +1102,34 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **Yemen rejected 47 of 316 points, 1 substantial (Al Ghaydhah, 10,948, in a 7,182 km² district) and left 0
   unmatched** (found 2026-09-18, "Eighteenth pass") — same accepted desert-district shape, not chased
   further.
+- **Kazakhstan is this file's largest remaining single-country residual: 41 of 352 points still substantial
+  and rejected, after a supplemental OSM sub-district layer already took the country from 8% to 49% kept**
+  (found 2026-09-18, `city-boundaries-architecture.md`'s "Nineteenth pass"). Every regional-capital-scale
+  city (Karagandy, Pavlodar, Oral, Semey, Ust-Kamenogorsk, Atyrau, Kostanay, Petropavl, Turkistan) is now
+  kept; what remains is smaller towns (mostly 10,000-40,000 population, e.g. Zhezqazghan 104,357, Balqash
+  81,364, Sarqant 76,919) spread across a country large and sparse enough that even OSM's own real,
+  comprehensive "ауыл округі" (sub-district) layer still leaves genuine gaps around them. Not chased further
+  given how much the existing fix already recovered — a real, large, but not indefinitely chaseable gap.
+- **Turkmenistan rejected 75 of 124 points, 26 substantial (Balkanabat 87,822, Tejen 67,488, Yolöten 37,705,
+  Bäherden 37,588, ...), after switching fully to OSM** (found 2026-09-18, "Nineteenth pass") — the same
+  sparse-country residual shape as Kazakhstan above, at Turkmenistan's own smaller scale; not chased
+  further.
+- **Kyrgyzstan rejected 63 of 112 points, 10 substantial (all real towns like At-Bashi, Toktogul, Kara-Kulja
+  in oversized rural districts), after switching fully to OSM** (found 2026-09-18, "Nineteenth pass") — same
+  accepted shape, not chased further.
+- **Uzbekistan rejected 37 of 221 points, 7 substantial (Qŭnghirot 80,090, Oltinko'l 59,122, Novyy
+  Turtkul' 48,908, ...), after a supplemental OSM layer already improved it from 49 to 37 rejected** (found
+  2026-09-18, "Nineteenth pass") — same accepted shape, not chased further.
+- **Tajikistan rejected 18 of 103 points, 2 substantial (Murghob 10,815 and Khorugh 30,500, both in the
+  remote Pamir highlands' Gorno-Badakhshan region)** (found 2026-09-18, "Nineteenth pass") — a real,
+  small, geographically genuine residual (Central Asia's most sparsely populated, mountainous region); not
+  chased further.
+- **Azerbaijan left 1 of 245 points unmatched and rejected 26, none substantial** (found 2026-09-18,
+  "Nineteenth pass") — not investigated against OSM the way every other country in this pass was, since
+  there was no substantial rejection to chase; worth a closer look if this country's own coverage is ever
+  revisited.
+- **Georgia rejected 10 of 218 points, none substantial** (found 2026-09-18, "Nineteenth pass") — same as
+  Azerbaijan above, not investigated further.
 
 ## Visualization
 
