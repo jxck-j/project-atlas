@@ -41,8 +41,10 @@
 // Sudan pass: Algeria, Egypt, Libya, Morocco, Sudan, South Sudan, Tunisia,
 // plus the 2026-09-18 West Africa pass: Benin, Burkina Faso, Cabo Verde,
 // Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia, Mali,
-// Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo) — NOT the other
-// 33 UN members yet (India deliberately excluded, same
+// Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo, plus the
+// 2026-09-18 Central Africa pass: Cameroon, Central African Republic,
+// Chad, Congo, DR Congo, Equatorial Guinea, Gabon, São Tomé and Príncipe)
+// — NOT the other 25 UN members yet (India deliberately excluded, same
 // reasoning as Russia). See that doc's
 // migration plan.
 import fs from 'node:fs'
@@ -201,6 +203,14 @@ const BOUNDARY_COUNTRIES = [
   { id: '686', name: 'Senegal' },
   { id: '694', name: 'Sierra Leone' },
   { id: '768', name: 'Togo' },
+  { id: '120', name: 'Cameroon' },
+  { id: '140', name: 'Central African Republic' },
+  { id: '148', name: 'Chad' },
+  { id: '178', name: 'Congo' },
+  { id: '180', name: 'DR Congo' },
+  { id: '226', name: 'Equatorial Guinea' },
+  { id: '266', name: 'Gabon' },
+  { id: '678', name: 'Sao Tome and Principe' },
 ]
 
 function addFromBoundaryFile(countryId) {

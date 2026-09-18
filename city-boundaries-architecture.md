@@ -2245,6 +2245,74 @@ Leone/Togo/Côte d'Ivoire's small non-substantial residuals need no further entr
 **Final status: 23 of Africa's 54 UN members are done and committed. 160 of 193 UN members now have real
 city-boundary data; 33 remain — all in Africa (31 more) plus India and Russia.**
 
+### Twenty-sixth pass: Central Africa (2026-09-18) — Cameroon, Central African Republic, Chad, Congo, DR
+Congo, Equatorial Guinea, Gabon, São Tomé and Príncipe
+
+The third Africa batch. Every level confirmed by a direct point-in-polygon check against real coordinates,
+not just recon's own canonicalName field.
+
+**Five confirmed clean on recon's own reported finest level:** Cameroon (ADM3, 360 units — Douala -> Douala
+I, 32.20 km²; Yaoundé -> Yaoundé III, 68.46 km²; 124/145 kept, 21 rejected, 10 substantial), Chad (ADM2,
+"Departments," 70 units — N'Djamena resolves to its own 426.53 km² department; Moundou has no unit of its own
+name in this download at all, a real gap not chased further; 18/74 kept, 38 substantial rejects — Chad's own
+vast Sahelian departments), Equatorial Guinea (ADM2, 28 units — Malabo resolves to its own 383.32 km²
+district; clean-ish 25/27, 1 snapped), Gabon (ADM2, "Department," 49 units — Libreville resolves to its own
+185.53 km² department; 13/50 kept, 12 substantial rejects, real rainforest-department scale), and São Tomé
+and Príncipe (ADM2, "Districts," 7 units — the capital resolves to Água Grande, 22.46 km²; clean 51/51).
+
+**Central African Republic needed the same override this file has now hit repeatedly:** recon's own
+area-heuristic pick, ADM5 ("quartiers," 202 units), only covers Bangui at all (202 nationwide is nowhere
+close to a comprehensive tier for the whole country) and resolves Bangui itself to a 0.32 km² neighborhood —
+too fine even for the one city it covers. ADM3 ("Municipalities," 175 units, comprehensive nationwide)
+resolves Bangui to Arrondissement 1 (8.16 km², one of Bangui's real 8 arrondissements) and — confirmed with a
+second, non-capital town — Mbaiki to its own real unit; used instead. Result: 38/51 kept, 13 rejected, 6
+substantial.
+
+**Congo (Republic of the) surfaced a second, more severe instance of Burkina Faso's own shapeName/geometry
+misalignment bug** (Twenty-fifth pass) — not isolated to one or two features this time, but confirmed across
+at least three spot-checked ADM2 features nationwide. "Ngamaba (Brazzaville)" and "Loandjili (Pointe Noire)"
+— real named arrondissements of Congo's own two biggest cities — both have bounding boxes roughly 300-400 km
+from the real cities of those names (and are themselves thousands of km² — utterly implausible for a single
+urban arrondissement). A third, unrelated spot check ("Owando," a real northern town with no "(city)"
+annotation at all) is *also* displaced roughly 150-200 km from its real location, confirming this isn't
+limited to the two annotated entries — the whole ADM2 level is untrustworthy for this join, not a two-feature
+patch. Switched to ADM1 ("Départements," 12 units — Congo's 10 rural departments plus Brazzaville and
+Pointe-Noire as their own units at the same tier) instead, confirmed correctly located for both cities that
+matter most. **This still left Brazzaville itself (population 1,982,000) rejected outright** — its own
+correctly-located ADM1 department is a real but huge 6,065.32 km², past even the loose ceiling. A live OSM
+check found a genuine, separate "Brazzaville (commune)" relation (distinct from "Brazzaville (département)"),
+342.52 km² — a plausible real urban-commune scale — added as a single supplemental candidate, the same
+Bhutan/Kazakhstan/South Korea "one specific missing finer unit for the capital" pattern. Result: only 4/60
+kept overall (real Congo-wide rural-department coarseness), but both of the country's two most important
+cities — Brazzaville and Pointe-Noire — now resolve correctly at real city scale rather than being either
+silently mismatched or dropped.
+
+**DR Congo's own Kinshasa "territory, city" unit (10,656.04 km²) is real geography** — the province-city
+genuinely spans that much rural hinterland — **but far past the loose ceiling, so the capital's own GeoNames
+point (population 16,000,000, one of the largest cities on Earth) would have been REJECTED outright**, along
+with several of its own million-plus-population sub-areas (Masina, 485,167). A live OSM check (bbox-scoped to
+the real city rather than an ISO3166-2 area query, which timed out — Kinshasa's own vast province polygon
+made the area-based query too expensive) confirmed a real, comprehensive `admin_level=7` commune tier —
+Kinshasa's own real communes (Kintambo, Bandalungwa, Gombe, Kinshasa, Masina, ...) — added as a supplemental
+layer, the same "split the megacity into its own real districts" pattern Beijing/Jakarta/Manila already
+established. Both Kinshasa (now 3.1 km², its own central commune) and Masina (39 km²) resolve correctly.
+Result: 37/118 kept, 81 rejected, 79 substantial — DR Congo's own remaining rural territories are still
+genuinely enormous (Sandoa territory alone is 29,712 km²), the worst substantial-rejection ratio of any
+country in this pass, but the capital itself is now correctly represented rather than the single largest
+population figure in this entire project's history being silently dropped.
+
+**File sizes**: none of these eight needed `shardByState()` — Cameroon's 429 KB is the largest.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: DR Congo (79 substantial, the worst ratio in this
+pass — genuinely vast rural territories, not chased further given the capital fix already addressed the
+single highest-value gap), Chad (38 substantial, Sahelian department scale), Congo (27 substantial, real
+department-level coarseness away from its two now-fixed cities), Gabon (12 substantial), Cameroon (10
+substantial), and CAR (6 substantial). Equatorial Guinea and São Tomé and Príncipe's own clean results need
+no further entry.
+
+**Final status: 31 of Africa's 54 UN members are done and committed. 168 of 193 UN members now have real
+city-boundary data; 25 remain — all in Africa (23 more) plus India and Russia.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2261,7 +2329,7 @@ city-boundary data; 33 remain — all in Africa (31 more) plus India and Russia.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 160 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 168 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2361,17 +2429,25 @@ city-boundary data; 33 remain — all in Africa (31 more) plus India and Russia.
    the same "recon's area heuristic picked something one level too fine" trap this file keeps re-finding) and
    Burkina Faso (geoBoundaries ADM2, after a real shapeName/geometry MISALIGNMENT bug at ADM3 — not a blank or
    garbled name like prior findings, but the "Ouagadougou"/"Bobo-dioulasso" features' own polygons sitting
-   150+ km from the real cities of those names — see the Twenty-fifth pass) against the already-shipped
+   150+ km from the real cities of those names — see the Twenty-fifth pass) and Cameroon/Chad/Equatorial
+   Guinea/Gabon/São Tomé and Príncipe (geoBoundaries, each level independently verified — see the Twenty-sixth
+   pass) and Central African Republic (geoBoundaries ADM3, overriding recon's own "quartiers" reported finest
+   level, which only covers Bangui at all) and Congo (geoBoundaries ADM1 after a second, more severe instance
+   of Burkina Faso's own shapeName/geometry misalignment bug at ADM2 — confirmed across 3+ features, not a
+   two-feature patch — plus a single supplemental OSM commune for Brazzaville itself, otherwise rejected as
+   too large even at the correct ADM1 department) and DR Congo (geoBoundaries ADM2 plus a supplemental OSM
+   commune layer for Kinshasa, without which the capital — 16,000,000 population, one of the largest cities on
+   Earth — would have been silently dropped entirely — see the Twenty-sixth pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 33 countries** (Russia and India both included — see the Seventeenth pass's own note
+   **Not done: the other 25 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
    Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
-   Twenty-fifth pass)
+   Twenty-fifth/Twenty-sixth pass)
    before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the

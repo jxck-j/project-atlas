@@ -1228,6 +1228,17 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   rejected 35 of 157, 4 substantial; Mali rejected 15 of 94, 6 substantial (1 unmatched)** (found 2026-09-18,
   "Twenty-fifth pass") — real oversized rural LGA/commune/arrondissement residuals, the same accepted shape as
   every other country in this pass; not chased further.
+- **DR Congo rejected 81 of 118 points, 79 substantial, after a Kinshasa-commune OSM supplement already fixed
+  the capital itself (16,000,000 population) and Masina (485,167)** (found 2026-09-18,
+  `city-boundaries-architecture.md`'s "Twenty-sixth pass") — DR Congo's remaining rural territories are
+  genuinely enormous (Sandoa territory alone is 29,712 km²), the worst substantial-rejection ratio of any
+  country in this pass; not chased further given the highest-value gap (the capital) is already fixed.
+- **Chad rejected 56 of 74 points, 38 substantial; Congo rejected 56 of 60, 27 substantial (after a
+  Brazzaville-commune OSM supplement already fixed both of the country's two most important cities); Gabon
+  rejected 36 of 50, 12 substantial; Cameroon rejected 21 of 145, 10 substantial; Central African Republic
+  rejected 13 of 51, 6 substantial** (found 2026-09-18, "Twenty-sixth pass") — real oversized rural
+  department/territory residuals across Central Africa's sparse, forested/Sahelian interior; not chased
+  further.
 
 ## Visualization
 

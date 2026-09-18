@@ -36,7 +36,9 @@
 // Morocco, Sudan, South Sudan, Tunisia, plus the 2026-09-18 West Africa
 // pass: Benin, Burkina Faso, Cabo Verde, Côte d'Ivoire, Gambia, Ghana,
 // Guinea, Guinea-Bissau, Liberia, Mali, Mauritania, Niger, Nigeria,
-// Senegal, Sierra Leone, Togo — NOT the other 33 UN members yet.
+// Senegal, Sierra Leone, Togo, plus the 2026-09-18 Central Africa pass:
+// Cameroon, Central African Republic, Chad, Congo, DR Congo, Equatorial
+// Guinea, Gabon, São Tomé and Príncipe — NOT the other 25 UN members yet.
 // See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
@@ -3204,6 +3206,108 @@ if (shouldRun('566')) report.nigeria = await runGeoBoundariesCountry({ name: 'Ni
 if (shouldRun('686')) report.senegal = await runGeoBoundariesCountry({ name: 'Senegal', numericId: '686', alpha3: 'SEN', admLevel: 'ADM3' })
 if (shouldRun('694')) report.sierraLeone = await runGeoBoundariesCountry({ name: 'Sierra Leone', numericId: '694', alpha3: 'SLE', admLevel: 'ADM3' })
 if (shouldRun('768')) report.togo = await runGeoBoundariesCountry({ name: 'Togo', numericId: '768', alpha3: 'TGO', admLevel: 'ADM2' })
+
+// --- Twenty-sixth pass (2026-09-18): Central Africa (Cameroon, Central
+// African Republic, Chad, Congo, DR Congo, Equatorial Guinea, Gabon, São
+// Tomé and Príncipe) — the third Africa batch. Every level confirmed by a
+// direct point-in-polygon check against real coordinates, not just recon's
+// own canonicalName field.
+//
+// Five confirmed clean on recon's own reported finest level: Cameroon
+// (ADM3, 360 units — Douala -> Douala I, 32.20 km²; Yaoundé -> Yaoundé
+// III, 68.46 km²), Chad (ADM2, "Departments," 70 units — N'Djamena
+// resolves to its own 426.53 km² department; Moundou has no unit of its
+// own name in this download at all, a real gap not chased further),
+// Equatorial Guinea (ADM2, 28 units — Malabo resolves to its own 383.32
+// km² district), Gabon (ADM2, "Department," 49 units — Libreville resolves
+// to its own 185.53 km² department), and São Tomé and Príncipe (ADM2,
+// "Districts," 7 units — the capital resolves to Água Grande, 22.46 km²).
+//
+// Central African Republic needed the same override this file has now hit
+// repeatedly: recon's own area-heuristic pick, ADM5 ("quartiers," 202
+// units), only covers Bangui at all (202 nationwide is nowhere close to a
+// comprehensive tier for the whole country) and resolves Bangui itself to
+// a 0.32 km² neighborhood — too fine even for the one city it covers. ADM3
+// ("Municipalities," 175 units, comprehensive nationwide) resolves Bangui
+// to Arrondissement 1 (8.16 km², one of Bangui's real 8 arrondissements)
+// and — confirmed with a second, non-capital town — Mbaiki to its own real
+// 0.24° x 0.17° unit; used instead.
+//
+// **Congo (Republic of the) surfaced a second, more severe instance of
+// Burkina Faso's own shapeName/geometry misalignment bug** (Twenty-fifth
+// pass) — not isolated to one or two features this time, but confirmed
+// across at least three spot-checked ADM2 features nationwide. "Ngamaba
+// (Brazzaville)" and "Loandjili (Pointe Noire)" — real named arrondissements
+// of Congo's own two biggest cities — both have bounding boxes roughly
+// 300-400 km from the real cities of those names (and are themselves
+// thousands of km² — utterly implausible for a single urban arrondissement).
+// A third, unrelated spot check ("Owando," a real northern town with no
+// "(city)" annotation at all) is *also* displaced roughly 150-200 km from
+// its real location, confirming this isn't limited to the two annotated
+// entries — the whole ADM2 level is untrustworthy for this join, not a
+// two-feature patch. Switched to ADM1 ("Départements," 12 units — Congo's
+// 10 rural departments plus Brazzaville and Pointe-Noire as their own
+// units at the same tier) instead, confirmed correctly located for both
+// cities that matter most (Pointe-Noire's own department is a real,
+// plausible 81.20 km²; Brazzaville's is a coarser but correctly-positioned
+// 6,065.32 km²) — real coarseness from using ADM1, not a wrong-location
+// bug the way ADM2 was.
+if (shouldRun('120')) report.cameroon = await runGeoBoundariesCountry({ name: 'Cameroon', numericId: '120', alpha3: 'CMR', admLevel: 'ADM3' })
+if (shouldRun('140')) report.centralAfricanRepublic = await runGeoBoundariesCountry({ name: 'Central African Republic', numericId: '140', alpha3: 'CAF', admLevel: 'ADM3' })
+if (shouldRun('148')) report.chad = await runGeoBoundariesCountry({ name: 'Chad', numericId: '148', alpha3: 'TCD', admLevel: 'ADM2' })
+// ADM1's own Brazzaville department (6,065.32 km²) is correctly located
+// but still real geography, not a technique problem — Congo's capital
+// department genuinely spans that much rural hinterland beyond the built-up
+// city, and 6,065 km² is past even the LOOSE_MAX_SQKM=5,000 ceiling, so
+// the capital's own GeoNames point (population 1,982,000) would be
+// REJECTED outright without a finer candidate. A live OSM check found a
+// real, separate "Brazzaville (commune)" relation (admin_level=5, distinct
+// from "Brazzaville (département)" at admin_level=4) — 342.52 km², a
+// plausible real urban-commune scale — added as a single supplemental
+// candidate, the same Bhutan/Kazakhstan/South Korea "one specific missing
+// finer unit for the capital, not a whole missing tier" pattern.
+if (shouldRun('178'))
+  report.congo = await runGeoBoundariesCountry({
+    name: 'Congo',
+    numericId: '178',
+    alpha3: 'COG',
+    admLevel: 'ADM1',
+    extraOsm: {
+      sourceLabel: 'osm-brazzaville-commune',
+      query: `[out:json][timeout:60];
+relation["name"="Brazzaville (commune)"];
+out geom;`,
+    },
+  })
+// DR Congo's own Kinshasa "territory, city" unit (10,656.04 km²) is real
+// geography — the province-city genuinely spans that much rural hinterland
+// — but far past LOOSE_MAX_SQKM=5,000, so the capital's own GeoNames point
+// (population 16,000,000, one of the largest cities on Earth) would be
+// REJECTED outright, along with several of its own million-plus-population
+// sub-areas (Masina, 485,167). A live OSM check (bbox-scoped to the real
+// city rather than an ISO3166-2 area query, which timed out — Kinshasa's
+// own vast province polygon made the area-based query too expensive)
+// confirmed a real, comprehensive `admin_level=7` commune tier — Kinshasa's
+// own real 24 communes (Kintambo, Bandalungwa, Gombe, ...) — added as a
+// supplemental layer, the same "split the megacity into its own real
+// districts" pattern Beijing/Jakarta/Manila already established, not a
+// single-candidate capital patch.
+if (shouldRun('180'))
+  report.drCongo = await runGeoBoundariesCountry({
+    name: 'DR Congo',
+    numericId: '180',
+    alpha3: 'COD',
+    admLevel: 'ADM2',
+    extraOsm: {
+      sourceLabel: 'osm-kinshasa-communes',
+      query: `[out:json][timeout:80];
+relation["boundary"="administrative"]["admin_level"="7"](-4.55,15.15,-4.25,15.55);
+out geom;`,
+    },
+  })
+if (shouldRun('226')) report.equatorialGuinea = await runGeoBoundariesCountry({ name: 'Equatorial Guinea', numericId: '226', alpha3: 'GNQ', admLevel: 'ADM2' })
+if (shouldRun('266')) report.gabon = await runGeoBoundariesCountry({ name: 'Gabon', numericId: '266', alpha3: 'GAB', admLevel: 'ADM2' })
+if (shouldRun('678')) report.saoTomeAndPrincipe = await runGeoBoundariesCountry({ name: 'Sao Tome and Principe', numericId: '678', alpha3: 'STP', admLevel: 'ADM2' })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are
