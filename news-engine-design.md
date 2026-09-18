@@ -185,8 +185,19 @@ NewsItem {
 `corroboration` be set to `"wire-confirmed"` from that single report rather than requiring independent
 corroboration count.
 
+## Pending-confirmation queue — internal ops view only (decided 2026-09-17)
+
+Resolves the "visible queue?" question below in favor of a queue, but scoped narrowly: it's a curation tool
+for whoever operates this pipeline, never reader-facing. Surfacing unconfirmed high-stakes claims to News tab
+readers — even labeled "developing/unconfirmed" — would undercut the entire reason the severity gate exists;
+the value here is giving a human a punch list of `reviewStatus === "pending-confirmation"` items to actively
+chase down (call sources, watch wires), not giving readers unverified claims.
+
+Implementation: a filtered render over the same static JSON, gated behind `import.meta.env.DEV` and eliminated
+from production builds — the same internal-tooling pattern `hud/selectionStore.ts`'s
+`window.__debugSelectEntity` console helper already establishes elsewhere in this project, not a new backend
+or a second data path.
+
 ## Open before this becomes a build prompt
 
-- Whether `unconfirmed` high-stakes items get a visible private review queue (so pending wire-confirmation
-  items can be actively tracked/chased) versus staying as internal-only pipeline state — leaning toward a
-  visible queue for operational usefulness, not yet finalized as of 2026-09-17.
+- None currently open.
