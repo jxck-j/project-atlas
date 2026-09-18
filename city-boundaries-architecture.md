@@ -2179,6 +2179,72 @@ Juba supplement, for the coordinate-gap reason explained above). Tunisia's clean
 **Final status: 7 of Africa's 54 UN members are done and committed. 144 of 193 UN members now have real
 city-boundary data; 49 remain — all in Africa (47 more) plus India and Russia.**
 
+### Twenty-fifth pass: West Africa (2026-09-18) — Benin, Burkina Faso, Cabo Verde, Côte d'Ivoire, Gambia,
+Ghana, Guinea, Guinea-Bissau, Liberia, Mali, Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo
+
+The second Africa batch. Every level confirmed by a direct point-in-polygon check against real coordinates,
+not just recon's own canonicalName field.
+
+**Ten confirmed clean on recon's own reported finest level:** Benin (ADM3, "Arrondissements," 546 units —
+Cotonou/Porto-Novo each resolve to their own real arrondissement; clean 87/87), Cabo Verde (ADM2, "freguesia,"
+32 units — Praia resolves to its own 98.21 km² freguesia; clean 228/228), Côte d'Ivoire (ADM3, "Departments,"
+510 units — Abidjan resolves to its own whole 555.43 km² department, not fragmented into its 10 real
+communes; Yamoussoukro likewise its own department; this pass's largest GeoNames index by far, 5,136 points,
+4,968 kept, 168 rejected, none substantial — real rural departments, and no sharding needed despite the
+count, 14,107 KB), Ghana (ADM2, "Districts," 260 units — Accra -> Ayawaso West, 32.77 km²; Kumasi -> its own
+21.72 km² metropolis), Guinea (ADM3, "sub-prefecture," 340 units — Conakry's own 5 real communes (Kaloum,
+Dixinn, Matam, Matoto, Ratoma) are all present by name, a first coordinate check just missed the narrow
+peninsula), Guinea-Bissau (ADM2, 39 units — Bissau resolves to its own 188.90 km² "Bissau Autonomous
+Sector"), Liberia (ADM2, "Districts," 136 units — Monrovia resolves to its own 196.52 km² "Greater
+Monrovia"), Mali (ADM3, "Commune," 701 units — Bamako resolves to its own "Commune III," one of its 6 real
+communes; Sikasso to its own whole commune), Mauritania (ADM2, 57 units — Nouakchott resolves to Tevragh
+Zein, one of its 9 real moughataa; 22 of 88 substantial rejects — Zouérat's own mining-region moughataa is a
+genuinely enormous 167,659 km², real Saharan geography), Niger (ADM3, "Communes," 266 units — Niamey/Zinder
+each resolve to their own real numbered commune), Nigeria (ADM2, "Local Government Areas," 774 units — an
+exact match to Nigeria's real LGA count; Lagos/Ikeja -> its own 41.04 km² LGA, Abuja -> the real 1,481.83 km²
+Municipal Area Council, Kano -> Kano Municipal, 14.96 km², Ibadan -> Egbeda, one of its several constituent
+LGAs; 790/927 kept, 137 rejected, 15 substantial), Senegal (ADM3, "arrondissement," 121 units — Dakar ->
+Almadies, 31.82 km²), and Togo (ADM2, "Prefectures," 37 units — Lomé's own "Lomé Commune," 130.46 km², is a
+real distinct unit from the surrounding rural prefectures, not fragmented further).
+
+**Gambia and Sierra Leone both needed the same override this file has now hit repeatedly:** recon's own
+area-heuristic pick was one level too fine. Gambia's ADM3 ("Ward," 120 units, 0.13 km² min) resolves Banjul to
+"New Town East" — sub-city scale — while ADM2 ("District," 48 units) resolves it to "Banjul Central" (0.78
+km², the same order of magnitude as Cairo's own accepted qism-level matches) and Serekunda to "Serrekunda
+Central" (3.94 km²); ADM2 is used — clean 180/180 (4 snapped). Sierra Leone's ADM4 (recon's own
+"cityPlausible" pick, 1,322 units) turned out to have a real, additional data-quality problem on top of being
+too fine — several features have a literal blank `shapeName`, and its own recon-reported canonicalName
+("Counties") isn't even a real Sierra Leonean administrative term. ADM3 ("Chiefdoms," Sierra Leone's real
+traditional-authority tier, still used for Freetown's own internal wards) resolves Freetown to "West II," 6.69
+km², and is used instead — 86/88 kept, 2 rejected, none substantial.
+
+**Burkina Faso surfaced a real, previously-unseen class of geoBoundaries data-quality bug: not a blank/wrong-
+but-unique/garbled name (Turkmenistan/China/Iran's own prior findings), but a genuine shapeName/geometry
+MISALIGNMENT.** The feature actually named "Ouagadougou" in ADM3 has a bounding box roughly 150 km southwest
+of the real capital, and the feature that actually DOES contain Ouagadougou's real coordinates is named
+"Bereba" instead (a real Burkinabè commune, but nowhere near the capital); the same displacement pattern
+repeats for "Bobo-dioulasso," whose own polygon sits roughly 150-200 km northeast of the real city. Confirmed
+by checking both features' real bounding boxes directly, not just a single coordinate miss — this is a
+systematic misalignment affecting (at least) the country's two largest cities, not an isolated one-off, so
+ADM3 is untrustworthy for this join even though its recon-reported unit count looked plausible. ADM2
+("Province," 45 units) has no such problem — Ouagadougou correctly resolves to Kadiogo Province (2,880.32
+km², the real province containing the capital) — and is used instead, at real province-level coarseness
+rather than a wrong city-level match. Result: 37/118 kept, 81 rejected, 45 substantial (including
+Bobo-Dioulasso itself, 904,920 population, now correctly — if coarsely — located in Houet Province, 11,592
+km², rather than silently mismatched to a wrong location 150+ km away).
+
+**File sizes**: none of these sixteen needed `shardByState()` — Côte d'Ivoire's 14,107 KB is the largest,
+despite having by far the most GeoNames points of any country in this pass.
+
+**Real, accepted residuals, all logged to BACKLOG.md**: Mauritania (22 substantial, Saharan moughataa scale),
+Burkina Faso (45 substantial, real province-level coarseness after the ADM3 misalignment fix), Nigeria (15
+substantial), Niger (8 substantial), Senegal (4 substantial), Mali (6 substantial, 1 unmatched), and Ghana (1
+substantial). Benin/Cabo Verde/Gambia's own clean results and Guinea/Guinea-Bissau/Liberia/Sierra
+Leone/Togo/Côte d'Ivoire's small non-substantial residuals need no further entry.
+
+**Final status: 23 of Africa's 54 UN members are done and committed. 160 of 193 UN members now have real
+city-boundary data; 33 remain — all in Africa (31 more) plus India and Russia.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2195,7 +2261,7 @@ city-boundary data; 49 remain — all in Africa (47 more) plus India and Russia.
    internationally disputed. Logged in `BACKLOG.md`'s Geographic coverage
    section rather than silently patched either direction. Still replaces
    `cities.json`'s 223-entry curated list, not yet cut over.
-2. ~~Not started~~ — **done for 144 countries** (`scripts/buildCityBoundaries.mjs`,
+2. ~~Not started~~ — **done for 160 countries** (`scripts/buildCityBoundaries.mjs`,
    `npm run build:geo:city-boundaries`; see the Sixth pass for the two real bugs caught building it,
    the Eighth pass for the Central America batch + the vertex-density/simplification bug that batch
    surfaced, the Ninth pass for Canada/Mexico + the Mexico-file-size bug/state-sharding fix, the
@@ -2289,16 +2355,23 @@ city-boundary data; 49 remain — all in Africa (47 more) plus India and Russia.
    confirmed the finest tier anywhere back in the Fourth pass) and South Sudan (geoBoundaries ADM2 plus a
    supplemental Juba-neighborhood OSM layer from that same Fourth pass — measured zero actual benefit in this
    run, a real coordinate-gap finding logged rather than silently assumed to help — see the Twenty-fourth
-   pass) against the already-shipped
+   pass) and Benin/Cabo Verde/Côte d'Ivoire/Ghana/Guinea/Guinea-Bissau/Liberia/Mali/Mauritania/Niger/Nigeria/
+   Senegal/Togo (geoBoundaries, each level independently verified — see the Twenty-fifth pass) and
+   Gambia/Sierra Leone (geoBoundaries, overriding recon's own reported finest level for a coarser real tier —
+   the same "recon's area heuristic picked something one level too fine" trap this file keeps re-finding) and
+   Burkina Faso (geoBoundaries ADM2, after a real shapeName/geometry MISALIGNMENT bug at ADM3 — not a blank or
+   garbled name like prior findings, but the "Ouagadougou"/"Bobo-dioulasso" features' own polygons sitting
+   150+ km from the real cities of those names — see the Twenty-fifth pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
    Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: the other 49 countries** (Russia and India both included — see the Seventeenth pass's own note
+   **Not done: the other 33 countries** (Russia and India both included — see the Seventeenth pass's own note
    on why Russia is deliberately excluded from routine regional batches, and the Twentieth pass's own note on
    why India got the same treatment) — each needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth pass)
+   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
+   Twenty-fifth pass)
    before its own join can run, not a blind batch extension of this script.
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the

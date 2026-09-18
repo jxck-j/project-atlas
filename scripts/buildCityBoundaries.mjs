@@ -33,7 +33,10 @@
 // Kiribati, Marshall Islands, Micronesia, Nauru, New Zealand, Palau, Papua
 // New Guinea, Samoa, Solomon Islands, Tonga, Tuvalu, Vanuatu, plus the
 // 2026-09-18 North Africa + South Sudan pass: Algeria, Egypt, Libya,
-// Morocco, Sudan, South Sudan, Tunisia — NOT the other 49 UN members yet.
+// Morocco, Sudan, South Sudan, Tunisia, plus the 2026-09-18 West Africa
+// pass: Benin, Burkina Faso, Cabo Verde, Côte d'Ivoire, Gambia, Ghana,
+// Guinea, Guinea-Bissau, Liberia, Mali, Mauritania, Niger, Nigeria,
+// Senegal, Sierra Leone, Togo — NOT the other 33 UN members yet.
 // See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
@@ -3117,6 +3120,90 @@ relation(area)["boundary"="administrative"]["admin_level"="8"];
 out geom;`,
     },
   })
+
+// --- Twenty-fifth pass (2026-09-18): West Africa (Benin, Burkina Faso,
+// Cabo Verde, Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia,
+// Mali, Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo) — the
+// second Africa batch. Every level confirmed by a direct point-in-polygon
+// check against real coordinates, not just recon's own canonicalName
+// field.
+//
+// Ten confirmed clean on recon's own reported finest level: Benin (ADM3,
+// "Arrondissements," 546 units — Cotonou/Porto-Novo each resolve to their
+// own real arrondissement), Cabo Verde (ADM2, "freguesia," 32 units —
+// Praia resolves to its own 98.21 km² freguesia), Côte d'Ivoire (ADM3,
+// "Departments," 510 units — Abidjan resolves to its own whole 555.43 km²
+// department, not fragmented into its 10 real communes; Yamoussoukro
+// likewise its own department), Ghana (ADM2, "Districts," 260 units —
+// Accra -> Ayawaso West, 32.77 km²; Kumasi -> its own 21.72 km² metropolis),
+// Guinea (ADM3, "sub-prefecture," 340 units — Conakry's own 5 real communes
+// (Kaloum, Dixinn, Matam, Matoto, Ratoma) are all present by name, a first
+// coordinate check just missed the narrow peninsula), Guinea-Bissau (ADM2,
+// 39 units — Bissau resolves to its own 188.90 km² "Bissau Autonomous
+// Sector"), Liberia (ADM2, "Districts," 136 units — Monrovia resolves to
+// its own 196.52 km² "Greater Monrovia"), Mali (ADM3, "Commune," 701 units
+// — Bamako resolves to its own "Commune III," one of its 6 real communes;
+// Sikasso to its own whole commune), Mauritania (ADM2, 57 units —
+// Nouakchott resolves to Tevragh Zein, one of its 9 real moughataa), Niger
+// (ADM3, "Communes," 266 units — Niamey/Zinder each resolve to their own
+// real numbered commune), Nigeria (ADM2, "Local Government Areas," 774
+// units — an exact match to Nigeria's real LGA count; Lagos/Ikeja -> its
+// own 41.04 km² LGA, Abuja -> the real 1,481.83 km² Municipal Area Council,
+// Kano -> Kano Municipal, 14.96 km², Ibadan -> Egbeda, one of its several
+// constituent LGAs), Senegal (ADM3, "arrondissement," 121 units — Dakar ->
+// Almadies, 31.82 km²), and Togo (ADM2, "Prefectures," 37 units — Lomé's
+// own "Lomé Commune," 130.46 km², is a real distinct unit from the
+// surrounding rural prefectures, not fragmented further).
+//
+// Gambia and Sierra Leone both needed the same override this file has now
+// hit repeatedly: recon's own area-heuristic pick was one level too fine.
+// Gambia's ADM3 ("Ward," 120 units, 0.13 km² min) resolves Banjul to "New
+// Town East" — sub-city scale — while ADM2 ("District," 48 units) resolves
+// it to "Banjul Central" (0.78 km², the same order of magnitude as Cairo's
+// own accepted qism-level matches) and Serekunda to "Serrekunda Central"
+// (3.94 km²); ADM2 is used. Sierra Leone's ADM4 (recon's own
+// "cityPlausible" pick, 1,322 units) turned out to have a real, additional
+// data-quality problem on top of being too fine — several features have a
+// literal blank `shapeName`, and its own recon-reported canonicalName
+// ("Counties") isn't even a real Sierra Leonean administrative term. ADM3
+// ("Chiefdoms," Sierra Leone's real traditional-authority tier, still used
+// for Freetown's own internal wards) resolves Freetown to "West II," 6.69
+// km², and is used instead.
+//
+// Burkina Faso surfaced a real, previously-unseen class of geoBoundaries
+// data-quality bug: not a blank/wrong-but-unique/garbled name (Turkmenistan,
+// China, Iran's own prior findings), but a genuine shapeName/geometry
+// MISALIGNMENT — the feature actually named "Ouagadougou" in ADM3 has a
+// bounding box roughly 150 km southwest of the real capital, and the
+// feature that actually DOES contain Ouagadougou's real coordinates is
+// named "Bereba" instead (a real Burkinabè commune, but nowhere near the
+// capital); the same displacement pattern repeats for "Bobo-dioulasso,"
+// whose own polygon sits roughly 150-200 km northeast of the real city.
+// Confirmed by checking both features' real bounding boxes directly, not
+// just a single coordinate miss — this is a systematic misalignment
+// affecting (at least) the country's two largest cities, not an isolated
+// one-off, so ADM3 is untrustworthy for this join even though its recon-
+// reported unit count looked plausible. ADM2 ("Province," 45 units) has
+// no such problem — Ouagadougou correctly resolves to Kadiogo Province
+// (2,880.32 km², the real province containing the capital) — and is used
+// instead, at real province-level coarseness rather than a wrong city-
+// level match.
+if (shouldRun('204')) report.benin = await runGeoBoundariesCountry({ name: 'Benin', numericId: '204', alpha3: 'BEN', admLevel: 'ADM3' })
+if (shouldRun('854')) report.burkinaFaso = await runGeoBoundariesCountry({ name: 'Burkina Faso', numericId: '854', alpha3: 'BFA', admLevel: 'ADM2' })
+if (shouldRun('132')) report.caboVerde = await runGeoBoundariesCountry({ name: 'Cabo Verde', numericId: '132', alpha3: 'CPV', admLevel: 'ADM2' })
+if (shouldRun('384')) report.coteDIvoire = await runGeoBoundariesCountry({ name: "Côte d'Ivoire", numericId: '384', alpha3: 'CIV', admLevel: 'ADM3' })
+if (shouldRun('270')) report.gambia = await runGeoBoundariesCountry({ name: 'Gambia', numericId: '270', alpha3: 'GMB', admLevel: 'ADM2' })
+if (shouldRun('288')) report.ghana = await runGeoBoundariesCountry({ name: 'Ghana', numericId: '288', alpha3: 'GHA', admLevel: 'ADM2' })
+if (shouldRun('324')) report.guinea = await runGeoBoundariesCountry({ name: 'Guinea', numericId: '324', alpha3: 'GIN', admLevel: 'ADM3' })
+if (shouldRun('624')) report.guineaBissau = await runGeoBoundariesCountry({ name: 'Guinea-Bissau', numericId: '624', alpha3: 'GNB', admLevel: 'ADM2' })
+if (shouldRun('430')) report.liberia = await runGeoBoundariesCountry({ name: 'Liberia', numericId: '430', alpha3: 'LBR', admLevel: 'ADM2' })
+if (shouldRun('466')) report.mali = await runGeoBoundariesCountry({ name: 'Mali', numericId: '466', alpha3: 'MLI', admLevel: 'ADM3' })
+if (shouldRun('478')) report.mauritania = await runGeoBoundariesCountry({ name: 'Mauritania', numericId: '478', alpha3: 'MRT', admLevel: 'ADM2' })
+if (shouldRun('562')) report.niger = await runGeoBoundariesCountry({ name: 'Niger', numericId: '562', alpha3: 'NER', admLevel: 'ADM3' })
+if (shouldRun('566')) report.nigeria = await runGeoBoundariesCountry({ name: 'Nigeria', numericId: '566', alpha3: 'NGA', admLevel: 'ADM2' })
+if (shouldRun('686')) report.senegal = await runGeoBoundariesCountry({ name: 'Senegal', numericId: '686', alpha3: 'SEN', admLevel: 'ADM3' })
+if (shouldRun('694')) report.sierraLeone = await runGeoBoundariesCountry({ name: 'Sierra Leone', numericId: '694', alpha3: 'SLE', admLevel: 'ADM3' })
+if (shouldRun('768')) report.togo = await runGeoBoundariesCountry({ name: 'Togo', numericId: '768', alpha3: 'TGO', admLevel: 'ADM2' })
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
 // Places output directly. No join, no area threshold: Census Places are

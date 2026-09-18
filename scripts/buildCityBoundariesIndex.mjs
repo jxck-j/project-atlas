@@ -38,8 +38,11 @@
 // 2026-09-18 Oceania pass: Australia, Fiji, Kiribati, Marshall Islands,
 // Micronesia, Nauru, New Zealand, Palau, Papua New Guinea, Samoa, Solomon
 // Islands, Tonga, Tuvalu, Vanuatu, plus the 2026-09-18 North Africa + South
-// Sudan pass: Algeria, Egypt, Libya, Morocco, Sudan, South Sudan, Tunisia)
-// — NOT the other 49 UN members yet (India deliberately excluded, same
+// Sudan pass: Algeria, Egypt, Libya, Morocco, Sudan, South Sudan, Tunisia,
+// plus the 2026-09-18 West Africa pass: Benin, Burkina Faso, Cabo Verde,
+// Côte d'Ivoire, Gambia, Ghana, Guinea, Guinea-Bissau, Liberia, Mali,
+// Mauritania, Niger, Nigeria, Senegal, Sierra Leone, Togo) — NOT the other
+// 33 UN members yet (India deliberately excluded, same
 // reasoning as Russia). See that doc's
 // migration plan.
 import fs from 'node:fs'
@@ -182,6 +185,22 @@ const BOUNDARY_COUNTRIES = [
   { id: '729', name: 'Sudan' },
   { id: '728', name: 'South Sudan' },
   { id: '788', name: 'Tunisia' },
+  { id: '204', name: 'Benin' },
+  { id: '854', name: 'Burkina Faso' },
+  { id: '132', name: 'Cabo Verde' },
+  { id: '384', name: "Côte d'Ivoire" },
+  { id: '270', name: 'Gambia' },
+  { id: '288', name: 'Ghana' },
+  { id: '324', name: 'Guinea' },
+  { id: '624', name: 'Guinea-Bissau' },
+  { id: '430', name: 'Liberia' },
+  { id: '466', name: 'Mali' },
+  { id: '478', name: 'Mauritania' },
+  { id: '562', name: 'Niger' },
+  { id: '566', name: 'Nigeria' },
+  { id: '686', name: 'Senegal' },
+  { id: '694', name: 'Sierra Leone' },
+  { id: '768', name: 'Togo' },
 ]
 
 function addFromBoundaryFile(countryId) {

@@ -1215,6 +1215,19 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   point at all) never triggers either. Result: 7/23 kept, 15 rejected (11 substantial, Juba's own
   450,000-population point among them), 1 unmatched. Kept in the code since it's still a theoretically sound,
   correctly-implemented technique that could help a future GeoNames data refresh; not chased further now.
+- **Mauritania rejected 67 of 88 points, 22 substantial (Nouadhibou 146,048 in a 15,816 km² region, Zouérat
+  55,183 in a 167,659 km² mining-region moughataa, ...)** (found 2026-09-18,
+  `city-boundaries-architecture.md`'s "Twenty-fifth pass") — real Saharan geography, no finer tier exists in
+  this source; not chased further.
+- **Burkina Faso rejected 81 of 118 points, 45 substantial (Bobo-Dioulasso 904,920 in an 11,592 km² province,
+  Ouahigouya 124,587 in 6,790 km², ...), after switching from ADM3 to the coarser ADM2 to fix a real
+  shapeName/geometry misalignment bug** (found 2026-09-18, "Twenty-fifth pass") — ADM3's own "Ouagadougou" and
+  "Bobo-dioulasso" features were geometrically located 150+ km from the real cities of those names; ADM2 has
+  no such problem, just real province-level coarseness. Not chased further.
+- **Nigeria rejected 137 of 927 points, 15 substantial; Niger rejected 19 of 74, 8 substantial; Senegal
+  rejected 35 of 157, 4 substantial; Mali rejected 15 of 94, 6 substantial (1 unmatched)** (found 2026-09-18,
+  "Twenty-fifth pass") — real oversized rural LGA/commune/arrondissement residuals, the same accepted shape as
+  every other country in this pass; not chased further.
 
 ## Visualization
 

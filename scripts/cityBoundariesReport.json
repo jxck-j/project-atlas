@@ -154264,5 +154264,3976 @@
       }
     ],
     "snapped": []
+  },
+  "benin": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "burkinaFaso": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Bobo-Dioulasso",
+        "population": 904920,
+        "matchedTo": "Houet",
+        "areaSqKm": 11592.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Zitenga",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zabré",
+        "population": 21726,
+        "matchedTo": "Boulgou",
+        "areaSqKm": 6553.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yalgo",
+        "population": 26340,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tougan",
+        "population": 26347,
+        "matchedTo": "Sourou",
+        "areaSqKm": 6045,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tô",
+        "population": 16026,
+        "matchedTo": "Sissili",
+        "areaSqKm": 7170.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tita",
+        "population": 16450,
+        "matchedTo": "Sanguie",
+        "areaSqKm": 5131.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tenkodogo",
+        "population": 61936,
+        "matchedTo": "Boulgou",
+        "areaSqKm": 6553.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tanghin-Dassouri",
+        "population": 0,
+        "matchedTo": "Kadiogo",
+        "areaSqKm": 2880.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Solenzo",
+        "population": 24783,
+        "matchedTo": "Banwa",
+        "areaSqKm": 5927.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sindou",
+        "population": 7053,
+        "matchedTo": "Leraba",
+        "areaSqKm": 3124.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Siglé",
+        "population": 0,
+        "matchedTo": "Boulkiemde",
+        "areaSqKm": 4294,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sièn",
+        "population": 707,
+        "matchedTo": "Nayala",
+        "areaSqKm": 3735.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sebba",
+        "population": 11298,
+        "matchedTo": "Yagha",
+        "areaSqKm": 6545,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sapouy",
+        "population": 26345,
+        "matchedTo": "Ziro",
+        "areaSqKm": 5314.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Saponé",
+        "population": 0,
+        "matchedTo": "Bazega",
+        "areaSqKm": 3963.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sam",
+        "population": 1255,
+        "matchedTo": "Boulkiemde",
+        "areaSqKm": 4294,
+        "isSubstantial": false
+      },
+      {
+        "name": "Réo",
+        "population": 33894,
+        "matchedTo": "Sanguie",
+        "areaSqKm": 5131.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nagréongo",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pitmoaga",
+        "population": 7991,
+        "matchedTo": "Boulkiemde",
+        "areaSqKm": 4294,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pissila",
+        "population": 23420,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": true
+      },
+      {
+        "name": "Pama",
+        "population": 13579,
+        "matchedTo": "Kompienga",
+        "areaSqKm": 6973.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Pabré",
+        "population": 0,
+        "matchedTo": "Kadiogo",
+        "areaSqKm": 2880.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pa",
+        "population": 15170,
+        "matchedTo": "Kossi",
+        "areaSqKm": 7506,
+        "isSubstantial": true
+      },
+      {
+        "name": "Oursi",
+        "population": 0,
+        "matchedTo": "Oudalan",
+        "areaSqKm": 10045.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ourgou-Manéga",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouargaye",
+        "population": 13431,
+        "matchedTo": "Koulpelogo",
+        "areaSqKm": 5396.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ouahigouya",
+        "population": 124587,
+        "matchedTo": "Yatenga",
+        "areaSqKm": 6789.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Orodara",
+        "population": 33422,
+        "matchedTo": "Kenedougou",
+        "areaSqKm": 8479.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nouna",
+        "population": 32428,
+        "matchedTo": "Kossi",
+        "areaSqKm": 7506,
+        "isSubstantial": true
+      },
+      {
+        "name": "Niangoloko",
+        "population": 33292,
+        "matchedTo": "Comoe",
+        "areaSqKm": 15524.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Niaga",
+        "population": 835,
+        "matchedTo": "Bale",
+        "areaSqKm": 4560.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Natiaboani",
+        "population": 16640,
+        "matchedTo": "Gourma",
+        "areaSqKm": 11221,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nanom",
+        "population": 533,
+        "matchedTo": "Ganzourgou",
+        "areaSqKm": 4182.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koubri",
+        "population": 0,
+        "matchedTo": "Kadiogo",
+        "areaSqKm": 2880.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mangodara",
+        "population": 9126,
+        "matchedTo": "Comoe",
+        "areaSqKm": 15524.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mané",
+        "population": 0,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": false
+      },
+      {
+        "name": "Loumbila",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Léo",
+        "population": 51743,
+        "matchedTo": "Sissili",
+        "areaSqKm": 7170.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Korsimoro",
+        "population": 18875,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": true
+      },
+      {
+        "name": "Komsilga",
+        "population": 0,
+        "matchedTo": "Kadiogo",
+        "areaSqKm": 2880.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Komki-Ipala",
+        "population": 0,
+        "matchedTo": "Kadiogo",
+        "areaSqKm": 2880.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kayao",
+        "population": 0,
+        "matchedTo": "Bazega",
+        "areaSqKm": 3963.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaya",
+        "population": 121970,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": true
+      },
+      {
+        "name": "Karankasso",
+        "population": 15474,
+        "matchedTo": "Houet",
+        "areaSqKm": 11592.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Houndé",
+        "population": 87151,
+        "matchedTo": "Tuy",
+        "areaSqKm": 5648.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gousi",
+        "population": 516,
+        "matchedTo": "Nayala",
+        "areaSqKm": 3735.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goulouré",
+        "population": 6677,
+        "matchedTo": "Boulkiemde",
+        "areaSqKm": 4294,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gorom-Gorom",
+        "population": 9752,
+        "matchedTo": "Oudalan",
+        "areaSqKm": 10045.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gonna",
+        "population": 761,
+        "matchedTo": "Yatenga",
+        "areaSqKm": 6789.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gayéri",
+        "population": 15170,
+        "matchedTo": "Komonjdjari",
+        "areaSqKm": 5125.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Garango",
+        "population": 40404,
+        "matchedTo": "Boulgou",
+        "areaSqKm": 6553.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gaoua",
+        "population": 45284,
+        "matchedTo": "Poni",
+        "areaSqKm": 7519.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gaongo",
+        "population": 0,
+        "matchedTo": "Bazega",
+        "areaSqKm": 3963.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gao",
+        "population": 26453,
+        "matchedTo": "Ziro",
+        "areaSqKm": 5314.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Fada N'gourma",
+        "population": 73200,
+        "matchedTo": "Gourma",
+        "areaSqKm": 11221,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dori",
+        "population": 46512,
+        "matchedTo": "Seno",
+        "areaSqKm": 7024.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Djibo",
+        "population": 61462,
+        "matchedTo": "Soum",
+        "areaSqKm": 12673.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Diapaga",
+        "population": 15515,
+        "matchedTo": "Tapoa",
+        "areaSqKm": 14861.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Déou",
+        "population": 0,
+        "matchedTo": "Oudalan",
+        "areaSqKm": 10045.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dédougou",
+        "population": 63617,
+        "matchedTo": "Mouhoun",
+        "areaSqKm": 6904.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dapélogo",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boussouma",
+        "population": 0,
+        "matchedTo": "Sanmatenga",
+        "areaSqKm": 9309,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boulsa",
+        "population": 24200,
+        "matchedTo": "Namentenga",
+        "areaSqKm": 6408.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bogandé",
+        "population": 21443,
+        "matchedTo": "Gnagna",
+        "areaSqKm": 8560.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bittou",
+        "population": 31210,
+        "matchedTo": "Boulgou",
+        "areaSqKm": 6553.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bingo",
+        "population": 0,
+        "matchedTo": "Boulkiemde",
+        "areaSqKm": 4294,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bilanga",
+        "population": 0,
+        "matchedTo": "Gnagna",
+        "areaSqKm": 8560.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Béguédo",
+        "population": 21894,
+        "matchedTo": "Boulgou",
+        "areaSqKm": 6553.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barani",
+        "population": 5000,
+        "matchedTo": "Kossi",
+        "areaSqKm": 7506,
+        "isSubstantial": false
+      },
+      {
+        "name": "Banfora",
+        "population": 117452,
+        "matchedTo": "Comoe",
+        "areaSqKm": 15524.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bama",
+        "population": 31215,
+        "matchedTo": "Banwa",
+        "areaSqKm": 5927.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aribinda",
+        "population": 45818,
+        "matchedTo": "Soum",
+        "areaSqKm": 12673.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Absouya",
+        "population": 0,
+        "matchedTo": "Oubritenga",
+        "areaSqKm": 2852.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tin-Akoff",
+        "population": 0,
+        "matchedTo": "Oudalan",
+        "areaSqKm": 10045.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mani",
+        "population": 15066,
+        "matchedTo": "Gnagna",
+        "areaSqKm": 8560.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boundoré",
+        "population": 0,
+        "matchedTo": "Yagha",
+        "areaSqKm": 6545,
+        "isSubstantial": false
+      },
+      {
+        "name": "Namponkoré",
+        "population": 16423,
+        "matchedTo": "Tapoa",
+        "areaSqKm": 14861.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Cinkansé",
+        "population": 19815,
+        "matchedTo": "Koulpelogo",
+        "areaSqKm": 5396.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kompienga",
+        "population": 15024,
+        "matchedTo": "Kompienga",
+        "areaSqKm": 6973.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kiougou-Kandaga",
+        "population": 1732,
+        "matchedTo": "Koulpelogo",
+        "areaSqKm": 5396.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "caboVerde": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "coteDIvoire": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zriglo",
+        "population": 3353,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zaïpobli",
+        "population": 2675,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Youkou",
+        "population": 1971,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yodolo",
+        "population": 1396,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yakbedougou",
+        "population": 567,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Worosantyakaha",
+        "population": 1239,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Worofla",
+        "population": 2321,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vonkoro",
+        "population": 3436,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vodélobly",
+        "population": 2999,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Varbo",
+        "population": 1451,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tyémorokaha",
+        "population": 1202,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toro-Kinkéné",
+        "population": 2403,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tindala",
+        "population": 1808,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiéouléoula",
+        "population": 3273,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tchinkoula",
+        "population": 2889,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tiéménin",
+        "population": 805,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tchigouéla",
+        "population": 1661,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taï",
+        "population": 7670,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sougbono",
+        "population": 670,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sotité",
+        "population": 601,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sokorodougou",
+        "population": 1530,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sokoro",
+        "population": 2500,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sokolo",
+        "population": 1244,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Soko",
+        "population": 3599,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sirikokaha",
+        "population": 959,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Siraodi",
+        "population": 1341,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sinkaha",
+        "population": 2625,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sindéré-Sokoro",
+        "population": 1318,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sikolo",
+        "population": 4386,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Siéblo Oula",
+        "population": 3523,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sépénédyokaha",
+        "population": 6096,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Satiguita",
+        "population": 510,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarandara",
+        "population": 1704,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarala",
+        "population": 1269,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarakorodougou",
+        "population": 553,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sanguinari",
+        "population": 1322,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sakré",
+        "population": 4743,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Poulo",
+        "population": 2792,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ponan",
+        "population": 5889,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pétyonara",
+        "population": 5225,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pétonkaha",
+        "population": 1877,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pékaha",
+        "population": 972,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pauléoula",
+        "population": 2303,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Parawalakaha",
+        "population": 1358,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Paraka",
+        "population": 732,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gniénésso",
+        "population": 991,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nigré",
+        "population": 2776,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Niendélé-Ségbéré",
+        "population": 1336,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Niangourougbono",
+        "population": 1589,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Niandagui",
+        "population": 585,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Néka",
+        "population": 2412,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nassoulo",
+        "population": 1437,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nassian",
+        "population": 1505,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nanbonkaha",
+        "population": 5006,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nanbirgèkaha",
+        "population": 553,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moya",
+        "population": 1315,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mohi-Moussadougou",
+        "population": 1017,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mbala",
+        "population": 897,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mapina",
+        "population": 1214,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Manorota",
+        "population": 3107,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mango",
+        "population": 1248,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mamouya",
+        "population": 675,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mamouroudougou",
+        "population": 639,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahino",
+        "population": 5833,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Longo",
+        "population": 4534,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lomono",
+        "population": 560,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lohou",
+        "population": 3265,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Litiara",
+        "population": 933,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Linguékoro",
+        "population": 2635,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Linguesso",
+        "population": 1135,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Latokaha",
+        "population": 7405,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lasologo",
+        "population": 5793,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lafokpokaha",
+        "population": 3741,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kyohan",
+        "population": 532,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kohimon",
+        "population": 1555,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kourou",
+        "population": 2330,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korondougou",
+        "population": 956,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Korkana",
+        "population": 895,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konogo",
+        "population": 811,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kongolo",
+        "population": 2367,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kona",
+        "population": 640,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Komou",
+        "population": 1288,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kolon",
+        "population": 3400,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kolo",
+        "population": 793,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kopingué",
+        "population": 697,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koïtan",
+        "population": 1004,
+        "matchedTo": "Parc National de Bona",
+        "areaSqKm": 9117.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koflandé",
+        "population": 550,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kisankaha",
+        "population": 622,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kato",
+        "population": 3306,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kassanblé",
+        "population": 523,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karié",
+        "population": 7412,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karaba",
+        "population": 1435,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kapolokoro",
+        "population": 2041,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kanlo",
+        "population": 576,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaniéné",
+        "population": 1520,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kangara",
+        "population": 964,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kanéguéra",
+        "population": 1247,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kahanso",
+        "population": 1849,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kananwolo",
+        "population": 5107,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kamonokaha",
+        "population": 1095,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kafolo",
+        "population": 1821,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kafiné",
+        "population": 4102,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Irindékoro",
+        "population": 2011,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Inbié",
+        "population": 1205,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gounpar",
+        "population": 658,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gouléako Dioula",
+        "population": 1159,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbouiso",
+        "population": 1044,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbémazo",
+        "population": 1790,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gahabli",
+        "population": 2092,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Foumbolo",
+        "population": 4132,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Folonfokaha",
+        "population": 2564,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Findéné",
+        "population": 519,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fia",
+        "population": 536,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Férémandougou",
+        "population": 1625,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fassélémon",
+        "population": 2173,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dyamonso",
+        "population": 1142,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dourougbé",
+        "population": 1069,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Djiroutou",
+        "population": 4977,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Djidoubaye",
+        "population": 6600,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diaraoula",
+        "population": 2924,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diangbanasso",
+        "population": 7080,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Daoro",
+        "population": 1253,
+        "matchedTo": "Doba",
+        "areaSqKm": 2014.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Daobli",
+        "population": 4903,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Danbaïra",
+        "population": 803,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bogoba",
+        "population": 560,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bilimono",
+        "population": 3756,
+        "matchedTo": "Bilimono",
+        "areaSqKm": 3351.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Béréman",
+        "population": 3024,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Béréblo",
+        "population": 5549,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Barhana",
+        "population": 1284,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Banonon",
+        "population": 624,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bania",
+        "population": 834,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bako",
+        "population": 2328,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Angolokaha",
+        "population": 1565,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kouego",
+        "population": 3947,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gouélégui Béoué",
+        "population": 3809,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbéléto",
+        "population": 910,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbarou",
+        "population": 1214,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Djéka",
+        "population": 2024,
+        "matchedTo": "Djouroutou",
+        "areaSqKm": 2342,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tindrima",
+        "population": 613,
+        "matchedTo": "Bako",
+        "areaSqKm": 2021.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Port-Gentil",
+        "population": 1301,
+        "matchedTo": "TaÃ¯",
+        "areaSqKm": 2103.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kéibly",
+        "population": 7654,
+        "matchedTo": "ZagnÃ©",
+        "areaSqKm": 2130.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Logota",
+        "population": 553,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gboton",
+        "population": 633,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lawa-Carrefour",
+        "population": 741,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karagboko",
+        "population": 1011,
+        "matchedTo": "Sikolo",
+        "areaSqKm": 2240.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fandérékaha",
+        "population": 1075,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Village Sodesucre",
+        "population": 3221,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tchassanankaha",
+        "population": 1134,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Djégnéné",
+        "population": 1249,
+        "matchedTo": "Kong",
+        "areaSqKm": 2645.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dékokaha",
+        "population": 1637,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Village-Sodefel",
+        "population": 1673,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Koussorokaha",
+        "population": 1849,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Détikaha",
+        "population": 1875,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Naniékaha",
+        "population": 2972,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sodesucre Village",
+        "population": 9933,
+        "matchedTo": "FerkÃ©ssÃ©dougou",
+        "areaSqKm": 2208.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Landédougou",
+        "population": 1164,
+        "matchedTo": "Foumbolo",
+        "areaSqKm": 2380,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouréguékaha",
+        "population": 4118,
+        "matchedTo": "Niakaramandougou",
+        "areaSqKm": 2792,
+        "isSubstantial": false
+      },
+      {
+        "name": "N'Gonwo",
+        "population": 738,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bagabasso",
+        "population": 1525,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbimanan",
+        "population": 5454,
+        "matchedTo": "Worofla",
+        "areaSqKm": 2490.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Assoum",
+        "population": 1908,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbadjoudouo",
+        "population": 501,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bromankoté",
+        "population": 596,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dagnamadouo",
+        "population": 632,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kourbini",
+        "population": 639,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lékparédouo",
+        "population": 689,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sipridouo",
+        "population": 764,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sypaldouo",
+        "population": 1038,
+        "matchedTo": "Bouna",
+        "areaSqKm": 2285.5,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Taki",
+        "population": 1947,
+        "matchedTo": "San-PÃ©dro",
+        "snapDistanceKm": 0.456
+      },
+      {
+        "name": "Soublaké",
+        "population": 877,
+        "matchedTo": "DjamandiokÃ©",
+        "snapDistanceKm": 0.009
+      },
+      {
+        "name": "Souapleu",
+        "population": 1878,
+        "matchedTo": "Goulaleu",
+        "snapDistanceKm": 0.124
+      },
+      {
+        "name": "Grand Tabu",
+        "population": 641,
+        "matchedTo": "Tabou",
+        "snapDistanceKm": 0.005
+      },
+      {
+        "name": "Half Berebi",
+        "population": 1072,
+        "matchedTo": "Grand-BÃ©rÃ©by",
+        "snapDistanceKm": 0.248
+      },
+      {
+        "name": "Kouassissérénou",
+        "population": 1608,
+        "matchedTo": "AssuÃ©fry",
+        "snapDistanceKm": 0.151
+      },
+      {
+        "name": "Kadarvogo",
+        "population": 2206,
+        "matchedTo": "Kaouara",
+        "snapDistanceKm": 0.838
+      },
+      {
+        "name": "Kobadukrom",
+        "population": 3747,
+        "matchedTo": "Kokomian",
+        "snapDistanceKm": 0.528
+      },
+      {
+        "name": "Badiké",
+        "population": 1035,
+        "matchedTo": "Grand-BÃ©rÃ©by",
+        "snapDistanceKm": 0.113
+      },
+      {
+        "name": "Saykro",
+        "population": 6198,
+        "matchedTo": "NoÃ©",
+        "snapDistanceKm": 0.156
+      },
+      {
+        "name": "Gueidépleu",
+        "population": 712,
+        "matchedTo": "Goulaleu",
+        "snapDistanceKm": 0.092
+      }
+    ]
+  },
+  "gambia": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": [
+      {
+        "name": "Galleh Manda",
+        "population": 1872,
+        "matchedTo": "Upper Fuladu West",
+        "snapDistanceKm": 0.226
+      },
+      {
+        "name": "Diganteh",
+        "population": 701,
+        "matchedTo": "Jarra central",
+        "snapDistanceKm": 0.019
+      },
+      {
+        "name": "Barra",
+        "population": 6020,
+        "matchedTo": "Lower Niumi",
+        "snapDistanceKm": 0.032
+      },
+      {
+        "name": "Bansang",
+        "population": 9528,
+        "matchedTo": "Upper Fuladu West",
+        "snapDistanceKm": 0.015
+      }
+    ]
+  },
+  "ghana": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Salaga",
+        "population": 25472,
+        "matchedTo": "North East Gonja",
+        "areaSqKm": 6114.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Larabanga",
+        "population": 4500,
+        "matchedTo": "West Gonja",
+        "areaSqKm": 4736.7,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "guinea": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Siguirini",
+        "population": 2054,
+        "matchedTo": "Siguirini",
+        "areaSqKm": 2079.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Norassouba",
+        "population": 1445,
+        "matchedTo": "Norassoba",
+        "areaSqKm": 2687.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nyagassola",
+        "population": 0,
+        "matchedTo": "Niagassola",
+        "areaSqKm": 3064.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Banora",
+        "population": 0,
+        "matchedTo": "Banora",
+        "areaSqKm": 3194.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fidako",
+        "population": 0,
+        "matchedTo": "Niagassola",
+        "areaSqKm": 3064.5,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "guineaBissau": {
+    "unmatched": [],
+    "rejected": [],
+    "snapped": []
+  },
+  "liberia": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zorzor",
+        "population": 8419,
+        "matchedTo": "Zorzor",
+        "areaSqKm": 3140.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bopolu",
+        "population": 4396,
+        "matchedTo": "Bopolu",
+        "areaSqKm": 2307.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "mali": {
+    "unmatched": [
+      {
+        "name": "Zambla",
+        "population": 1099,
+        "lat": 10.24245,
+        "lng": -6.98682
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Tessalit",
+        "population": 0,
+        "matchedTo": "Tessalit",
+        "areaSqKm": 35876.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taoudenni",
+        "population": 3019,
+        "matchedTo": "Salam",
+        "areaSqKm": 293589.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sokolo",
+        "population": 4374,
+        "matchedTo": "Sokolo",
+        "areaSqKm": 2226.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sagala",
+        "population": 0,
+        "matchedTo": "Bellen",
+        "areaSqKm": 3200.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ménaka",
+        "population": 14085,
+        "matchedTo": "Menaka",
+        "areaSqKm": 14953.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kidal",
+        "population": 40030,
+        "matchedTo": "Kidal",
+        "areaSqKm": 12607.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bourem",
+        "population": 42371,
+        "matchedTo": "Bourem",
+        "areaSqKm": 6294.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Araouane",
+        "population": 4026,
+        "matchedTo": "Salam",
+        "areaSqKm": 293589.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Andéranboukan",
+        "population": 18688,
+        "matchedTo": "Anderamboukane",
+        "areaSqKm": 6707.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aguelhok",
+        "population": 8080,
+        "matchedTo": "Adjelhoc",
+        "areaSqKm": 12502,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abeïbara",
+        "population": 0,
+        "matchedTo": "Abeibara",
+        "areaSqKm": 8346.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Inékar",
+        "population": 8714,
+        "matchedTo": "Inekar",
+        "areaSqKm": 27224.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "I-n-Tillit",
+        "population": 22100,
+        "matchedTo": "N'tillit",
+        "areaSqKm": 12180,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ti-n-Essako",
+        "population": 0,
+        "matchedTo": "Tin Essako",
+        "areaSqKm": 27186.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tessit",
+        "population": 13588,
+        "matchedTo": "N'tillit",
+        "areaSqKm": 12180,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Abdel Begrou",
+        "population": 10599,
+        "matchedTo": "Gueneibe",
+        "snapDistanceKm": 0.215
+      }
+    ]
+  },
+  "mauritania": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zouérat",
+        "population": 55183,
+        "matchedTo": "Zoueratt",
+        "areaSqKm": 167658.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Woumpou",
+        "population": 3746,
+        "matchedTo": "Selibabi",
+        "areaSqKm": 3878.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tembedgha",
+        "population": 17465,
+        "matchedTo": "Timbedgha",
+        "areaSqKm": 11393,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tékane",
+        "population": 22041,
+        "matchedTo": "R'Kiz",
+        "areaSqKm": 5327.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tidjikja",
+        "population": 13479,
+        "matchedTo": "Tijigja",
+        "areaSqKm": 19153.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tîchît",
+        "population": 1580,
+        "matchedTo": "Tichitt",
+        "areaSqKm": 68223.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tachott Brana",
+        "population": 3735,
+        "matchedTo": "Selibabi",
+        "areaSqKm": 3878.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tenaha",
+        "population": 754,
+        "matchedTo": "Kankossa",
+        "areaSqKm": 10250.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tamchekett",
+        "population": 3131,
+        "matchedTo": "Tamchekett",
+        "areaSqKm": 12976.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sagné",
+        "population": 8430,
+        "matchedTo": "Maghama",
+        "areaSqKm": 2302.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Elghabra",
+        "population": 15480,
+        "matchedTo": "Barkeol",
+        "areaSqKm": 6608.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ould Yenjé",
+        "population": 5057,
+        "matchedTo": "Ould Yenge",
+        "areaSqKm": 3577.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oujeft",
+        "population": 3134,
+        "matchedTo": "Aoujeft",
+        "areaSqKm": 24512,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oualata",
+        "population": 11779,
+        "matchedTo": "Oualata",
+        "areaSqKm": 102710.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ouadane",
+        "population": 1638,
+        "matchedTo": "Ouadane",
+        "areaSqKm": 118334.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nouâmghâr",
+        "population": 4151,
+        "matchedTo": "Chami",
+        "areaSqKm": 21735.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nouadhibou",
+        "population": 146048,
+        "matchedTo": "Nouadhibou",
+        "areaSqKm": 15815.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Néma",
+        "population": 60000,
+        "matchedTo": "Moughataa d'Enneama",
+        "areaSqKm": 9436.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ndiago",
+        "population": 8440,
+        "matchedTo": "Keur Macene",
+        "areaSqKm": 2935.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Moudjeria",
+        "population": 1899,
+        "matchedTo": "El Mejrya",
+        "areaSqKm": 11779.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mederdra",
+        "population": 6858,
+        "matchedTo": "Mederdra",
+        "areaSqKm": 6071.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mboutt",
+        "population": 6733,
+        "matchedTo": "M'bout",
+        "areaSqKm": 5522.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Magṭa‘ Laḥjar",
+        "population": 15446,
+        "matchedTo": "Magta lahjar",
+        "areaSqKm": 14217.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kiffa",
+        "population": 62051,
+        "matchedTo": "Kiffa",
+        "areaSqKm": 12190.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "KeurMassène",
+        "population": 2532,
+        "matchedTo": "Keur Macene",
+        "areaSqKm": 2935.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kankossa",
+        "population": 8122,
+        "matchedTo": "Kankossa",
+        "areaSqKm": 10250.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "’Elb el Jmel",
+        "population": 1500,
+        "matchedTo": "Aleg",
+        "areaSqKm": 15746.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hassi Chegar",
+        "population": 6960,
+        "matchedTo": "Selibabi",
+        "areaSqKm": 3878.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hamoud",
+        "population": 1547,
+        "matchedTo": "Kankossa",
+        "areaSqKm": 10250.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fderîck",
+        "population": 4073,
+        "matchedTo": "F'Derick",
+        "areaSqKm": 4942.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Vassala",
+        "population": 10982,
+        "matchedTo": "Basseknou",
+        "areaSqKm": 12304.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Medda",
+        "population": 3900,
+        "matchedTo": "Aoujeft",
+        "areaSqKm": 24512,
+        "isSubstantial": false
+      },
+      {
+        "name": "El ’Ayoûn",
+        "population": 22896,
+        "matchedTo": "Kankossa",
+        "areaSqKm": 10250.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Djowol",
+        "population": 7582,
+        "matchedTo": "Kaedi",
+        "areaSqKm": 4151.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Djiguenni",
+        "population": 8293,
+        "matchedTo": "Djigueni",
+        "areaSqKm": 5549.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diogountourou",
+        "population": 6226,
+        "matchedTo": "Ghabou",
+        "areaSqKm": 3354.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diaguily",
+        "population": 6278,
+        "matchedTo": "Ghabou",
+        "areaSqKm": 3354.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chkata",
+        "population": 754,
+        "matchedTo": "Kankossa",
+        "areaSqKm": 10250.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chingueṭṭi",
+        "population": 4711,
+        "matchedTo": "Chinguitti",
+        "areaSqKm": 59016.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boutilimitt",
+        "population": 27170,
+        "matchedTo": "Boutilimitt",
+        "areaSqKm": 32980.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bousteila",
+        "population": 7520,
+        "matchedTo": "Timbedgha",
+        "areaSqKm": 11393,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bougadoum",
+        "population": 40341,
+        "matchedTo": "Amourj",
+        "areaSqKm": 9125.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bouanzé",
+        "population": 6955,
+        "matchedTo": "Selibabi",
+        "areaSqKm": 3878.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bîr Mogreïn",
+        "population": 1613,
+        "matchedTo": "Bir Moghrein",
+        "areaSqKm": 85674,
+        "isSubstantial": false
+      },
+      {
+        "name": "Basseknou",
+        "population": 12232,
+        "matchedTo": "Basseknou",
+        "areaSqKm": 12304.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Barkéwol",
+        "population": 3622,
+        "matchedTo": "Barkeol",
+        "areaSqKm": 6608.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ayoun El Atrous",
+        "population": 28174,
+        "matchedTo": "Eayoune El Atrous",
+        "areaSqKm": 17146.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Atar",
+        "population": 31133,
+        "matchedTo": "Atar",
+        "areaSqKm": 21981.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Aleg",
+        "population": 19183,
+        "matchedTo": "Aleg",
+        "areaSqKm": 15746.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Akjoujt",
+        "population": 15851,
+        "matchedTo": "Akjoujt",
+        "areaSqKm": 15632.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Boulenouar",
+        "population": 1901,
+        "matchedTo": "Nouadhibou",
+        "areaSqKm": 15815.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Choum",
+        "population": 1153,
+        "matchedTo": "Atar",
+        "areaSqKm": 21981.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kobenni",
+        "population": 8979,
+        "matchedTo": "Koubenni",
+        "areaSqKm": 8669,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ouâd Nâga",
+        "population": 4179,
+        "matchedTo": "Ouad Naga",
+        "areaSqKm": 18058.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nbeika",
+        "population": 4000,
+        "matchedTo": "El Mejrya",
+        "areaSqKm": 11779.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "El Ghediya",
+        "population": 1709,
+        "matchedTo": "Tijigja",
+        "areaSqKm": 19153.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amourj",
+        "population": 5509,
+        "matchedTo": "Amourj",
+        "areaSqKm": 9125.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Çangarâfa",
+        "population": 4786,
+        "matchedTo": "Magta lahjar",
+        "areaSqKm": 14217.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ṭinṭâne",
+        "population": 15684,
+        "matchedTo": "Tintane",
+        "areaSqKm": 10047,
+        "isSubstantial": true
+      },
+      {
+        "name": "R'kiz",
+        "population": 10688,
+        "matchedTo": "R'Kiz",
+        "areaSqKm": 5327.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "El Ghayra",
+        "population": 7240,
+        "matchedTo": "El Mejrya",
+        "areaSqKm": 11779.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bir Mogran",
+        "population": 1993,
+        "matchedTo": "Bir Moghrein",
+        "areaSqKm": 85674,
+        "isSubstantial": false
+      },
+      {
+        "name": "Taguilalett",
+        "population": 2726,
+        "matchedTo": "Mederdra",
+        "areaSqKm": 6071.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bouhdida",
+        "population": 8316,
+        "matchedTo": "Aleg",
+        "areaSqKm": 15746.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mbera",
+        "population": 58985,
+        "matchedTo": "Basseknou",
+        "areaSqKm": 12304.3,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ouad Naga",
+        "population": 5165,
+        "matchedTo": "Ouad Naga",
+        "areaSqKm": 18058.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wali Djantang",
+        "population": 7716,
+        "matchedTo": "Maghama",
+        "areaSqKm": 2302.1,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Mbagne",
+        "population": 4004,
+        "matchedTo": "M'Bagne",
+        "snapDistanceKm": 0.203
+      }
+    ]
+  },
+  "niger": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Torodi",
+        "population": 15988,
+        "matchedTo": "Torodi",
+        "areaSqKm": 5617.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tillia",
+        "population": 4598,
+        "matchedTo": "Tillia",
+        "areaSqKm": 17829.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tchin Tabaradèn",
+        "population": 20704,
+        "matchedTo": "Tchintabaraden",
+        "areaSqKm": 7397,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tassara",
+        "population": 2659,
+        "matchedTo": "Tassara",
+        "areaSqKm": 28376.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tasker",
+        "population": 1587,
+        "matchedTo": "Tesker",
+        "areaSqKm": 68485.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tanout",
+        "population": 27527,
+        "matchedTo": "Tanout",
+        "areaSqKm": 6416.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ngourti",
+        "population": 2202,
+        "matchedTo": "N'Gourti",
+        "areaSqKm": 113422.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "I-n-Gall",
+        "population": 10609,
+        "matchedTo": "Ingall",
+        "areaSqKm": 61780.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Iferouâne",
+        "population": 3364,
+        "matchedTo": "Iférouane",
+        "areaSqKm": 121656.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goudoumaria",
+        "population": 6289,
+        "matchedTo": "Goudoumaria",
+        "areaSqKm": 7807.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fachi",
+        "population": 2215,
+        "matchedTo": "Fachi",
+        "areaSqKm": 36143.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bilma",
+        "population": 5435,
+        "matchedTo": "Bilma",
+        "areaSqKm": 40895.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bélbéji",
+        "population": 8540,
+        "matchedTo": "Tarka",
+        "areaSqKm": 9118.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bani Bangou",
+        "population": 9187,
+        "matchedTo": "Bani Bangou",
+        "areaSqKm": 6464.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alaghsas",
+        "population": 88561,
+        "matchedTo": "Tchirozérine",
+        "areaSqKm": 9064,
+        "isSubstantial": true
+      },
+      {
+        "name": "Adérbissinat",
+        "population": 6323,
+        "matchedTo": "Aderbissinat",
+        "areaSqKm": 50643.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abalak",
+        "population": 29561,
+        "matchedTo": "Abalak",
+        "areaSqKm": 6873.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Abala",
+        "population": 14979,
+        "matchedTo": "Abala",
+        "areaSqKm": 6989,
+        "isSubstantial": true
+      },
+      {
+        "name": "Tchirozérine",
+        "population": 12953,
+        "matchedTo": "Tchirozérine",
+        "areaSqKm": 9064,
+        "isSubstantial": true
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Gaya",
+        "population": 61533,
+        "matchedTo": "Gaya",
+        "snapDistanceKm": 1.047
+      }
+    ]
+  },
+  "nigeria": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Zurmi",
+        "population": 0,
+        "matchedTo": "Zurmi",
+        "areaSqKm": 2522,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zonkwa",
+        "population": 0,
+        "matchedTo": "Zangon Kataf",
+        "areaSqKm": 2589.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Zalanga",
+        "population": 12070,
+        "matchedTo": "Ganjuwa",
+        "areaSqKm": 5461.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yuli",
+        "population": 9549,
+        "matchedTo": "Alkaleri",
+        "areaSqKm": 7144.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yashikira",
+        "population": 14454,
+        "matchedTo": "Baruten",
+        "areaSqKm": 8595.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Yamrat",
+        "population": 7098,
+        "matchedTo": "Bauchi",
+        "areaSqKm": 3232,
+        "isSubstantial": false
+      },
+      {
+        "name": "Yajiwa",
+        "population": 6880,
+        "matchedTo": "Kaga",
+        "areaSqKm": 3665.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wawa",
+        "population": 10200,
+        "matchedTo": "Borgu",
+        "areaSqKm": 10795.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Wase",
+        "population": 0,
+        "matchedTo": "Wase",
+        "areaSqKm": 4900.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wasagu",
+        "population": 8157,
+        "matchedTo": "Wasagu-Danko",
+        "areaSqKm": 4033.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ukata",
+        "population": 6188,
+        "matchedTo": "Mariga",
+        "areaSqKm": 6304.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toungo",
+        "population": 11759,
+        "matchedTo": "Toungo",
+        "areaSqKm": 5670.4,
+        "isSubstantial": true
+      },
+      {
+        "name": "Toto",
+        "population": 0,
+        "matchedTo": "Toto",
+        "areaSqKm": 2657.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Toro",
+        "population": 0,
+        "matchedTo": "Toro",
+        "areaSqKm": 6732.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tokombere",
+        "population": 7092,
+        "matchedTo": "Gwoza",
+        "areaSqKm": 3600.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tede",
+        "population": 0,
+        "matchedTo": "Saki West",
+        "areaSqKm": 2068.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Tafawa Balewa",
+        "population": 0,
+        "matchedTo": "Tafawa-Balewa",
+        "areaSqKm": 2460.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Suya",
+        "population": 7936,
+        "matchedTo": "Baruten",
+        "areaSqKm": 8595.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Song",
+        "population": 0,
+        "matchedTo": "Song",
+        "areaSqKm": 4219.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Siluko",
+        "population": 7920,
+        "matchedTo": "Ovia South-West",
+        "areaSqKm": 2775.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shendam",
+        "population": 0,
+        "matchedTo": "Shendam",
+        "areaSqKm": 2477.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Share",
+        "population": 0,
+        "matchedTo": "Edu",
+        "areaSqKm": 2433.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shanga",
+        "population": 7471,
+        "matchedTo": "Shanga",
+        "areaSqKm": 2736.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Serti",
+        "population": 0,
+        "matchedTo": "Gashaka",
+        "areaSqKm": 8519.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sarkin Pawa",
+        "population": 0,
+        "matchedTo": "Munya",
+        "areaSqKm": 2178.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sade",
+        "population": 8223,
+        "matchedTo": "Darazo",
+        "areaSqKm": 3042.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sabon Birni",
+        "population": 0,
+        "matchedTo": "Sabon Birni",
+        "areaSqKm": 2305.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Riti",
+        "population": 6875,
+        "matchedTo": "Wukari",
+        "areaSqKm": 4286.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ribah",
+        "population": 0,
+        "matchedTo": "Wasagu-Danko",
+        "areaSqKm": 4033.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rann",
+        "population": 0,
+        "matchedTo": "Kala Balge",
+        "areaSqKm": 3175.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rabah",
+        "population": 8707,
+        "matchedTo": "Rabah",
+        "areaSqKm": 2138,
+        "isSubstantial": false
+      },
+      {
+        "name": "Paiko",
+        "population": 0,
+        "matchedTo": "Paikoro",
+        "areaSqKm": 2019.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oporoma",
+        "population": 0,
+        "matchedTo": "Southern Ijaw",
+        "areaSqKm": 2707,
+        "isSubstantial": false
+      },
+      {
+        "name": "Okuta",
+        "population": 26589,
+        "matchedTo": "Baruten",
+        "areaSqKm": 8595.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Okada",
+        "population": 0,
+        "matchedTo": "Ovia North-East",
+        "areaSqKm": 2334.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ogbere",
+        "population": 0,
+        "matchedTo": "Ijebu East",
+        "areaSqKm": 2031.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ningi",
+        "population": 0,
+        "matchedTo": "Ningi",
+        "areaSqKm": 4962.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Wara",
+        "population": 0,
+        "matchedTo": "Ngaski",
+        "areaSqKm": 2775.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "New Shagunnu",
+        "population": 7349,
+        "matchedTo": "Borgu",
+        "areaSqKm": 10795.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "New Bussa",
+        "population": 0,
+        "matchedTo": "Borgu",
+        "areaSqKm": 10795.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nasarawa",
+        "population": 30949,
+        "matchedTo": "Nasarawa",
+        "areaSqKm": 5229.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mutum Biyu",
+        "population": 11702,
+        "matchedTo": "Gassol",
+        "areaSqKm": 5320.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Mayo-Belwa",
+        "population": 6304,
+        "matchedTo": "Mayo-Belwa",
+        "areaSqKm": 2377.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maru",
+        "population": 11496,
+        "matchedTo": "Maru",
+        "areaSqKm": 7450.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maradun",
+        "population": 0,
+        "matchedTo": "Maradun",
+        "areaSqKm": 2660.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mando",
+        "population": 7500,
+        "matchedTo": "Birnin Gwari",
+        "areaSqKm": 6282.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Maigana",
+        "population": 0,
+        "matchedTo": "Soba",
+        "areaSqKm": 2048.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mafa",
+        "population": 0,
+        "matchedTo": "Mafa",
+        "areaSqKm": 3403.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lame",
+        "population": 6705,
+        "matchedTo": "Toro",
+        "areaSqKm": 6732.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kwolla",
+        "population": 8200,
+        "matchedTo": "Qua'An Pan",
+        "areaSqKm": 2632.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kwatarkwashi",
+        "population": 9084,
+        "matchedTo": "Bungudu",
+        "areaSqKm": 2085.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kutigi",
+        "population": 0,
+        "matchedTo": "Lavun",
+        "areaSqKm": 3698.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kuta",
+        "population": 7528,
+        "matchedTo": "Shiroro",
+        "areaSqKm": 4658.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kusheriki",
+        "population": 6941,
+        "matchedTo": "Rafi",
+        "areaSqKm": 3855.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kosubosu",
+        "population": 0,
+        "matchedTo": "Baruten",
+        "areaSqKm": 8595.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konkwesso",
+        "population": 7687,
+        "matchedTo": "Borgu",
+        "areaSqKm": 10795.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Konduga",
+        "population": 13400,
+        "matchedTo": "Konduga",
+        "areaSqKm": 5341.8,
+        "isSubstantial": true
+      },
+      {
+        "name": "Koko",
+        "population": 0,
+        "matchedTo": "Warri North",
+        "areaSqKm": 2203.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kirfi",
+        "population": 0,
+        "matchedTo": "Kirfi",
+        "areaSqKm": 2074.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kende",
+        "population": 7395,
+        "matchedTo": "Bagudu",
+        "areaSqKm": 5599.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kebbe",
+        "population": 0,
+        "matchedTo": "Kebbe",
+        "areaSqKm": 2209.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kauru",
+        "population": 0,
+        "matchedTo": "Kauru",
+        "areaSqKm": 3199.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karim Lamido",
+        "population": 0,
+        "matchedTo": "Karim Lamido",
+        "areaSqKm": 6117.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kaiama",
+        "population": 21897,
+        "matchedTo": "Kaiama",
+        "areaSqKm": 7896,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kagarko",
+        "population": 0,
+        "matchedTo": "Kagarko",
+        "areaSqKm": 2365.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kagara",
+        "population": 0,
+        "matchedTo": "Rafi",
+        "areaSqKm": 3855.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kafin Madaki",
+        "population": 0,
+        "matchedTo": "Ganjuwa",
+        "areaSqKm": 5461.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jakusko",
+        "population": 0,
+        "matchedTo": "Jakusko",
+        "areaSqKm": 3407.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Lajere",
+        "population": 7356,
+        "matchedTo": "Fune",
+        "areaSqKm": 5654.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jada",
+        "population": 0,
+        "matchedTo": "Jada",
+        "areaSqKm": 3598.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Iwere-Ile",
+        "population": 0,
+        "matchedTo": "Iwajowa",
+        "areaSqKm": 2536.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Isa",
+        "population": 0,
+        "matchedTo": "Isa",
+        "areaSqKm": 2046.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ikoyi-Ile",
+        "population": 0,
+        "matchedTo": "Ori Ire",
+        "areaSqKm": 2083.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ijebu-Ife",
+        "population": 5733,
+        "matchedTo": "Ijebu East",
+        "areaSqKm": 2031.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Iguobazuwa",
+        "population": 0,
+        "matchedTo": "Ovia South-West",
+        "areaSqKm": 2775.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Igabi",
+        "population": 8840,
+        "matchedTo": "Igabi",
+        "areaSqKm": 3234.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hong",
+        "population": 0,
+        "matchedTo": "Hong",
+        "areaSqKm": 2598.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Holma",
+        "population": 9199,
+        "matchedTo": "Song",
+        "areaSqKm": 4219.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gwasoro",
+        "population": 7263,
+        "matchedTo": "Baruten",
+        "areaSqKm": 8595.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gwaram",
+        "population": 6700,
+        "matchedTo": "Alkaleri",
+        "areaSqKm": 7144.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gudumbali",
+        "population": 0,
+        "matchedTo": "Guzamala",
+        "areaSqKm": 2382,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gubio",
+        "population": 0,
+        "matchedTo": "Gubio",
+        "areaSqKm": 2769.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Giwa",
+        "population": 0,
+        "matchedTo": "Giwa",
+        "areaSqKm": 2311.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gidan Madi",
+        "population": 0,
+        "matchedTo": "Tangaza",
+        "areaSqKm": 2327.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gbajimba",
+        "population": 0,
+        "matchedTo": "Guma",
+        "areaSqKm": 2943.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gassol",
+        "population": 14326,
+        "matchedTo": "Gassol",
+        "areaSqKm": 5320.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gajiram",
+        "population": 0,
+        "matchedTo": "Nganzai",
+        "areaSqKm": 2126.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fufore",
+        "population": 0,
+        "matchedTo": "Fufore",
+        "areaSqKm": 5086.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fika",
+        "population": 0,
+        "matchedTo": "Fika",
+        "areaSqKm": 2863.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ehor",
+        "population": 0,
+        "matchedTo": "Uhunmwonde",
+        "areaSqKm": 2090.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Duku",
+        "population": 8014,
+        "matchedTo": "Rijau",
+        "areaSqKm": 3017.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Donga",
+        "population": 0,
+        "matchedTo": "Donga",
+        "areaSqKm": 3105.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dengi",
+        "population": 6276,
+        "matchedTo": "Kanam",
+        "areaSqKm": 2723.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Daura",
+        "population": 78277,
+        "matchedTo": "Fune",
+        "areaSqKm": 5654.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Dan Sadau",
+        "population": 7568,
+        "matchedTo": "Maru",
+        "areaSqKm": 7450.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dankalwa",
+        "population": 5730,
+        "matchedTo": "Damaturu",
+        "areaSqKm": 2386.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Damagum",
+        "population": 0,
+        "matchedTo": "Fune",
+        "areaSqKm": 5654.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bununu",
+        "population": 6123,
+        "matchedTo": "Tafawa-Balewa",
+        "areaSqKm": 2460.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bungudu",
+        "population": 0,
+        "matchedTo": "Bungudu",
+        "areaSqKm": 2085.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bukkuyum",
+        "population": 0,
+        "matchedTo": "Bukkuyum",
+        "areaSqKm": 3766.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bornu Yassu",
+        "population": 5811,
+        "matchedTo": "Magumeri",
+        "areaSqKm": 4574.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bokani",
+        "population": 8624,
+        "matchedTo": "Mokwa",
+        "areaSqKm": 3902.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Boje",
+        "population": 0,
+        "matchedTo": "Boki",
+        "areaSqKm": 2845.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mallam Fatori",
+        "population": 0,
+        "matchedTo": "Abadam",
+        "areaSqKm": 4004,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sofo-Birnin-Gwari",
+        "population": 22380,
+        "matchedTo": "Birnin Gwari",
+        "areaSqKm": 6282.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Birnin Gwari",
+        "population": 0,
+        "matchedTo": "Birnin Gwari",
+        "areaSqKm": 6282.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Benisheikh",
+        "population": 9825,
+        "matchedTo": "Kaga",
+        "areaSqKm": 3665.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bena",
+        "population": 8361,
+        "matchedTo": "Wasagu-Danko",
+        "areaSqKm": 4033.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Beli",
+        "population": 17467,
+        "matchedTo": "Bali",
+        "areaSqKm": 9757.2,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bara",
+        "population": 0,
+        "matchedTo": "Gulani",
+        "areaSqKm": 2376.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Balle",
+        "population": 0,
+        "matchedTo": "Gudu",
+        "areaSqKm": 2999.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baissa",
+        "population": 8911,
+        "matchedTo": "Kurmi",
+        "areaSqKm": 4506.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bagudo",
+        "population": 6924,
+        "matchedTo": "Bagudu",
+        "areaSqKm": 5599.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Babban Gida",
+        "population": 0,
+        "matchedTo": "Tarmuwa",
+        "areaSqKm": 3999.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Babana",
+        "population": 17617,
+        "matchedTo": "Borgu",
+        "areaSqKm": 10795.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Awe",
+        "population": 0,
+        "matchedTo": "Awe",
+        "areaSqKm": 2583.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Auna",
+        "population": 8590,
+        "matchedTo": "Magama",
+        "areaSqKm": 3655.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Askira",
+        "population": 0,
+        "matchedTo": "Askira Uba",
+        "areaSqKm": 2698,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amassoma",
+        "population": 6970,
+        "matchedTo": "Southern Ijaw",
+        "areaSqKm": 2707,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alkaleri",
+        "population": 0,
+        "matchedTo": "Alkaleri",
+        "areaSqKm": 7144.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akko",
+        "population": 6129,
+        "matchedTo": "Akko",
+        "areaSqKm": 2478.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Akamkpa",
+        "population": 0,
+        "matchedTo": "Akamkpa",
+        "areaSqKm": 4606.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ajaka",
+        "population": 0,
+        "matchedTo": "Igalamela-Odolu",
+        "areaSqKm": 2087,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adoru",
+        "population": 8203,
+        "matchedTo": "Igalamela-Odolu",
+        "areaSqKm": 2087,
+        "isSubstantial": false
+      },
+      {
+        "name": "Adikpo",
+        "population": 0,
+        "matchedTo": "Kwande",
+        "areaSqKm": 2580.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abudu",
+        "population": 0,
+        "matchedTo": "Orhionmwon",
+        "areaSqKm": 2395.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abocho",
+        "population": 6801,
+        "matchedTo": "Dekina",
+        "areaSqKm": 2453.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Buni Yadi",
+        "population": 0,
+        "matchedTo": "Gujba",
+        "areaSqKm": 3355.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Banki",
+        "population": 5000,
+        "matchedTo": "Bama",
+        "areaSqKm": 3917.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Nasko",
+        "population": 0,
+        "matchedTo": "Magama",
+        "areaSqKm": 3655.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mashegu",
+        "population": 0,
+        "matchedTo": "Mashegu",
+        "areaSqKm": 8763,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bangi",
+        "population": 0,
+        "matchedTo": "Mariga",
+        "areaSqKm": 6304.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sabon Wuse",
+        "population": 0,
+        "matchedTo": "Kagarko",
+        "areaSqKm": 2365.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Karu",
+        "population": 0,
+        "matchedTo": "Karu",
+        "areaSqKm": 2427.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Baap",
+        "population": 0,
+        "matchedTo": "Qua'An Pan",
+        "areaSqKm": 2632.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kanamma",
+        "population": 0,
+        "matchedTo": "Yunusari",
+        "areaSqKm": 3733.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sunkani",
+        "population": 0,
+        "matchedTo": "Ardo-Kola",
+        "areaSqKm": 2068.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Lagos Island",
+        "population": 0,
+        "matchedTo": "Lagos Island",
+        "snapDistanceKm": 1.597
+      }
+    ]
+  },
+  "senegal": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Soubalo Mbouba",
+        "population": 4896,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sintiou Bamambé",
+        "population": 13823,
+        "matchedTo": "Sinthiou Banambe/Wouro Sidy",
+        "areaSqKm": 6150.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Sémé",
+        "population": 6891,
+        "matchedTo": "Orkadiere",
+        "areaSqKm": 2572.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sélikénié",
+        "population": 3677,
+        "matchedTo": "Mampatim",
+        "areaSqKm": 2458.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Saraya",
+        "population": 2726,
+        "matchedTo": "Bembou",
+        "areaSqKm": 3606.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Rosso",
+        "population": 9923,
+        "matchedTo": "Ndiaye",
+        "areaSqKm": 3085.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Ranérou",
+        "population": 3027,
+        "matchedTo": "Velingara",
+        "areaSqKm": 14462.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Polel Diaoubé",
+        "population": 3000,
+        "matchedTo": "Orkadiere",
+        "areaSqKm": 2572.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pété",
+        "population": 4211,
+        "matchedTo": "Salde",
+        "areaSqKm": 2753.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Waoundé",
+        "population": 7816,
+        "matchedTo": "Orkadiere",
+        "areaSqKm": 2572.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Oualaldé",
+        "population": 3224,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Odobéré",
+        "population": 6029,
+        "matchedTo": "Sinthiou Banambe/Wouro Sidy",
+        "areaSqKm": 6150.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Noumoufoukha",
+        "population": 600,
+        "matchedTo": "Bembou",
+        "areaSqKm": 3606.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mboyo",
+        "population": 2266,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mbouba",
+        "population": 4896,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mbeuleukhé",
+        "population": 1510,
+        "matchedTo": "Yang Yang",
+        "areaSqKm": 4436.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Malèm Niani",
+        "population": 2080,
+        "matchedTo": "Koutiaba Wolof",
+        "areaSqKm": 5076.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kotiari",
+        "population": 4243,
+        "matchedTo": "Bala",
+        "areaSqKm": 2828.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Kédougou",
+        "population": 30051,
+        "matchedTo": "Bandafassi",
+        "areaSqKm": 5782.6,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kanel",
+        "population": 15244,
+        "matchedTo": "Sinthiou Banambe/Wouro Sidy",
+        "areaSqKm": 6150.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Haïré Lao",
+        "population": 9472,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Guédé",
+        "population": 5600,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goudiry",
+        "population": 6867,
+        "matchedTo": "Koulor",
+        "areaSqKm": 6801.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Goléré",
+        "population": 6373,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Galoya Toucouleur",
+        "population": 5288,
+        "matchedTo": "Salde",
+        "areaSqKm": 2753.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Gaé",
+        "population": 7148,
+        "matchedTo": "Mbane",
+        "areaSqKm": 2178.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Démèt",
+        "population": 3042,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diambo",
+        "population": 551,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dembankané",
+        "population": 5293,
+        "matchedTo": "Orkadiere",
+        "areaSqKm": 2572.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dabo",
+        "population": 6069,
+        "matchedTo": "Mampatim",
+        "areaSqKm": 2458.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bodé",
+        "population": 2466,
+        "matchedTo": "Cas-Cas",
+        "areaSqKm": 3121.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Amady Ounaré",
+        "population": 10175,
+        "matchedTo": "Sinthiou Banambe/Wouro Sidy",
+        "areaSqKm": 6150.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Ndiandane",
+        "population": 4839,
+        "matchedTo": "Thille Boubakar",
+        "areaSqKm": 3213.2,
+        "isSubstantial": false
+      },
+      {
+        "name": "Diatar",
+        "population": 2353,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Demette",
+        "population": 3042,
+        "matchedTo": "Gamadji Sarre",
+        "areaSqKm": 3876.6,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
+  },
+  "sierraLeone": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Loma",
+        "population": 3435,
+        "matchedTo": "Tambakha",
+        "areaSqKm": 2469,
+        "isSubstantial": false
+      },
+      {
+        "name": "Alikalia",
+        "population": 3138,
+        "matchedTo": "Nieni",
+        "areaSqKm": 2275.7,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Dublin",
+        "population": 842,
+        "matchedTo": "York Rural",
+        "snapDistanceKm": 0.011
+      }
+    ]
+  },
+  "togo": {
+    "unmatched": [],
+    "rejected": [
+      {
+        "name": "Guérin-Kouka",
+        "population": 9570,
+        "matchedTo": "Dankpen",
+        "areaSqKm": 2664.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Blitta",
+        "population": 9735,
+        "matchedTo": "Blitta",
+        "areaSqKm": 3227.4,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": []
   }
 }
