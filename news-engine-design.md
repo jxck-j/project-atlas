@@ -53,6 +53,32 @@ elsewhere. The corroboration bar required to publish scales with severity:
 This is a **hard pipeline rule, enforced structurally**, not a per-item judgment call — relying on catching
 it manually every time is exactly the failure mode this guards against.
 
+## Wire-tier allowlist — trusted-source bypass on corroboration
+
+A small, fixed allowlist of wire-tier outlets (Reuters, AP, AFP, Bloomberg) — marked via `source.tier: "wire"`
+on a `sourceType: "outlet"` item — has its own report set `corroboration: "wire-confirmed"` directly, without
+needing the 2+ independent-source accumulation `osint-corroborated` requires. Every other outlet still needs
+corroboration count; only an allowlisted wire tier gets its own reporting counted as confirmation on its own.
+
+- Rationale: wire-tier accuracy on high-stakes claims is high enough that requiring independent corroboration
+  on top of it would just delay publishing something already reliable.
+- The allowlist itself is a source-trust judgment call, same as the leaning-framework requirement above — it
+  needs to stay a short, deliberately curated list, not "any outlet that seems reputable," and any addition
+  to it should be a deliberate edit to this doc, not an ingestion-time heuristic.
+- This narrows, but doesn't eliminate, the failure mode the severity gate exists to guard against — a hacked
+  wire-service account or a single-sourced wire error later walked back both bypass the corroboration
+  requirement entirely by construction. See `retracted` (below) for how that residual risk is handled after
+  publish, since the allowlist can't prevent it before publish.
+
+## Retraction — a fifth `reviewStatus`
+
+`reviewStatus` gains `"retracted"`, alongside the existing three. Applies to any already-published item
+(wire-tier-bypassed or not) that the source itself walks back — not just the wire-tier bypass case above, but
+that's the main scenario motivating it, since wire-tier bypass is the one path that can publish high-stakes
+content with no human in the loop at all before it goes live. A retracted item stays in the dataset
+(`snapshotDate`/`url` etc. intact, for audit purposes) but drops out of both ranked lists (panel top-3, News
+tab) the same way an unpublished item would — flagged, not deleted.
+
 ## Two ranking logics, same underlying rule, different scope/layout
 
 Both panel and tab rank by severity tier first, recency second — one ranking rule, not two separate systems.
@@ -149,10 +175,15 @@ NewsItem {
   sourceType,     // "outlet" | "first-hand"
   source: { outlet?, leaning?, leaningSource?, tier?, channel?, affiliationNote? },
   corroboration,  // "wire-confirmed" | "osint-corroborated (2+)" | "unconfirmed"
-  reviewStatus,   // "auto-published" | "pending-confirmation" | "manual-only"
+  reviewStatus,   // "auto-published" | "pending-confirmation" | "manual-only" | "retracted"
   snapshotDate, url
 }
 ```
+
+`source.tier` (on `sourceType: "outlet"` items) is `"wire"` for an allowlisted wire-tier outlet
+(Reuters/AP/AFP/Bloomberg — see the wire-tier allowlist section above) and unset otherwise; it's what lets
+`corroboration` be set to `"wire-confirmed"` from that single report rather than requiring independent
+corroboration count.
 
 ## Open before this becomes a build prompt
 
