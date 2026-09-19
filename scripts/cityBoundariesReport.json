@@ -169454,5 +169454,396 @@
       }
     ],
     "snapped": []
+  },
+  "india": {
+    "unmatched": [
+      {
+        "name": "Sarupathar",
+        "population": 9827,
+        "lat": 26.206,
+        "lng": 96.81
+      }
+    ],
+    "rejected": [
+      {
+        "name": "Thang",
+        "population": 1622,
+        "matchedTo": "Nubra",
+        "areaSqKm": 11838.3,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shāhpur",
+        "population": 9394,
+        "matchedTo": "Dindori",
+        "areaSqKm": 3131.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Roha",
+        "population": 8664,
+        "matchedTo": "Nakhatrana",
+        "areaSqKm": 2006,
+        "isSubstantial": false
+      },
+      {
+        "name": "Pokaran",
+        "population": 23554,
+        "matchedTo": "Pokaran",
+        "areaSqKm": 7235.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Pituk",
+        "population": 4047,
+        "matchedTo": "Leh",
+        "areaSqKm": 36798,
+        "isSubstantial": false
+      },
+      {
+        "name": "Padam",
+        "population": 25000,
+        "matchedTo": "Zanskar",
+        "areaSqKm": 6362,
+        "isSubstantial": true
+      },
+      {
+        "name": "Nizāmpur",
+        "population": 7696,
+        "matchedTo": "Sakri",
+        "areaSqKm": 2413.8,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mānkuwa",
+        "population": 11975,
+        "matchedTo": "Bhuj",
+        "areaSqKm": 5353.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Maibong",
+        "population": 8364,
+        "matchedTo": "Haflong",
+        "areaSqKm": 4915.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mahur",
+        "population": 7176,
+        "matchedTo": "Haflong",
+        "areaSqKm": 4915.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Leh",
+        "population": 37475,
+        "matchedTo": "Leh",
+        "areaSqKm": 36798,
+        "isSubstantial": true
+      },
+      {
+        "name": "Kolāyat",
+        "population": 9684,
+        "matchedTo": "Kolayat",
+        "areaSqKm": 3594.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jasrāsar",
+        "population": 8000,
+        "matchedTo": "Nokha",
+        "areaSqKm": 3522.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Jaisalmer",
+        "population": 67604,
+        "matchedTo": "Jaisalmer",
+        "areaSqKm": 24469.1,
+        "isSubstantial": true
+      },
+      {
+        "name": "Gangotri",
+        "population": 810,
+        "matchedTo": "Bhatwari",
+        "areaSqKm": 4120.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dhārchula",
+        "population": 7331,
+        "matchedTo": "Dharchula",
+        "areaSqKm": 2630.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Chikhaldara",
+        "population": 5158,
+        "matchedTo": "Chikhaldara",
+        "areaSqKm": 2445.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bhuj",
+        "population": 148834,
+        "matchedTo": "Bhuj",
+        "areaSqKm": 5353.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bhopālpatnam",
+        "population": 4445,
+        "matchedTo": "Bhopalpattnam",
+        "areaSqKm": 2272.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bhairamgarh",
+        "population": 9026,
+        "matchedTo": "Bhairamgarh",
+        "areaSqKm": 2336.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "Bhachāu",
+        "population": 39532,
+        "matchedTo": "Bhachau",
+        "areaSqKm": 23751.7,
+        "isSubstantial": true
+      },
+      {
+        "name": "Bhuntar",
+        "population": 4475,
+        "matchedTo": "Bhuntar",
+        "areaSqKm": 2243.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Choglamsar",
+        "population": 10754,
+        "matchedTo": "Leh",
+        "areaSqKm": 36798,
+        "isSubstantial": true
+      },
+      {
+        "name": "Lād",
+        "population": 1440,
+        "matchedTo": "Poundi-Uproda",
+        "areaSqKm": 2270.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "Shamshi",
+        "population": 8870,
+        "matchedTo": "Bhuntar",
+        "areaSqKm": 2243.6,
+        "isSubstantial": false
+      },
+      {
+        "name": "Donkamokam",
+        "population": 9116,
+        "matchedTo": "Donka",
+        "areaSqKm": 3106.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Madhapar",
+        "population": 32293,
+        "matchedTo": "Bhuj",
+        "areaSqKm": 5353.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Hamren",
+        "population": 0,
+        "matchedTo": "Donka",
+        "areaSqKm": 3106.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Hamren",
+        "population": 8747,
+        "matchedTo": "Donka",
+        "areaSqKm": 3106.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Abbaspur",
+        "population": 10208,
+        "matchedTo": "New Jammu & Kashmir",
+        "areaSqKm": 85047.5,
+        "isSubstantial": true
+      },
+      {
+        "name": "Laharijan Natun Bosti",
+        "population": 2508,
+        "matchedTo": "Diphu",
+        "areaSqKm": 2868.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Howraghat",
+        "population": 5443,
+        "matchedTo": "Phuloni",
+        "areaSqKm": 2825.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dokmoka",
+        "population": 5478,
+        "matchedTo": "Phuloni",
+        "areaSqKm": 2825.7,
+        "isSubstantial": false
+      },
+      {
+        "name": "Dornapal",
+        "population": 7238,
+        "matchedTo": "Konta",
+        "areaSqKm": 3635.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Mirjhapar",
+        "population": 7109,
+        "matchedTo": "Bhuj",
+        "areaSqKm": 5353.9,
+        "isSubstantial": false
+      },
+      {
+        "name": "Sukhpar",
+        "population": 13303,
+        "matchedTo": "Bhuj",
+        "areaSqKm": 5353.9,
+        "isSubstantial": true
+      },
+      {
+        "name": "Utarlai",
+        "population": 4603,
+        "matchedTo": "Barmer",
+        "areaSqKm": 2742.1,
+        "isSubstantial": false
+      },
+      {
+        "name": "Fārward Kahūta",
+        "population": 5555,
+        "matchedTo": "New Jammu & Kashmir",
+        "areaSqKm": 85047.5,
+        "isSubstantial": false
+      },
+      {
+        "name": "4 Arm (Kharwali)",
+        "population": 2139,
+        "matchedTo": "Chhatargarh",
+        "areaSqKm": 2396.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "1 Arm (Surjanwali)",
+        "population": 758,
+        "matchedTo": "Chhatargarh",
+        "areaSqKm": 2396.4,
+        "isSubstantial": false
+      },
+      {
+        "name": "May",
+        "population": 2523,
+        "matchedTo": "Bhachau",
+        "areaSqKm": 23751.7,
+        "isSubstantial": false
+      }
+    ],
+    "snapped": [
+      {
+        "name": "Tikkotti",
+        "population": 27051,
+        "matchedTo": "Koyilandi",
+        "snapDistanceKm": 0.189
+      },
+      {
+        "name": "Māyābandar",
+        "population": 23912,
+        "matchedTo": "Mayabunder",
+        "snapDistanceKm": 0.382
+      },
+      {
+        "name": "Kovalam",
+        "population": 6000,
+        "matchedTo": "Neyyattinkara",
+        "snapDistanceKm": 0.679
+      },
+      {
+        "name": "Jogbani",
+        "population": 39281,
+        "matchedTo": "Forbesganj",
+        "snapDistanceKm": 0.143
+      },
+      {
+        "name": "Bandlaguda",
+        "population": 12734,
+        "matchedTo": "Hyderabad",
+        "snapDistanceKm": 0.726
+      },
+      {
+        "name": "Kompalli",
+        "population": 15575,
+        "matchedTo": "Medchal",
+        "snapDistanceKm": 1.396
+      },
+      {
+        "name": "Madipakkam",
+        "population": 35752,
+        "matchedTo": "Tambaram",
+        "snapDistanceKm": 0.52
+      },
+      {
+        "name": "Kismatpur",
+        "population": 7288,
+        "matchedTo": "Gandipet",
+        "snapDistanceKm": 0.27
+      },
+      {
+        "name": "Minicoy",
+        "population": 10447,
+        "matchedTo": "Minicoy",
+        "snapDistanceKm": 0.545
+      },
+      {
+        "name": "Andrott",
+        "population": 11191,
+        "matchedTo": "Andrott",
+        "snapDistanceKm": 0.991
+      },
+      {
+        "name": "Amini",
+        "population": 7843,
+        "matchedTo": "Amini",
+        "snapDistanceKm": 0.137
+      },
+      {
+        "name": "Chetlat",
+        "population": 2347,
+        "matchedTo": "Chetlat",
+        "snapDistanceKm": 0.715
+      },
+      {
+        "name": "Shrivardhan",
+        "population": 15123,
+        "matchedTo": "Shrivardhan",
+        "snapDistanceKm": 0.014
+      },
+      {
+        "name": "Bakultala",
+        "population": 2741,
+        "matchedTo": "Rangat",
+        "snapDistanceKm": 0.077
+      },
+      {
+        "name": "Jawaharnagar",
+        "population": 44562,
+        "matchedTo": "Hyderabad",
+        "snapDistanceKm": 0.427
+      }
+    ]
   }
 }

@@ -295,6 +295,7 @@ addFromShardedDir('380')
 addFromShardedDir('724')
 addFromShardedDir('156')
 addFromShardedDir('360')
+addFromShardedDir('356')
 
 const usIndex = JSON.parse(fs.readFileSync('public/geo/us-cities-index.json', 'utf8'))
 for (const e of usIndex) {
@@ -316,5 +317,5 @@ const perCountryCounts = BOUNDARY_COUNTRIES.map(
   (c) => `${c.name} ${entries.filter((e) => e.countryId === c.id).length}`,
 ).join(', ')
 console.log(
-  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, Germany ${entries.filter((e) => e.countryId === '276').length}, Italy ${entries.filter((e) => e.countryId === '380').length}, Spain ${entries.filter((e) => e.countryId === '724').length}, China ${entries.filter((e) => e.countryId === '156').length}, Indonesia ${entries.filter((e) => e.countryId === '360').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
+  `Wrote ${OUTPUT}: ${entries.length} entries (${perCountryCounts}, Mexico ${entries.filter((e) => e.countryId === '484').length}, Brazil ${entries.filter((e) => e.countryId === '076').length}, Peru ${entries.filter((e) => e.countryId === '604').length}, Argentina ${entries.filter((e) => e.countryId === '032').length}, France ${entries.filter((e) => e.countryId === '250').length}, Germany ${entries.filter((e) => e.countryId === '276').length}, Italy ${entries.filter((e) => e.countryId === '380').length}, Spain ${entries.filter((e) => e.countryId === '724').length}, China ${entries.filter((e) => e.countryId === '156').length}, Indonesia ${entries.filter((e) => e.countryId === '360').length}, India ${entries.filter((e) => e.countryId === '356').length}, US ${entries.filter((e) => e.countryId === '840').length}), ${(kb / 1024).toFixed(1)} MB`,
 )

@@ -1271,6 +1271,18 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   Rural" are both wildly oversized and displaced inland)** (found 2026-09-18, "Twenty-eighth pass") — a live
   OSM check found no substitute boundary for either Walvis Bay or the real Opuwo; a real, honestly-logged gap
   rather than a silently wrong match. Not chased further.
+- **India rejected 41 of 7,112 points (11 substantial: Bhuj 148,834, Jaisalmer, Bhachau, Leh, Pokaran, Padam/
+  Zanskar, Choglamsar, Abbaspur, plus Madhapar/Sukhpar/Mankuwa, which land in Bhuj's own 5,354 km² taluka) and
+  left 1 unmatched (Sarupathar, 9,827)** (found 2026-09-19, "Twenty-ninth pass") — real oversized sparse-
+  region units (Kutch, Thar desert, Ladakh), same shape as Mongolia/Namibia/Botswana; OSM has no
+  comprehensive finer tier in these regions to supplement with (India's own city-level OSM tagging is
+  inconsistent — L7/L8 for some cities, absent for Mumbai/Ahmedabad/Pune/Lucknow). Not chased further.
+- **India's ADM3 fragments some megacities' own coordinates into a sub-city unit that was NOT replaced:
+  Surat -> "Majura" (95.3 km²), Ahmedabad -> "Sabarmati" (334.3 km²), Mumbai -> "Mumbai Suburban" (406.5 km²,
+  no Mumbai City district feature was checked)** (found 2026-09-19, "Twenty-ninth pass") — city-plausible
+  scale, and OSM has no whole-city relation for Mumbai/Ahmedabad to replace with (only Delhi and Hyderabad
+  did, and were fixed). Left as the honest best available unit; a candidate for a future per-city pass if
+  someone reports a specific one looking wrong.
 
 ## Visualization
 

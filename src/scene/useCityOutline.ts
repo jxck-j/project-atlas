@@ -22,8 +22,9 @@ import { useSelection } from '../hud/selectionStore'
 // (China) for the Twenty-first pass (2026-09-18), a real pre-existing gap
 // that would have made shardUrl() silently 404 against a whole-country file
 // that doesn't exist for any Italian or Spanish city outline lookup. '360'
-// (Indonesia) added for the Twenty-second pass (2026-09-18).
-const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250', '276', '380', '724', '156', '360'])
+// (Indonesia) added for the Twenty-second pass (2026-09-18); '356' (India)
+// for the Twenty-ninth (2026-09-19).
+const STATE_SHARDED_COUNTRIES = new Set(['840', '484', '076', '604', '032', '250', '276', '380', '724', '156', '360', '356'])
 
 const shardCache = new Map<string, Feature[]>()
 const inFlight = new Map<string, Promise<void>>()

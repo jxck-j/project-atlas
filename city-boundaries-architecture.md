@@ -2448,6 +2448,69 @@ clean results need no further entry.
 members now have real city-boundary data; only India and Russia remain, both still deliberately deferred to
 their own dedicated investigations.**
 
+### Twenty-ninth pass: India (2026-09-19) — the first of the two held-back giants, and a real "recon picked a level 100x too fine" case
+
+India was excluded from every routine batch since the Twentieth pass because recon's own reported finest
+level (ADM5, 649,771 villages, min 0.0004 km²) is nowhere near city scale. This pass checked every candidate
+level against ~30 real cities by direct point-in-polygon before picking one, rather than trusting recon.
+
+**ADM3 ("Sub-District," 6,836 units — tehsil/taluka/mandal) is the right level.** Mumbai -> Mumbai Suburban
+406.5 km², Chennai -> Chennai 174.5, Kolkata -> Kolkata 202.9, Nagpur -> Nagpur (Urban) 192.3, Indore -> Indore
+201.2, Chandigarh -> Chandigarh 118.4, Pune -> Pune City 413.9. Both neighbors were rejected on evidence, not
+assumption: ADM2 (736 districts) is a whole district for most cities (Pune 15,699 km², Ahmedabad 7,272 km²,
+Lucknow 2,543 km²); ADM4 ("CD Block," 7,152) is a rural community-development-block tier that's inconsistent
+for cities (Indore 1,019.7 km², Bhopal 1,301.9 km²) and mislabels some (Shimla -> "Mashobra," Chennai spelled
+"Channai"). **This is a third distinct "recon too fine" shape** alongside Bangladesh/Sri Lanka's ward-scale
+levels and Tuvalu/Vanuatu's bare enumeration grids: a census-village tier, four orders of magnitude finer than
+any city.
+
+**Real-join dry run before touching the build script** (a scratch copy of the join's exact thresholds/snap
+logic, no writes): 7,070 of 7,112 GeoNames points kept, 41 rejected, 1 unmatched. Two checks on it: (1) a
+same-name probe (does a *uniquely*-named candidate exist that the point did NOT land in?) found 203 apparent
+disagreements >25 km apart, but every one inspected was a homonym or spelling variant (a Pune neighborhood
+"Shivaji Nagar" vs. an unrelated unique "Shivaji Nagar" 1,500 km away; "Nizāmābād" -> "Nizamabad Rural"), not
+the shapeName/geometry misalignment the Africa campaign found four times — the landed polygon was the
+geographically correct one each time. (2) The 41 rejects are all genuine sparse-region oversized units.
+
+**Two megacities had the exact Manila/Paris "fragments instead of a whole city" shape**, confirmed by counting
+ADM3 centroids inside each city's own OSM relation: **Delhi** (31 fragments — Kotwali 29 km², Seema Puri 5 km²,
+Rajouri Garden 10 km² — vs. rel/21180767's whole-city 1,392.2 km²) and **Hyderabad** (27 fragments — Charminar
+6 km², Asif Nagar 9.6 km² — vs. rel/7868535's GHMC-scale 611.0 km²). Same fix as Manila: drop the fragments
+whose centroid falls inside the whole-city relation (58 total) and add the relation as one candidate. The
+build fetches both by relation id and throws if either's name/admin_level tag has changed, rather than
+silently trusting a stale id. **Bengaluru** (2 ADM3 taluks inside OSM's 719.1 km² relation) and **Jaipur** (1
+unit inside OSM's 392.3 km²) were checked and deliberately NOT given this fix — ADM3 already resolves each to
+one city-plausible unit, so replacing them would be churn, not a fix (the Auckland lesson: check net benefit
+before applying the pattern reflexively). **A pleasant side effect worth knowing:** New Delhi, the capital,
+stayed on ADM3's "Chanakya Puri" (35.1 km²) instead of being folded into the 1,392 km² Delhi polygon, because
+OSM's Delhi L8 relation excludes the NDMC/cantonment area, so Chanakya Puri's centroid fell outside it and the
+fragment-drop never touched it — a better capital boundary than the fix was designed to produce.
+
+**No other OSM tier exists to supplement with.** An `is_in()` check at 8 major-city coordinates found India's
+city-level tagging inconsistent: Delhi/Hyderabad/Jaipur at admin_level 8, Bengaluru at 7, and Mumbai/Ahmedabad/
+Pune/Lucknow with no city-level relation at all. A nationwide OSM layer would not be comprehensive, so none was
+added beyond the two whole-city fixes above.
+
+**Sharded by state, keyed on `iso_3166_2`, NOT `postal`** — Natural Earth's India `postal` is `null` for
+Gujarat, which `shardByState()`'s truthiness filter silently drops (every Gujarati city would have fallen to
+the nearest-state-by-centroid fallback). `iso_3166_2` has 36 unique non-null values. This is the third country
+where `postal` was unusable (Germany, Spain, now India) and a *different* failure mode from the first two
+(null rather than colliding) — worth checking a shard key for nulls as well as uniqueness. 28 features matched
+no state polygon directly (coastal/island simplification artifacts) and used the nearest-state fallback, logged
+as always. Output: 36 state files, 30.5 MB combined, largest Tamil Nadu at 5.3 MB (Uttar Pradesh 3.0, Maharashtra
+2.7) — under Mexico's Veracruz precedent (11.9 MB). `'356'` added to `useCityOutline.ts`'s
+`STATE_SHARDED_COUNTRIES` and `addFromShardedDir('356')` to `buildCityBoundariesIndex.mjs`; the index grew
+30.05 -> 31.12 MB (+7,070 entries).
+
+**Verification so far:** typecheck clean, 96/96 Vitest, the build matched the dry run exactly (7,070 kept, 15
+snapped, 41 rejected, 1 unmatched). **Not yet checked in the browser** — see this pass's own note in the
+migration plan below; a real UI check of Delhi/Hyderabad/Mumbai outlines is still owed.
+
+**Real, accepted residuals, logged to BACKLOG.md:** 41 rejected (11 substantial — Bhuj, Jaisalmer, Leh, ...),
+1 unmatched (Sarupathar), and Surat/Ahmedabad/Mumbai resolving to sub-city-but-plausible ADM3 units.
+
+**Final status: India is done. 192 of 193 UN members now have real city-boundary data; only Russia remains.**
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2589,11 +2652,12 @@ their own dedicated investigations.**
    own misalignment bug — see the Twenty-eighth pass) against the already-shipped
    GeoNames city index; US reused `buildUsCitiesData.mjs`'s
    existing Census output directly, reshaped in place, still sharded by state. Output in
-   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China, and
-   Indonesia all sharded by state/province/department — see `shardByState()`).
-   **Not done: India and Russia**, both deliberately deferred to their own dedicated investigations (see the
-   Seventeenth pass's own note on why Russia is excluded from routine regional batches, and the Twentieth
-   pass's own note on why India got the same treatment) — each needs the same
+   `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China,
+   Indonesia, and India all sharded by state/province/department — see `shardByState()`).
+   **India was done in its own dedicated pass (Twenty-ninth, 2026-09-19, geoBoundaries ADM3 with Delhi/
+   Hyderabad whole-city OSM fixes, sharded by state).** **Not done: Russia**, deliberately deferred to its own
+   dedicated investigation (see the Seventeenth pass's own note on why Russia is excluded from routine
+   regional batches) — it needs the same
    investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
    Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
    Twenty-fifth/Twenty-sixth/Twenty-seventh/Twenty-eighth pass)

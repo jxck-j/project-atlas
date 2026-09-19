@@ -42,8 +42,8 @@
 // pass: Burundi, Comoros, Djibouti, Eritrea, Ethiopia, Kenya, Madagascar,
 // Malawi, Mauritius, Mozambique, Rwanda, Seychelles, Somalia, Tanzania,
 // Uganda, Zambia, Zimbabwe, plus the 2026-09-18 Southern Africa pass:
-// Angola, Botswana, Eswatini, Lesotho, Namibia, South Africa — NOT the
-// other 2 UN members yet (India, Russia).
+// Angola, Botswana, Eswatini, Lesotho, Namibia, South Africa, plus the
+// 2026-09-19 dedicated India pass — NOT the last UN member yet (Russia).
 // See that doc's "Fifth pass" section
 // for the original proof-of-concept this formalizes, and its migration plan
 // step 2/3 for what's still open after this (the plausibility threshold is
@@ -3497,6 +3497,107 @@ if (shouldRun('516')) {
   const namJoin = joinCityPointsToPolygons('Namibia', namCities, namCandidates)
   writeCountryOutput('516', namJoin.kept)
   report.namibia = namJoin.report
+}
+
+// --- Twenty-ninth pass (2026-09-19): India — one of the two countries
+// deliberately held back from every routine regional batch. Recon's own
+// suggested "finest" level (ADM5, 649,771 villages, min 0.0004 km²) is
+// village-scale and useless for a city join; every candidate level was
+// instead checked by direct point-in-polygon against ~30 real cities
+// (Mumbai, Delhi, Bengaluru, Hyderabad, Chennai, Kolkata, Pune, Lucknow, ...).
+//
+// ADM3 ("Sub-District" — tehsil/taluka/mandal, 6,836 units, sourced from
+// lgdirectory.gov.in like ADM2/ADM4) is the right level: Mumbai -> Mumbai
+// Suburban 406 km², Chennai -> Chennai 174.5, Kolkata -> Kolkata 202.9,
+// Nagpur -> Nagpur (Urban) 192.3, Indore -> Indore 201.2, Chandigarh ->
+// Chandigarh 118.4, Pune -> Pune City 413.9. ADM2 (736 districts) is a
+// whole district for most cities (Pune 15,699 km², Ahmedabad 7,272 km²); ADM4
+// ("CD Block," 7,152 units) is a rural community-development-block tier that
+// is inconsistent for cities (Indore 1,019.7 km², Bhopal 1,301.9 km², Shimla
+// -> "Mashobra") and misnames several ("Channai"). Real-join dry run against
+// ADM3 before writing this block: 7,070 of 7,112 GeoNames points kept (11
+// snapped), 41 rejected, 1 unmatched.
+//
+// The 41 rejects (11 substantial: Bhuj, Jaisalmer, Bhachau, Leh, Pokaran,
+// Padam/Zanskar, Choglamsar, Abbaspur, ...) are all genuine sparse-region
+// oversized units — Kutch, the Thar desert, Ladakh, Zanskar — the same "real
+// rural admin unit, no finer comprehensive tier" residual shape as Mongolia/
+// Namibia/Botswana, not a bug. OSM has no comprehensive finer tier to
+// supplement with: an is_in() check at 8 major-city coordinates found city-
+// level relations tagged inconsistently (Delhi/Hyderabad/Jaipur at L8,
+// Bengaluru at L7, Mumbai/Ahmedabad/Pune/Lucknow with none at all).
+//
+// Two megacities have the exact Manila/Paris "fragments instead of a whole
+// city" shape, confirmed by counting ADM3 centroids inside each city's own
+// OSM relation: Delhi (31 fragments, e.g. Kotwali 29 km², Seema Puri 5 km²,
+// against the whole city's 1,392.2 km²) and Hyderabad (27 fragments, e.g.
+// Asif Nagar 9.6 km², Charminar 6 km², against GHMC's 611.0 km²). Same fix as
+// Manila: drop the fragments whose centroid falls inside the whole-city
+// relation and add the relation itself as one candidate (rel/21180767
+// "Delhi" L8, rel/7868535 "Hyderabad" L8). Bengaluru (ADM3 taluks 497/730
+// km² vs OSM's 719.1) and Jaipur (ADM3 784 km² vs OSM's 392.3) were checked
+// and deliberately NOT given this fix: ADM3 already resolves each to one
+// city-plausible unit (2 and 1 unit(s) inside the OSM relation, not
+// dozens), so a replacement would be churn, not a fix — the Auckland lesson.
+//
+// Sharded by state via shardByState(): ADM3 output is ~7,000 features. Uses
+// Natural Earth's `iso_3166_2` (36 unique, no nulls), NOT `postal` — `postal`
+// is null for Gujarat, which shardByState()'s truthiness filter would
+// silently drop, sending every Gujarati city to the nearest-state fallback.
+const INDIA_WHOLE_CITY_RELATIONS = [
+  { id: 21180767, expectName: 'Delhi', expectLevel: '8' },
+  { id: 7868535, expectName: 'Hyderabad', expectLevel: '8' },
+]
+if (!process.env.SKIP_OSM && shouldRun('356')) {
+  console.log('\n=== India ===')
+  const indMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/IND/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const indAdm3Meta = indMeta.find((l) => l.boundaryType === 'ADM3')
+  const indAdm3 = await fetchWithRetry(async () => {
+    const res = await fetch(indAdm3Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const indRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:120];
+(${INDIA_WHOLE_CITY_RELATIONS.map((r) => `relation(${r.id});`).join('')});
+out geom;`),
+  )
+  const indWholeCities = INDIA_WHOLE_CITY_RELATIONS.map((expected) => {
+    const rel = indRaw.elements.find((e) => e.id === expected.id)
+    if (!rel) throw new Error(`India: OSM relation ${expected.id} (${expected.expectName}) missing from Overpass response`)
+    if (rel.tags?.name !== expected.expectName || rel.tags?.admin_level !== expected.expectLevel) {
+      throw new Error(`India: OSM relation ${expected.id} is now "${rel.tags?.name}" L${rel.tags?.admin_level}, expected "${expected.expectName}" L${expected.expectLevel} — re-verify before trusting`)
+    }
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) console.log(`  [warn] ${expected.expectName} relation had an unclosed ring — kept anyway, area may be inaccurate`)
+    return { name: expected.expectName, geometry }
+  })
+  let indDropped = 0
+  const indCandidates = indAdm3.features
+    .filter((f) => {
+      const { lat, lng } = geometryCentroid(f.geometry)
+      const inWholeCity = indWholeCities.some((city) => {
+        try {
+          return pointInGeometry([lng, lat], city.geometry)
+        } catch {
+          return false
+        }
+      })
+      if (inWholeCity) indDropped++
+      return !inWholeCity
+    })
+    .map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm3' }))
+  console.log(`  dropping ${indDropped} Delhi/Hyderabad internal-district fragments (real areas, wrong kind of unit for this join — see this block's own comment)`)
+  for (const city of indWholeCities) indCandidates.push({ name: city.name, geometry: city.geometry, source: 'osm-admin8-whole-city' })
+  console.log(`  +${indWholeCities.length} supplemental whole-city OSM candidates (${indWholeCities.map((c) => c.name).join(', ')})`)
+  const indCities = loadCityPoints('356')
+  const indJoin = joinCityPointsToPolygons('India', indCities, indCandidates)
+  shardByState('356', indJoin.kept, { adm0A3: 'IND', abbrevOf: (props) => props.iso_3166_2?.replace(/^IN-/, '') })
+  report.india = indJoin.report
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
