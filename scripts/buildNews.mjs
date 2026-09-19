@@ -249,6 +249,63 @@ function resolveCountryIds(text) {
 }
 
 // ---------------------------------------------------------------------------
+// Entity tagging — organizations, people, military assets. Fills the gap
+// news-engine-design.md explicitly deferred ("a non-state actor doesn't map
+// cleanly onto the existing 193-country GeoEntity schema") — see
+// data/newsTypes.ts's NewsMentionedEntity doc comment for the scope this is
+// deliberately kept to (an inline tag, not a GeoEntity-style record).
+//
+// All three lists below are HAND-CURATED SEEDS THAT WILL GO STALE — there is
+// no open API for "which non-state actors/leaders/military assets are
+// newsworthy right now," so this is the same "hand-maintained seed, flagged
+// for verification" treatment buildCurrentStatus.mjs's ORANGE/YELLOW
+// sanction tiers already get, not presented as complete or authoritative.
+// PEOPLE (current heads-of-state/major leaders) is the one most likely to
+// need periodic refreshing as governments change — see BACKLOG.md.
+// ---------------------------------------------------------------------------
+const ORGANIZATIONS = [
+  'Hamas', 'Hezbollah', 'Houthis', 'Islamic State', 'ISIS', 'ISIL', 'Al-Qaeda', 'Taliban',
+  'Wagner Group', 'IDF', 'NATO', 'Al-Shabaab', 'Boko Haram', 'PKK', 'FARC', 'Islamic Jihad',
+  'Popular Mobilization Forces', 'Houthi', 'Revolutionary Guard', 'IRGC', 'Muslim Brotherhood',
+  'Lashkar-e-Taiba', 'Kurdish YPG',
+]
+
+const PEOPLE = [
+  'Trump', 'Putin', 'Xi Jinping', 'Zelensky', 'Zelenskyy', 'Netanyahu', 'Khamenei',
+  'Pezeshkian', 'Kim Jong Un', 'Modi', 'Erdogan', 'Macron', 'Starmer', 'Scholz', 'Merz',
+  'Meloni', 'Lula', 'Milei', 'MBS', 'Mohammed bin Salman', 'Sisi', 'Abbas', 'Lavrov',
+  'Rubio', 'Guterres',
+]
+
+const ASSETS = [
+  'F-35', 'F-16', 'F-22', 'B-2 bomber', 'B-52', 'Reaper drone', 'Predator drone',
+  'Iron Dome', 'Patriot missile', 'THAAD', 'S-400', 'S-300', 'Aegis destroyer',
+  'aircraft carrier', 'Abrams tank', 'HIMARS', 'Javelin missile', 'Tomahawk missile',
+  'ballistic missile', 'hypersonic missile', 'Shahed drone',
+]
+
+function buildEntityMatchers(names, type) {
+  return names.map((name) => ({ type, name, pattern: new RegExp(`\\b${escapeRegExp(name)}`, 'i') }))
+}
+const ENTITY_MATCHERS = [
+  ...buildEntityMatchers(ORGANIZATIONS, 'organization'),
+  ...buildEntityMatchers(PEOPLE, 'person'),
+  ...buildEntityMatchers(ASSETS, 'asset'),
+]
+
+function resolveMentionedEntities(text) {
+  const seen = new Set()
+  const results = []
+  for (const matcher of ENTITY_MATCHERS) {
+    if (matcher.pattern.test(text) && !seen.has(matcher.name)) {
+      seen.add(matcher.name)
+      results.push({ type: matcher.type, name: matcher.name })
+    }
+  }
+  return results
+}
+
+// ---------------------------------------------------------------------------
 // Topic tags — deliberately coarse keyword sets, per the design doc's own
 // "deliberately coarse — the manual confirmation step catches
 // misclassification" allowance.
@@ -460,6 +517,7 @@ for (const feedConfig of FEEDS) {
     }
 
     const topicTags = resolveTopicTags(text)
+    const mentionedEntities = resolveMentionedEntities(text)
     const severity = resolveSeverity(text, topicTags)
     const isWireTier = WIRE_TIER_OUTLETS.has(feedConfig.outlet)
     const snapshotDate = rssItem.pubDate && !Number.isNaN(Date.parse(rssItem.pubDate))
@@ -471,6 +529,7 @@ for (const feedConfig of FEEDS) {
       headline: rssItem.title,
       summary: rssItem.description ?? '',
       linkedEntityIds,
+      mentionedEntities,
       topicTags,
       severity,
       sourceType: 'outlet',
@@ -568,6 +627,7 @@ const results = deduped.map((c) => ({
   headline: c.headline,
   summary: c.summary,
   linkedEntityIds: c.linkedEntityIds,
+  mentionedEntities: c.mentionedEntities,
   topicTags: c.topicTags,
   severity: c.severity,
   sourceType: c.sourceType,
@@ -593,6 +653,7 @@ console.log(
 )
 console.log(`  ${unresolvedCountryGaps.length} article(s) dropped for no resolvable country link.`)
 console.log(`  ${duplicatesDropped} article(s) merged as cross-outlet duplicates of another item.`)
+console.log(`  ${results.filter((r) => r.mentionedEntities.length > 0).length} article(s) with at least one tagged organization/person/asset.`)
 
 // ---------------------------------------------------------------------------
 // BACKLOG.md — same marker-delimited idempotent append pattern as every
@@ -631,7 +692,11 @@ function writeBacklogReport() {
       '(title-overlap clustering, one survivor per cluster — see buildNews.mjs\'s own comment) so this isn\'t ' +
       'the same as publishing every outlet\'s copy of the same story separately. The dev-only pending-' +
       'confirmation queue is read-only in v1 — there is no built workflow yet for a human to actually confirm a ' +
-      'pending item and flip it to `manual-only`.'
+      'pending item and flip it to `manual-only`. `mentionedEntities` (organizations/people/military assets) is ' +
+      'matched against three hand-curated keyword lists (ORGANIZATIONS/PEOPLE/ASSETS in buildNews.mjs) — a ' +
+      'seed, not an authoritative or complete roster; PEOPLE (current heads-of-state/major leaders) is the ' +
+      'most likely of the three to go stale as governments change and should be reviewed periodically, not ' +
+      'treated as a one-time build.'
   )
   lines.push('')
   if (unresolvedCountryGaps.length === 0) {

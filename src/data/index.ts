@@ -37,6 +37,7 @@ export type {
   NewsCorroboration,
   NewsReviewStatus,
   NewsLeaning,
+  NewsMentionedEntity,
 } from './newsTypes'
 
 export { registerCountry, getCountry, getCountries, removeCountry } from './registry/CountryRegistry'

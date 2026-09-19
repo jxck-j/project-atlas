@@ -56,12 +56,31 @@ export interface NewsSource {
   affiliationNote?: string
 }
 
+/**
+ * A non-state actor, notable person, or named military asset mentioned in a
+ * news item — deliberately NOT a GeoEntity-style record (no
+ * claims/administeredBy/parentEntity relationship modeling, no registry, no
+ * dedicated drill-down page). Fills the gap news-engine-design.md
+ * explicitly deferred ("a non-state actor doesn't map cleanly onto the
+ * existing 193-country GeoEntity schema"), scoped intentionally narrower
+ * than that schema — "drill-down" here just means filtering the News tab's
+ * grid to matching items, the same thing region/country filtering already
+ * do. See buildNews.mjs's own header comment for the hand-curated,
+ * will-go-stale keyword tables that populate this.
+ */
+export interface NewsMentionedEntity {
+  type: 'organization' | 'person' | 'asset'
+  name: string
+}
+
 export interface NewsItem {
   id: string
   headline: string
   summary: string
   /** Country ids this item is linked to, using the same numeric ISO topology id every other Intelligence Engine category keys by (plus the literal 'taiwan') — see buildNews.mjs's country-resolution pass. */
   linkedEntityIds: string[]
+  /** Always present, even when empty — same "never omitted" convention topicTags/linkedEntityIds already use. */
+  mentionedEntities: NewsMentionedEntity[]
   topicTags: NewsTopicTag[]
   severity: NewsSeverity
   sourceType: NewsSource['sourceType']

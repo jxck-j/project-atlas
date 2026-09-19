@@ -20,6 +20,7 @@
     "build:technology": "node scripts/buildTechnology.mjs",
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
     "build:news": "node scripts/buildNews.mjs",
+    "build:regions": "node scripts/buildCountryRegions.mjs",
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",
     "lint": "oxlint",

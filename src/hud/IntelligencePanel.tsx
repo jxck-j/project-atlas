@@ -25,7 +25,7 @@ import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
 import { SegmentedBar } from './SegmentedBar'
 import { usePublishedNewsItems } from '../data/useNewsFeatures'
 import type { NewsItem } from '../data'
-import { NEWS_SEVERITY_STYLE } from './newsSeverityStyles'
+import { NEWS_SEVERITY_STYLE, isNewsItemBreaking } from './newsSeverityStyles'
 import { setPendingNewsCountryId } from './newsFilterStore'
 import { setTopNavTab } from './navStore'
 
@@ -1348,6 +1348,11 @@ export function IntelligencePanel() {
                       className="block rounded border border-[#16233c] bg-[rgba(10,16,28,0.4)] p-2 transition-colors hover:border-[#3f8bff]"
                     >
                       <div className="mb-1 flex items-center gap-1.5">
+                        {isNewsItemBreaking(item) && (
+                          <span className="animate-pulse rounded-full border border-[#ff4a42] px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em] text-[#ff4a42]">
+                            JUST IN
+                          </span>
+                        )}
                         <span
                           className="rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em]"
                           style={{ color: NEWS_SEVERITY_STYLE[item.severity].color }}

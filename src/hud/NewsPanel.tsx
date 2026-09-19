@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { useTopNavTab } from './navStore'
 import { usePublishedNewsItems, usePendingNewsItems } from '../data/useNewsFeatures'
 import { consumePendingNewsCountryId } from './newsFilterStore'
-import { getCountry, type NewsItem } from '../data'
-import { NEWS_SEVERITY_STYLE, withAlpha } from './newsSeverityStyles'
+import { getCountry, type NewsItem, type NewsMentionedEntity } from '../data'
+import type { CountryRegion } from '../data/countryRegions'
+import { NEWS_SEVERITY_STYLE, isNewsItemBreaking, withAlpha } from './newsSeverityStyles'
 import { PANEL_SECTION_LABEL } from './panelStyles'
 import { Icon } from './icons'
 import { ICONS } from './iconPaths'
@@ -15,6 +16,30 @@ const SEVERITY_RANK: Record<NewsItem['severity'], number> = { routine: 0, signif
 // request: a "rolling"/infinite-scroll list rather than rendering all ~380
 // published items in one shot).
 const PAGE_SIZE = 24
+
+// World Bank's own 7-region breakdown — see scripts/buildCountryRegions.mjs
+// and src/data/countryRegions.ts's CountryRegion type, which this
+// deliberately mirrors as a literal list (rather than importing an array
+// export) since a region-hub button row is a fixed, ordered UI concern, not
+// a data-derived one.
+const REGIONS: CountryRegion[] = [
+  'East Asia & Pacific',
+  'Europe & Central Asia',
+  'Latin America & Caribbean',
+  'Middle East, North Africa, Afghanistan & Pakistan',
+  'North America',
+  'South Asia',
+  'Sub-Saharan Africa',
+]
+
+// A single filter dimension is active at a time (country, region, or a
+// tagged organization/person/asset) — direct scope decision to avoid a
+// combinatorial multi-filter UX in v1; text search still narrows further on
+// top of whichever one (or none) is active.
+type ActiveFilter =
+  | { kind: 'country'; id: string; name: string }
+  | { kind: 'region'; region: CountryRegion }
+  | { kind: 'entity'; name: string }
 
 function bySnapshotDateDesc(a: NewsItem, b: NewsItem) {
   return new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime()
@@ -54,6 +79,48 @@ function matchesQuery(item: NewsItem, query: string): boolean {
   if (item.headline.toLowerCase().includes(q)) return true
   if (item.summary.toLowerCase().includes(q)) return true
   return linkedCountryNames(item).some((name) => name.toLowerCase().includes(q))
+}
+
+function JustInBadge() {
+  return (
+    <span className="animate-pulse rounded-full border border-[#ff4a42] bg-[rgba(255,74,66,0.16)] px-2 py-0.5 text-[9px] font-bold tracking-[0.08em] text-[#ff4a42]">
+      JUST IN
+    </span>
+  )
+}
+
+// Organization/person/asset tags — clicking one narrows the grid to items
+// mentioning it (see ActiveFilter above). `stopPropagation`+`preventDefault`
+// since these render inside a card that's itself a full-card `<a>` link out
+// to the article — a nested `<span role="button">` rather than a real
+// `<button>` to avoid nesting interactive controls inside an anchor.
+function EntityChips({
+  entities,
+  onSelect,
+}: {
+  entities: NewsMentionedEntity[]
+  onSelect: (name: string) => void
+}) {
+  if (entities.length === 0) return null
+  return (
+    <div className="mt-1.5 flex flex-wrap gap-1">
+      {entities.map((entity) => (
+        <span
+          key={entity.name}
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onSelect(entity.name)
+          }}
+          className="cursor-pointer rounded border border-[#243456] bg-[rgba(20,30,52,0.7)] px-1.5 py-0.5 text-[8.5px] font-semibold tracking-[0.02em] text-[#8aa0c6] transition-colors hover:border-[#3f8bff] hover:text-white"
+        >
+          {entity.name}
+        </span>
+      ))}
+    </div>
+  )
 }
 
 function SeverityBadge({ severity }: { severity: NewsItem['severity'] }) {
@@ -114,7 +181,7 @@ function Thumbnail({ item, aspect }: { item: NewsItem; aspect: string }) {
 // The News tab's top-3 — thumbnail-forward, "YouTube style" per direct
 // request: image first, headline/summary below it, badges below that —
 // rather than the old text-first card layout.
-function FeaturedCard({ item }: { item: NewsItem }) {
+function FeaturedCard({ item, onSelectEntity }: { item: NewsItem; onSelectEntity: (name: string) => void }) {
   return (
     <a
       href={item.url}
@@ -125,6 +192,7 @@ function FeaturedCard({ item }: { item: NewsItem }) {
       <Thumbnail item={item} aspect="aspect-video" />
       <div className="p-3">
         <div className="mb-2 flex flex-wrap items-center gap-2">
+          {isNewsItemBreaking(item) && <JustInBadge />}
           <SeverityBadge severity={item.severity} />
           <SourceBadges item={item} />
         </div>
@@ -134,6 +202,7 @@ function FeaturedCard({ item }: { item: NewsItem }) {
           <span>{linkedCountryNames(item).join(', ')}</span>
           <span>{new Date(item.snapshotDate).toLocaleString()}</span>
         </div>
+        <EntityChips entities={item.mentionedEntities} onSelect={onSelectEntity} />
       </div>
     </a>
   )
@@ -143,7 +212,7 @@ function FeaturedCard({ item }: { item: NewsItem }) {
 // searching — see NewsPanel below) — a 4-column tile grid (direct
 // request), smaller thumbnail-forward cards rather than the old
 // single-column list.
-function TileCard({ item }: { item: NewsItem }) {
+function TileCard({ item, onSelectEntity }: { item: NewsItem; onSelectEntity: (name: string) => void }) {
   return (
     <a
       href={item.url}
@@ -154,6 +223,7 @@ function TileCard({ item }: { item: NewsItem }) {
       <Thumbnail item={item} aspect="aspect-video" />
       <div className="p-2">
         <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
+          {isNewsItemBreaking(item) && <JustInBadge />}
           <SeverityBadge severity={item.severity} />
           {item.source.tier === 'wire' && (
             <span className="rounded-full border border-[#3f8bff] bg-[rgba(63,139,255,0.14)] px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em] text-[#3f8bff]">
@@ -166,6 +236,7 @@ function TileCard({ item }: { item: NewsItem }) {
           {item.sourceType === 'first-hand' ? 'First-hand account' : item.source.outlet} ·{' '}
           {new Date(item.snapshotDate).toLocaleDateString()}
         </div>
+        <EntityChips entities={item.mentionedEntities} onSelect={onSelectEntity} />
       </div>
     </a>
   )
@@ -209,7 +280,7 @@ function PendingQueue() {
       {open && (
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {[...pending].sort(bySnapshotDateDesc).map((item) => (
-            <TileCard key={item.id} item={item} />
+            <TileCard key={item.id} item={item} onSelectEntity={() => {}} />
           ))}
         </div>
       )}
@@ -219,7 +290,7 @@ function PendingQueue() {
 
 export function NewsPanel() {
   const isOpen = useTopNavTab() === 'news'
-  const [filterCountryId, setFilterCountryId] = useState<string | null>(null)
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter | null>(null)
   const [query, setQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -228,8 +299,11 @@ export function NewsPanel() {
   // filter setting.
   useEffect(() => {
     if (isOpen) {
-      const pending = consumePendingNewsCountryId()
-      if (pending) setFilterCountryId(pending)
+      const pendingId = consumePendingNewsCountryId()
+      if (pendingId) {
+        const name = getCountry(pendingId)?.name
+        if (name) setActiveFilter({ kind: 'country', id: pendingId, name })
+      }
     }
   }, [isOpen])
 
@@ -238,22 +312,37 @@ export function NewsPanel() {
   // Plain per-render derivations, not memoized — same "cheap enough to just
   // redo on every render" precedent AnalyticsPanel's own sorted-row
   // construction already establishes for a comparable list size.
-  const filterCountryName = filterCountryId ? getCountry(filterCountryId)?.name : undefined
-  const scoped = filterCountryId ? published.filter((item) => item.linkedEntityIds.includes(filterCountryId)) : published
-  const sorted = filterCountryId ? [...scoped].sort(bySeverityThenRecency) : [...scoped].sort(byGlobalDefault)
+  const scoped =
+    activeFilter?.kind === 'country'
+      ? published.filter((item) => item.linkedEntityIds.includes(activeFilter.id))
+      : activeFilter?.kind === 'region'
+        ? published.filter((item) =>
+            item.linkedEntityIds.some((id) => getCountry(id)?.region === activeFilter.region)
+          )
+        : activeFilter?.kind === 'entity'
+          ? published.filter((item) => item.mentionedEntities.some((e) => e.name === activeFilter.name))
+          : published
+  const sorted = activeFilter ? [...scoped].sort(bySeverityThenRecency) : [...scoped].sort(byGlobalDefault)
 
   const trimmedQuery = query.trim()
   const searchActive = trimmedQuery.length > 0
   const searchResults = searchActive ? sorted.filter((item) => matchesQuery(item, trimmedQuery)) : []
 
-  // A new search or a new country filter starts pagination over from the
-  // top — otherwise switching context could leave the "rolled" position
-  // pointing well past the end of a much shorter new list.
+  // A new search or a new filter starts pagination over from the top —
+  // otherwise switching context could leave the "rolled" position pointing
+  // well past the end of a much shorter new list.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [trimmedQuery, filterCountryId])
+  }, [trimmedQuery, activeFilter])
 
   if (!isOpen) return null
+
+  function selectEntityFilter(name: string) {
+    setActiveFilter((current) => (current?.kind === 'entity' && current.name === name ? null : { kind: 'entity', name }))
+  }
+  function selectRegionFilter(region: CountryRegion) {
+    setActiveFilter((current) => (current?.kind === 'region' && current.region === region ? null : { kind: 'region', region }))
+  }
 
   // Featured top-3 only make sense for the un-searched, ranked view — an
   // active text search flattens straight to one paginated match grid
@@ -275,20 +364,51 @@ export function NewsPanel() {
           <h1 className="font-display text-[26px] font-bold tracking-[0.09em] text-white [text-shadow:0_0_24px_rgba(63,139,255,0.35)]">
             NEWS
           </h1>
-          {filterCountryName && (
+          {activeFilter && (
             <div className="flex items-center gap-2 text-[11px] text-[#8aa0c6]">
               <span>
-                Showing news for <span className="font-bold text-white">{filterCountryName}</span>
+                Showing news for{' '}
+                <span className="font-bold text-white">
+                  {activeFilter.kind === 'country'
+                    ? activeFilter.name
+                    : activeFilter.kind === 'region'
+                      ? activeFilter.region
+                      : activeFilter.name}
+                </span>
               </span>
               <button
                 type="button"
-                onClick={() => setFilterCountryId(null)}
+                onClick={() => setActiveFilter(null)}
                 className="rounded border border-[#1c2c4b] px-2 py-0.5 font-bold tracking-[0.06em] transition-colors hover:border-[#3f8bff] hover:text-white"
               >
                 × CLEAR FILTER
               </button>
             </div>
           )}
+        </div>
+
+        {/* Region hubs — direct request, inspired by OSINT613's own
+            regional-hub navigation. Mutually exclusive with the
+            country/entity filters above (one active filter dimension at a
+            time in v1 — see ActiveFilter's own comment). */}
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          {REGIONS.map((region) => {
+            const active = activeFilter?.kind === 'region' && activeFilter.region === region
+            return (
+              <button
+                key={region}
+                type="button"
+                onClick={() => selectRegionFilter(region)}
+                className={`rounded-full border px-2.5 py-1 text-[9.5px] font-bold tracking-[0.04em] transition-colors ${
+                  active
+                    ? 'border-[#3f8bff] bg-[rgba(63,139,255,0.2)] text-white'
+                    : 'border-[#1c2c4b] text-[#7f93b8] hover:border-[#3f8bff] hover:text-white'
+                }`}
+              >
+                {region}
+              </button>
+            )
+          })}
         </div>
 
         {/* Sticky search bar — "rolling": pinned to the top of this tab's
@@ -332,7 +452,7 @@ export function NewsPanel() {
             {featured.length > 0 && (
               <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
                 {featured.map((item) => (
-                  <FeaturedCard key={item.id} item={item} />
+                  <FeaturedCard key={item.id} item={item} onSelectEntity={selectEntityFilter} />
                 ))}
               </div>
             )}
@@ -341,7 +461,7 @@ export function NewsPanel() {
                 {!searchActive && <div className={`${PANEL_SECTION_LABEL} mb-2`}>MORE</div>}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {visibleRest.map((item) => (
-                    <TileCard key={item.id} item={item} />
+                    <TileCard key={item.id} item={item} onSelectEntity={selectEntityFilter} />
                   ))}
                 </div>
                 {hasMore && <LoadMoreSentinel onVisible={() => setVisibleCount((v) => v + PAGE_SIZE)} />}
