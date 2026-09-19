@@ -486,7 +486,7 @@ async function runGeoBoundariesCountry({ name, numericId, alpha3, admLevel, onOu
 // province-level rows), so it uses `iso_3166_2` (e.g. "FR-59") too. Pass
 // abbrevOf to derive the shard key some other way than a flat field lookup;
 // abbrevField stays the default path for every other already-shipped country.
-function shardByState(countryId, features, { adm0A3, abbrevField, abbrevOf }) {
+function shardByState(countryId, features, { adm0A3, abbrevField, abbrevOf, forcedAbbrevOf }) {
   const ne = JSON.parse(fs.readFileSync('scripts/vendor/ne_10m_admin_1_states_provinces.geojson', 'utf8'))
   const deriveAbbrev = abbrevOf ?? ((props) => props[abbrevField])
   const states = ne.features
@@ -496,6 +496,12 @@ function shardByState(countryId, features, { adm0A3, abbrevField, abbrevOf }) {
   const byState = new Map()
   let fallbackCount = 0
   for (const feature of features) {
+    const forced = forcedAbbrevOf?.(feature)
+    if (forced) {
+      if (!byState.has(forced)) byState.set(forced, [])
+      byState.get(forced).push(feature)
+      continue
+    }
     const { lat, lng } = geometryCentroid(feature.geometry)
     let match = states.find((s) => {
       try {
@@ -3598,6 +3604,125 @@ out geom;`),
   const indJoin = joinCityPointsToPolygons('India', indCities, indCandidates)
   shardByState('356', indJoin.kept, { adm0A3: 'IND', abbrevOf: (props) => props.iso_3166_2?.replace(/^IN-/, '') })
   report.india = indJoin.report
+}
+
+// --- Thirtieth pass (2026-09-19): Russia — the last UN member, held back from
+// every routine regional batch. Recon's report lists only ADM1 (83 federal
+// subjects) and ADM2 ("Raion," 2,327 features, OSM/Wambacher 2017) — no
+// finer level exists to overshoot to, unlike India.
+//
+// ADM2 is the right level: checked by direct point-in-polygon against all 99
+// headline-tier Russian cities. Every regional city lands in its own whole
+// urban okrug/raion at city scale (Kazan 633 km², Omsk 578, Samara 542,
+// Ryazan 223, Pskov 95), and shapeNames are geometrically aligned with
+// their polygons (no Africa-campaign-style misalignment seen).
+//
+// Two real gaps, both federal cities: Moscow and Saint Petersburg have NO
+// ADM2 features at all (they are ADM1-only), so Moscow, Saint Petersburg and
+// every GeoNames district-scale point inside them (Yasenevo, Bibirevo,
+// Kalininskiy, Krasnogvargeisky, ...) came back unmatched. OSM has real
+// finer tiers for both: Moscow L8 (132 districts + New Moscow settlements),
+// Saint Petersburg L5 (18 raions; L8 has 111 municipal formations, too fine).
+// Handled the Monaco way — split the points into two joins with different
+// candidate sets: the two federal-city points themselves (matched by exact
+// GeoNames name) join against their whole-city OSM L4 relation, since
+// "Moscow" at the centre would otherwise land in a ~7 km² central district
+// (the France/Manila/Delhi fragments-instead-of-whole-city shape); every
+// other point joins against ADM2 plus Moscow's L8 districts and Saint
+// Petersburg's L5 raions, smallest-containing-polygon wins.
+//
+// Sharded by federal subject via shardByState(): ~5,300 points. Natural
+// Earth's own RUS codes need two corrections, both found by checking the
+// geometry rather than trusting the labels: `RU-MOW` (43,797 km²,
+// "Moskovskaya") is actually Moscow OBLAST and `RU-MOS` (2,841 km², contains
+// the Kremlin) is Moscow CITY — swapped relative to ISO 3166-2 — so the
+// shard key swaps them back (city = MOW, oblast = MOS); and `RU-X01~` is a
+// nameless 38 km² Yamal sliver, dropped. `postal` is unusable (CK/VO/MS
+// collide, one null).
+const RUSSIA_WHOLE_CITIES = [
+  { pointName: 'Moscow', relationId: 102269, expectName: 'Москва', expectLevel: '4' },
+  { pointName: 'Saint Petersburg', relationId: 337422, expectName: 'Санкт-Петербург', expectLevel: '4' },
+  // Zelenograd is a Moscow exclave whose 5 L8 districts are 4-ish km²
+  // fragments; without its own whole-okrug candidate the 215k-population
+  // headline point landed in one of them (Staroye Kryukovo, first run).
+  { pointName: 'Zelenograd', relationId: 1320358, expectName: 'Зеленоградский административный округ', expectLevel: '5' },
+]
+const RUSSIA_SHARD_KEY_SWAP = { 'RU-MOW': 'MOS', 'RU-MOS': 'MOW' }
+// Natural Earth's simplified Moscow-city polygon doesn't cover the New
+// Moscow / Zelenograd exclaves (15 Moscow-city district features landed in
+// the oblast shard on the first run), so anything sourced from a Moscow or
+// Saint Petersburg OSM tier is sharded by that source, not by geometry.
+const RUSSIA_FORCED_SHARDS_BY_SOURCE = { 'osm-admin8-moscow-district': 'MOW', 'osm-admin5-spb-raion': 'SPE' }
+const RUSSIA_FORCED_SHARDS_BY_WHOLE_UNIT = { Moscow: 'MOW', Zelenograd: 'MOW', 'Saint Petersburg': 'SPE' }
+function russiaForcedShard(feature) {
+  const { source, matchedAdminUnit } = feature.properties
+  if (source.endsWith('-whole-city')) return RUSSIA_FORCED_SHARDS_BY_WHOLE_UNIT[matchedAdminUnit]
+  return RUSSIA_FORCED_SHARDS_BY_SOURCE[source]
+}
+function russiaShardKey(props) {
+  const iso = props.iso_3166_2
+  if (!iso || iso.includes('~')) return undefined
+  return RUSSIA_SHARD_KEY_SWAP[iso] ?? iso.replace(/^[A-Z]{2}-/, '')
+}
+if (!process.env.SKIP_OSM && shouldRun('643')) {
+  console.log('\n=== Russia ===')
+  const rusMeta = await fetchWithRetry(async () => {
+    const res = await fetch('https://www.geoboundaries.org/api/current/gbOpen/RUS/ALL/')
+    if (!res.ok) throw new Error(`geoBoundaries ${res.status}`)
+    return res.json()
+  })
+  const rusAdm2Meta = rusMeta.find((l) => l.boundaryType === 'ADM2')
+  const rusAdm2 = await fetchWithRetry(async () => {
+    const res = await fetch(rusAdm2Meta.gjDownloadURL)
+    if (!res.ok) throw new Error(`geoBoundaries geojson ${res.status}`)
+    return res.json()
+  })
+  const rusWholeRaw = await fetchWithRetry(() =>
+    fetchOverpass(`[out:json][timeout:120];
+(${RUSSIA_WHOLE_CITIES.map((r) => `relation(${r.relationId});`).join('')});
+out geom;`),
+  )
+  const rusWholeCities = RUSSIA_WHOLE_CITIES.map((expected) => {
+    const rel = rusWholeRaw.elements.find((e) => e.id === expected.relationId)
+    if (!rel) throw new Error(`Russia: OSM relation ${expected.relationId} (${expected.pointName}) missing from Overpass response`)
+    if (rel.tags?.name !== expected.expectName || rel.tags?.admin_level !== expected.expectLevel) {
+      throw new Error(`Russia: OSM relation ${expected.relationId} is now "${rel.tags?.name}" L${rel.tags?.admin_level}, expected "${expected.expectName}" L${expected.expectLevel} — re-verify before trusting`)
+    }
+    const { geometry, closed } = relationToGeometry(rel)
+    if (!closed) console.log(`  [warn] ${expected.pointName} relation had an unclosed ring — kept anyway, area may be inaccurate`)
+    return { name: expected.pointName, geometry, source: `osm-admin${expected.expectLevel}-whole-city` }
+  })
+  const fetchRusTier = async (relationId, adminLevel, label) => {
+    const raw = await fetchWithRetry(() =>
+      fetchOverpass(`[out:json][timeout:180];
+relation(area:${3600000000 + relationId})["boundary"="administrative"]["admin_level"="${adminLevel}"];
+out geom;`),
+    )
+    const out = raw.elements.map((rel) => {
+      const { geometry } = relationToGeometry(rel)
+      return { name: rel.tags?.['name:en'] ?? rel.tags?.name, geometry, source: `osm-admin${adminLevel}-${label}` }
+    })
+    console.log(`  +${out.length} OSM ${label} L${adminLevel} candidates`)
+    return out
+  }
+  const rusMoscowDistricts = await fetchRusTier(102269, 8, 'moscow-district')
+  const rusSpbRaions = await fetchRusTier(337422, 5, 'spb-raion')
+  const rusCandidates = [
+    ...rusAdm2.features.map((f) => ({ name: f.properties.shapeName, geometry: f.geometry, source: 'geoboundaries-adm2' })),
+    ...rusMoscowDistricts,
+    ...rusSpbRaions,
+  ]
+  const rusCities = loadCityPoints('643')
+  const wholeNames = new Set(RUSSIA_WHOLE_CITIES.map((r) => r.pointName))
+  const rusWholePoints = rusCities.filter((c) => wholeNames.has(c.name))
+  if (rusWholePoints.length !== RUSSIA_WHOLE_CITIES.length) {
+    throw new Error(`Russia: expected ${RUSSIA_WHOLE_CITIES.length} whole-city GeoNames points (${[...wholeNames].join(', ')}), found ${rusWholePoints.length}`)
+  }
+  const rusOthers = rusCities.filter((c) => !wholeNames.has(c.name))
+  const wholeJoin = joinCityPointsToPolygons('Russia (Moscow/St Petersburg/Zelenograd, whole-unit)', rusWholePoints, rusWholeCities)
+  const othersJoin = joinCityPointsToPolygons('Russia (everyone else)', rusOthers, rusCandidates)
+  shardByState('643', [...wholeJoin.kept, ...othersJoin.kept], { adm0A3: 'RUS', abbrevOf: russiaShardKey, forcedAbbrevOf: russiaForcedShard })
+  report.russia = { whole: wholeJoin.report, others: othersJoin.report }
 }
 
 // --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census

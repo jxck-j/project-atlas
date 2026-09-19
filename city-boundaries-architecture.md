@@ -2510,6 +2510,67 @@ migration plan below; a real UI check of Delhi/Hyderabad/Mumbai outlines is stil
 1 unmatched (Sarupathar), and Surat/Ahmedabad/Mumbai resolving to sub-city-but-plausible ADM3 units.
 
 **Final status: India is done. 192 of 193 UN members now have real city-boundary data; only Russia remains.**
+(Superseded by the Thirtieth pass below — Russia is now done too.)
+
+### Thirtieth pass: Russia (2026-09-19) — the last UN member, and a real "federal cities have no ADM2" gap
+
+Russia was held back from every routine batch alongside India. Unlike India, recon was not misleading: its
+report lists only ADM1 (83 federal subjects) and ADM2 ("Raion," 2,327 features, OSM/Wambacher 2017), so there
+was no over-fine level to override.
+
+**ADM2 is the right level**, checked by direct point-in-polygon against all 99 headline-tier Russian cities
+before writing anything: every regional city lands in its own whole urban okrug/raion at city scale (Kazan 633
+km², Omsk 578, Samara 542, Krasnodar 837, Ryazan 223, Pskov 95), and the shapeNames are geometrically aligned
+with their polygons — no Africa-campaign-style misalignment seen. Shipped result: 3,120 of 5,322 GeoNames points
+kept.
+
+**Moscow and Saint Petersburg have no ADM2 features at all** (they are federal cities, ADM1-only), so Moscow,
+Saint Petersburg, and every district-scale GeoNames point inside them (Yasenevo, Bibirevo, Kalininskiy,
+Krasnogvargeisky, ...) came back unmatched. OSM has real finer tiers for both — Moscow L8 (132 districts and
+New Moscow settlements), Saint Petersburg L5 (18 raions; its L8, 111 municipal formations, is too fine). Handled
+the Monaco way, as two joins with different candidate sets: (1) the three whole-unit points (Moscow, Saint
+Petersburg, and Zelenograd) join against their whole OSM relation (rel/102269 L4, rel/337422 L4, rel/1320358
+L5), because the centre-of-city Moscow point would otherwise land in a ~7 km² central district — the
+France/Manila/Delhi fragments-instead-of-whole-city shape; (2) every other point joins against ADM2 plus the
+Moscow L8 districts plus the SPb L5 raions, smallest-containing-polygon wins. The build fetches each whole-unit
+relation by id and throws if its name/admin_level tag has changed. **Zelenograd needed its own entry only
+because the first run showed it landing in a 4 km² "Staroye Kryukovo District" fragment** — a 215k-population
+headline point in one of its five districts — caught by inspecting the actual output, not the join counts.
+Saint Petersburg's whole-city polygon computes to 2,271 km² against its official ~1,439 km²: accepted as
+sea-inclusive (Gulf of Finland-facing administrative boundary), the same call as Manila and Yeonggwang.
+
+**Sharded by federal subject, with two Natural Earth corrections found by checking geometry, not labels.**
+`iso_3166_2` is unique, but `RU-MOW` (43,797 km², named "Moskovskaya") is actually Moscow **oblast** and
+`RU-MOS` (2,841 km², contains the Kremlin) is Moscow **city** — swapped relative to ISO 3166-2 — so
+`russiaShardKey()` swaps them back (city = MOW, oblast = MOS); `RU-X01~` is a nameless 38 km² Yamal sliver and
+is dropped. `postal` is unusable (CK/VO/MS collide, one null) — the fourth country where `postal` failed,
+and a fourth distinct failure mode. Separately, NE's simplified Moscow-city polygon does not cover the New
+Moscow/Zelenograd exclaves, so 15 Moscow-city district features landed in the *oblast* shard on the first run;
+`shardByState()` gained an optional `forcedAbbrevOf(feature)` hook and anything sourced from a Moscow/SPb OSM
+tier is now sharded by source instead of geometry. Fallbacks to nearest-state dropped from 25 to 9. Output: 83
+files, 23.0 MB combined, largest `mos.json` (Moscow oblast) 3.4 MB — under the Mexico/Veracruz precedent.
+`'643'` added to `useCityOutline.ts`'s `STATE_SHARDED_COUNTRIES` and `addFromShardedDir('643')` to
+`buildCityBoundariesIndex.mjs`; the index is now 218,736 entries, 31.6 MB (+3,120).
+
+**Real, accepted residual: 2,202 of 5,319 non-federal-city points rejected as too large (174 substantial)** —
+Russia's real rural municipal districts are enormous and a town is one settlement inside one (Ukhta 102,187 in a
+13,490 km² okrug; Mezhdurechensk, Serov, Vorkuta, Vyborg, Beloretsk, Neryungri, Tikhvin, Krasnokamensk are the
+other ≥50k rejects). A direct Cyrillic-name OSM check on 15 of the biggest rejects found no comprehensive finer
+tier — only Vyborg has an L8 relation; every other hit was a village-tagged hamlet — the same conclusion as
+India, so none was added. Zero unmatched, zero snapped. **Crimea/Sevastopol:** GeoNames files them under
+Ukraine, not Russia, so Simferopol and Sevastopol are not in this shard at all and no Russian polygon claims
+them — consistent with this project's contested-territory posture (Crimea stays a search-only GeoEntity). The
+shard key for NE's `UA-43`/`UA-40` rows exists but currently receives no features.
+
+**No antimeridian handling needed:** checked all 3,120 output features directly — none straddles ±180° (Chukotka
+contributes only Anadyr; its other units are rejected as too large), so `geometryCentroid`'s no-unwrap
+limitation (see the Seventh pass) is not triggered.
+
+**Verification so far:** typecheck clean, 96/96 Vitest, the build's join counts and shard contents checked
+against real Moscow/SPb/Zelenograd/Kazan/Yasenevo/Kalininskiy entries. **Not yet checked in the browser** — a
+real UI check of Moscow, Saint Petersburg, Zelenograd, and one regional city (Kazan) outline is still owed.
+
+**Final status: all 193 UN members now have real city-boundary data.**
 
 ## Migration plan
 
@@ -2655,13 +2716,10 @@ migration plan below; a real UI check of Delhi/Hyderabad/Mumbai outlines is stil
    `public/geo/city-boundaries/` (Mexico, Brazil, Peru, Argentina, France, Germany, Italy, Spain, China,
    Indonesia, and India all sharded by state/province/department — see `shardByState()`).
    **India was done in its own dedicated pass (Twenty-ninth, 2026-09-19, geoBoundaries ADM3 with Delhi/
-   Hyderabad whole-city OSM fixes, sharded by state).** **Not done: Russia**, deliberately deferred to its own
-   dedicated investigation (see the Seventeenth pass's own note on why Russia is excluded from routine
-   regional batches) — it needs the same
-   investigate-before-trusting treatment (Fourth/Eighth/Tenth/Thirteenth/Fourteenth/Fifteenth/Sixteenth/
-   Seventeenth/Eighteenth/Nineteenth/Twentieth/Twenty-first/Twenty-second/Twenty-third/Twenty-fourth/
-   Twenty-fifth/Twenty-sixth/Twenty-seventh/Twenty-eighth pass)
-   before its own join can run, not a blind batch extension of this script.
+   Hyderabad whole-city OSM fixes, sharded by state).** **Russia was done in its own dedicated pass
+   (Thirtieth, 2026-09-19, geoBoundaries ADM2 plus OSM whole-city relations for Moscow/Saint Petersburg/
+   Zelenograd and OSM district tiers for the first two, sharded by federal subject) — with that, all 193 UN
+   members have city-boundary data.**
    **The join now has a general "snap to nearest candidate within a small radius" fallback**
    (`joinCityPointsToPolygons`'s `SNAP_MAX_KM`, built in the Thirteenth pass) for the exact shape the
    Eleventh/Twelfth passes' Al Funayţīs/Canoas findings called out as needing one — a real polygon exists,

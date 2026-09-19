@@ -1283,6 +1283,23 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
   scale, and OSM has no whole-city relation for Mumbai/Ahmedabad to replace with (only Delhi and Hyderabad
   did, and were fixed). Left as the honest best available unit; a candidate for a future per-city pass if
   someone reports a specific one looking wrong.
+- **Russia rejected 2,202 of 5,319 non-federal-city points, 174 substantial (Ukhta 102,187 in a 13,490 km²
+  okrug; Mezhdurechensk 101,026; Serov 98,438; Vorkuta 80,039; Vyborg 78,633; Beloretsk 70,468; Neryungri
+  66,320 in a 98,208 km² district; Tikhvin; Krasnokamensk; Kuybyshev)** (found 2026-09-19,
+  `city-boundaries-architecture.md`'s "Thirtieth pass") — real, enormous rural municipal districts with a
+  town as one settlement inside; 0 unmatched. A Cyrillic-name OSM check on 15 of the biggest found no
+  comprehensive finer tier (only Vyborg has an L8 relation — a one-off fix left undone as churn). Not chased
+  further.
+- **Russia's Saint Petersburg whole-city polygon is 2,271 km² vs. the official ~1,439 km²** (found 2026-09-19,
+  "Thirtieth pass") — sea-inclusive OSM L4 boundary, accepted as-is (same call as Manila/Yeonggwang).
+- **Natural Earth's RUS admin-1 layer has `RU-MOW`/`RU-MOS` swapped (oblast/city) and a nameless `RU-X01~`
+  Yamal sliver** (found 2026-09-19, "Thirtieth pass") — corrected in `russiaShardKey()` for city-boundary
+  sharding only. Checked `states-provinces.json`: it keys on NE's `name`, not `iso_3166_2`, and the names are
+  correct ("Moskva" = city 2,841 km², "Moskovskaya" = oblast 43,797 km²) — only the ISO codes are swapped, so
+  the states layer is unaffected.
+- **Simferopol and Sevastopol are not in Russia's city-boundary data** (found 2026-09-19, "Thirtieth pass") —
+  GeoNames files Crimea under Ukraine; consistent with Crimea's existing search-only contested-territory
+  treatment, but worth knowing if Ukraine's own boundary data doesn't cover them either (unchecked).
 
 ## Visualization
 
