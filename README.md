@@ -501,10 +501,11 @@ src/
                                  blur, thin border) every panel below shares
     TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
                                  also resets view) / MAP·INTELLIGENCE·NEWS·
-                                 ANALYTICS·DATABASE tabs (middle — MAP and, as
-                                 of v6.4.0, ANALYTICS are wired; NEWS replaced
-                                 what was a redundant LAYERS tab as of
-                                 v6.5.1, since SideRail already owns layer
+                                 ANALYTICS·DATABASE tabs (middle — MAP,
+                                 ANALYTICS (v6.4.0), and NEWS (News Engine
+                                 v1, hud/NewsPanel.tsx) are wired; NEWS
+                                 replaced what was a redundant LAYERS tab as
+                                 of v6.5.1, since SideRail already owns layer
                                  selection) / search·favorites·notifications·
                                  account·layer presets·settings (right). Replaces
                                  Header.tsx + Toolbar.tsx (both removed)
