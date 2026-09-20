@@ -20,6 +20,57 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 <!-- END buildCountryRegions.mjs gap report -->
 
+## News & sourcing (v2 design — `news-sourcing-design.md`)
+
+Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md`, not repeated here. Nothing
+below is built. (The `buildNews.mjs` gap-report block that follows is v1's generated output, a separate list.)
+
+- **Estimate daily article volume** — the LLM title/dek classification pass runs per candidate at
+  twice-daily-plus-event cadence, and its cost can't be sanity-checked until volume is known. Do this before the
+  classification prompt is locked.
+- **Event clustering method is unspecified** — the design says one Event holds many `SourceEntry` reports but
+  not how reports get grouped (v1 only does title-overlap clustering). Everything downstream (corroboration
+  derived from the dossier, ranking, tab counts) depends on this being right.
+- **Tab count (World + 8) needs an in-app visual check** — flagged by J as possibly too many for one tab bar;
+  may consolidate or add a "more" overflow once the real layout is visible.
+- **Standing systemic-theme trend indicators: commit or not?** — an automated proxy (Critical-article counts) is
+  a poor substitute for real judgment, so doing it means a recurring editorial-writing commitment. Undecided
+  whether that's worth taking on.
+- **Outlet roster gaps:**
+  - Bloomberg's AllSides rating is internally inconsistent (its own page says Center, AllSides' 2024
+    retrospective lists it as moved to Lean Left) and unresolved.
+  - "Military News" is an unnamed outlet and can't be schema'd until it has a real name.
+  - Left/Center/Right is 9/10/3, left-heavy; Washington Times, CNBC, and Newsweek are unchecked Lean Right
+    candidates (Newsweek's AllSides history is volatile), or accept the ratio.
+  - Confirm Sky News UK vs. Sky News Australia before ingest — same brand, opposite AllSides leanings.
+  - Periodic AllSides re-audit — ratings drift (NPR, Telegraph, Washington Examiner, and Reason have all
+    moved).
+- **Provisional country-native entries need direct reconfirmation** — Egypt (Mada Masr), Somalia, Libya (LANA,
+  Libya Observer — also needs vetting for the split-governance case), Haiti's Le Nouvelliste, Nicaragua's El 19
+  Digital, and Ethiopia (ENA/Addis Standard) were not reconfirmed when the design was written.
+- **Two country-native tiers have no independent source at all** — no Yemeni independent/exile source has been
+  identified, and no Sahel-junta (Mali/Burkina Faso/Niger) independent tier; deliberately not filled with
+  guesses given how fast that press environment is deteriorating.
+- **Podcast vetting criteria (Verified Commentary)** — none defined yet (War on the Rocks, CFR's The World Next
+  Week, BBC Global News Podcast are candidates, not approved), and open whether commentary carries a `leaning`
+  field like outlets do or host credibility/transparency alone is enough.
+- **Warzone Livestreams: sources, delay, calibration** — no candidate live streams identified or vetted; the
+  5-10 second delay should be set empirically from real classification latency; and live-buffer filtering
+  probably needs its own calibration dataset separate from the recorded-clip pass, since time pressure makes it
+  a different problem with higher false-negative risk.
+- **Telegram/X candidate channel vetting list** — only examples exist; needs the same vetting pass outlets got.
+  Also open whether combatant-affiliated channels get extra visual distinction (e.g. a badge color) beyond the
+  `affiliationNote`, so affiliation reads at a glance.
+- **Admin Console access control and stack** — scope is settled (manual data entry, head-of-state-death review
+  queue, Calibration Review mode); who can use it (likely local-only, no auth) and the tech stack (likely
+  React/Vite) are not.
+- **Community Pulse needs its own standalone design doc** — a different subsystem (no severity or
+  corroboration logic, structurally walled off from both); ingestion method, API integration, and UI are
+  unspecified.
+- **Organization panels for non-state actors** — deferred because they have no fixed geography and need a
+  separate ID space; until then `linkedEntityIds` covers the 193 countries only, and Terrorism-tagged news
+  is geo-linked without an entity model.
+
 ## Data sourcing (`buildNews.mjs`)
 
 <!-- BEGIN buildNews.mjs gap report -->

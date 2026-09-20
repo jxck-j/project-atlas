@@ -5,6 +5,122 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-20 — News & sourcing system design committed (designed, not implemented)
+
+Docs-only. `news-sourcing-design.md` (repo root) is the v2 design for the News Engine and is the source of
+truth for everything below; this entry is the decision trail behind it, not a copy of it. **v1 is already
+built on this branch** (`buildNews.mjs`'s RSS pipeline, the wired NEWS tab/`hud/NewsPanel.tsx`, the
+`NewsItem` model in `data/newsTypes.ts` — see `news-engine-design.md` for the design v1 was built against).
+Nothing in v2 is implemented yet; where the two disagree, `news-sourcing-design.md` wins and v1's
+`NewsItem`/RSS-only shape is the baseline being redesigned, not a spec to preserve. `README.md`/
+`CHANGELOG.md` are deliberately untouched — nothing new has shipped.
+
+**Decision: news never feeds the scored categories.** Military/Economy/Technology/Current Status stay
+"sourced or unscored" — news is presented and ranked (severity, then recency), never folded into a 0-100 bar.
+Carried forward unchanged from `news-engine-design.md`; restated because the v2 design leans on it (the
+severity thresholds below would otherwise need the citable-source standard a score demands).
+
+**Decision: Event (with a `SourceEntry` dossier) supersedes `NewsItem` as the primary object.** If 17 outlets
+report one strike, Atlas shows one Event card, not 17 near-duplicate cards. The structural win isn't
+de-duplication alone: corroboration stops being a separately-tracked field and becomes a direct computation
+over the Event's own dossier (count qualifying entries, check their tiers against the floor table) — a
+cleaner implementation of a rule that already existed. Tabs, ranking, and presets all operate on Events now.
+`community-discussion` entries carry `countsTowardCorroboration: false` per entry, which is how Community
+Pulse's "never evidence" wall survives being nested inside a dossier. A per-event Reddit link and the
+ambient per-tab Community Pulse feed are different features and coexist. **Left unspecified: how separate
+reports get clustered into one Event** (v1 clusters by title overlap only) — see `BACKLOG.md`.
+
+**Decision: Terrorism & Non-State Actors stays a separate tag from Conflict & Security — merge rejected.**
+Tested against two real cases (a US strike on Houthis as an Iran proxy; a KGB-linked assassination attempt in
+Monaco); both span both tags, but only because terrorism content tends to be conflict-adjacent. The reverse
+isn't true — most Conflict content (state-vs-state strikes, troop movements, ceasefires) has nothing to do
+with terrorism, so merging would pour all terrorism content into the highest-volume tab and defeat the point
+of tabs. Overlap is handled by multi-tag placement instead: an item appears in every tab whose tag it carries,
+no forced primary tag (`topicTags` was already an array — a filter question, not a schema change).
+
+**Decision: keyword-only relevance rejected.** The root cause of the early misclassifications was keyword/name
+matching doing double duty as relevance filter and severity signal, with no substance check ("FIFA president"
+matched on "president"; two wildly different stories both matched "significant" on name/military-word
+presence alone). Negative-keyword lists were rejected as chasing false positives into false negatives.
+Replaced by: cheap keyword pre-filter (deliberately wide, only avoids discarding real candidates) → LLM
+classification of title + dek → full-article read only for low-confidence cases → three-way routing
+(confident-relevant proceeds, confident-irrelevant discarded, still-low-confidence to manual review). This
+is a build-time API call, same category as the other `buildX.mjs` scripts, not a runtime one. Cost isn't
+estimated yet — flagged, not resolved.
+
+**Decision: severity thresholds are internally set judgment calls, not citable figures.** Conflict/terrorism
+Critical = 10+ deaths in a single reported incident (unlike UCDP's 25+/year aggregate threshold, which
+Current Status borrows and can cite). **Humanitarian is deliberately a separate set of numbers** — Critical
+500+ deaths or 500,000+ displaced, Major 50+ deaths or 10,000+ displaced — because natural disasters have a
+much higher base rate (a routine earthquake often exceeds 10 deaths), so reusing the conflict number would
+make Humanitarian's Critical tier trivially easy to hit and useless as a filter. Both are on record as
+adjustable, and are the numbers that would need their own justification if the "sourced or unscored"
+standard is ever extended to non-scored features. Domestic-violence incidents with no state or diplomatic
+response stay in scope but are capped at Significant regardless of casualty count.
+
+**Decision: manual review narrowed to one case.** Only a claim that a head of state or government has been
+killed needs a human, even after wire confirmation — the single highest-consequence, most rumor-prone claim
+type. Critical remains wire-confirmed-only with no exception (not even 2+ OSINT or specialist-verified
+status); everything else auto-publishes off its corroboration floor. Rationale (J's direction): trust
+professional agencies and OSINT specialists to do their jobs rather than build a general moderation layer
+second-guessing every item. New `specialist-verified` tier (ISW/ACLED/Bellingcat, and verification-specialist
+channels) sits between generic 2+ OSINT and wire-confirmed, but never overrides the Critical wire-only rule.
+
+**Decision: source schema splits three ways, with no shared leaning field.** Outlets carry AllSides'
+actual 5-point leaning (not a collapsed 3-point one — it preserves distinctions like Middle East Eye's
+"Left" vs. the usual "Lean Left"), plus `leaningConfidence` (AllSides' own stated confidence, not every
+rating presented as equally certain) and `contested` (AllSides' methods disagree with each other, or with
+Ad Fontes/MBFC — Telegraph, BBC, The Hill, Bloomberg). Analysis orgs (Carnegie, Chatham House, CSIS, ...)
+are "Non-partisan analysis" with no leaning — forcing one would misrepresent them. First-hand accounts and
+official statements get their own schemas with no leaning either: a testimony isn't an editorial position,
+and a government statement's framing is inherent, not something to bias-rate. Country-native sources use
+`pressControl` + `pressFreedomContext` (RSF/Freedom House) instead of `leaning`, since left/right isn't the
+axis in a restricted-press environment; fractured-governance cases (Yemen, Libya, Nicaragua, Saudi Arabia)
+each break the one-state-source/one-independent-source pairing differently and are noted per country.
+AP was corrected from an assumed-neutral wire to Lean Left — wire status is newsgathering structure, not an
+exemption from the leaning caption.
+
+**Rejected/removed: NY Post and Middle East Eye, by J's call.** J reads the Post as further right than its
+AllSides Lean Right (News) label reflects, then opted the same way on the mirror-image case, Middle East Eye
+(Left, low confidence). Recorded separately from Reason, which left the Right column only because AllSides
+itself re-rated it Center — a correction, not a judgment. Tally is 9/10/3 Left/Center/Right, worse than the
+pre-vetting 7/10/4; not resolved whether to recruit more Lean Right sources or accept it.
+
+**Decision: combatant-affiliated channels are shown with prominent affiliation, not excluded.** Rybar-style
+channels stay in first-hand display and corroboration counting, with a specific `affiliationNote` ("Pro-Russian
+military blogger", not a soft caveat). J's call, deliberately made instead of defaulting to exclusion: readers
+see who is speaking and their stake and weigh it themselves, rather than Atlas silently deciding a source
+doesn't count. Applies identically to X accounts and Telegram channels — the four channel tiers describe how a
+source operates, not which platform it's on.
+
+**Decision: content-safety line drawn at visible gore/mutilation, not at death.** A drone-strike clip where an
+explosion obscures the moment of impact — fatal, no visible graphic injury — is in scope and shows (J's
+explicit call, consistent with a defense-intelligence framing). Tier A is absolute regardless of calibration
+(harm to minors, sexual violence, terrorist-organization propaganda — the last keyed on source/caption
+pattern because displaying it at all platforms it, independent of how graphic it is). Layer 2 (sampled-frame
+visual classification, any single flagged frame blocks the clip, deliberately over-blocking since false
+positive and false negative costs aren't symmetric) gets a one-time ~100-video calibration pass in the Admin
+Console using that exact standard, then periodic re-calibration. Warzone Livestreams add a 5-10 second delay
+buffer plus a "viewer discretion advised" click-through gate — additive, not substitutes: the filter decides
+what may exist behind the gate, the gate decides how a viewer chooses to encounter it. Live-buffer filtering
+carries more false-negative risk than the recorded-clip pipeline, delay notwithstanding.
+
+**Decision: Frontlines lives outside the tab system.** A separate destination for active-conflict video
+(Conflict + Terrorism sources only), 16:9 with vertical footage pillarboxed, never cropped — cropping combat
+footage risks losing the landmarks and unit markings verification depends on. Also avoids competing for space
+in a tab bar that may already be too crowded (World + 8 needs an in-app visual check before the count is final).
+
+**Decision: cadence is twice daily (10AM/10PM) plus event-triggered, hourly for first-hand.** A qualifying
+event (e.g. a Critical-tier trigger) can kick off an out-of-schedule build; first-hand refreshes hourly since
+speed is the whole value of those channels. Still build-time and static from the client's side, but
+**cron plus event-triggered runs is a genuinely new pattern for Atlas** — worth its own note in `CLAUDE.md`
+when it's implemented.
+
+**Deferred, on purpose:** organization panels for non-state actors (no fixed geography, cross-border presence,
+separate ID space — would block this whole feature on a harder problem; `linkedEntityIds` stays 193-country
+IDs only), and Community Pulse (a different subsystem with no severity/corroboration pipeline at all —
+deserves its own standalone design doc). Open items are in `BACKLOG.md`'s "News & sourcing" section.
+
 ## 2026-08-27 (cont.) — Technology/Taiwan: high-tech exports% closed via UN Comtrade (same-source), not a cross-source substitute
 
 Direct request, with a specific build recipe: close Taiwan's `highTechExportsPct` gap (component 3 of 4,

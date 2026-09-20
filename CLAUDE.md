@@ -1647,6 +1647,24 @@ Nothing about ranking, the dropdown UI, camera flight, or highlighting
 needs to change — they're already generic over `SearchEntry`/
 `ResolvedEntity` and don't know or care how many kinds exist.
 
+### News & sourcing (v1 built; v2 designed, not implemented)
+
+v1 exists on this branch: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
+`public/data/news.json`, read by `hud/NewsPanel.tsx` (the wired NEWS tab) and `IntelligencePanel.tsx` via
+`data/useNewsFeatures.ts`, built around the standalone `NewsItem` model. **`news-sourcing-design.md` (repo
+root) is the v2 design and is the source of truth where it disagrees with v1 or `news-engine-design.md`;**
+`LOGBOOK.md`'s 2026-09-20 entry has the decision history and rejected alternatives. Don't re-litigate them
+here. What a session building v2 must respect:
+
+- **Static and build-time only.** `buildNews.mjs` does all fetching/classification; the client makes zero
+  runtime calls, and filtering/ranking/presets are client-side over static JSON.
+- **No scoring.** News never feeds Military/Economy/Technology/Current Status; ranking is severity, then
+  recency (World tab: breadth of `linkedEntityIds` first).
+- **Event is the primary object**, not `NewsItem`: an Event holds a `SourceEntry` dossier, and corroboration is
+  *derived* from that dossier, not stored as its own field. Tabs, ranking, and presets operate on Events.
+- Community discussion never counts toward corroboration or severity. Cron plus event-triggered builds would be
+  a new pattern for Atlas; document it here once it exists.
+
 ### Data quirks worth knowing
 
 - A handful of features in the topology have no numeric `id` (disputed
