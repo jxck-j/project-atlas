@@ -500,7 +500,7 @@ src/
                                  panel chrome (rounded corners, translucent
                                  blur, thin border) every panel below shares
     TopNav.tsx                  (v5.0.0) Full-width top bar: brand mark (left,
-                                 also resets view) / MAP·INTELLIGENCE·NEWS·
+                                 also resets view) / MAP·NEWS·
                                  ANALYTICS·DATABASE tabs (middle — MAP,
                                  ANALYTICS (v6.4.0), and NEWS (News Engine
                                  v1, hud/NewsPanel.tsx) are wired; NEWS
