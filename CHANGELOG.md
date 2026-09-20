@@ -17,6 +17,41 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.11.0 — News Engine v1: the NEWS tab and per-country Recent News
+
+**New major version, News Engine.** Wires up `hud/TopNav.tsx`'s previously-inert NEWS tab (`wired: true`) and
+adds the first real news pipeline. `scripts/buildNews.mjs` (`npm run build:news`) ingests 15 public RSS feeds
+across 14 outlets at build time and writes `public/data/news.json` — the client makes no runtime calls, the
+same static build-time shape as every other data pipeline here. GDELT and Google News were evaluated and
+rejected (persistent rate limiting and a non-commercial-use-only ToS, respectively) in favor of outlets' own
+RSS. Each item is severity-tiered and corroboration-gated: wire-tier sources bypass the corroboration floor,
+cross-outlet duplicates are merged by title-overlap clustering, and a trigger-keyword override stops a real
+high-stakes event from publishing at a lower tier. Items link to countries only; a story with no resolvable
+country link is dropped and logged to `BACKLOG.md`.
+
+**UI.** `hud/NewsPanel.tsx` is a full-screen view: a featured row plus a thumbnail-forward tile grid, with a
+sticky search bar (matches headline, summary, and linked country name; an active search swaps the featured
+spotlight for one flat match grid) and infinite-scroll pagination (24 tiles at a time via an
+`IntersectionObserver` sentinel). Region-hub pills and clickable organization/person/military-asset chips
+filter the grid — region, entity, and country filters are mutually exclusive, and text search narrows on top
+of whichever is active. Items published within the last hour carry a JUST IN badge (freshness only, no effect
+on ranking). `IntelligencePanel.tsx` gains a per-country Recent News section linking through to the tab.
+`SideRail.tsx` now hides outside the MAP tab, since its layer toggles mean nothing under a full-screen view.
+
+**Data.** `NewsItem` (`data/newsTypes.ts`), `NewsRegistry.ts`, and a fetch-once `useNewsFeatures.ts` follow the
+Country/GeoEntity registry conventions. `Country.region` is now populated from the World Bank's 7-region
+classification (`scripts/buildCountryRegions.mjs`, `npm run build:regions`, `data/countryRegions.ts`) and merged
+into the registry alongside population/GDP; it's what the region hubs filter on. Entity tagging
+(`mentionedEntities`) matches hand-curated keyword lists in `buildNews.mjs` — a seed, not an authoritative
+roster (the people list in particular will go stale as governments change).
+
+**Known limits, deliberate for v1.** No AllSides/Ad Fontes leaning data (`leaning` is unset for every item); no
+first-hand/OSINT ingestion, so every configured outlet is trusted directly and `unconfirmed` is currently
+unreachable; Reuters, AP, and AFP aren't fetched (no public RSS, or bot-blocked) though they stay in the
+wire-tier allowlist; the dev-only pending-confirmation queue is read-only. `news-sourcing-design.md` is the v2
+redesign (Event-and-dossier model, sourced leanings, first-hand pipeline) that supersedes this model — see
+`LOGBOOK.md`'s 2026-09-20 entry. Nothing in v2 is built.
+
 ## v6.10.4 — Technology/Taiwan: closed the high-tech-exports% gap via UN Comtrade
 
 **Intelligence Engine, Technology category.** Taiwan's `highTechExportsPct` component (WDI's `TX.VAL.TECH.MF.ZS`
