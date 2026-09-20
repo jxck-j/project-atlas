@@ -17,6 +17,41 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.10.5 — States layer: 13 countries now show their true first-level divisions
+
+**Data Engine, states/provinces layer.** Reported directly: Catalonia (capital Barcelona) wasn't on the globe —
+only its four provinces were. Natural Earth's admin-1 layer models some countries' *second*-level divisions
+(Spain's provinces, France's départements, Italy's provinces, ...) while every other country in this layer is
+drawn at its first level. `scripts/lib/dissolveToFirstLevel.mjs` now merges those rows into one feature per
+first-level unit at build time (a true dissolve, so no province borders remain inside a community/region):
+
+| Country | Before | After |
+|---|---|---|
+| Spain | 52 provinces | 19 (17 autonomous communities + Ceuta, Melilla) |
+| Italy | 110 | 20 regions |
+| France | 101 | 18 regions |
+| United Kingdom | 232 local authorities | 4 nations |
+| Hungary | 43 | 20 (19 counties + Budapest) |
+| Bosnia and Herzegovina | 18 | 3 (2 entities + Brčko District) |
+| Burkina Faso | 45 | 13 |
+| Guinea | 34 | 8 |
+| Sri Lanka | 25 | 9 |
+| Mauritius | 16 | 11 |
+| Malawi | 28 | 3 |
+| Maldives | 21 | 8 |
+| Saint Kitts and Nevis | 14 | 2 |
+
+The layer went from 4,539 to 3,938 features. Every country was checked against
+`un193_subnational_architecture.xlsx` (a per-country reference of first-level tier and count; the full comparison
+is in `un193_tier1_comparison.xlsx`), every merge was checked for sliver gaps, and every hand-written mapping
+(UK regions to nations, Hungary's 23 cities to counties) was checked against the geometry. Belgium deliberately
+stays at provinces.
+
+**Not fixed:** countries whose Natural Earth data is simply out of date (Vietnam, Nepal, Somalia, Kenya, DR Congo,
+and others) can't be fixed by merging and need a different source; regional capitals (Barcelona for Catalonia)
+aren't modeled. Both are in `BACKLOG.md`. See `LOGBOOK.md`'s 2026-09-19 entry for the reasoning, including why
+Natural Earth's `type_en` field couldn't be used to find these automatically.
+
 ## v6.10.4 — Technology/Taiwan: closed the high-tech-exports% gap via UN Comtrade
 
 **Intelligence Engine, Technology category.** Taiwan's `highTechExportsPct` component (WDI's `TX.VAL.TECH.MF.ZS`
