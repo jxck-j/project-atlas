@@ -5,6 +5,66 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-19 — Spain's states layer showed provinces (second-level), not autonomous communities (first-level)
+
+**Reported as "why don't I see Catalonia with capital Barcelona?"** The 1:10m Natural Earth admin-1 layer models
+Spain as 50 provinces + Ceuta/Melilla, so Catalonia existed only as four separate polygons (Barcelona, Tarragona,
+Lérida, Gerona). A province is Spain's *second* division; the first is the 17 autonomous communities + 2
+autonomous cities (1978 Constitution) — the tier every other country's polygons in this layer represent. Natural
+Earth's own row for each Spanish province already carries its community in `region` (and `region_cod`), so no
+second dataset was needed.
+
+**Fix:** `buildStatesProvincesTopology.mjs`'s `dissolveSpainIntoCommunities()` builds a throwaway topology from
+the 52 ESP rows and dissolves each `region` group with `topojson-client`'s `merge()` — a true dissolve
+(shared interior arcs disappear, verified: Andalusia's 8 provinces → 1 polygon), not a MultiPolygon of touching
+provinces, which would still draw every province border inside a community. Result: 19 features (17
+communities + Ceuta + Melilla), 4,539 → 4,506 total. Keyed by `region`, not `region_cod` — Ceuta and Melilla
+share `ES.CE`. English display names via `SPAIN_COMMUNITY_NAMES` (Catalonia, Basque Country, Navarre, ...); the
+script throws on an unmapped region so a future Natural Earth rename can't silently drop a community. Ids are
+`esp-<slug>` (e.g. `esp-catalonia`); nothing else in `src/` referenced the old `esp-58xx` ids.
+
+**Generalized the same day, after `un193_subnational_architecture.xlsx` (a per-country reference of each country's
+first-level tier and count) was compared against the layer — see `un193_tier1_comparison.xlsx`.** Spain's one-off
+block became `scripts/lib/dissolveToFirstLevel.mjs`, a per-country config (`DISSOLVE_CONFIG`: group key + English
+name map; an unmapped key throws, a stale config key warns). Now covers ESP, ITA (110 -> 20 regions), FRA (101 ->
+18), BFA (45 -> 13), GIN (34 -> 8), LKA (25 -> 9; Sinhala-transliterated names mapped by hand and checked against
+member-district counts), BIH (18 -> 3; Brcko carved out by name because Natural Earth files it under Republika
+Srpska), KNA (14 -> 2), MWI (28 -> 3; three rows with a null `region` assigned by name), MDV (21 -> 8). 4,539 ->
+4,194 features. Every dissolve was checked for sliver gaps: the 8 holes in Italy/France are either filled by
+another region (real enclaves, e.g. Tuscany's exclaves) or are other countries (Vatican, Llivia) — none are seams.
+**Natural Earth's `type_en` is not a reliable tier signal** (it labels Spain's provinces "Autonomous Community"), and
+its `region` is sometimes political (Spain, Italy, France) and sometimes geographic (UK, Uganda, Thailand, Japan) —
+each country was judged individually against the reference file, not by rule. Belgium was deliberately left at 10
+provinces + Brussels (user decision; the file lists regions, communities and provinces together).
+**Mauritius (16 -> 11) was first held back, then done.** Its "Port Louis" and "Port Louis city" rows looked like
+duplicates, but Port Louis is both a district and the capital city (user-supplied fact); a vertex test showed no
+row overlaps another (districts don't contain the city rows as holes — they tile), so the 5 municipal-city rows
+were folded into their districts by name (Plaines Wilhems' four towns; Port Louis' urban core) rather than dropped,
+which would have left gaps. Yields the file's 9 districts + Rodrigues + Agaléga. **UK (232 -> 4 nations) was done last.** Natural Earth's
+`region` for the UK is a mix of English NUTS1 regions and Scottish/Welsh NUTS2 areas, never the nation itself, so
+every region was mapped by hand. The two names that looked ambiguous resolved by member rows: "Eastern" is Scottish
+(Scottish Borders, Edinburgh, Fife) and "East" is England's East of England; "East Wales"/"West Wales and the
+Valleys" are both Welsh. The odd `type_en` values ("Kingdom" on Leicestershire, "Principality" on Ceredigion) turned
+out to be source quirks, not nation-level rows. Result: 0 holes in any nation (England 7 polygons, Scotland 47
+islands/pieces, Wales 3, Northern Ireland 2). 4,189 -> 3,961 features.
+**Hungary (43 -> 20) was the last one the reference file could fix.** 19 counties + Budapest, with 23 "cities of
+county rank" as separate "Urban county" rows. Natural Earth's `region` is the 7 statistical regions, so the
+city -> county mapping is hand-written. Rather than trusting the list from memory it was tested against the
+geometry: every city touches its parent county and no city overlaps any county. One flag was explained, not
+ignored: Dunaújváros shares more vertices with Bács-Kiskun than Fejér only because Bács-Kiskun's border runs along
+the Danube's far bank; it is Fejér's city. Source spellings ("Gyôr", "Hódmezôvásárhely", "Gyor-Moson-Sopron")
+are kept as keys (the pre-check script's own first draft misspelled "Gyôr" and flagged it as unmapped, which is
+what that check is for). Csongrád is displayed
+as Csongrád-Csanád (renamed 2020; the source predates it). Result: 20 features, the only hole in the country is
+Budapest inside Pest. 3,961 -> 3,938 features. **Maldives' 8 merged regions
+have not been visually checked** — the user couldn't zoom in enough to tell (a camera-distance limit for tiny
+island groups, separate issue); its dissolve is counted, not eyeballed.
+
+**Not fixed / worth knowing:** Barcelona is still not marked as Catalonia's *capital* — `cities.json`'s
+`isCapital` means national capital only, and regional capitals aren't modeled anywhere. Other countries may have
+the same province-vs-region tier mismatch (Italy, France, ...); Spain was the reported case and none were
+audited. Real Spanish enclaves (Llívia, Treviño, Ademuz) appear as extra polygons/holes, as expected.
+
 ## 2026-09-05 (cont. x2) — States/provinces stopped being an optional layer; its reveal-distance match to major cities made a real invariant instead of a coincidence
 
 Direct instruction: states/provinces shouldn't have an on/off toggle at all — always on, revealed at the

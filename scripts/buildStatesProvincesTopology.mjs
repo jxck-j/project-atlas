@@ -18,6 +18,7 @@
 // past countries/GeoEntities.
 import fs from 'node:fs'
 import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { dissolveToFirstLevel } from './lib/dissolveToFirstLevel.mjs'
 import { readSourceFeatures, buildSimplifiedTopology, writeTopologyOutput } from './lib/topologyPipeline.mjs'
 
 const SOURCE = 'scripts/vendor/ne_10m_admin_1_states_provinces.geojson'
@@ -29,7 +30,9 @@ const OUTPUT = 'public/geo/states-provinces.json'
 // aggressiveness than the other two layers use.
 const SIMPLIFY_QUANTILE = 0.35
 
-const rawFeatures = readSourceFeatures(SOURCE)
+// Natural Earth's admin-1 layer sometimes models a country's SECOND-level division
+// (Spain's provinces, France's départements, ...) — see lib/dissolveToFirstLevel.mjs.
+const rawFeatures = dissolveToFirstLevel(readSourceFeatures(SOURCE))
 
 // adm0_a3 values with no entry in ALPHA3_TO_NUMERIC are, at the 1:10m
 // resolution, never a missing UN member (that table is complete for all

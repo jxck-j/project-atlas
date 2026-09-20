@@ -107,7 +107,7 @@ npm run preview    # preview the production build
 npm run build:geo  # regenerate the four geo assets below (runs the npm scripts in sequence)
 npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see Data pipeline below)
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
-npm run build:geo:states     # regenerate public/geo/states-provinces.json (4,539 admin-1 features, 235 countries/territories)
+npm run build:geo:states     # regenerate public/geo/states-provinces.json (3,938 admin-1 features, 235 countries/territories; 13 countries dissolved to their true first-level tier via scripts/lib/dissolveToFirstLevel.mjs — see LOGBOOK.md 2026-09-19)
 npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/major-city point markers)
 npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
                               # (NOT part of build:geo — much slower/heavier; run by hand when the vendored

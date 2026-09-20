@@ -10,6 +10,25 @@ this file describe features that already exist.
 Grouped by theme, not priority. Each item says *why* it's here, not just
 *what*, per this repo's usual convention (see `LOGBOOK.md`).
 
+## States/provinces: other countries may sit on the wrong admin tier, and regional capitals aren't modeled
+
+- **Wrong-tier audit against `un193_subnational_architecture.xlsx` (2026-09-19): every country the file could fix
+  is done** — Spain, Italy, France, Burkina Faso, Guinea, Sri Lanka, Bosnia, Mauritius, UK, Hungary, Saint Kitts and
+  Nevis, Malawi, Maldives, via `scripts/lib/dissolveToFirstLevel.mjs` (see `LOGBOOK.md`). Belgium deliberately stays
+  at provinces (user decision). **Maldives' merged regions are unverified visually** (camera can't zoom close
+  enough to inspect tiny island groups — a separate camera-limits issue). The remaining mismatches in
+  `un193_tier1_comparison.xlsx` are the out-of-date-source group below, plus several "Moderate difference" rows
+  (21) that were never individually reviewed.
+- **Natural Earth's admin-1 data is out of date for some countries; dissolving can't fix it** — needs a different
+  source (GADM/geoBoundaries) or a hand-authored mapping: Vietnam (63 vs 34 after the 2025 mergers), Nepal (old
+  zones vs 7 provinces), Somalia (old regions vs federal member states), Kenya (8 provinces vs 47 counties),
+  DR Congo (11 vs 26), Mali (9 vs 19 + Bamako), Ghana (10 vs 16), Algeria, Indonesia, Angola, Lebanon, Norway.
+  Tiny states are also coarse: Marshall Islands (2 vs 24), Kiribati (2 vs 21), Tuvalu (1 vs 8), Monaco (1 vs 10),
+  Luxembourg (3 vs 12).
+- **Regional capitals** (Barcelona for Catalonia, etc.) aren't represented: `cities.json`'s `isCapital` is
+  national-capital-only, and admin-1 features carry no capital field. Barcelona still shows as an ordinary
+  major-city marker, just not tied to the Catalonia polygon.
+
 ## Cross-cutting: every country-code/name join needs a real audit, not just the one bug found so far
 
 **Scope note (2026-09-04): the confirmed finding below (South Sudan's `SSD`/`SDS` alias) is one instance of
