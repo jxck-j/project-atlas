@@ -63,7 +63,8 @@ npm run build:military       # regenerate src/data/militaryScores.ts (Intelligen
 npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:technology     # regenerate src/data/technologyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
-npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts)
+npm run build:news:events   # News Engine v2 Phase 2: fetch feeds -> Events -> public/data/news-events.json (runs via tsx; see News & sourcing below)
+npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts, news/)
 ```
 
 `tsc -b --noEmit` (project references mode, not plain `tsc --noEmit`) is the
@@ -1647,7 +1648,7 @@ Nothing about ranking, the dropdown UI, camera flight, or highlighting
 needs to change — they're already generic over `SearchEntry`/
 `ResolvedEntity` and don't know or care how many kinds exist.
 
-### News & sourcing (v1 built; v2 designed, not implemented)
+### News & sourcing (v1 shipped; v2 Phases 1-2 built, no UI yet)
 
 v1 exists on this branch: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
 `public/data/news.json`, read by `hud/NewsPanel.tsx` (the wired NEWS tab) and `IntelligencePanel.tsx` via
@@ -1656,7 +1657,7 @@ root) is the v2 design and is the source of truth where it disagrees with v1 or 
 `LOGBOOK.md`'s 2026-09-20 entry has the decision history and rejected alternatives. Don't re-litigate them
 here. What a session building v2 must respect:
 
-- **Static and build-time only.** `buildNews.mjs` does all fetching/classification; the client makes zero
+- **Static and build-time only.** `buildNews.mjs` (v1) / `buildNewsEvents.mjs` (v2) do all fetching/classification; the client makes zero
   runtime calls, and filtering/ranking/presets are client-side over static JSON.
 - **No scoring.** News never feeds Military/Economy/Technology/Current Status; ranking is severity, then
   recency (World tab: breadth of `linkedEntityIds` first).
@@ -1664,6 +1665,60 @@ here. What a session building v2 must respect:
   *derived* from that dossier, not stored as its own field. Tabs, ranking, and presets operate on Events.
 - Community discussion never counts toward corroboration or severity. Cron plus event-triggered builds would be
   a new pattern for Atlas; document it here once it exists.
+
+**v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
+build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
+surfaces). **Phase 1 is done: `src/news/`**, a pure (no DOM/network/React) directory that v1's
+`data/newsTypes.ts`/`buildNews.mjs`/`NewsPanel.tsx` don't touch — v1 keeps running until the Phase 4 cutover.
+Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`).
+
+- `types.ts` — `NewsEvent`, the `SourceEntry` union (six categories), `SourceProfile` (`OutletProfile`/
+  `AnalysisProfile`), `SystemicThemeConfig`. **`NewsEvent` has no `corroboration` field** — it's derived.
+- `corroboration.ts` — `deriveCorroboration(sources)`: wire-confirmed (any counting wire-tier entry) >
+  outlet-corroborated (4+ *distinct non-state* `'outlet'` sources — `pressControl: 'state-controlled'` outlets
+  don't count toward the four — J's 2026-09-20 amendment to §8, standing in for a wire report while none is
+  reachable) > specialist-verified > osint-corroborated (2+ distinct `sourceId`s) >
+  unconfirmed. Ignores
+  `community-discussion` and `live-video` entries regardless of their stored flag, so §9b's wall can't be
+  breached by a mis-stamped entry.
+- `publishGate.ts` — `resolvePublishDecision(event)`: Critical needs a wire report or 4+ distinct outlets,
+  every other tier needs 2+ OSINT (a stronger standing satisfies a weaker floor; specialist-verified alone still
+  does NOT clear Critical). Below the floor the build doesn't emit the Event at all.
+  A `headOfStateDeathClaim` is gated as Critical whatever tier it was given and routes to
+  `pending-confirmation` until `manuallyConfirmed` — the only manual review surface.
+- `severity.ts` (tier order, the §5 numeric thresholds — all internally set judgment calls — and the domestic-
+  incident / crime-only / sci-tech-only caps), `ranking.ts`/`feed.ts` (§10: severity then recency; World ranks
+  by `linkedEntityIds.length` first; top 3 featured, remainder pure recency; `filterEvents` drops
+  non-reader-visible statuses and implements multi-tag tab placement), `tabs.ts` (World + 8), `themes.ts`
+  (archival, not deletion).
+- **`sources.json` and `systemicThemes.json` are plain JSON on purpose** — `buildNews.mjs` reads them with
+  `fs` and the Phase 5 Admin Console edits them in place; `sourceConfig.ts` is the typed view, and
+  `sourceConfig.test.ts` validates their shape every test run (that test, not the cast, is what makes the
+  types honest). `sources.json` carries only what the design doc states; anything unspecified is `vetting:
+  'provisional'` with a note. **Wire tier is Reuters/AP/AFP only — Bloomberg is not wire in v2** (v1's
+  `WIRE_TIER_OUTLETS` includes it). No working wire feed exists yet, which is why Critical also accepts 4+
+  distinct outlets; the fallback's remaining weakness (four outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
+  country-native source carries an RSF 2026 rank in `pressFreedomContext` (enforced by a test); five country-native
+  entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
+  Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
+
+**Phase 2 is done too: `scripts/buildNewsEvents.mjs`** (`npm run build:news:events`, run via `tsx` because it imports
+`src/news/*.ts` directly, so build and client can't disagree on corroboration/gating) — a thin fetch/write shell over pure,
+tested modules: `feeds.json` (feed URL → `sources.json` id; only vetted-roster **outlets** are ingested), `countryResolution.ts`,
+`classify.ts`, `clustering.ts`, `eventBuilder.ts` (`buildEvents()`: unknown source → commentary URL → country → topic →
+cluster → dossier → `resolvePublishDecision`). It writes `public/data/news-events.json` (reader-visible Events **only**) and
+gitignored `debug/news-pending-confirmation.json` — the head-of-state-death queue is deliberately NOT under `public/`, since a
+served file publishes the rumor whatever the client filters. v1's `news.json` and the shipped NEWS tab are untouched until
+the Phase 4 cutover; nothing reads `news-events.json` yet. Things a session touching this must know:
+- **`classify.ts` is a keyword stand-in for Phase 3's LLM pass** behind the `Classification` interface — swap it, don't tune it.
+  It under-tiers by design; `systemicThemes` is always `[]` and `title` is an outlet's own headline until Phase 3.
+- **Clustering leans toward splitting, deliberately.** Over-merging inflates corroboration (unsafe); over-splitting only
+  starves it. Greedy time-ordered assignment with a strict-majority link rule, not v1's transitive union-find (which chained
+  three unrelated stories into one Event). The thresholds were tuned on one live snapshot; consequence: **the 4-outlet
+  Critical fallback rarely fires** on headline-only clustering. See `LOGBOOK.md`'s Phase 2 entry before loosening anything.
+- **Opinion/explainer/video-programme URLs are dropped** (`isCommentaryUrl`) — commentary on an event isn't a report of it.
+- **The build is stateless** (each run rewrites the file from whatever the feeds hold); a `manuallyConfirmed` flag would not
+  survive a rebuild. That's a Phase 5 problem; see `BACKLOG.md`.
 
 ### Data quirks worth knowing
 

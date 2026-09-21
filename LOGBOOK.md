@@ -5,6 +5,221 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-20 — Phase 2 follow-up: five provisional outlets restored; TechRadar declined
+
+**Reversal of a Phase 2 call, at J's direction.** Phase 2 dropped v1's Euronews, Defense News, Breaking Defense, The War
+Zone and Ars Technica feeds because none had a `SourceProfile` — my choice, not a design requirement (the design forbids
+nothing; it just never listed them). J's answer: add them as `provisional` and put the feeds back. Done: five roster
+entries, `vetting: 'provisional'`, and five feeds (24 feeds / 23 outlets now). The reasoning to keep:
+- **No `leaning`, deliberately.** None has an AllSides check, and inventing one would break the roster's rule that a
+  leaning always carries a citation. Unrated means *unrated*, not neutral — each entry's note says so, and the 9/10/3
+  left/center/right tally test is unaffected because the tally counts only outlets with an actual determination.
+- **`provisional` is the honest label, and it isn't cosmetic.** These count as distinct outlets toward 2+ and toward
+  Critical's four, exactly like a confirmed outlet, so an unvetted entry can lift an Event over a floor. Vetting them is
+  BACKLOG'd (AllSides for all five; Euronews's ownership/funding — historically part-funded by the European Commission,
+  so it may need a `caveat` like Al Jazeera's "state-funded"). I noted that from memory as *needs verifying*, not as fact.
+- **Effect on a live pull:** 15 Events (was 12); the new outlets appear in 3 (Euronews on the Russia-sanctions bill and
+  the Greenland deal, Breaking Defense on the Saudi F-35 sale). No Critical — that's still limited by clustering, not by
+  outlet count (see Phase 2 entry).
+- **Not restored: NASA.** A government agency is an `official-statement`, not an outlet, and must not count toward
+  corroboration. Filed with ISW in BACKLOG as one piece of work — J plans to fold government agencies in later, and
+  analysis orgs need their own entry builder too.
+
+**TechRadar checked, declined.** Both its feeds respond, but the content is puzzle answers, streaming guides, football
+streams and deals; 12 of 50 items tripped the keyword tagger, nearly all false positives, and "Hal Jordan" (a comic
+character) would link Jordan the country. It isn't in the roster and adding it would only add noise to the topic gate.
+Recorded in BACKLOG so it isn't re-investigated.
+
+## 2026-09-20 — News Engine v2, Phase 2: the Event build pipeline (`scripts/buildNewsEvents.mjs`)
+
+Phase 2 of 8. Fetches the vetted outlets' RSS feeds, resolves countries, clusters articles into Events, builds each
+Event's source dossier, and publishes only what clears its tier's corroboration floor. Logic is pure and tested in
+`src/news/` (`countryResolution`, `classify`, `clustering`, `eventBuilder`, `feeds.json`); the script is a
+fetch/write shell. **No UI and no version bump** (same call as Phase 1) — v1's `news.json`/`NewsPanel.tsx` are
+untouched, and the new `public/data/news-events.json` has no consumer until Phase 4.
+
+**Decision: classification is a keyword stand-in behind a `Classification` interface, not the LLM pass.** Phase 3 is
+the LLM work; Phase 2 still needs *something* to tag and tier, and the design's own §6 says the keyword step is
+only a wide pre-filter. Built so Phase 3 replaces `classifyText` alone. It is biased toward under-tiering (12 of 13
+live Events came out Significant), the safe direction — its one over-tier path, a head-of-state death claim, lands in
+the manual queue, not in publication. Not worth tuning; it's being replaced.
+
+**Decision: the pending-confirmation queue is NOT written under `public/`.** `isReaderVisible()` (Phase 1) keeps
+a pending Event out of the UI, but a JSON file under `public/` is served to everyone — an unconfirmed claim that a
+head of state was killed, sitting in a public file, is published no matter what the client filters. So the public asset
+carries reader-visible Events only and the queue goes to gitignored `debug/`. Caught while wiring the output, not
+from the design doc (which says only "emitted but never reader-visible"). Its permanent home is a Phase 5 question.
+
+**Decision: only vetted-roster outlets are ingested.** `feeds.json` maps URL → `sources.json` id (a test enforces
+it). v1's feeds for Euronews/Defense News/Breaking Defense/The War Zone/NASA/Ars Technica are dropped: an outlet with
+no `SourceProfile` has no leaning/tier/pressControl to put on its dossier entry, and inventing a profile would bypass
+the vetting the roster exists for. Ten more roster outlets were probed for reachable feeds and added (NBC, PBS, FT,
+WSJ, Sky UK, Semafor, The Diplomat, SCMP, Al-Monitor, Balkan Insight) — Critical's 4-outlet floor is only as reachable
+as the number of distinct outlets, and v1's list covered 8 roster outlets. Analysis orgs (ISW, Bellingcat, ...) are
+not ingested yet; they need their own entry construction and are where `specialist-verified` comes from (BACKLOG).
+
+**Bugs found by running it against live feeds and by the tests, worth knowing:**
+- **Clustering: union-find chains, which over-merges — the unsafe direction.** v1's dedup was transitive; on the first
+  live run three unrelated "Trump / meet / New York" stories (Zelensky, Mamdani, US-China trade talks) fused into one
+  Event via A~B, B~C. Over-merging *inflates corroboration* (it can lift unrelated stories over Critical's four-outlet
+  floor); over-splitting merely starves it. Replaced with time-ordered greedy assignment where an article joins a
+  cluster only if it links to a strict **majority** of its members, plus a minimum word count, a 36h link window, and a
+  72h cluster span cap. A second, subtler failure survived that: the overlap ratio divides by the *smaller* headline,
+  so a 5-word headline matches an unrelated 7-word one on 3 shared words (exactly 0.6). Added a Jaccard floor
+  (0.35) applied only when the smaller headline has 6 or fewer significant words.
+  **Both thresholds were tuned on ONE live snapshot** (thin margin: the false pair scored Jaccard 0.33, the weakest
+  genuine 2-outlet pair 0.36). They are fail-safe by construction and the false pair is pinned in
+  `pipeline.test.ts`, but they are not derived, and BACKLOG says to re-check on more pulls.
+- **The cost, stated plainly: the one genuine Critical story in the sample stopped being Critical.** The Riyadh-airport
+  attack had six reporting outlets; with safe clustering they split 3 + 2, neither reaching four. Before the fix it
+  published as Critical — on four real reports, but via the same chaining that produced the false merge. I kept the
+  safe behavior rather than tune toward a result on a sample of one. Consequence to weigh: **with headline-only
+  clustering the 4-outlet Critical fallback will rarely fire**, so Critical still effectively waits on a wire feed or
+  the Phase 3 same-event judgment. Description text was tried as extra signal and was noisier, not better.
+- **Opinion/explainer/talk-show pages counted as outlets.** The first Riyadh Event carried a WSJ `/opinion/` column, a
+  France 24 explainer and an Al Jazeera `/inside-story/` video — three of its "outlets" were commentary *on* the event.
+  Now dropped by URL path segment (`isCommentaryUrl`, reason `not-a-report`), the only signal every feed carries. An
+  explainer under a plain `/news/` path still gets through (Phase 3).
+- **v1's country matcher had three real bugs, fixed in the port:** case-insensitive, so the "US" alias matched the word
+  "us" and "Turkey" the bird; no trailing word boundary, so "Niger" matched "Nigeria" and "India" matched "Indian";
+  and it sorted longest-name-first but never *masked* what it matched, so "South Sudan" also linked Sudan. It now masks
+  every occurrence. Taiwan resolves too (v1 dropped every Taiwan story).
+- **Mass-casualty was applied globally in v1's cross-tag override** — a 12-death bus crash would tier Critical. In v2
+  it's conflict/terrorism-scoped; the tag-independent override is limited to head-of-state death, WMD, coup/regime
+  change and war declaration. Humanitarian keeps its own (500/50 death, 500k/10k displaced) thresholds.
+- **The death-count regex only matched "12 killed", not "kills 12"** — the actual headline form. The tests caught it
+  (the 10+-death Critical rule silently never fired on "Airstrike kills 12 people"). Both orders and "death toll" now.
+- **Head-of-state death flag is narrower than v1's**: v1 matched "president ... dead" within 60 characters, so
+  "president says 10 dead" flagged a death claim, and it included "deposed". Now requires the death verb to attach to
+  the office holder ("president assassinated", "death of the prime minister"); a deposal is regime change, not a death.
+- **"disaster" as a humanitarian keyword** tagged a German state election ("CDU 'disaster'") humanitarian. Now "natural
+  disaster"/"disaster relief". Tag matching is whole-word (v1's `includes`: "war" in "software").
+
+**Not decided by anyone, defaulted (flag if wrong):** Event `title` is an outlet's own headline (the wire-tier one if
+present, else the earliest), not the neutral rewrite the design asks for — Phase 3. `eventTimestamp` is the earliest
+report's publish time, not the occurrence. Event id = hash of the earliest article's URL (stable when reports join, not
+when an earlier one arrives). `systemicThemes` is always `[]` — assigning them is judgment, not keywords.
+Same URL via two feeds (Bloomberg markets + politics) is deduped before clustering; two Bloomberg articles in one Event
+still count as one source (Phase 1's distinct-by-`sourceId` rule). A lone report never publishes — every tier needs 2+
+distinct sources — so ~380 of 1,020 articles sat in sub-floor Events; expected, not a bug.
+
+**Verified:** 213 Vitest tests (33 new), `tsc -b`, oxlint clean; ran against all 19 feeds live — 1,020 articles, 13
+published Events, 0 pending. The run is network-dependent and the output is a snapshot; nothing in CI exercises it.
+
+## 2026-09-20 — Phase 1 follow-up: Critical floor amended to "wire OR 4+ outlets"; source vetting pass
+
+**Decision (J): Critical also publishes on 4+ distinct outlets, because no wire feed is reachable.** The
+design's wire-only Critical floor plus v1's finding that Reuters/AP/AFP have no usable feed meant Critical could
+never publish. J's first framing was that "technically each news source would be considered wire"; that's not
+right — a wire is an agency whose copy other outlets republish, which is exactly why two outlets carrying one AP
+story aren't two sources — so it was reframed as an amendment to §8 rather than a reclassification of outlets,
+and J chose the threshold. Amended in `news-sourcing-design.md` §8 (table row + a dated note), not only in code.
+- **Modeled as a new rung, `'outlet-corroborated (4+)'`, ranked between wire and specialist-verified.** Critical
+  accepts four outlets but NOT a lone specialist, and a linear ladder can only say that by putting the rung above
+  specialist-verified. A wire report still clears Critical alone.
+- **Only `'outlet'`-category entries count toward the four**, distinct by `sourceId`. Analysis orgs, first-hand,
+  official statements, and community discussion don't pad it. This is my reading of "outlets"; J didn't specify.
+- **State-controlled outlets don't count toward the four (J, same day, after I flagged it).** J's rule: a
+  state-media claim can reach Critical only in combination with four non-state outlets. Implemented as "state
+  entries stay in the dossier but aren't counted," judged on the entry's own `pressControl` — so
+  `state-run-democratic` (Focus Taiwan) and unlabeled outlets still count, including state-*funded* ones like Al
+  Jazeera, whose `caveat` isn't a `pressControl`. Not extended to the 2+ OSINT floor for lower tiers; J only
+  addressed Critical.
+- **Deliberately NOT added, flagged instead:** de-duplicating syndicated copy. Four outlets running one AP story
+  still pass; fixing that needs syndication detection nothing has yet. In `BACKLOG.md`.
+- Head-of-state death claims still go to `pending-confirmation` even on four outlets — the manual gate is
+  independent of which route cleared the floor.
+
+**Source vetting pass (web lookups, 2026-09-20).** J approved my proposed label calls (Sky News = UK; Iran
+International/Meduza exile; Syria Direct independent; China Digital Times independent) and asked for B (verify
+provisionals), C (fill gaps), D (RSF citations).
+- **Interfax:** kept as a country-native source but *unlabeled* rather than `state-controlled` — it's privately
+  owned, and TASS already carries the state side of the Russia pair.
+- **Reconfirmed and de-provisionalized:** Mada Masr, ENA (State Media Monitor, Apr 2026: state-controlled),
+  Radio Mogadishu/SNTV (all eight Somali/Somaliland state outlets are ministry departments — added SONNA, the
+  state news agency, on the same evidence), Le Nouvelliste (online-only after gang attacks, offices looted again
+  Apr 2026), El 19 Digital (not formally state-owned but FSLN-directed; `state-controlled` is the closest label),
+  Addis Standard. **Addis Standard needed a caveat, not just a tick:** Ethiopia revoked its licence in Feb 2026 and
+  raided its offices in Aug 2026 — it's kept `independent` but flagged to re-check it's still publishing.
+- **Libya's agency is two entities, not one** (State Media Monitor, Jun 2026): after the failed 2021 reunification
+  LANA runs as parallel Tripoli (GNU, lana.gov.ly) and Benghazi (eastern authorities, lananews.com) organizations,
+  both state-controlled. Split `lana` into `lana-tripoli`/`lana-benghazi`, which closes the "eastern side has no
+  entry" gap for the state half of the pair.
+- **Still `provisional`, because nothing supported the label:** Hiiraan Online, Libya Observer, and two new Libya
+  candidates (Libya Herald, Al-Wasat), plus Al-Masdar Online for Yemen (RSF calls it independent but it backs the
+  Islah Party; J decided to keep it `independent` + `provisional` and surface the Islah affiliation). Looked for evidence of independence and found none, which is a different result from finding
+  evidence against — so they stay in the roster, labeled, rather than being dropped or silently promoted.
+- **RSF ranks (D) use the 2026 index** (published 2026-04-30), not the 2025 figures the design doc quoted. The doc's
+  Saudi "170/180" is stale — RSF's own page says 176/180 in 2026 and 162/180 in 2025. The table came via Wikipedia's
+  summary of the index; six entries (Saudi, Argentina, Egypt, Haiti, Taiwan, Peru) were spot-checked against
+  rsf.org country pages and matched exactly. The doc's Peru "fallen 67 places since 2022" and "4 killed in 2025"
+  weren't restated on RSF's page, so they're kept but marked unverified. `sourceConfig.test.ts` now requires an
+  RSF citation on every country-native source.
+
+## 2026-09-20 — News Engine v2, Phase 1: schema, pure logic, and editorial config (nothing user-facing)
+
+First of eight phases implementing `news-sourcing-design.md` (phase plan: schema/pure logic → Event build
+pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
+surfaces). Phase 1 is `src/news/` only: types, pure logic with Vitest coverage, and the two editorial config
+files. **No build script, UI, or shipped-data change**, so no CHANGELOG entry or version bump — v1's
+`data/newsTypes.ts`, `buildNews.mjs`, and `NewsPanel.tsx` are untouched and keep running until the Phase 4
+cutover. v2 type names are deliberately distinct from v1's (`TopicTag`/`Severity` vs `NewsTopicTag`/
+`NewsSeverity`) so an import can't silently pick up the wrong generation.
+
+**Decision: no `corroboration` field on `NewsEvent`.** The design says it's derived, so it is —
+`deriveCorroboration(event.sources)` is the only way to get it, in the build and the client alike. Storing it
+would recreate the sync problem §17a exists to remove.
+
+**Decision: the wall around community discussion is enforced in code, not just by a stored flag.**
+`SourceEntry.countsTowardCorroboration` is per entry (that's how §9b's wall survives nesting in a dossier),
+but `deriveCorroboration` additionally ignores `community-discussion` and `live-video` entries regardless of
+their flag. A mis-stamped `true` from a future ingest script can't breach it. `live-video` is excluded
+conservatively because §17c leaves its status unresolved.
+
+**Decision: distinctness is by `sourceId`, not by entry.** Two Bloomberg feeds, or two posts from one channel,
+are one source for "2+". Same rule v1 applied (two Bloomberg feeds = one outlet), now explicit.
+
+**Decision: ladder ordering wire > specialist-verified > osint (2+) > unconfirmed, with a stronger standing
+satisfying a weaker floor.** The design's table gives "OSINT 2+ *or* specialist-verified" for Major but only
+"OSINT 2+" for Significant/Routine; read literally, a specialist-verified-only Event would clear Major yet be
+held at Significant, which is incoherent. Critical's floor is the one exception — wire-only, and neither 2+
+OSINT nor specialist-verified clears it.
+
+**Decision: head-of-state death claims are gated as Critical whatever tier the classifier assigned.** It's
+the most rumor-prone, highest-consequence claim, so its floor can't depend on a heuristic getting the tier
+right. Wire confirmation is still required first; after that it goes to `pending-confirmation` (the only manual
+queue left) until a human sets `manuallyConfirmed`, then publishes as `manual-only`.
+
+**Decision: an Event below its floor has no review status at all** — the build won't emit it, and the next run
+re-evaluates from scratch. Considered adding a "held" status; rejected since v2 has exactly one manual surface
+and a held-forever status would invite a general moderation backlog the design explicitly refuses.
+`'retracted'` is kept from v1 even though the v2 doc doesn't mention it — dropping it would silently regress
+behavior for no stated reason.
+
+**Deviation from v1, flagged: Bloomberg is not wire-tier.** v1's `WIRE_TIER_OUTLETS` includes it; the design
+doc's wire tier is Reuters/AP/AFP, with Bloomberg under financial/macro (and `contested`). `sources.json`
+follows the doc and a test pins wire = {reuters, ap, afp}. Consequence for Phase 2: Bloomberg's v1
+wire-confirmation bypass goes away, and with Reuters/AP/AFP having no working feed (see `buildNews.mjs`'s
+header), **no wire-confirmed Event is currently reachable — Critical items cannot publish until a real wire
+feed/API exists.** Logged in `BACKLOG.md` as a Phase 2 blocker.
+
+**`sources.json` seeds ~130 sources from §7 and only what §7 states.** Anything the doc leaves open is
+`vetting: 'provisional'` with a note rather than guessed: Sky News UK (vs. Australia), the independent-vs-exile
+split for Iran International/Meduza/Syria Direct/China Digital Times (the doc's column just says
+"independent/exile"), and every entry the doc itself calls provisional. Deliberately absent: Middle East Eye and
+the New York Post (removed by decision), "Military News" (unnamed), the Sahel juntas and a Yemeni independent
+source (no confident candidate). `tier` is set only where the doc names one — broadsheet/broadcast are left
+unset for general-spread outlets rather than invented. Also caught while encoding: the doc lists Interfax as
+state-aligned but it's privately owned — kept as listed, marked provisional, note says to verify. ISW/
+Bellingcat/ACLED are `sourceType: 'analysis'` + `specialistVerified: true`, not a fourth type, since §7 lists
+them alongside the analysis orgs. `pressFreedomContext` is filled only where the doc supplies the RSF fact
+(Saudi, Argentina, Peru, DRC); the rest need real RSF lookups (`BACKLOG.md`).
+
+**Validation:** `sourceConfig.test.ts` checks the JSON on every test run — unique ids, leaning requires a
+citation, pressControl and leaning never coexist, every `countryName` resolves against the UN-193 topology (or
+Taiwan), and the 9/10/3 tally reproduces. It exists because the Admin Console (Phase 5) will edit these files
+by hand, so a typo needs to fail a test, not a build.
+
 ## 2026-09-20 — News & sourcing system design committed (designed, not implemented)
 
 Docs-only. `news-sourcing-design.md` (repo root) is the v2 design for the News Engine and is the source of

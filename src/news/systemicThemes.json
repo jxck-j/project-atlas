@@ -1,0 +1,12 @@
+[
+  { "id": "middle-east-regional-war", "label": "Middle East Regional War", "status": "active" },
+  { "id": "energy-security-crisis", "label": "Energy Security Crisis", "status": "active" },
+  { "id": "global-technology-decoupling", "label": "Global Technology Decoupling", "status": "active" },
+  { "id": "major-terror-or-cyber-attacks", "label": "Major Terror or Cyber Attack(s)", "status": "active" },
+  { "id": "western-hemisphere-tensions", "label": "Western Hemisphere Tensions", "status": "active" },
+  { "id": "global-trade-protectionism", "label": "Global Trade Protectionism", "status": "active" },
+  { "id": "us-china-strategic-competition", "label": "U.S.–China Strategic Competition", "status": "active" },
+  { "id": "russia-nato-conflict", "label": "Russia–NATO Conflict", "status": "active" },
+  { "id": "transatlantic-reordering", "label": "Transatlantic Reordering", "status": "active" },
+  { "id": "north-korea-conflict", "label": "North Korea Conflict", "status": "active" }
+]
