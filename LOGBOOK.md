@@ -5,6 +5,35 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — 14-day News feed with a recency filter (24 hrs / 3 / 7 / 14 days) — on the v1 pipeline, not a new architecture
+
+**Decision (J):** the feed is "just like the current feed" but holds everything from the last 14 days, and the News tab gets a control to narrow
+it to 24 hrs, 3 days, 7 days or 14 days. So this extends the SHIPPED v1 path (`buildNews.mjs` -> `news.json` -> `NewsPanel.tsx`); v2's
+`news-events.json` still has no UI and is untouched. The article archive is not used by this — it serves the v2/dossier work.
+
+**Why the build had to change, not just the UI.** v1 was stateless like v2: each run rewrote `news.json` from whatever the feeds held. Feeds
+differ enormously in depth — the pre-change file spanned 29 days, but only because slow feeds carry long tails; a busy outlet's window can be a
+day or less. A 7- or 14-day filter over that would have shown slow feeds' older items and almost none of the busy outlets'. Measured before the
+change: 371 items, 164 in the last 24h but only 320 in the last 14d.
+
+**How.** `buildNews.mjs` carries the previous `news.json` forward, drops anything older than `RETENTION_DAYS` = 14 (this also trims the old 29-day
+tail), and re-ingests carried items through the SAME `ingest()` path as fresh ones — country/tag/severity resolution, then cross-outlet dedup.
+Not spliced in afterwards, on purpose: a carried item then dedups against a new report of the same story from another outlet, and a rule
+improvement re-applies to it. headline/summary/url/date/image round-trip exactly, so nothing is lost. Fresh wins over a carried copy of the same
+URL. First run: 326 fresh + 177 carried -> 478 items, Sep 8-Sep 21, no duplicate ids, 151 too old. The window keeps filling for two weeks; run
+the build a few times a day. **Caveat that stays:** anything published while nobody ran the build and already rolled out of a feed is gone (the
+Sep 18-21 gap here) — only the archive-backed v2 path can ever backfill that.
+
+**UI.** `src/data/newsRecency.ts` (pure, tested) + a "SHOW LAST" button row in `NewsPanel.tsx`. The window applies FIRST, so it composes with
+the region/country/entity filter, search, ranking and the featured top-3. **Default is 14 days** (= everything the feed holds, i.e. the tab's
+behaviour before the control) rather than 24 hrs: the build is run by hand, so a stale file would make a 24-hr default an empty tab. The window
+is measured from the moment the tab opens (`Date.now()` held in state, refreshed on open), and an empty window says so and suggests widening.
+The 14 in `newsRecency.ts` and `RETENTION_DAYS` must match — the script is plain node and can't import the TS, so the number is duplicated
+with a comment on each side.
+
+**Known side effect, not changed:** `IntelligencePanel`'s RECENT NEWS (top 3 by severity then recency per country) draws from the same list, so
+it can now surface a severe item up to 14 days old over a newer routine one. Left as is; a one-line filter if you'd rather cap it.
+
 ## 2026-09-21 — Append-only article archive (first step toward a 14-day feed and per-conflict dossiers)
 
 **Why.** The build is stateless and RSS shows only the last few days, so each run's feed window was lost when it rolled off. Three wants all

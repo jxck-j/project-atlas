@@ -1656,6 +1656,8 @@ needs to change — they're already generic over `SearchEntry`/
 
 ### News & sourcing (v1 shipped; v2 Phases 1-2 built, no UI yet)
 
+**v1's feed is a rolling 14-day window (2026-09-21):** `buildNews.mjs` carries the previous `news.json` forward (re-ingested through the same path as fresh items, so it dedups and re-classifies), dropping anything older than `RETENTION_DAYS` = 14; `NewsPanel.tsx` has a 24 hrs / 3 / 7 / 14 days recency control (`src/data/newsRecency.ts`, default 14 days) applied before every other filter. Keep the 14 in both places in step. See `LOGBOOK.md`'s 2026-09-21 14-day feed entry.
+
 v1 exists on this branch: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
 `public/data/news.json`, read by `hud/NewsPanel.tsx` (the wired NEWS tab) and `IntelligencePanel.tsx` via
 `data/useNewsFeatures.ts`, built around the standalone `NewsItem` model. **`news-sourcing-design.md` (repo

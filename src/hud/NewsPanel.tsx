@@ -3,6 +3,13 @@ import { useTopNavTab } from './navStore'
 import { usePublishedNewsItems, usePendingNewsItems } from '../data/useNewsFeatures'
 import { consumePendingNewsCountryId } from './newsFilterStore'
 import { getCountry, type NewsItem, type NewsMentionedEntity } from '../data'
+import {
+  DEFAULT_NEWS_RECENCY,
+  NEWS_RECENCY_WINDOWS,
+  getNewsRecencyWindow,
+  isWithinRecency,
+  type NewsRecencyId,
+} from '../data/newsRecency'
 import type { CountryRegion } from '../data/countryRegions'
 import { NEWS_SEVERITY_STYLE, isNewsItemBreaking, withAlpha } from './newsSeverityStyles'
 import { PANEL_SECTION_LABEL } from './panelStyles'
@@ -293,12 +300,17 @@ export function NewsPanel() {
   const [activeFilter, setActiveFilter] = useState<ActiveFilter | null>(null)
   const [query, setQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [recency, setRecency] = useState<NewsRecencyId>(DEFAULT_NEWS_RECENCY)
+  // "Now" for the recency window, held in state (not read during render) and refreshed each time the tab opens, so a long-open
+  // session doesn't measure the window from when the app loaded.
+  const [now, setNow] = useState(() => Date.now())
 
   // Consume the cross-tab filter exactly once per transition into this tab
   // — see newsFilterStore.ts's own comment for why this isn't a persistent
   // filter setting.
   useEffect(() => {
     if (isOpen) {
+      setNow(Date.now())
       const pendingId = consumePendingNewsCountryId()
       if (pendingId) {
         const name = getCountry(pendingId)?.name
@@ -307,7 +319,9 @@ export function NewsPanel() {
     }
   }, [isOpen])
 
-  const published = usePublishedNewsItems()
+  const allPublished = usePublishedNewsItems()
+  // The recency window applies first and to everything below it (country/region/entity filter, search, ranking, the featured top-3).
+  const published = allPublished.filter((item) => isWithinRecency(item.snapshotDate, recency, now))
 
   // Plain per-render derivations, not memoized — same "cheap enough to just
   // redo on every render" precedent AnalyticsPanel's own sorted-row
@@ -333,7 +347,7 @@ export function NewsPanel() {
   // well past the end of a much shorter new list.
   useEffect(() => {
     setVisibleCount(PAGE_SIZE)
-  }, [trimmedQuery, activeFilter])
+  }, [trimmedQuery, activeFilter, recency])
 
   if (!isOpen) return null
 
@@ -385,6 +399,32 @@ export function NewsPanel() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Recency window — 24 hrs / 3 / 7 / 14 days (direct request). Applies on top of every other filter; the default is the
+            widest, which is everything the feed holds (scripts/buildNews.mjs retains 14 days). */}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="text-[9.5px] font-bold tracking-[0.1em] text-[#51648a]">SHOW LAST</span>
+          <div role="group" aria-label="News recency" className="flex gap-1.5">
+            {NEWS_RECENCY_WINDOWS.map((w) => {
+              const active = recency === w.id
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setRecency(w.id)}
+                  className={`rounded border px-2.5 py-1 text-[9.5px] font-bold tracking-[0.06em] transition-colors ${
+                    active
+                      ? 'border-[#3f8bff] bg-[rgba(63,139,255,0.2)] text-white'
+                      : 'border-[#1c2c4b] text-[#7f93b8] hover:border-[#3f8bff] hover:text-white'
+                  }`}
+                >
+                  {w.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
 
         {/* Region hubs — direct request, inspired by OSINT613's own
@@ -444,7 +484,11 @@ export function NewsPanel() {
         </div>
 
         {sorted.length === 0 ? (
-          <div className="text-[12px] text-[#51648a]">No published news items yet.</div>
+          <div className="text-[12px] text-[#51648a]">
+            {allPublished.length === 0
+              ? 'No published news items yet.'
+              : `No published news in the last ${getNewsRecencyWindow(recency).phrase}${activeFilter ? ' for this filter' : ''}. Try a wider window.`}
+          </div>
         ) : searchActive && searchResults.length === 0 ? (
           <div className="text-[12px] text-[#51648a]">No articles match "{trimmedQuery}".</div>
         ) : (

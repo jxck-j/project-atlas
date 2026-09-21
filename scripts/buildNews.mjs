@@ -495,6 +495,63 @@ function resolveReviewStatus(severity, corroboration) {
 // ---------------------------------------------------------------------------
 const unresolvedCountryGaps = []
 const candidates = []
+const seenLinks = new Set()
+let agedOut = 0
+
+// Rolling retention window (direct request: the News tab offers 24 hrs / 3 / 7 / 14 days, so the file has to actually hold 14 days).
+// A feed only ever shows its own last few items — a busy outlet's window can be a day or less — so without carrying the previous
+// output forward, a 7- or 14-day view would be dominated by whichever outlets publish slowly. Keep in step with the longest window in
+// src/data/newsRecency.ts (that file is TS and this script runs under plain node, so the number is duplicated, not imported).
+const RETENTION_DAYS = 14
+const retentionCutoffMs = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000
+
+function ingest(rssItem, outlet, { carried }) {
+  if (!rssItem.title || !rssItem.link) return
+  // Fresh items are ingested first, so a carried copy of the same URL is the one dropped.
+  if (seenLinks.has(rssItem.link)) return
+
+  const snapshotDate = rssItem.pubDate && !Number.isNaN(Date.parse(rssItem.pubDate))
+    ? new Date(rssItem.pubDate).toISOString()
+    : new Date().toISOString()
+  if (Date.parse(snapshotDate) < retentionCutoffMs) {
+    agedOut++
+    return
+  }
+
+  const text = `${rssItem.title} ${rssItem.description ?? ''}`
+  const linkedEntityIds = resolveCountryIds(text)
+  if (linkedEntityIds.length === 0) {
+    if (!carried) unresolvedCountryGaps.push(rssItem.title)
+    return
+  }
+  seenLinks.add(rssItem.link)
+
+  const topicTags = resolveTopicTags(text)
+  const mentionedEntities = resolveMentionedEntities(text)
+  const severity = resolveSeverity(text, topicTags)
+  const isWireTier = WIRE_TIER_OUTLETS.has(outlet)
+
+  candidates.push({
+    id: `news-${crypto.createHash('sha1').update(rssItem.link).digest('hex').slice(0, 16)}`,
+    headline: rssItem.title,
+    summary: rssItem.description ?? '',
+    linkedEntityIds,
+    mentionedEntities,
+    topicTags,
+    severity,
+    sourceType: 'outlet',
+    source: {
+      sourceType: 'outlet',
+      outlet,
+      ...(isWireTier ? { tier: 'wire' } : {}),
+    },
+    isWireTier,
+    titleWords: significantWords(rssItem.title),
+    snapshotDate,
+    url: rssItem.link,
+    imageUrl: rssItem.imageUrl,
+  })
+}
 
 for (const feedConfig of FEEDS) {
   let xml
@@ -504,48 +561,24 @@ for (const feedConfig of FEEDS) {
     console.warn(`Failed to fetch ${feedConfig.url}: ${err.message}`)
     continue
   }
-
-  const rssItems = parseRssItems(xml)
-  for (const rssItem of rssItems) {
-    if (!rssItem.title || !rssItem.link) continue
-
-    const text = `${rssItem.title} ${rssItem.description ?? ''}`
-    const linkedEntityIds = resolveCountryIds(text)
-    if (linkedEntityIds.length === 0) {
-      unresolvedCountryGaps.push(rssItem.title)
-      continue
-    }
-
-    const topicTags = resolveTopicTags(text)
-    const mentionedEntities = resolveMentionedEntities(text)
-    const severity = resolveSeverity(text, topicTags)
-    const isWireTier = WIRE_TIER_OUTLETS.has(feedConfig.outlet)
-    const snapshotDate = rssItem.pubDate && !Number.isNaN(Date.parse(rssItem.pubDate))
-      ? new Date(rssItem.pubDate).toISOString()
-      : new Date().toISOString()
-
-    candidates.push({
-      id: `news-${crypto.createHash('sha1').update(rssItem.link).digest('hex').slice(0, 16)}`,
-      headline: rssItem.title,
-      summary: rssItem.description ?? '',
-      linkedEntityIds,
-      mentionedEntities,
-      topicTags,
-      severity,
-      sourceType: 'outlet',
-      source: {
-        sourceType: 'outlet',
-        outlet: feedConfig.outlet,
-        ...(isWireTier ? { tier: 'wire' } : {}),
-      },
-      isWireTier,
-      titleWords: significantWords(rssItem.title),
-      snapshotDate,
-      url: rssItem.link,
-      imageUrl: rssItem.imageUrl,
-    })
-  }
+  for (const rssItem of parseRssItems(xml)) ingest(rssItem, feedConfig.outlet, { carried: false })
 }
+const freshCount = candidates.length
+
+// Carry the previous output forward through the SAME path as a fresh item (country/tag/severity resolution, then dedup below) rather
+// than splicing old records in afterwards: a carried item then dedups against a new cross-outlet report of the same story, and a
+// rule improvement re-applies to it. headline/summary/url/date/image round-trip exactly, so nothing is lost by re-ingesting.
+let previous = []
+try {
+  previous = JSON.parse(fs.readFileSync(OUTPUT, 'utf8'))
+} catch {
+  // First run, or an unreadable file: nothing to carry, the feed just starts its window from here.
+}
+for (const item of previous) {
+  if (item.sourceType !== 'outlet' || !item.source?.outlet) continue
+  ingest({ title: item.headline, description: item.summary, link: item.url, pubDate: item.snapshotDate, imageUrl: item.imageUrl }, item.source.outlet, { carried: true })
+}
+const carriedCount = candidates.length - freshCount
 
 // Corroboration — every configured outlet is trusted for its own report
 // directly (osint-corroborated(2+), capped below wire-confirmed), not just
@@ -652,6 +685,7 @@ console.log(
     `high-stakes=${results.filter((r) => r.severity === 'high-stakes').length}`
 )
 console.log(`  ${unresolvedCountryGaps.length} article(s) dropped for no resolvable country link.`)
+console.log(`  ${freshCount} candidate(s) from the feeds + ${carriedCount} carried from the previous output (${RETENTION_DAYS}-day window; ${agedOut} older than that dropped).`)
 console.log(`  ${duplicatesDropped} article(s) merged as cross-outlet duplicates of another item.`)
 console.log(`  ${results.filter((r) => r.mentionedEntities.length > 0).length} article(s) with at least one tagged organization/person/asset.`)
 
