@@ -21,7 +21,8 @@ export function loadFixture(path = 'scripts/fixtures/newsClusteringEval.json') {
 /**
  * The numbers that matter for corroboration, not just pair accuracy:
  *  - contaminated: a cluster holding two DIFFERENT labeled stories. The dangerous error — it fabricates corroboration.
- *  - stories2/stories4: multi-outlet stories whose outlets land together (>=2 / >=4 in one cluster). >=4 is what Critical's floor needs.
+ *  - stories2/stories3: multi-outlet stories whose outlets land together (>=2 / >=3 in one cluster). >=3 is what Critical's floor needs
+ *    (four until 2026-09-21).
  *  - recall: fraction of same-story article pairs placed together (dominated by big stories, so read it beside the story counts).
  */
 export function scoreClusters(fx, clusters) {
@@ -36,7 +37,7 @@ export function scoreClusters(fx, clusters) {
     if (stories.size >= 2) contaminated.push(c)
     else if (stories.size === 1 && c.some((i) => fx.story[i] === null && !fx.ambiguous.has(i))) mergedWithUnlabeled++
   }
-  let det2 = 0, det4 = 0, cand4 = 0
+  let det2 = 0, det3 = 0, cand3 = 0
   const missed2 = []
   for (const [name, idxs] of fx.multiSource) {
     const by = new Map()
@@ -45,9 +46,9 @@ export function scoreClusters(fx, clusters) {
     const total = new Set(idxs.map((i) => fx.articles[i].sourceId)).size
     if (best >= 2) det2++
     else missed2.push(name)
-    if (total >= 4) {
-      cand4++
-      if (best >= 4) det4++
+    if (total >= 3) {
+      cand3++
+      if (best >= 3) det3++
     }
   }
   return {
@@ -56,11 +57,11 @@ export function scoreClusters(fx, clusters) {
     contaminatedClusters: contaminated,
     mergedWithUnlabeled,
     stories2: `${det2}/${fx.multiSource.length}`,
-    stories4: `${det4}/${cand4}`,
+    stories3: `${det3}/${cand3}`,
     missed2,
     biggest: Math.max(...clusters.map((c) => c.length)),
   }
 }
 
 export const formatScore = (label, r) =>
-  `${label.padEnd(34)} recall ${r.recall.toFixed(3)} | contaminated ${String(r.contaminated).padStart(2)} | +unlabeled ${String(r.mergedWithUnlabeled).padStart(2)} | >=2 outlets ${r.stories2.padStart(5)} | >=4 outlets ${r.stories4.padStart(5)} | biggest ${r.biggest}`
+  `${label.padEnd(34)} recall ${r.recall.toFixed(3)} | contaminated ${String(r.contaminated).padStart(2)} | +unlabeled ${String(r.mergedWithUnlabeled).padStart(2)} | >=2 outlets ${r.stories2.padStart(5)} | >=3 outlets ${r.stories3.padStart(5)} | biggest ${r.biggest}`

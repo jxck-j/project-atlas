@@ -80,6 +80,12 @@ describe('prompts', () => {
     expect(system).toContain('500,000+')
   })
 
+  it('states that an evacuation advisory is at most major, and that domestic violence incidents stay in scope', () => {
+    expect(system).toMatch(/evacuation ORDER or ADVISORY/)
+    expect(system).toMatch(/never critical/)
+    expect(system).toMatch(/school shooting is in scope/)
+  })
+
   it('lists only ACTIVE themes, and every country', () => {
     expect(system).toContain('middle-east-regional-war')
     expect(system).not.toContain('old-theme')
@@ -262,20 +268,20 @@ describe('buildEventsWithLlm — end to end on a fake model', () => {
   const riyadhClassify = () => ({ countries: ['Saudi Arabia', 'Yemen'], topicTags: ['conflict-security' as const, 'terrorism-non-state-actors' as const], severity: 'critical' as const, systemicThemes: ['middle-east-regional-war'] })
   const groupAll = (arts: ParsedArticle[]) => [{ title: 'Drone and missile attack reported on Riyadh', articleIds: arts.map((a) => a.id) }]
 
-  it('four outlets in varied wording reach Critical when the model groups them — what heuristic clustering cannot do', async () => {
+  it('three outlets in varied wording reach Critical when the model groups them — what heuristic clustering cannot do', async () => {
     const f = fake({ classify: riyadhClassify, group: groupAll })
-    const r = await buildEventsWithLlm(riyadh.map(([s, t]) => art(s, t)), ctx(f.call))
+    const r = await buildEventsWithLlm(riyadh.slice(0, 3).map(([s, t]) => art(s, t)), ctx(f.call))
     expect(r.published).toHaveLength(1)
     expect(r.published[0]).toMatchObject({ severity: 'critical', title: 'Drone and missile attack reported on Riyadh', systemicThemes: ['middle-east-regional-war'] })
-    expect(r.published[0].sources.map((s) => s.sourceId).sort()).toEqual(['a', 'b', 'c', 'd'])
+    expect(r.published[0].sources.map((s) => s.sourceId).sort()).toEqual(['a', 'b', 'c'])
     expect(r.llm.usage.calls).toBe(2)
   })
 
-  it('the gate, not the model, decides publication: three outlets stay below Critical\'s four however the model tiers them', async () => {
+  it('the gate, not the model, decides publication: two outlets stay below Critical\'s three however the model tiers them', async () => {
     const f = fake({ classify: riyadhClassify, group: groupAll })
-    const r = await buildEventsWithLlm(riyadh.slice(0, 3).map(([s, t]) => art(s, t)), ctx(f.call))
+    const r = await buildEventsWithLlm(riyadh.slice(0, 2).map(([s, t]) => art(s, t)), ctx(f.call))
     expect(r.published).toHaveLength(0)
-    expect(r.dropped['below-floor']).toHaveLength(3)
+    expect(r.dropped['below-floor']).toHaveLength(2)
   })
 
   it('an article that talks the model into "critical" cannot publish alone', async () => {

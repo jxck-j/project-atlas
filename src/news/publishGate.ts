@@ -9,8 +9,8 @@ import type { Corroboration, NewsEvent, ReviewStatus, Severity } from './types'
 
 /**
  * Minimum corroboration to publish, by tier. Critical is wire-confirmed OR
- * four distinct outlets (the latter is a 2026-09-20 amendment to §8, since
- * no wire feed is reachable) — 2+ OSINT corroborations and specialist-
+ * three distinct non-state outlets (the latter is a 2026-09-20 amendment to §8, since
+ * no wire feed is reachable; J lowered it from four to three on 2026-09-21) — 2+ OSINT corroborations and specialist-
  * verified status still do NOT clear it. Every other tier's floor is osint-corroborated (2+);
  * specialist-verified outranks that (Major's "OSINT 2+ or specialist-
  * verified"), so it clears Significant/Routine too — the doc's table lists
@@ -18,7 +18,7 @@ import type { Corroboration, NewsEvent, ReviewStatus, Severity } from './types'
  * weaker floor is the only ordering that keeps the ladder coherent.
  */
 export const CORROBORATION_FLOOR: Record<Severity, Corroboration> = {
-  critical: 'outlet-corroborated (4+)', // wire-confirmed outranks it, so a wire report still clears Critical
+  critical: 'outlet-corroborated (3+)', // wire-confirmed outranks it, so a wire report still clears Critical
   major: 'osint-corroborated (2+)',
   significant: 'osint-corroborated (2+)',
   routine: 'osint-corroborated (2+)',

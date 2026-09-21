@@ -31,11 +31,11 @@ export type Embedder = (texts: string[]) => Promise<Vector[]>
 
 /**
  * Cosine similarity at or above which two articles count as linked. From `npm run eval:news-clustering` (all-MiniLM-L12-v2, title +
- * description, 47 multi-outlet stories, WITH the merge pass): 0.55 merged 5 different stories, 0.60 merged 4, 0.65 merged 2 (one clear —
- * two different companies' Venezuela oil deals — and one same-day boundary case), 0.70 merged none. 0.70 is the setting J chose
- * (2026-09-21): no false merges over reach. Before the merge pass that cost Critical reach (8/13 of the four-outlet stories recovered);
- * with it 0.70 recovers 12/13 with the same zero contamination. A DIFFERENT MODEL HAS A DIFFERENT SCALE (gte-small scores everything
- * above 0.8), so changing EMBEDDING_MODEL means re-tuning this against the eval.
+ * description, 47 multi-outlet stories, WITH the merge pass; "Critical reach" = stories of 3+ outlets that land in ONE cluster, since
+ * Critical's floor is three outlets): 0.55 merged 5 different stories, 0.60 merged 4, 0.65 merged 2 (one clear — two different companies'
+ * Venezuela oil deals — and one same-day boundary case) and reached 18/19, 0.70 merged none and reaches 14/19. 0.70 is the setting J
+ * chose (2026-09-21): no false merges over reach. A DIFFERENT MODEL HAS A DIFFERENT SCALE (gte-small scores everything above 0.8), so
+ * changing EMBEDDING_MODEL means re-tuning this against the eval.
  */
 export const EMBED_LINK_THRESHOLD = 0.70
 
@@ -84,7 +84,7 @@ export function isSameOccurrenceByEmbedding(a: EmbedArticle, b: EmbedArticle, th
  * early on (the first report and the third are 0.61 apart) can leave a genuine near-clique split in two — so this repairs splits WITHOUT
  * loosening the pair threshold. It is the same rule the greedy pass uses (broad agreement, never one bridging pair), applied between
  * clusters instead of between an article and a cluster. Real case: six outlets reporting one Houthi attack on Riyadh split 3+3, so
- * neither half reached Critical's four-outlet floor although 7 of the 9 cross pairs linked.
+ * neither half reached Critical's outlet floor (then four) although 7 of the 9 cross pairs linked.
  *
  * Merges are applied best-first (highest linked fraction) and repeated until none qualify. A merged cluster must still fit in
  * MAX_CLUSTER_SPAN_MS, and only articles within LINK_WINDOW_MS of each other can link, so distant clusters are never compared.

@@ -87,6 +87,13 @@ const DISPLACED_RES = [
   new RegExp(String.raw`\b${NUMBER}\+?\s*${WHO}(?:displaced|homeless|evacuated|fled|left homeless)\b`, 'i'),
   new RegExp(String.raw`\b(?:displac\w+|evacuat\w+|forc\w+ (?:from|to flee))\s+(?:at least\s+|over\s+|more than\s+|nearly\s+)?${NUMBER}`, 'i'),
 ]
+// An evacuation ORDER/ADVISORY is not displacement (J, 2026-09-21: it is 'in lower regard'), so it is parsed separately and can reach Major only.
+// "1.6 million in Japan urged to evacuate", "evacuation order for 600,000", and the unnumbered "Millions urged to evacuate".
+const EVACUATION_ORDER_RES = [
+  new RegExp(String.raw`\b${NUMBER}\+?\s*(?:[\p{L}'-]+\s+){0,4}?(?:urged|ordered|told|asked|advised|encouraged|warned)\s+to\s+(?:evacuate|leave)`, 'iu'),
+  new RegExp(String.raw`\bevacuation\s+(?:order|advisory|warning|notice)s?\s+(?:for|covering|affecting|to)\s+(?:up to\s+|more than\s+|over\s+|nearly\s+)?${NUMBER}`, 'i'),
+]
+const MILLIONS_EVACUATE_RE = /\bmillions\b[^.]{0,40}\b(?:urged|ordered|told|asked|advised)\s+to\s+evacuate/i
 const HEAD_OF_STATE = String.raw`(?:president|prime minister|premier|king|queen|emperor|sultan|emir|supreme leader|head of state|head of government|chancellor)`
 // Death specifically — v1's pattern also matched "deposed" and any "dead"
 // within 60 characters, so "president says 10 dead" flagged a death claim.
@@ -151,7 +158,7 @@ export function classifyText(text: string): Classification {
     REGIME_CHANGE_RE.test(text) ||
     WAR_DECLARATION_RE.test(text)
 
-  const humanitarian = has('humanitarian-displacement') ? humanitarianSeverity({ deaths, displaced: figure(DISPLACED_RES, text), pheic: PHEIC_RE.test(text) }) : null
+  const humanitarian = has('humanitarian-displacement') ? humanitarianSeverity({ deaths, displaced: figure(DISPLACED_RES, text), pheic: PHEIC_RE.test(text), evacuationOrdered: Math.max(figure(EVACUATION_ORDER_RES, text), MILLIONS_EVACUATE_RE.test(text) ? 1_000_000 : 0) }) : null
 
   if (critical || humanitarian === 'critical') severity = 'critical'
   else if (

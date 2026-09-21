@@ -60,12 +60,18 @@ export interface HumanitarianFigures {
   displaced?: number
   /** A PHEIC-equivalent outbreak declaration. */
   pheic?: boolean
+  /**
+   * People under an evacuation ORDER or ADVISORY — told to leave, not yet displaced. Counted one tier below the same number of people
+   * actually displaced (J, 2026-09-21): 500,000+ under evacuation reaches Major, never Critical. (10,000+ would be one tier below Major,
+   * i.e. Significant — already the humanitarian baseline — so only the upper figure changes anything.)
+   */
+  evacuationOrdered?: number
 }
 
 /** Humanitarian & Displacement tier from the stated figures, or null when neither the Critical nor Major bar is met. Either figure alone is enough (the doc's "OR"). */
-export function humanitarianSeverity({ deaths = 0, displaced = 0, pheic = false }: HumanitarianFigures): 'critical' | 'major' | null {
+export function humanitarianSeverity({ deaths = 0, displaced = 0, pheic = false, evacuationOrdered = 0 }: HumanitarianFigures): 'critical' | 'major' | null {
   if (pheic || deaths >= HUMANITARIAN_CRITICAL_DEATHS || displaced >= HUMANITARIAN_CRITICAL_DISPLACED) return 'critical'
-  if (deaths >= HUMANITARIAN_MAJOR_DEATHS || displaced >= HUMANITARIAN_MAJOR_DISPLACED) return 'major'
+  if (deaths >= HUMANITARIAN_MAJOR_DEATHS || displaced >= HUMANITARIAN_MAJOR_DISPLACED || evacuationOrdered >= HUMANITARIAN_CRITICAL_DISPLACED) return 'major'
   return null
 }
 

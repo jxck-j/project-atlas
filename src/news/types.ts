@@ -26,15 +26,15 @@ export type Severity = 'critical' | 'major' | 'significant' | 'routine'
 
 /**
  * Derived from an Event's dossier by corroboration.ts (§8, §17a) — never
- * stored on an Event. Ordered wire-confirmed > outlet-corroborated (4+) >
+ * stored on an Event. Ordered wire-confirmed > outlet-corroborated (3+) >
  * specialist-verified > osint-corroborated (2+) > unconfirmed.
- * `'outlet-corroborated (4+)'` is a 2026-09-20 amendment to §8: Critical's
- * floor is wire-confirmed OR four distinct outlets, because no wire feed is
- * currently reachable (see LOGBOOK.md).
+ * `'outlet-corroborated (3+)'` is a 2026-09-20 amendment to §8: Critical's
+ * floor is wire-confirmed OR three distinct non-state outlets (four until
+ * 2026-09-21), because no wire feed is currently reachable (see LOGBOOK.md).
  */
 export type Corroboration =
   | 'wire-confirmed'
-  | 'outlet-corroborated (4+)'
+  | 'outlet-corroborated (3+)'
   | 'specialist-verified'
   | 'osint-corroborated (2+)'
   | 'unconfirmed'

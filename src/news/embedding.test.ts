@@ -150,15 +150,15 @@ describe('buildEventsWithEmbeddings — end to end on a fake embedder', () => {
     ['d', 'Houthi missile strike on Riyadh prompts Gulf alarm in Saudi Arabia'],
   ] as const
 
-  it('four outlets in varied wording reach Critical when their embeddings agree — what word overlap cannot do', async () => {
+  it('three outlets in varied wording reach Critical when their embeddings agree — what word overlap cannot do', async () => {
     const angles = Object.fromEntries(riyadh.map(([, t], i) => [t, i * 3]))
-    const r = await buildEventsWithEmbeddings(riyadh.map(([s, t]) => raw(s, t)), ctx, embedderFor(angles))
+    const r = await buildEventsWithEmbeddings(riyadh.slice(0, 3).map(([s, t]) => raw(s, t)), ctx, embedderFor(angles))
     expect(r.published).toHaveLength(1)
     expect(r.published[0].severity).toBe('critical')
-    expect(r.published[0].sources.map((s) => s.sourceId).sort()).toEqual(['a', 'b', 'c', 'd'])
+    expect(r.published[0].sources.map((s) => s.sourceId).sort()).toEqual(['a', 'b', 'c'])
   })
 
-  it('the gate is unchanged: the same four outlets that the embedder splits apart publish nothing', async () => {
+  it('the gate is unchanged: the same outlets, split apart by the embedder, publish nothing', async () => {
     const angles = Object.fromEntries(riyadh.map(([, t], i) => [t, i * 90]))
     const r = await buildEventsWithEmbeddings(riyadh.map(([s, t]) => raw(s, t)), ctx, embedderFor(angles))
     expect(r.published).toHaveLength(0)

@@ -118,19 +118,19 @@ describe('deriveCorroboration', () => {
     expect(deriveCorroboration([isw, wire()])).toBe('wire-confirmed')
   })
 
-  it('is outlet-corroborated with four distinct outlets and no wire', () => {
-    expect(deriveCorroboration(['guardian', 'bbc', 'npr', 'financial-times'].map((id) => outlet(id)))).toBe('outlet-corroborated (4+)')
+  it('is outlet-corroborated with three distinct outlets and no wire (Critical floor: four until 2026-09-21)', () => {
+    expect(deriveCorroboration(['guardian', 'bbc', 'npr'].map((id) => outlet(id)))).toBe('outlet-corroborated (3+)')
   })
 
-  it('three distinct outlets is still only osint-corroborated', () => {
-    expect(deriveCorroboration(['guardian', 'bbc', 'npr'].map((id) => outlet(id)))).toBe('osint-corroborated (2+)')
+  it('two distinct outlets is still only osint-corroborated', () => {
+    expect(deriveCorroboration(['guardian', 'bbc'].map((id) => outlet(id)))).toBe('osint-corroborated (2+)')
   })
 
-  it('four entries from three sourceIds is three sources, not four', () => {
-    expect(deriveCorroboration(['guardian', 'bbc', 'npr', 'npr'].map((id) => outlet(id)))).toBe('osint-corroborated (2+)')
+  it('three entries from two sourceIds is two sources, not three', () => {
+    expect(deriveCorroboration(['guardian', 'bbc', 'bbc'].map((id) => outlet(id)))).toBe('osint-corroborated (2+)')
   })
 
-  it('analysis orgs and first-hand accounts do not count toward the four — outlets only', () => {
+  it('analysis orgs and first-hand accounts do not count toward the three — outlets only', () => {
     const analysis = (sourceId: string): SourceEntry => ({
       id: sourceId,
       sourceId,
@@ -141,15 +141,15 @@ describe('deriveCorroboration', () => {
       refUrl: 'u',
       timestamp: '2026-09-20T09:00:00Z',
     })
-    const mix = [outlet('guardian'), outlet('bbc'), outlet('npr'), analysis('chatham-house'), analysis('csis')]
+    const mix = [outlet('guardian'), outlet('bbc'), analysis('chatham-house'), analysis('csis')]
     expect(deriveCorroboration(mix)).toBe('osint-corroborated (2+)')
   })
 
-  it('a wire report still wins over four outlets', () => {
-    expect(deriveCorroboration([wire(), ...['guardian', 'bbc', 'npr', 'financial-times'].map((id) => outlet(id))])).toBe('wire-confirmed')
+  it('a wire report still wins over three outlets', () => {
+    expect(deriveCorroboration([wire(), ...['guardian', 'bbc', 'npr'].map((id) => outlet(id))])).toBe('wire-confirmed')
   })
 
-  it('four outlets outrank a lone specialist-verified entry', () => {
+  it('three outlets outrank a lone specialist-verified entry', () => {
     const isw: SourceEntry = {
       id: 'x',
       sourceId: 'isw',
@@ -161,10 +161,10 @@ describe('deriveCorroboration', () => {
       refUrl: 'u',
       timestamp: '2026-09-20T09:00:00Z',
     }
-    expect(deriveCorroboration([isw, ...['guardian', 'bbc', 'npr', 'financial-times'].map((id) => outlet(id))])).toBe('outlet-corroborated (4+)')
+    expect(deriveCorroboration([isw, ...['guardian', 'bbc', 'npr'].map((id) => outlet(id))])).toBe('outlet-corroborated (3+)')
   })
 
-  it('community discussion does not pad the four (three outlets plus a Reddit thread is three)', () => {
+  it('community discussion does not pad the three (two outlets plus a Reddit thread is two)', () => {
     const reddit: SourceEntry = {
       id: 'r1',
       sourceId: 'r-geopolitics',
@@ -175,19 +175,19 @@ describe('deriveCorroboration', () => {
       refUrl: 'u',
       timestamp: '2026-09-20T09:00:00Z',
     }
-    expect(deriveCorroboration([...['guardian', 'bbc', 'npr'].map((id) => outlet(id)), reddit])).toBe('osint-corroborated (2+)')
+    expect(deriveCorroboration([...['guardian', 'bbc'].map((id) => outlet(id)), reddit])).toBe('osint-corroborated (2+)')
   })
 
-  it('state-controlled outlets do not count toward the four — four state media alone is not corroboration', () => {
+  it('state-controlled outlets do not count toward the three — four state media alone is not corroboration', () => {
     const state = ['tass', 'xinhua', 'irna', 'kcna'].map((id) => outlet(id, { pressControl: 'state-controlled' }))
     expect(deriveCorroboration(state)).toBe('osint-corroborated (2+)')
   })
 
-  it('a state-media claim reaches the four only alongside four non-state outlets', () => {
+  it('a state-media claim reaches the three only alongside three non-state outlets', () => {
     const state = ['tass', 'xinhua'].map((id) => outlet(id, { pressControl: 'state-controlled' }))
-    const nonState = ['guardian', 'bbc', 'npr'].map((id) => outlet(id))
+    const nonState = ['guardian', 'bbc'].map((id) => outlet(id))
     expect(deriveCorroboration([...state, ...nonState])).toBe('osint-corroborated (2+)')
-    expect(deriveCorroboration([...state, ...nonState, outlet('financial-times')])).toBe('outlet-corroborated (4+)')
+    expect(deriveCorroboration([...state, ...nonState, outlet('npr')])).toBe('outlet-corroborated (3+)')
   })
 
   it('state-run-democratic and unlabeled outlets still count (Focus Taiwan, Al Jazeera are not pressControl: state-controlled)', () => {
@@ -195,9 +195,8 @@ describe('deriveCorroboration', () => {
       outlet('focus-taiwan', { pressControl: 'state-run-democratic' }),
       outlet('al-jazeera', { caveat: 'state-funded' }),
       outlet('guardian'),
-      outlet('bbc'),
     ]
-    expect(deriveCorroboration(mix)).toBe('outlet-corroborated (4+)')
+    expect(deriveCorroboration(mix)).toBe('outlet-corroborated (3+)')
   })
 
   it('ignores an entry whose countsTowardCorroboration is false', () => {
@@ -235,9 +234,9 @@ describe('deriveCorroboration', () => {
 })
 
 describe('meetsCorroborationFloor', () => {
-  it('orders wire > outlet (4+) > specialist > osint > unconfirmed', () => {
-    expect(meetsCorroborationFloor('wire-confirmed', 'outlet-corroborated (4+)')).toBe(true)
-    expect(meetsCorroborationFloor('specialist-verified', 'outlet-corroborated (4+)')).toBe(false)
+  it('orders wire > outlet (3+) > specialist > osint > unconfirmed', () => {
+    expect(meetsCorroborationFloor('wire-confirmed', 'outlet-corroborated (3+)')).toBe(true)
+    expect(meetsCorroborationFloor('specialist-verified', 'outlet-corroborated (3+)')).toBe(false)
     expect(meetsCorroborationFloor('wire-confirmed', 'specialist-verified')).toBe(true)
     expect(meetsCorroborationFloor('specialist-verified', 'osint-corroborated (2+)')).toBe(true)
     expect(meetsCorroborationFloor('osint-corroborated (2+)', 'specialist-verified')).toBe(false)
@@ -282,6 +281,17 @@ describe('severity ordering and caps', () => {
     expect(humanitarianSeverity({ displaced: 10_000 })).toBe('major')
     expect(humanitarianSeverity({ deaths: 49, displaced: 9_999 })).toBeNull()
     expect(humanitarianSeverity({})).toBeNull()
+  })
+
+  it('an evacuation ORDER ranks one tier below actual displacement: 500,000+ evacuees is major, never critical (J, 2026-09-21)', () => {
+    expect(humanitarianSeverity({ evacuationOrdered: 1_600_000 })).toBe('major')
+    expect(humanitarianSeverity({ evacuationOrdered: 500_000 })).toBe('major')
+    expect(humanitarianSeverity({ evacuationOrdered: 499_999 })).toBeNull()
+    // the same number actually DISPLACED is critical — that is the whole distinction
+    expect(humanitarianSeverity({ displaced: 1_600_000 })).toBe('critical')
+    // an advisory never lifts a tier the real figures already earned, and never pushes past major
+    expect(humanitarianSeverity({ deaths: 600, evacuationOrdered: 2_000_000 })).toBe('critical')
+    expect(humanitarianSeverity({ evacuationOrdered: 50_000_000 })).toBe('major')
   })
 
   it('a conflict-scale 10-death disaster is NOT critical — the thresholds are deliberately separate', () => {
@@ -333,13 +343,13 @@ describe('resolvePublishDecision', () => {
     expect(resolvePublishDecision(event({ severity: 'critical', sources: [isw] })).outcome).toBe('below-floor')
   })
 
-  it('auto-publishes a critical event on four distinct outlets with no wire (the 2026-09-20 amendment)', () => {
-    const sources = ['guardian', 'bbc', 'npr', 'financial-times'].map((id) => outlet(id))
+  it('auto-publishes a critical event on three distinct outlets with no wire (the 2026-09-20 amendment, lowered from four on 2026-09-21)', () => {
+    const sources = ['guardian', 'bbc', 'npr'].map((id) => outlet(id))
     expect(resolvePublishDecision(event({ severity: 'critical', sources }))).toEqual({ outcome: 'publish', reviewStatus: 'auto-published' })
   })
 
-  it('holds a critical event at three outlets', () => {
-    const sources = ['guardian', 'bbc', 'npr'].map((id) => outlet(id))
+  it('holds a critical event at two outlets', () => {
+    const sources = ['guardian', 'bbc'].map((id) => outlet(id))
     expect(resolvePublishDecision(event({ severity: 'critical', sources })).outcome).toBe('below-floor')
   })
 
@@ -380,12 +390,12 @@ describe('resolvePublishDecision', () => {
     ).toEqual({ outcome: 'publish', reviewStatus: 'manual-only' })
   })
 
-  it('a head-of-state death claim on four outlets still goes to the manual queue, not auto-publish', () => {
-    const sources = ['guardian', 'bbc', 'npr', 'financial-times'].map((id) => outlet(id))
+  it('a head-of-state death claim on three outlets still goes to the manual queue, not auto-publish', () => {
+    const sources = ['guardian', 'bbc', 'npr'].map((id) => outlet(id))
     expect(resolvePublishDecision(event({ severity: 'critical', headOfStateDeathClaim: true, sources })).outcome).toBe('pending-confirmation')
   })
 
-  it('a head-of-state death claim is still below-floor without a wire report or four outlets, even if a heuristic tiered it lower', () => {
+  it('a head-of-state death claim is still below-floor without a wire report or three outlets, even if a heuristic tiered it lower', () => {
     expect(
       resolvePublishDecision(event({ severity: 'significant', headOfStateDeathClaim: true, manuallyConfirmed: true, sources: [outlet('guardian'), outlet('bbc')] })).outcome,
     ).toBe('below-floor')

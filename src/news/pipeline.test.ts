@@ -66,6 +66,17 @@ describe('classifyText', () => {
     expect(c.severity).not.toBe('critical')
   })
 
+  it('evacuation advisories parse and rank as MAJOR at most, on the real typhoon headlines (J, 2026-09-21)', () => {
+    expect(classifyText('Over 1.6 million in Japan urged to evacuate as Typhoon Dujuan nears Tokyo').severity).toBe('major')
+    expect(classifyText('Millions urged to evacuate as powerful Typhoon Dujuan hits Japan').severity).toBe('major')
+    expect(classifyText('Evacuation order for 600,000 residents as wildfire spreads in Australia').severity).toBe('major')
+    // below the line it stays at the humanitarian baseline, and an advisory is never Critical however large
+    expect(classifyText('20,000 residents urged to evacuate as river floods Turkey').severity).not.toBe('critical')
+    expect(classifyText('Over 30 million urged to evacuate as typhoon nears China').severity).toBe('major')
+    // but people actually DISPLACED at that scale are still critical
+    expect(classifyText('Floods displaced 800,000 people in India, refugee agency says').severity).toBe('critical')
+  })
+
   it('humanitarian thresholds are separate: 500 deaths or 500k displaced is Critical, 50 is Major', () => {
     expect(classifyText('Earthquake kills 600 in Turkey').severity).toBe('critical')
     expect(classifyText('Earthquake kills 60 in Turkey').severity).toBe('major')
@@ -203,19 +214,19 @@ describe('buildEvents', () => {
     expect(r.published).toHaveLength(0)
   })
 
-  it('Critical needs a wire report or four distinct non-state outlets', () => {
+  it('Critical needs a wire report or three distinct non-state outlets', () => {
     const story = 'Airstrike kills 15 people in Kyiv, troops say army struck apartment block'
-    const three = ['a', 'b', 'c'].map((s, i) => art(s, `${story} report ${s}`, i))
-    expect(buildEvents(three, ctx).published).toHaveLength(0)
+    const two = ['a', 'b'].map((s, i) => art(s, `${story} report ${s}`, i))
+    expect(buildEvents(two, ctx).published).toHaveLength(0)
 
-    const four = [...three, art('d', `${story} report d`, 4)]
-    const r4 = buildEvents(four, ctx)
-    expect(r4.published).toHaveLength(1)
-    expect(r4.published[0].severity).toBe('critical')
+    const three = [...two, art('c', `${story} report c`, 4)]
+    const r3 = buildEvents(three, ctx)
+    expect(r3.published).toHaveLength(1)
+    expect(r3.published[0].severity).toBe('critical')
 
-    // A state outlet is in the dossier but does not count toward the four.
-    const threePlusState = [...three, art('tass', `${story} report tass`, 4)]
-    const rs = buildEvents(threePlusState, ctx)
+    // A state outlet is in the dossier but does not count toward the three.
+    const twoPlusState = [...two, art('tass', `${story} report tass`, 4)]
+    const rs = buildEvents(twoPlusState, ctx)
     expect(rs.published).toHaveLength(0)
 
     // A wire report clears Critical alone (plus one more source for the story to exist as an Event).

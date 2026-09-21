@@ -3,7 +3,7 @@
 // cards (design §17). This is the load-bearing step for corroboration: an
 // Event's floor is computed over how many distinct sources landed in its
 // cluster, so OVER-merging inflates corroboration (unsafe — it can lift an
-// Event over Critical's four-outlet floor on unrelated stories) while
+// Event over Critical's three-outlet floor on unrelated stories) while
 // over-splitting only starves it (safe — the Event just doesn't publish yet).
 // Every choice below leans toward splitting.
 //
@@ -59,7 +59,7 @@ export const MIN_SIGNIFICANT_WORDS = 3
  * unrelated one: live, "Ukraine's Zelensky to meet Trump in New York" (5
  * words, 3 shared) matched "US, China Meet for Talks in New York Before
  * Trump-Xi Summit" at exactly 0.6, Jaccard 0.33. Long headlines don't have the
- * problem — a genuine Critical Event (Riyadh airport, four outlets) had pairs
+ * problem — a genuine Critical Event (Riyadh airport, four outlets at the time) had pairs
  * at Jaccard 0.21 that a blanket floor would have split. Both numbers are
  * TUNED ON ONE LIVE SNAPSHOT, not derived; the real pair is pinned in
  * pipeline.test.ts so a change has to reckon with it. Fail-safe direction:

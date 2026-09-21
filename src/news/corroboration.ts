@@ -8,17 +8,20 @@ import type { Corroboration, SourceEntry } from './types'
 /** Higher = stronger evidentiary standing. */
 export const CORROBORATION_RANK: Record<Corroboration, number> = {
   'wire-confirmed': 4,
-  // Ranked above specialist-verified on purpose: Critical accepts four
+  // Ranked above specialist-verified on purpose: Critical accepts three
   // outlets but NOT a lone specialist, and a linear ladder can only express
   // that by putting this rung between wire and specialist.
-  'outlet-corroborated (4+)': 3,
+  'outlet-corroborated (3+)': 3,
   'specialist-verified': 2,
   'osint-corroborated (2+)': 1,
   unconfirmed: 0,
 }
 
-/** Distinct outlets that let an Event clear Critical without a wire report. A judgment call set directly by J, not a citable figure. */
-export const CRITICAL_OUTLET_COUNT = 4
+/**
+ * Distinct outlets that let an Event clear Critical without a wire report. A judgment call set directly by J, not a citable figure:
+ * 4 on 2026-09-20, lowered to 3 on 2026-09-21. Lower means more reach and more exposure to one syndicated story counted several times.
+ */
+export const CRITICAL_OUTLET_COUNT = 3
 
 /**
  * Categories that can never count, whatever their stored flag says. Community
@@ -38,15 +41,15 @@ function isWire(entry: SourceEntry): boolean {
 }
 
 /**
- * Only non-state outlets count toward Critical's four (J, 2026-09-20). A
- * state-controlled outlet can sit in the dossier and be displayed, but four
+ * Only non-state outlets count toward Critical's three (J, 2026-09-20). A
+ * state-controlled outlet can sit in the dossier and be displayed, but three
  * state media echoing one claim is not corroboration — a state-media claim
- * reaches Critical only alongside four non-state outlets. Judged on the
+ * reaches Critical only alongside three non-state outlets. Judged on the
  * entry's own `pressControl`, so `'state-run-democratic'` (Focus Taiwan) and
  * unlabeled outlets (including state-funded ones like Al Jazeera, whose
  * `caveat` isn't a pressControl) still count.
  */
-function countsTowardOutletFour(entry: SourceEntry): boolean {
+function countsTowardCriticalOutlets(entry: SourceEntry): boolean {
   return entry.sourceCategory === 'outlet' && entry.pressControl !== 'state-controlled'
 }
 
@@ -57,12 +60,12 @@ function isSpecialistVerified(entry: SourceEntry): boolean {
 /**
  * - wire-confirmed: any one counting entry from a wire-tier outlet (a single
  *   wire report satisfies every floor, same as v1's wire bypass).
- * - outlet-corroborated (4+): counting entries from at least
+ * - outlet-corroborated (3+): counting entries from at least
  *   CRITICAL_OUTLET_COUNT distinct NON-STATE `'outlet'` sources (see
- *   countsTowardOutletFour). Analysis orgs, first-hand, official statements,
- *   and state-controlled outlets don't count toward the four. This is the
+ *   countsTowardCriticalOutlets). Analysis orgs, first-hand, official statements,
+ *   and state-controlled outlets don't count toward the three. This is the
  *   stand-in for a wire report while no wire feed is reachable. Known
- *   weakness: it counts sources, not independent newsgathering, so four
+ *   weakness: it counts sources, not independent newsgathering, so three
  *   outlets running one syndicated AP story pass — logged in BACKLOG.md
  *   rather than guessed at.
  * - specialist-verified: any one counting entry from ISW/ACLED/Bellingcat or a
@@ -76,8 +79,8 @@ function isSpecialistVerified(entry: SourceEntry): boolean {
 export function deriveCorroboration(sources: SourceEntry[]): Corroboration {
   const counting = sources.filter(counts)
   if (counting.some(isWire)) return 'wire-confirmed'
-  const outletCount = new Set(counting.filter(countsTowardOutletFour).map((e) => e.sourceId)).size
-  if (outletCount >= CRITICAL_OUTLET_COUNT) return 'outlet-corroborated (4+)'
+  const outletCount = new Set(counting.filter(countsTowardCriticalOutlets).map((e) => e.sourceId)).size
+  if (outletCount >= CRITICAL_OUTLET_COUNT) return 'outlet-corroborated (3+)'
   if (counting.some(isSpecialistVerified)) return 'specialist-verified'
   if (new Set(counting.map((e) => e.sourceId)).size >= 2) return 'osint-corroborated (2+)'
   return 'unconfirmed'
