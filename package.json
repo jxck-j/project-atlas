@@ -40,6 +40,8 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
+    "@huggingface/transformers": "^4.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/earcut": "^3.0.0",
     "@types/geojson": "^7946.0.16",
@@ -61,6 +63,7 @@
     "typescript": "~6.0.2",
     "vite": "^8.1.1",
     "vitest": "^4.1.10",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.5"
   }
 }
