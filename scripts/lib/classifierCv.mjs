@@ -10,13 +10,10 @@ import { fitStandardizer, predictProba, standardize, trainLogistic } from '../..
 export const K = 5
 export const L2_GRID = [0.01, 0.05, 0.2, 1, 5]
 
-/** X: embeddings, one per fixture article. cluster: the clustering fixture (for its story groups). */
-export function createCv(X, cluster) {
-  const N = X.length
-  const storyOf = new Array(N).fill(null)
-  for (const [name, idxs] of Object.entries(cluster.stories)) for (const i of idxs) storyOf[i] = name
+/** X: embeddings, one per article. groupOf: a group id per article (its story, or its cluster) — near-duplicates share one. */
+export function createCv(X, groupOf) {
   const groups = new Map()
-  storyOf.forEach((s, i) => groups.set(s ?? `solo-${i}`, [...(groups.get(s ?? `solo-${i}`) ?? []), i]))
+  groupOf.forEach((g, i) => groups.set(g, [...(groups.get(g) ?? []), i]))
 
   // Seeded, deterministic shuffle of the groups, dealt round-robin into K folds.
   let seed = 12345
@@ -26,7 +23,7 @@ export function createCv(X, cluster) {
     const j = Math.floor(rnd() * (i + 1))
     ;[keys[i], keys[j]] = [keys[j], keys[i]]
   }
-  const fold = new Array(N).fill(0)
+  const fold = new Array(X.length).fill(0)
   keys.forEach((k, gi) => groups.get(k).forEach((i) => (fold[i] = gi % K)))
 
   /** Out-of-fold probabilities for a 0/1 target over `idx`; `evalIdx` may add items that are predicted but never trained on. */

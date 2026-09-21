@@ -9,21 +9,21 @@
 // a model scored on its own training data always looks perfect. This picks each
 // head's L2 strength by that same cross-validation, then fits on everything.
 import fs from 'node:fs'
-import { EMBEDDING_MODEL, embeddingText } from '../src/news/embeddingClustering.ts'
+import { EMBEDDING_MODEL } from '../src/news/embeddingClustering.ts'
 import { fitStandardizer, standardize, trainLogistic } from '../src/news/linearModel.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
 import { createCv } from './lib/classifierCv.mjs'
+import { loadClassifierData } from './lib/classifierData.mjs'
 
 const OUT = 'src/news/embeddingClassifierWeights.json'
-const cluster = JSON.parse(fs.readFileSync('scripts/fixtures/newsClusteringEval.json', 'utf8'))
-const lab = JSON.parse(fs.readFileSync('scripts/fixtures/newsClassificationLabels.json', 'utf8')).labels
 const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
-const N = cluster.articles.length
-if (lab.length !== N) throw new Error(`labels (${lab.length}) are not aligned with the clustering fixture (${N})`)
 
 const embed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
-const X = await embed(cluster.articles.map((a) => embeddingText(a.title, a.description)))
-const { bestL2 } = createCv(X, cluster)
+// Trains on the UNION of the main labels and the held-out set. (The held-out set stops being held out for THIS model; the honest
+// "train on main only, test on held-out" number is still reported by `npm run eval:news-classifier`.)
+const { labels: lab, X, groupOf } = await loadClassifierData(embed)
+const N = X.length
+const { bestL2 } = createCv(X, groupOf)
 
 // Five significant digits is far below the noise in 900 hand labels, and keeps the shipped file small.
 const round = (v) => Number(v.toPrecision(5))
@@ -55,7 +55,7 @@ const weights = {
   meta: {
     trainedOn: decided.length,
     trainedAt: new Date().toISOString().slice(0, 10),
-    note: 'Trained on scripts/fixtures/newsClassificationLabels.json (headline-only labels by Claude, one pull). See LOGBOOK.md.',
+    note: 'Trained on scripts/fixtures/newsClassificationLabels.json + newsClassificationHoldout.json (headline-only labels by Claude, two pulls). See LOGBOOK.md.',
   },
 }
 fs.writeFileSync(OUT, JSON.stringify(weights))

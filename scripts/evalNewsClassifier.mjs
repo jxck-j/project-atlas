@@ -1,63 +1,59 @@
-// Cross-validated evaluation of an embedding-based classifier for relevance,
-// report-vs-analysis, topic tags and severity, against the keyword rules it
-// would replace. Free and keyless.
+// Evaluation of the embedding-based relevance / topic-tag / severity classifier against the keyword rules it would replace.
+// Free and keyless.
 //
 //   npm run eval:news-classifier
 //
-// Labels: scripts/fixtures/newsClassificationLabels.json (headline-only, by
-// Claude, noisy — read its `note`). CV is GROUPED BY STORY: the same event
-// reported by 8 outlets has 8 near-identical headlines, and letting those
-// straddle train and test would measure memorization, not classification.
-import fs from 'node:fs'
+// Two kinds of evidence, kept apart on purpose:
+//  1. Grouped cross-validation over ALL labeled data (main set + held-out set). Grouped by story/cluster so near-duplicate headlines
+//     never straddle train and test.
+//  2. A genuine HELD-OUT test: train on the main set only, score the later-pull held-out set (labeled before any model saw it).
+//     This is the number to trust for "how will it do on tomorrow's news"; the shipped model is trained on both, so it can no
+//     longer be scored on the held-out set directly.
+// Labels are Claude's, headline-only (see the fixtures' `note`), so both are soft evidence.
 import { classifyText, resolveTopicTags } from '../src/news/classify.ts'
-import { clusterByEmbedding, EMBED_LINK_THRESHOLD } from '../src/news/embeddingClustering.ts'
-import { embeddingText } from '../src/news/embeddingClustering.ts'
+import { clusterByEmbedding } from '../src/news/embeddingClustering.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
+import { fitStandardizer, predictProba, standardize, trainLogistic } from '../src/news/linearModel.ts'
 import { createCv, fmt } from './lib/classifierCv.mjs'
-
-const cluster = JSON.parse(fs.readFileSync('scripts/fixtures/newsClusteringEval.json', 'utf8'))
-const lab = JSON.parse(fs.readFileSync('scripts/fixtures/newsClassificationLabels.json', 'utf8')).labels
-const articles = cluster.articles
-const N = articles.length
-const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
-const SEV = ['routine', 'significant', 'major', 'critical']
+import { loadClassifierData } from './lib/classifierData.mjs'
 
 const embed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
-const X = await embed(articles.map((a) => embeddingText(a.title, a.description)))
-
-// ---- grouped 5-fold cross-validation (shared with the trainer)
-const { groupCount, oof, prf, bestL2 } = createCv(X, cluster)
+const { articles, labels: lab, X, groupOf, nMain } = await loadClassifierData(embed)
+const N = X.length
+const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
+const SEV = ['routine', 'significant', 'major', 'critical']
 const K = 5
+const clean = (s) => s.replace(/&#x?[0-9a-f]+;/gi, "'")
+const textOf = (i) => `${articles[i].title}. ${articles[i].description}`
 
-console.log(`labels: ${lab.filter((l) => l.relevance === '1').length} reports, ${lab.filter((l) => l.relevance === 'A').length} analysis, ${lab.filter((l) => l.relevance === '0').length} out of scope, ${lab.filter((l) => l.relevance === '?').length} borderline excluded; ${groupCount} groups, ${K}-fold grouped CV\n`)
+const { groupCount, oof, prf, bestL2 } = createCv(X, groupOf)
+const count = (k) => lab.filter((l) => l.relevance === k).length
+console.log(`labels (main ${nMain} + held-out ${N - nMain}): ${count('1')} reports, ${count('A')} analysis, ${count('0')} out of scope, ${count('?')} borderline excluded; ${groupCount} groups, ${K}-fold grouped CV\n`)
 
 // ===== 1. RELEVANCE: in scope (report or analysis) vs not
 const ALL = [...Array(N).keys()]
 let relP, repP
 {
-  const idx = [...Array(N).keys()].filter((i) => lab[i].relevance !== '?')
+  const idx = ALL.filter((i) => lab[i].relevance !== '?')
   const y = (i) => (lab[i].relevance === '0' ? 0 : 1)
   const pos = idx.filter((i) => y(i) === 1).length
   console.log(`## RELEVANCE (${idx.length} items, ${pos} in scope = ${(100 * pos / idx.length).toFixed(0)}%)`)
-  // keyword baselines = what the pipeline does today
   const hasCountry = (i) => articles[i].countries.length > 0
-  const hasTopic = (i) => resolveTopicTags(`${articles[i].title}. ${articles[i].description}`).length > 0
+  const hasTopic = (i) => resolveTopicTags(textOf(i)).length > 0
   console.log('  keyword: country AND topic  ', fmt(prf(idx, y, (i) => hasCountry(i) && hasTopic(i))))
   console.log('  keyword: country OR topic   ', fmt(prf(idx, y, (i) => hasCountry(i) || hasTopic(i))), ' <- the wide pre-filter')
   const { l2, a } = bestL2(idx, y)
   const p = oof(idx, y, l2, ALL)
   relP = p
   console.log(`  embeddings + logistic (l2=${l2}, AUC ${a.toFixed(3)})`)
-  for (const t of [0.4, 0.5, 0.6, 0.7]) console.log(`     threshold ${t}:`, fmt(prf(idx, y, (i) => p.get(i) >= t)))
+  for (const t of [0.3, 0.4, 0.5, 0.6]) console.log(`     threshold ${t}:`, fmt(prf(idx, y, (i) => p.get(i) >= t)))
 }
 
 // ===== 2. REPORT vs ANALYSIS, among in-scope items
 {
-  const idx = [...Array(N).keys()].filter((i) => lab[i].relevance === '1' || lab[i].relevance === 'A')
+  const idx = ALL.filter((i) => lab[i].relevance === '1' || lab[i].relevance === 'A')
   const y = (i) => (lab[i].relevance === '1' ? 1 : 0)
-  const rep = idx.filter((i) => y(i) === 1).length
-  console.log(`\n## REPORT vs ANALYSIS among in-scope (${idx.length} items, ${rep} reports)`)
-  // baseline: the only signal today is the URL path (not in the fixture) - so the baseline is "everything is a report"
+  console.log(`\n## REPORT vs ANALYSIS among in-scope (${idx.length} items, ${idx.filter((i) => y(i) === 1).length} reports)`)
   console.log('  baseline: everything is a report', fmt(prf(idx, y, () => true)))
   const { l2, a } = bestL2(idx, y)
   const p = oof(idx, y, l2, ALL)
@@ -68,32 +64,30 @@ let relP, repP
 
 // ===== 3. TOPIC TAGS, among in-scope items
 {
-  const idx = [...Array(N).keys()].filter((i) => lab[i].relevance === '1' || lab[i].relevance === 'A')
+  const idx = ALL.filter((i) => lab[i].relevance === '1' || lab[i].relevance === 'A')
   console.log(`\n## TOPIC TAGS among in-scope (${idx.length} items) — F1 at 0.5, keyword vs embeddings`)
-  let kwSum = 0, emSum = 0, unSum = 0, m = 0
+  let kwSum = 0, emSum = 0, m = 0
   for (const tag of TAGS) {
     const y = (i) => (lab[i].tags.includes(tag) ? 1 : 0)
     const n = idx.filter((i) => y(i) === 1).length
     if (n < 8) { console.log(`  ${tag.padEnd(28)} only ${n} labeled — skipped`); continue }
-    const kw = prf(idx, y, (i) => resolveTopicTags(`${articles[i].title}. ${articles[i].description}`).includes(tag))
+    const kw = prf(idx, y, (i) => resolveTopicTags(textOf(i)).includes(tag))
     const { l2 } = bestL2(idx, y)
     const p = oof(idx, y, l2)
     const em = prf(idx, y, (i) => p.get(i) >= 0.5)
-    const un = prf(idx, y, (i) => p.get(i) >= 0.5 || resolveTopicTags(`${articles[i].title}. ${articles[i].description}`).includes(tag))
-    unSum += un.F
     kwSum += kw.F; emSum += em.F; m++
     console.log(`  ${tag.padEnd(28)} n=${String(n).padStart(3)} | keyword F1 ${kw.F.toFixed(3)} (P ${kw.P.toFixed(2)} R ${kw.R.toFixed(2)}) | embeddings F1 ${em.F.toFixed(3)} (P ${em.P.toFixed(2)} R ${em.R.toFixed(2)})`)
   }
-  console.log(`  macro-F1 over ${m} tags: keyword ${(kwSum / m).toFixed(3)} | embeddings ${(emSum / m).toFixed(3)} | keyword OR embeddings ${(unSum / m).toFixed(3)}`)
+  console.log(`  macro-F1 over ${m} tags: keyword ${(kwSum / m).toFixed(3)} | embeddings ${(emSum / m).toFixed(3)}`)
 }
 
 // ===== 4. SEVERITY, among in-scope reports (ordinal: P(>=significant), P(>=major), P(>=critical))
 {
-  const idx = [...Array(N).keys()].filter((i) => lab[i].relevance === '1' && lab[i].severity)
+  const idx = ALL.filter((i) => lab[i].relevance === '1' && lab[i].severity)
   const tier = (i) => SEV.indexOf(lab[i].severity)
   const dist = SEV.map((s, k) => `${s} ${idx.filter((i) => tier(i) === k).length}`).join(', ')
   console.log(`\n## SEVERITY among in-scope reports (${idx.length} items: ${dist})`)
-  const kwTier = (i) => SEV.indexOf(classifyText(`${articles[i].title}. ${articles[i].description}`).severity)
+  const kwTier = (i) => SEV.indexOf(classifyText(textOf(i)).severity)
   const acc = (f) => idx.filter((i) => f(i) === tier(i)).length / idx.length
   const within1 = (f) => idx.filter((i) => Math.abs(f(i) - tier(i)) <= 1).length / idx.length
   const majorityAcc = Math.max(...SEV.map((_, k) => idx.filter((i) => tier(i) === k).length)) / idx.length
@@ -109,40 +103,74 @@ let relP, repP
   }
 }
 
-// ===== 5. PRODUCT-LEVEL: of the clusters that would PUBLISH (>=2 distinct outlets), how many are irrelevant?
-{
-  const time = articles.map((a) => Date.parse(a.publishedAt))
-  const vecs = X
-  const items = articles.map((a, i) => ({ key: String(i), title: a.title, linkedEntityIds: a.countries, time: time[i], vector: vecs[i] }))
-  const clusters = clusterByEmbedding(items, EMBED_LINK_THRESHOLD).map((c) => c.map((m) => Number(m.key)))
-  const known = (i) => lab[i].relevance !== '?'
-  const truth = (c) => { const k = c.filter(known); if (k.length === 0) return null; return k.filter((i) => lab[i].relevance !== '0').length * 2 > k.length }
+// ---- shared by sections 5 and 6: the Event gates the pipeline chooses between
+const inScope = (l) => (l.relevance === '0' ? 0 : 1)
+function gateTable(title, idxs, relOf) {
+  // idxs: indices of the articles in this pool; relOf(i): out-of-fold / held-out relevance probability
+  const items = idxs.map((i) => ({ key: String(i), title: articles[i].title, linkedEntityIds: articles[i].countries, time: Date.parse(articles[i].publishedAt), vector: X[i] }))
+  const clusters = clusterByEmbedding(items).map((c) => c.map((m) => Number(m.key)))
   const distinct = (c) => new Set(c.map((i) => articles[i].sourceId)).size
-  const publishable = clusters.filter((c) => distinct(c) >= 2 && truth(c) !== null)
-  const trulyRelevant = publishable.filter((c) => truth(c))
-  console.log('\n## PRODUCT-LEVEL: clusters that would publish (>=2 distinct outlets), at the shipped clustering threshold ' + EMBED_LINK_THRESHOLD)
-  console.log('  ' + publishable.length + ' would publish; ' + trulyRelevant.length + ' are truly in scope, ' + (publishable.length - trulyRelevant.length) + ' are NOT (irrelevant Events that would ship)')
-  const kwGate = (c) => c.some((i) => articles[i].countries.length > 0 && resolveTopicTags(articles[i].title + '. ' + articles[i].description).length > 0)
-  const report = (name, gate) => {
+  const truth = (c) => { const k = c.filter((i) => lab[i].relevance !== '?'); return k.length === 0 ? null : k.filter((i) => lab[i].relevance !== '0').length * 2 > k.length }
+  const publishable = clusters.filter((c) => distinct(c) >= 2 && c.some((i) => articles[i].countries.length > 0) && truth(c) !== null)
+  const real = publishable.filter(truth)
+  const kwTopic = (c) => c.some((i) => resolveTopicTags(textOf(i)).length > 0)
+  const mean = (c) => c.reduce((a, i) => a + relOf(i), 0) / c.length
+  console.log(`\n## ${title}: ${publishable.length} clusters would publish (>=2 outlets, some country); ${real.length} in scope, ${publishable.length - real.length} out of scope`)
+  const row = (name, gate) => {
     const kept = publishable.filter(gate)
-    const fp = kept.filter((c) => !truth(c)).length
-    const lost = trulyRelevant.filter((c) => !gate(c)).length
-    console.log('  ' + name.padEnd(46) + 'keeps ' + String(kept.length).padStart(3) + ' | irrelevant shipped ' + String(fp).padStart(2) + ' | relevant lost ' + String(lost).padStart(2))
+    console.log('  ' + name.padEnd(52) + 'keeps ' + String(kept.length).padStart(3) + ' | out-of-scope shipped ' + String(kept.filter((c) => !truth(c)).length).padStart(2) + ' | in-scope lost ' + String(real.filter((c) => !gate(c)).length).padStart(2))
   }
-  report('no gate (current --embed: country OR topic)', () => true)
-  report('keyword: some member has country AND topic', kwGate)
-  // COMBINED (what the pipeline does): a cluster with keyword topic evidence needs only a low mean relevance (a mild gate);
-  // one WITHOUT it is published only if the classifier is very sure (a rescue). Keeps the old keyword safeguard.
-  const hasKwTopic = (c) => c.some((i) => resolveTopicTags(articles[i].title + '. ' + articles[i].description).length > 0)
-  const mean = (c) => c.reduce((a, i) => a + relP.get(i), 0) / c.length
-  // the publishable set for THIS comparison must include clusters the keyword rule alone would have dropped (no topic keywords)
-  for (const rescue of [0.6, 0.65, 0.7, 0.75, 0.8]) report('COMBINED: keyword topic & mean>=0.3, else rescue>=' + rescue, (c) => (hasKwTopic(c) ? mean(c) >= 0.3 : mean(c) >= rescue))
-  report('  (reference: keyword topic evidence only, no classifier)', hasKwTopic)
-  for (const t of [0.25, 0.3, 0.35, 0.4, 0.5]) report('classifier: mean relevance >= ' + t, (c) => c.reduce((a, i) => a + relP.get(i), 0) / c.length >= t)
-  // corroboration should count REPORTS only: how many published clusters lose their 2nd outlet if analysis pieces are excluded?
+  row('no gate', () => true)
+  row('keyword topic evidence only (the old guard)', kwTopic)
+  row('COMBINED shipped: kw & mean>=0.30, else >=0.60', (c) => (kwTopic(c) ? mean(c) >= 0.3 : mean(c) >= 0.6))
+  for (const t of [0.3, 0.4, 0.5]) row('classifier only: mean>=' + t, (c) => mean(c) >= t)
+  for (const g of [0.1, 0.15, 0.2, 0.25]) row('COMBINED: kw & mean>=' + g.toFixed(2) + ', else >=0.60', (c) => (kwTopic(c) ? mean(c) >= g : mean(c) >= 0.6))
+  return { publishable, truth, mean, kwTopic, distinct }
+}
+
+// ===== 5. PRODUCT-LEVEL, cross-validated: main-set clusters that would publish
+{
+  const main = [...Array(nMain).keys()]
+  const { publishable, truth, distinct, mean, kwTopic } = gateTable('PRODUCT-LEVEL (cross-validated, main set)', main, (i) => relP.get(i))
+  const real = publishable.filter(truth)
+  const shippedRule = (c) => (kwTopic(c) ? mean(c) >= 0.3 : mean(c) >= 0.6)
+  console.log('  clusters the shipped rule gets wrong (cross-validated):')
+  for (const c of publishable.filter((c) => shippedRule(c) !== truth(c))) {
+    console.log(`    ${shippedRule(c) ? 'KEPT   ' : 'DROPPED'} truth=${truth(c) ? 'IN ' : 'OUT'} mean=${mean(c).toFixed(2)} kw=${kwTopic(c) ? 'y' : 'n'} ${c.length}art/${distinct(c)}out | ${c.slice(0, 2).map((i) => clean(articles[i].title).slice(0, 48)).join(' || ')}`)
+  }
+  for (const rescue of [0.5, 0.55, 0.6, 0.65]) {
+    const g = (c) => (kwTopic(c) ? mean(c) >= 0.3 : mean(c) >= rescue)
+    console.log(`  rescue>=${rescue}: out-of-scope shipped ${publishable.filter(g).filter((c) => !truth(c)).length}, in-scope lost ${real.filter((c) => !g(c)).length}`)
+  }
   for (const t of [0.5, 0.6]) {
-    const reportsOnly = (c) => distinct(c.filter((i) => repP.get(i) >= t)) >= 2
-    const kept = trulyRelevant.filter(reportsOnly)
-    console.log('  in-scope Events still >=2 outlets when only predicted REPORTS count (t=' + t + '): ' + kept.length + '/' + trulyRelevant.length)
+    const kept = real.filter((c) => distinct(c.filter((i) => repP.get(i) >= t)) >= 2)
+    console.log('  in-scope Events still >=2 outlets when only predicted REPORTS count (t=' + t + '): ' + kept.length + '/' + real.length)
+  }
+}
+
+// ===== 6. HELD-OUT: train on the main set ONLY, score the later-pull held-out set
+{
+  const mainIdx = [...Array(nMain).keys()].filter((i) => lab[i].relevance !== '?')
+  const holdAll = [...Array(N - nMain).keys()].map((k) => nMain + k)
+  const holdIdx = holdAll.filter((i) => lab[i].relevance !== '?')
+  const st = fitStandardizer(mainIdx.map((i) => X[i]))
+  const y = (i) => inScope(lab[i])
+  const model = trainLogistic(mainIdx.map((i) => standardize(st, X[i])), mainIdx.map(y), { l2: 1 })
+  const relH = new Map(holdAll.map((i) => [i, predictProba(model, standardize(st, X[i]))]))
+  const pos = holdIdx.filter((i) => y(i) === 1).length
+  console.log(`\n## HELD-OUT (train on the ${mainIdx.length} main labels, score ${holdIdx.length} later-pull articles: ${pos} in scope)`)
+  const P = holdIdx.filter((i) => y(i) === 1)
+  const Q = holdIdx.filter((i) => y(i) === 0)
+  let s = 0
+  for (const a of P) for (const b of Q) s += relH.get(a) > relH.get(b) ? 1 : relH.get(a) === relH.get(b) ? 0.5 : 0
+  console.log(`  relevance AUC ${(s / (P.length * Q.length)).toFixed(3)}`)
+  console.log('  keyword: country AND topic  ', fmt(prf(holdIdx, y, (i) => articles[i].countries.length > 0 && resolveTopicTags(textOf(i)).length > 0)))
+  for (const t of [0.3, 0.4, 0.5]) console.log(`  classifier threshold ${t}:    `, fmt(prf(holdIdx, y, (i) => relH.get(i) >= t)))
+  const { publishable, truth, mean, kwTopic } = gateTable('HELD-OUT CLUSTER LEVEL', holdAll, (i) => relH.get(i))
+  const shipped = (c) => (kwTopic(c) ? mean(c) >= 0.3 : mean(c) >= 0.6)
+  const named = /typhoon|evacuat|\bICE\b|asylum|school shoot/i
+  console.log('  clusters the shipped rule gets wrong, plus the stories J named (typhoon, ICE shooting, asylum, school shooting):')
+  for (const c of publishable.filter((c) => shipped(c) !== truth(c) || c.some((i) => named.test(articles[i].title)))) {
+    console.log(`    ${shipped(c) ? 'KEPT   ' : 'DROPPED'} truth=${truth(c) ? 'IN ' : 'OUT'} mean=${mean(c).toFixed(2)} kw=${kwTopic(c) ? 'y' : 'n'} | ${c.slice(0, 2).map((i) => clean(articles[i].title).slice(0, 50)).join(' || ')}`)
   }
 }
