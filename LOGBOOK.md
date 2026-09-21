@@ -5,6 +5,80 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Critical floor lowered to 3 outlets; evacuation ranks below displacement
+
+**Decisions (J):** (1) Critical's non-wire floor is **three** distinct non-state outlets, not four. (2) An evacuation ORDER or ADVISORY is
+"in lower regard" than displacement: it can reach Major, not Critical. Both amend `news-sourcing-design.md` (§8 and a new §5 note), not only
+the code.
+
+**Critical floor 4 -> 3.** `CRITICAL_OUTLET_COUNT` is 3 and the tier is renamed `'outlet-corroborated (3+)'` (type, gate, tests, docs); the
+state-controlled exclusion is unchanged ("three state media alone" is still not corroboration). What it buys: on the clustering fixture at the
+shipped 0.70, 14/19 stories with 3+ outlets land in one cluster (the old four-outlet metric was 12/13 — the eval's Critical-reach measure is
+now ">=3 outlets"); the heuristic managed 5/19. What it costs: three outlets running one syndicated wire story now pass, which was already the
+known weakness at four. Tests that asserted "three outlets stay below the floor" now assert two; every other floor is untouched (2+ OSINT).
+
+**Evacuation, one tier below displacement.** `humanitarianSeverity` gained `evacuationOrdered`: >= 500,000 under an evacuation order/advisory
+is Major (the same number actually displaced is Critical); smaller figures add nothing beyond the baseline (one tier below Major is
+Significant, already the humanitarian floor). Parsed from "N urged/ordered to evacuate", "evacuation order for N" and the unnumbered
+"Millions urged to evacuate" (counted as 1,000,000). Verified on the real headlines that prompted it ("Over 1.6 million in Japan urged to
+evacuate" -> Major). The LLM prompt says the same, so both paths agree; `PROMPT_VERSION` is v2, invalidating the classification cache.
+
+**A prompt bug found on the way.** The LLM classification prompt listed "domestic crime or disasters with no state response" as OUT of scope,
+contradicting design §3 and J's rulings (domestic violence incidents and state-actor incidents stay in scope, capped at Significant — the
+same mistake my first labeling made). Fixed in the same prompt revision.
+
+## 2026-09-21 — Cluster merge pass (Critical reach back at 0.70); relevance classifier strengthened; J's four stories
+
+**Trigger (J):** "why does the 3+3 not give you 6 sources?" and "we need the typhoon evacuation, UK asylum story, ICE shooting, school
+shooting; the footballer's Covid certificate is rightly omitted." Both were correct.
+
+**1. The Riyadh 3+3 split was an ORDER ARTIFACT, and it is fixed.** The six outlets are a near-clique (mean cosine 0.75, only 3 of 15
+pairs under the 0.70 link line). The greedy pass is order-dependent: the first report and the third are 0.61 apart, so the third
+could not join {first, second} (1 of 2 is not a majority) and started its own cluster; later articles then split between the two.
+Corroboration is computed per Event, so two Events of 3 outlets are NOT summed — neither reached Critical's four. New `mergeClusters()`
+second pass: merge two clusters when a strict MAJORITY of their cross pairs link (7 of the 9 did), best-first, repeated, span-capped.
+It is the greedy pass's own rule (broad agreement, never one bridging pair) applied between clusters, so the pair threshold stays 0.70.
+On the labeled fixture at 0.70: contaminated clusters 0 -> 0, stories recovered at >=4 outlets **8/13 -> 12/13**, pair recall 0.46 -> 0.63.
+The Riyadh attack goes from a 5+4-outlet split to one 9-outlet cluster. Live, it is now a 4-outlet Critical Event. A test pins the
+"one bridging article must not fuse two stories" property.
+
+**2. My relevance labels contradicted the design, and that was the biggest source of gate error.** Design section 3 says domestic
+violence incidents stay in scope, capped at Significant (it names the Philippines school shooting); I had marked that one borderline and
+the ICE shooting out of scope. Corrected. J's picks also showed where the classifier was thin: it had never seen a typhoon evacuation
+(labeled later) and scored the UK asylum-village story 0.21.
+
+**3. New evidence: a held-out set and a label-QA pass.**
+- Labeled 249 articles from a LATER pull (not in the main fixture) under the corrected policy BEFORE scoring them: the held-out set
+  (`newsClassificationHoldout.json`). The main set trains; the held-out set tests. The shipped model is trained on both, so the
+  eval reports "train on main only -> score held-out" as its honest out-of-sample number.
+- Label QA: listed every item where the cross-validated classifier disagreed confidently with my label (p >= 0.70 vs "out", p <= 0.25
+  vs "in") and re-adjudicated each against the design: 30 changed (French police-bill protests -> in scope; several polls/analysis
+  pieces -> in-scope analysis; procurement-program updates and generic AI-market items -> borderline/excluded). Kept despite
+  disagreement: the asylum village, the South Africa murders, J's items. **Caveat, stated plainly: this was done after seeing the model's
+  output and touched both sets, so part of the gain below is cleaner labels, not a better model. It is more consistent evidence, not
+  independent evidence.**
+
+**4. What made the classifier stronger, measured (CV over 1,122 labeled / held-out, relevance AUC):**
+| change | effect |
+|---|---|
+| corrected labels (policy) + label QA | AUC 0.913 -> 0.949 CV; held-out 0.920 -> 0.951 |
+| more data (learning curve, held-out AUC at 25/50/75/100% of main) | 0.897 / 0.916 / 0.917 / 0.923 — still rising, flattening |
+| keyword + magnitude + outlet-identity features on top of the embedding | **no gain** (held-out AUC 0.913-0.928 vs 0.923) |
+| mpnet-base embeddings for the classifier | AUC +0.01 (CV 0.926 vs 0.900); real Events wrongly dropped at the 0.5 gate 22 -> 10 of 166. **Not adopted**: a second 110 MB model and slower embedding; recorded as the next lever |
+Tags: macro-F1 0.795 vs the keywords' 0.60. Severity remains rules (the classifier scored Critical F1 0.00 on 12 examples).
+
+**5. Gate thresholds re-derived, with the tradeoff stated.** Mild gate 0.30 (cluster with keyword evidence), rescue 0.60 (without; was 0.65,
+where the ICE shooting scored exactly 0.65 out-of-fold and was dropped). Cluster-level, CV main set: 0 out-of-scope shipped, 1 real lost
+(the asylum village, ~0.21); held-out: 0 shipped, 0 lost. **Dropping the mild gate to 0.20 keeps the asylum village but ships 3 out-of-scope
+Events (Ed Sheeran class) in CV** — J chose fewer wrong items, so 0.30 stays. Live, all four of J's stories now publish (typhoon
+evacuation, ICE shooting, school shooting, asylum village) and the Covid-certificate story stays out.
+
+**Observation, not changed:** the typhoon Event (headlines: "1.6 million urged to evacuate") is tiered Significant. Design section 5 makes
+500,000+ displaced Critical, and the keyword rules miss the "urged to evacuate" phrasing. Whether an evacuation ADVISORY counts as
+displacement is a policy call for J; with 4 outlets it would publish as Critical if tiered that way.
+
+**Verified:** 284 tests (+4 merge-pass); `tsc`, oxlint clean; eval reproduces every number above.
+
 ## 2026-09-21 — Embeddings become the default (threshold 0.70); a relevance/tag classifier over the same vectors
 
 **Decisions (J):** (1) `EMBED_LINK_THRESHOLD` is **0.70** — no false merges over Critical reach. (2) `--embed` is now **the default**; the

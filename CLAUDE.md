@@ -1686,7 +1686,7 @@ Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopic
   unconfirmed. Ignores
   `community-discussion` and `live-video` entries regardless of their stored flag, so §9b's wall can't be
   breached by a mis-stamped entry.
-- `publishGate.ts` — `resolvePublishDecision(event)`: Critical needs a wire report or 4+ distinct outlets,
+- `publishGate.ts` — `resolvePublishDecision(event)`: Critical needs a wire report or 3+ distinct non-state outlets (4 until 2026-09-21),
   every other tier needs 2+ OSINT (a stronger standing satisfies a weaker floor; specialist-verified alone still
   does NOT clear Critical). Below the floor the build doesn't emit the Event at all.
   A `headOfStateDeathClaim` is gated as Critical whatever tier it was given and routes to
@@ -1702,7 +1702,7 @@ Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopic
   types honest). `sources.json` carries only what the design doc states; anything unspecified is `vetting:
   'provisional'` with a note. **Wire tier is Reuters/AP/AFP only — Bloomberg is not wire in v2** (v1's
   `WIRE_TIER_OUTLETS` includes it). No working wire feed exists yet, which is why Critical also accepts 4+
-  distinct outlets; the fallback's remaining weakness (four outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
+  distinct outlets; the fallback's remaining weakness (three outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
   country-native source carries an RSF 2026 rank in `pressFreedomContext` (enforced by a test); five country-native
   entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
   Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
@@ -1719,8 +1719,8 @@ the Phase 4 cutover; nothing reads `news-events.json` yet. Things a session touc
   `--llm` path (below) is the real classifier. On the default path `systemicThemes` is `[]` and `title` is an outlet's own headline.
 - **Clustering leans toward splitting, deliberately.** Over-merging inflates corroboration (unsafe); over-splitting only
   starves it. Greedy time-ordered assignment with a strict-majority link rule, not v1's transitive union-find (which chained
-  three unrelated stories into one Event). The thresholds were tuned on one live snapshot; consequence: **the 4-outlet
-  Critical fallback rarely fires** on headline-only clustering. See `LOGBOOK.md`'s Phase 2 entry before loosening anything.
+  three unrelated stories into one Event). The thresholds were tuned on one live snapshot; consequence: **the multi-outlet
+  Critical fallback rarely fired** on headline-only clustering. See `LOGBOOK.md`'s Phase 2 entry before loosening anything.
 - **Opinion/explainer/video-programme URLs are dropped** (`isCommentaryUrl`) — commentary on an event isn't a report of it.
 - **The build is stateless** (each run rewrites the file from whatever the feeds hold); a `manuallyConfirmed` flag would not
   survive a rebuild. That's a Phase 5 problem; see `BACKLOG.md`.
@@ -1744,18 +1744,23 @@ samples: `embeddingClustering.ts` (pure; time-ordered greedy, strict-majority li
 `localEmbedder.ts` (the only file that loads a model — transformers.js, `Xenova/all-MiniLM-L12-v2`, in-process), `embeddingClassifier.ts` +
 `linearModel.ts` + `shippedClassifier.ts` (nine logistic heads over the same vectors: relevance and the 8 topic tags; weights in
 `embeddingClassifierWeights.json`), and `buildEventsWithEmbeddings()` in `eventBuilder.ts` (same prep and assemble+gate stages as the other
-paths). On the labeled clustering fixture it groups 40/47 multi-outlet stories vs the heuristic's 16/47 with no false merges. Things a
-session touching this must know:
+paths). On the labeled clustering fixture it groups 40/47 multi-outlet stories (14/19 of those with 3+ outlets — Critical's floor) vs the heuristic's 16/47 with
+no false merges; a second-pass cluster merge (`mergeClusters`, strict majority of cross pairs link) repairs order-dependent splits without
+loosening the pair threshold. Things a session touching this must know:
 - **Severity, countries and titles are still keyword rules / outlet headlines.** The classifier did NOT beat the severity regexes (Critical
-  F1 0.11 vs 0.48) and was not adopted for report-vs-analysis filtering. Only relevance and topic TAGS come from it.
+  F1 0.00-0.11 vs 0.37-0.48) and was not adopted for report-vs-analysis filtering. Only relevance and topic TAGS come from it.
 - **The classifier is a mild gate plus a rescuer, not a replacement for the keyword guard.** With keyword topic evidence a cluster is dropped
-  only if mean relevance < `RELEVANCE_THRESHOLD` (0.30); with none it needs >= `RESCUE_THRESHOLD` (0.65). Removing the keyword requirement
-  outright (the first integration) let in a cargo-ship collision and an ICE shooting. Read the thresholds' comments before changing them.
+  only if mean relevance < `RELEVANCE_THRESHOLD` (0.30); with none it needs >= `RESCUE_THRESHOLD` (0.60). Removing the keyword requirement
+  outright (the first integration) let in a cargo-ship collision and an ICE shooting. 0.30 vs 0.20 is a real tradeoff (0.20 keeps the
+  UK asylum-village story but ships Ed Sheeran-class stories); read the thresholds' comments before changing them.
+- **Domestic violence incidents ARE in scope (design section 3: capped at Significant)**, as are state-actor incidents (an ICE shooting) and
+  disasters with large displacement. An earlier labeling got this wrong; the label fixtures carry the correction.
 - **Thresholds are tied to the model's similarity scale and to the labels.** Change `EMBEDDING_MODEL` and the clustering threshold AND the
   classifier weights must be re-derived (`npm run eval:news-clustering`, `npm run train:news-classifier`, `npm run eval:news-classifier`);
   the classifier refuses weights from a different model.
-- **The evidence is soft**: one pull, labels by Claude from headlines, no clean held-out set (LOGBOOK, BACKLOG). At 0.70 Critical mostly does
-  not fire (a 4-outlet cluster is rare); that is the trade J chose.
+- **The evidence is soft**: two pulls, labels by Claude from headlines, a label-QA pass done after seeing model output (LOGBOOK, BACKLOG).
+  `newsClassificationHoldout.json` is the out-of-sample set: the eval trains on the main set only and scores it; the SHIPPED weights are
+  trained on both, so they can't be scored on it.
 - `--heuristic` is the Phase 2 path (no model); `--llm` (Phase 3) is unchanged and still unrun.
 
 ### Data quirks worth knowing
