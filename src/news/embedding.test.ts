@@ -79,6 +79,38 @@ describe('clusterByEmbedding', () => {
   })
 })
 
+describe('cluster merge pass', () => {
+  // Angles chosen so the greedy pass splits a near-clique 3+3 (the real Riyadh case): A and C are 50 degrees apart (cos 0.64, no link),
+  // so C cannot join {A,B} (1 of 2 is not a majority) and starts its own cluster; D follows C; E joins {A,B}; F joins {C,D}.
+  const clique = () => [art('A', 0, 0), art('B', 25, 1), art('C', 50, 2), art('D', 60, 3), art('E', 15, 4), art('F', 45, 5)]
+
+  it('repairs an order-dependent split: two halves of a near-clique merge when a strict majority of cross pairs link', () => {
+    expect(keysOf(clusterByEmbedding(clique(), undefined, { mergePass: false })).map((c) => c.length).sort()).toEqual([3, 3])
+    const merged = clusterByEmbedding(clique())
+    expect(merged).toHaveLength(1)
+    expect(merged[0].map((m) => m.key)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']) // time order
+  })
+
+  it('one bridging article does not fuse two stories: the cross pairs must link broadly, not once', () => {
+    // Two tight groups 50 degrees apart, plus a middle article that links to the first only.
+    const out = clusterByEmbedding([art('x1', 0, 0), art('x2', 2, 1), art('x3', 4, 2), art('bridge', 27, 3), art('y1', 50, 4), art('y2', 52, 5), art('y3', 54, 6)])
+    const clusterOf = (k: string) => out.find((c) => c.some((m) => m.key === k))!
+    expect(clusterOf('x1')).not.toBe(clusterOf('y1'))
+  })
+
+  it('never merges into a cluster that would span more than 72 hours', () => {
+    const early = clusterByEmbedding([art('a', 0, 0), art('b', 25, 1), art('c', 50, 2), art('d', 60, 3), art('e', 15, 4), art('f', 45, 5)], undefined, { mergePass: false })
+    expect(early).toHaveLength(2)
+    // stretch the second half far away in time: still within the link window of each other, but the union exceeds the span cap
+    const stretched = [art('A', 0, 0), art('B', 25, 1), art('C', 50, 35), art('D', 60, 36), art('E', 15, 37), art('F', 45, 38)]
+    for (const c of clusterByEmbedding(stretched)) expect(c[c.length - 1].time - c[0].time).toBeLessThanOrEqual(72 * H)
+  })
+
+  it('can be turned off', () => {
+    expect(clusterByEmbedding(clique(), undefined, { mergePass: false }).length).toBeGreaterThan(1)
+  })
+})
+
 describe('embeddingText', () => {
   it('cleans leftover HTML entities that would shift the vector', () => {
     expect(embeddingText('Serbia&#8217;s Vucic &amp; the EU', 'It&#039;s   a test')).toBe("Serbia's Vucic the EU. It's a test")

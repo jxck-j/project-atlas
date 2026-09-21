@@ -31,11 +31,11 @@ export type Embedder = (texts: string[]) => Promise<Vector[]>
 
 /**
  * Cosine similarity at or above which two articles count as linked. From `npm run eval:news-clustering` (all-MiniLM-L12-v2, title +
- * description, 47 multi-outlet stories): 0.55 merged 5 different stories, 0.60 merged 4, 0.65 merged 2 (one clear — two different
- * companies' Venezuela oil deals — and one same-day boundary case), 0.70 merged none. 0.70 is the setting J chose (2026-09-21): no
- * false merges over reach, at the price of recovering 8/13 of the stories Critical's four-outlet floor needs (0.65: 11/13). A
- * DIFFERENT MODEL HAS A DIFFERENT SCALE (gte-small scores everything above 0.8), so changing EMBEDDING_MODEL means re-tuning this
- * against the eval.
+ * description, 47 multi-outlet stories, WITH the merge pass): 0.55 merged 5 different stories, 0.60 merged 4, 0.65 merged 2 (one clear —
+ * two different companies' Venezuela oil deals — and one same-day boundary case), 0.70 merged none. 0.70 is the setting J chose
+ * (2026-09-21): no false merges over reach. Before the merge pass that cost Critical reach (8/13 of the four-outlet stories recovered);
+ * with it 0.70 recovers 12/13 with the same zero contamination. A DIFFERENT MODEL HAS A DIFFERENT SCALE (gte-small scores everything
+ * above 0.8), so changing EMBEDDING_MODEL means re-tuning this against the eval.
  */
 export const EMBED_LINK_THRESHOLD = 0.70
 
@@ -79,8 +79,57 @@ export function isSameOccurrenceByEmbedding(a: EmbedArticle, b: EmbedArticle, th
   return dot(a.vector, b.vector) >= threshold
 }
 
+/**
+ * Second pass: merge two clusters when a strict MAJORITY of their cross pairs link. The greedy pass is order-dependent — one weak pair
+ * early on (the first report and the third are 0.61 apart) can leave a genuine near-clique split in two — so this repairs splits WITHOUT
+ * loosening the pair threshold. It is the same rule the greedy pass uses (broad agreement, never one bridging pair), applied between
+ * clusters instead of between an article and a cluster. Real case: six outlets reporting one Houthi attack on Riyadh split 3+3, so
+ * neither half reached Critical's four-outlet floor although 7 of the 9 cross pairs linked.
+ *
+ * Merges are applied best-first (highest linked fraction) and repeated until none qualify. A merged cluster must still fit in
+ * MAX_CLUSTER_SPAN_MS, and only articles within LINK_WINDOW_MS of each other can link, so distant clusters are never compared.
+ */
+function mergeClusters<T extends EmbedArticle>(clusters: T[][], threshold: number): T[][] {
+  const linkCache = new Map<string, number>()
+  const link = (a: T, b: T): number => {
+    const key = a.key < b.key ? `${a.key}\u0001${b.key}` : `${b.key}\u0001${a.key}`
+    let v = linkCache.get(key)
+    if (v === undefined) {
+      v = isSameOccurrenceByEmbedding(a, b, threshold) ? dot(a.vector, b.vector) : -1
+      linkCache.set(key, v)
+    }
+    return v
+  }
+  const cs = clusters.map((c) => [...c])
+  for (;;) {
+    let best: { i: number; j: number; fraction: number } | undefined
+    for (let i = 0; i < cs.length; i++) {
+      for (let j = i + 1; j < cs.length; j++) {
+        const A = cs[i]
+        const B = cs[j]
+        const first = Math.min(A[0].time, B[0].time)
+        const last = Math.max(A[A.length - 1].time, B[B.length - 1].time)
+        if (last - first > MAX_CLUSTER_SPAN_MS) continue
+        // No cross pair can link if the two windows are more than the link window apart.
+        if (A[0].time - B[B.length - 1].time > LINK_WINDOW_MS || B[0].time - A[A.length - 1].time > LINK_WINDOW_MS) continue
+        let linked = 0
+        for (const a of A) for (const b of B) if (link(a, b) >= 0) linked++
+        const pairs = A.length * B.length
+        if (linked * 2 <= pairs) continue
+        const fraction = linked / pairs
+        if (!best || fraction > best.fraction) best = { i, j, fraction }
+      }
+    }
+    if (!best) break
+    const merged = [...cs[best.i], ...cs[best.j]].sort((x, y) => x.time - y.time || x.key.localeCompare(y.key))
+    cs[best.i] = merged
+    cs.splice(best.j, 1)
+  }
+  return cs
+}
+
 /** Each returned cluster is in time order, so [0] is the first report. */
-export function clusterByEmbedding<T extends EmbedArticle>(articles: T[], threshold = EMBED_LINK_THRESHOLD): T[][] {
+export function clusterByEmbedding<T extends EmbedArticle>(articles: T[], threshold = EMBED_LINK_THRESHOLD, { mergePass = true }: { mergePass?: boolean } = {}): T[][] {
   const ordered = [...articles].sort((a, b) => a.time - b.time || a.key.localeCompare(b.key))
   const clusters: T[][] = []
   for (const article of ordered) {
@@ -101,5 +150,5 @@ export function clusterByEmbedding<T extends EmbedArticle>(articles: T[], thresh
     if (best) best.push(article)
     else clusters.push([article])
   }
-  return clusters
+  return mergePass ? mergeClusters(clusters, threshold) : clusters
 }
