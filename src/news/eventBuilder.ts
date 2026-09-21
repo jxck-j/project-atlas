@@ -1,6 +1,7 @@
 import { classifyText, matchesHeadOfStateDeath, resolveTopicTags } from './classify'
 import { clusterArticles, type ClusterArticle } from './clustering'
 import { resolveCountryIds, type CountryMatcher } from './countryResolution'
+import { clusterByEmbedding, embeddingText, type Embedder } from './embeddingClustering'
 import { stableHash } from './hash'
 import {
   classifyArticles,
@@ -25,6 +26,7 @@ import type { NewsEvent, OutletProfile, OutletSourceEntry, Severity, SourceProfi
 // gate stage, so the LLM path cannot reach publication by any route the
 // heuristic path doesn't also go through:
 //   buildEvents         (sync)  keyword classify -> heuristic cluster -> gate   [Phase 2; the offline/no-key path]
+//   buildEventsWithEmbeddings (async) keyword classify -> local-embedding cluster -> gate   [no API key; see embeddingClustering.ts]
 //   buildEventsWithLlm  (async) LLM classify -> LLM group (code-guarded) -> gate [Phase 3]
 
 export { stableHash }
@@ -238,6 +240,59 @@ export function buildEvents(articles: RawArticle[], { profiles, countryMatchers,
     drop,
   )
   return { published, pending, dropped, articlesIn: articles.length, duplicateUrls, clusters: clusters.length }
+}
+
+// ---------------------------------------------------------------------------
+// Local embeddings — same keyword classification as Phase 2, but same-event
+// grouping by sentence-embedding similarity. Free, keyless, offline after the
+// one-time model download. Fixes clustering (paraphrase) and nothing else:
+// relevance, severity, countries and titles are still keyword/outlet-headline.
+
+export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now }: BuildContext, embed: Embedder,
+  options: {
+    /** Cosine link threshold for clustering; defaults to EMBED_LINK_THRESHOLD. */
+    threshold?: number
+  } = {},
+): Promise<BuildResult> {
+  const dropped = emptyDropped()
+  const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
+  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
+
+  // Wide pre-filter, as on the LLM path: a country name OR a topic keyword. A story whose headline names no country
+  // ("10-year Treasury yield tops 5%") can still join a cluster whose other members do.
+  const candidates: Candidate[] = []
+  const texts: string[] = []
+  for (const { article, profile, time } of eligible) {
+    const text = `${article.title}. ${article.description ?? ''}`
+    const linkedEntityIds = resolveCountryIds(text, countryMatchers)
+    const classification = classifyText(text)
+    if (linkedEntityIds.length === 0 && classification.topicTags.length === 0) {
+      drop('prefiltered', article)
+      continue
+    }
+    candidates.push({ key: article.url, title: article.title, linkedEntityIds, time, article, profile, systemicThemes: [], ...classification })
+    texts.push(embeddingText(article.title, article.description))
+  }
+
+  const vectors = candidates.length > 0 ? await embed(texts) : []
+  const clustered = clusterByEmbedding(
+    candidates.map((c, i) => ({ ...c, vector: vectors[i] })),
+    options.threshold,
+  )
+
+  // A cluster is only publishable if SOME member gives it a country and a topic (the Event union, as everywhere else).
+  const clusters: Cluster[] = []
+  for (const members of clustered) {
+    if (!members.some((m) => m.linkedEntityIds.length > 0)) {
+      for (const m of members) drop('no-country', m.article)
+    } else if (!members.some((m) => m.topicTags.length > 0)) {
+      for (const m of members) drop('no-topic', m.article)
+    } else {
+      clusters.push({ members })
+    }
+  }
+  const { published, pending } = assemble(clusters, now, drop)
+  return { published, pending, dropped, articlesIn: articles.length, duplicateUrls, clusters: clustered.length }
 }
 
 // ---------------------------------------------------------------------------

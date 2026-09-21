@@ -17,8 +17,14 @@
 //   Appends a generated gap report to BACKLOG.md.
 //
 // MODES
-//   (default)                keyword classification + word-overlap clustering. Free, offline-capable,
-//                            no API key. This is Phase 2's behavior and the fallback.
+//   (default)                same-event grouping by LOCAL sentence embeddings (all-MiniLM-L12-v2 via
+//                            transformers.js), keyword classification. Free and keyless; the only network use is
+//                            a one-time ~33 MB model download into debug/hf-cache, after which it runs
+//                            offline. Severity, countries, relevance and titles are still keyword rules /
+//                            outlet headlines. On a hand-labeled sample: 40/47 multi-outlet stories grouped
+//                            (heuristic: 16/47). See LOGBOOK.md and scripts/evalNewsClustering.mjs.
+//   --heuristic              Phase 2's keyword classification + word-overlap clustering. No model, no network
+//                            beyond the feeds; much weaker grouping (16/47 stories vs 40/47 on the eval).
 //   --llm                    Phase 3: LLM classification + same-event grouping (Sonnet 5, J's
 //                            2026-09-20 decision). NEVER spends by default: it first measures the
 //                            exact input tokens with the free count_tokens endpoint, prints a projected
@@ -53,7 +59,8 @@ import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { parseRssItems } from './lib/rss.mjs'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
-import { buildEvents, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
+import { buildEvents, buildEventsWithEmbeddings, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
+import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
 import { costUsd, createAnthropicCall, createCountingCall, estimateRunCost, NEWS_MODEL, SONNET_5_PRICING } from '../src/news/anthropicCall.ts'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
@@ -75,6 +82,8 @@ const numArg = (name, fallback) => {
   return v
 }
 const USE_LLM = flag('--llm')
+const USE_HEURISTIC = flag('--heuristic')
+if (USE_LLM && USE_HEURISTIC) throw new Error('--llm and --heuristic are alternatives; pick one')
 const SPEND = flag('--yes')
 const LIMIT = numArg('--limit', undefined)
 const MAX_COST = numArg('--max-cost', 5)
@@ -228,7 +237,24 @@ async function runLlm() {
 }
 
 const now = new Date().toISOString()
-const result = USE_LLM ? await runLlm() : buildEvents(articles, { profiles, countryMatchers, now })
+const buildCtx = { profiles, countryMatchers, now }
+
+// Default: local embeddings. Fails LOUDLY rather than silently degrading to the heuristic — a build that quietly
+// switched grouping methods would change what gets published without anyone deciding it should.
+async function runEmbed() {
+  try {
+    return await buildEventsWithEmbeddings(articles, buildCtx, await createLocalEmbedder({ cacheDir: 'debug/hf-cache' }))
+  } catch (err) {
+    console.error(
+      'Embedding model unavailable: ' + (err instanceof Error ? err.message : err) +
+        '\nThe first run downloads a ~33 MB model from huggingface.co into debug/hf-cache; after that it works offline.' +
+        '\nTo build without it (word-overlap clustering, much weaker), pass --heuristic. Nothing was written.',
+    )
+    process.exit(1)
+  }
+}
+
+const result = USE_LLM ? await runLlm() : USE_HEURISTIC ? buildEvents(articles, buildCtx) : await runEmbed()
 if (!result) process.exit(0) // LLM dry run: nothing to write
 
 fs.mkdirSync('public/data', { recursive: true })
