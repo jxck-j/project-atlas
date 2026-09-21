@@ -63,7 +63,12 @@ npm run build:military       # regenerate src/data/militaryScores.ts (Intelligen
 npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:technology     # regenerate src/data/technologyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
-npm run build:news:events   # News Engine v2 Phase 2: fetch feeds -> Events -> public/data/news-events.json (runs via tsx; see News & sourcing below)
+npm run build:news:events   # News Engine v2: fetch feeds -> Events -> public/data/news-events.json (runs via tsx; see News & sourcing below). DEFAULT = local-embedding grouping + a relevance/tag classifier. Free, keyless; one-time ~33 MB model download into debug/hf-cache. Fails loudly if the model can't load. Flags: `-- --no-classifier`.
+npm run build:news:events:heuristic # Phase 2's keyword classification + word-overlap clustering. No model. Much weaker grouping; the offline fallback.
+npm run eval:news-clustering # Scores the heuristic and the embedding clusterer against the hand-labeled fixture (scripts/fixtures/newsClusteringEval.json). Re-run after changing the model, threshold or clustering constants.
+npm run eval:news-classifier # Grouped cross-validation of the relevance/tag/severity classifier vs the keyword rules, plus a product-level "which Events would publish" test.
+npm run train:news-classifier # Retrains the classifier heads on the labeled fixtures and rewrites src/news/embeddingClassifierWeights.json. Re-run after changing EMBEDDING_MODEL, the embedded text, or the labels.
+npm run build:news:events:llm # Phase 3: same, but LLM classification + grouping (Sonnet 5). Needs ANTHROPIC_API_KEY. Dry run by default (free count_tokens + projected cost); add `-- --yes` to spend, `-- --limit N` for a small first run.
 npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts, news/)
 ```
 
@@ -1702,7 +1707,7 @@ Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopic
   entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
   Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
 
-**Phase 2 is done too: `scripts/buildNewsEvents.mjs`** (`npm run build:news:events`, run via `tsx` because it imports
+**Phase 2 is done too: `scripts/buildNewsEvents.mjs`** (**as of 2026-09-21 its DEFAULT mode is the local-embedding path described below; the Phase 2 pipeline described in THIS paragraph runs with `--heuristic`**; `npm run build:news:events`, run via `tsx` because it imports
 `src/news/*.ts` directly, so build and client can't disagree on corroboration/gating) — a thin fetch/write shell over pure,
 tested modules: `feeds.json` (feed URL → `sources.json` id; only vetted-roster **outlets** are ingested), `countryResolution.ts`,
 `classify.ts`, `clustering.ts`, `eventBuilder.ts` (`buildEvents()`: unknown source → commentary URL → country → topic →
@@ -1710,8 +1715,8 @@ cluster → dossier → `resolvePublishDecision`). It writes `public/data/news-e
 gitignored `debug/news-pending-confirmation.json` — the head-of-state-death queue is deliberately NOT under `public/`, since a
 served file publishes the rumor whatever the client filters. v1's `news.json` and the shipped NEWS tab are untouched until
 the Phase 4 cutover; nothing reads `news-events.json` yet. Things a session touching this must know:
-- **`classify.ts` is a keyword stand-in for Phase 3's LLM pass** behind the `Classification` interface — swap it, don't tune it.
-  It under-tiers by design; `systemicThemes` is always `[]` and `title` is an outlet's own headline until Phase 3.
+- **`classify.ts` is the keyword stand-in and the no-key fallback** behind the `Classification` interface — don't tune it; Phase 3's
+  `--llm` path (below) is the real classifier. On the default path `systemicThemes` is `[]` and `title` is an outlet's own headline.
 - **Clustering leans toward splitting, deliberately.** Over-merging inflates corroboration (unsafe); over-splitting only
   starves it. Greedy time-ordered assignment with a strict-majority link rule, not v1's transitive union-find (which chained
   three unrelated stories into one Event). The thresholds were tuned on one live snapshot; consequence: **the 4-outlet
@@ -1719,6 +1724,39 @@ the Phase 4 cutover; nothing reads `news-events.json` yet. Things a session touc
 - **Opinion/explainer/video-programme URLs are dropped** (`isCommentaryUrl`) — commentary on an event isn't a report of it.
 - **The build is stateless** (each run rewrites the file from whatever the feeds hold); a `manuallyConfirmed` flag would not
   survive a rebuild. That's a Phase 5 problem; see `BACKLOG.md`.
+
+**Phase 3 is done too, but UNVERIFIED against the real API** (no key was available; the request/response path is type-checked and
+tested on a fake, never exercised live): `npm run build:news:events:llm` (`--llm`). Two Sonnet 5 calls (J's decision, logged in
+`LOGBOOK.md`): per-article classification (`llmSchemas.ts`/`llmPrompts.ts`/`llmPipeline.ts`; batches of 25, cached in gitignored
+`debug/news-classification-cache.json`) and same-event grouping (one streamed call per run, code-guarded). `anthropicCall.ts` is the only
+file that touches the SDK. `buildEventsWithLlm()` shares its prep and assemble+gate stages with `buildEvents()`, so the LLM path can't reach
+publication by a route the heuristic path doesn't also take. Things a session touching this must know:
+- **The model can change tags and tiers; it cannot publish.** Its output is re-validated against what was sent, and the corroboration gate is
+  unchanged code counting distinct sources. Every failure path fails CLOSED (drop, don't merge). Severity caps stay in code.
+- **Spend is opt-in and staged**: `--llm` runs a free `count_tokens` dry run and stops; `--yes` generates; `--max-cost` (default $5) and
+  `--limit N` bound it; it aborts without overwriting `news-events.json` if over half the classifications fail.
+- **Low-confidence items are dropped, not queued** — §8 makes head-of-state deaths the only manual queue (see LOGBOOK, which resolves the §6/§8
+  conflict). Article-body reads (§6 step 3) are deferred. Bump `PROMPT_VERSION` in `llmPrompts.ts` on any prompt/rubric change (it keys the cache).
+- Severity thresholds in the prompt are interpolated from `severity.ts` — change them there, not in the prompt text.
+
+**Local-embedding grouping + classifier is the DEFAULT build (J, 2026-09-21)** — the no-API-key path, built and evaluated on hand-labeled
+samples: `embeddingClustering.ts` (pure; time-ordered greedy, strict-majority link, soft country rule, `EMBED_LINK_THRESHOLD` = **0.70**),
+`localEmbedder.ts` (the only file that loads a model — transformers.js, `Xenova/all-MiniLM-L12-v2`, in-process), `embeddingClassifier.ts` +
+`linearModel.ts` + `shippedClassifier.ts` (nine logistic heads over the same vectors: relevance and the 8 topic tags; weights in
+`embeddingClassifierWeights.json`), and `buildEventsWithEmbeddings()` in `eventBuilder.ts` (same prep and assemble+gate stages as the other
+paths). On the labeled clustering fixture it groups 40/47 multi-outlet stories vs the heuristic's 16/47 with no false merges. Things a
+session touching this must know:
+- **Severity, countries and titles are still keyword rules / outlet headlines.** The classifier did NOT beat the severity regexes (Critical
+  F1 0.11 vs 0.48) and was not adopted for report-vs-analysis filtering. Only relevance and topic TAGS come from it.
+- **The classifier is a mild gate plus a rescuer, not a replacement for the keyword guard.** With keyword topic evidence a cluster is dropped
+  only if mean relevance < `RELEVANCE_THRESHOLD` (0.30); with none it needs >= `RESCUE_THRESHOLD` (0.65). Removing the keyword requirement
+  outright (the first integration) let in a cargo-ship collision and an ICE shooting. Read the thresholds' comments before changing them.
+- **Thresholds are tied to the model's similarity scale and to the labels.** Change `EMBEDDING_MODEL` and the clustering threshold AND the
+  classifier weights must be re-derived (`npm run eval:news-clustering`, `npm run train:news-classifier`, `npm run eval:news-classifier`);
+  the classifier refuses weights from a different model.
+- **The evidence is soft**: one pull, labels by Claude from headlines, no clean held-out set (LOGBOOK, BACKLOG). At 0.70 Critical mostly does
+  not fire (a 4-outlet cluster is rare); that is the trade J chose.
+- `--heuristic` is the Phase 2 path (no model); `--llm` (Phase 3) is unchanged and still unrun.
 
 ### Data quirks worth knowing
 

@@ -5,6 +5,199 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Embeddings become the default (threshold 0.70); a relevance/tag classifier over the same vectors
+
+**Decisions (J):** (1) `EMBED_LINK_THRESHOLD` is **0.70** — no false merges over Critical reach. (2) `--embed` is now **the default**; the
+Phase 2 heuristic is behind `--heuristic`. (3) Continue with the next non-LLM step: a classifier over the embeddings.
+
+**Consequence of 0.70 worth stating.** On the labeled sample it recovers 40/47 multi-outlet stories but only 8/13 of those with 4+
+outlets (0.65: 11/13). On the fresh 2026-09-21 pull the Riyadh attack split into two 3-outlet clusters, so **Critical mostly does not
+fire** (0 on that pull; 1 on another). That is the trade J chose, not a bug; the four-outlet fallback needs 4 outlets in ONE cluster.
+Default mode fails loudly (nothing written) if the embedding model can't be loaded, rather than silently degrading to the heuristic.
+
+**What was built.** `linearModel.ts` (a dependency-free logistic-regression trainer/predictor), `embeddingClassifier.ts` (nine heads over
+the 384-d vector: relevance + the 8 topic tags; refuses weights trained on a different embedding model), trained weights in
+`embeddingClassifierWeights.json` (41 KB), `scripts/trainNewsClassifier.mjs`, and a cross-validated `scripts/evalNewsClassifier.mjs`.
+Free and keyless; adds microseconds per article, no second model.
+
+**The labels are the weak point, so read this first.** I hand-labeled all 930 candidates (444 in-scope reports, 172 in-scope analysis/
+feature pieces, 285 out of scope, 29 borderline excluded) for relevance, tags and severity, from HEADLINES ONLY, against design §3/§4a/
+§5. They are Claude's judgment, not an independent human's, on ONE pull, and several calls are debatable (natural disasters especially:
+I labeled a domestic landslide out of scope and a 770-death flood in scope, which taught the classifier that disaster relevance depends
+on magnitude — something an embedding can't see). Only 11 items are Critical. The fixture is committed
+(`scripts/fixtures/newsClassificationLabels.json`), aligned by index to the clustering fixture.
+
+**Evaluation is grouped-by-story cross-validation** — the same event in 8 outlets has 8 near-identical headlines, and letting those
+straddle train and test measures memorization. Results, out-of-fold:
+
+| task | keyword rules | embeddings + logistic | adopted? |
+|---|---|---|---|
+| relevance (in scope vs not), F1 at 0.5 | 0.73 (country AND topic; R 0.63) | 0.86 (P 0.90, R 0.82); AUC 0.90 | **yes, but as a mild gate + rescue** |
+| topic tags, macro-F1 over 8 | 0.60 | 0.74 (keyword OR embeddings: 0.72) | **yes** (conflict 0.58->0.87, economy 0.40->0.74) |
+| severity, Critical F1 (11 examples) | 0.48 | 0.11 | **no — rules stay** |
+| report vs analysis, AUC | n/a | 0.84 | **no** — as a corroboration filter it would drop 13/52 real Events |
+
+**The relevance gate is blunt, and the first integration broke a safeguard.**
+- *Product-level test (the one that matters):* of the 59 clusters that would publish (7 out of scope), a gate at mean relevance 0.5
+  ships 1 out-of-scope Event but loses 4 of 52 real ones; 0.3 loses 0 but drops only 2 of the 7. On a fresh pull I judged by hand, 0.5
+  lost a 1.6-million-person typhoon evacuation, an opposition leader's sister's arrest and a UK asylum story, whose scores (0.40-0.50)
+  overlap the irrelevant ones (0.17-0.40). **So the mild gate is 0.30: never drop a real Event, catch what is obviously out of scope.**
+- *The bug:* the classifier always returns at least one tag, which silently removed the old rule that a cluster needs SOME member with
+  a keyword topic. That rule was a working precision guard: without it a cargo-ship collision, an ICE shooting, a Philippines school
+  shooting and a footballer's Covid certificate all published. Caught by diffing classifier-on vs -off on identical articles, not by a
+  test (the tests passed). Fixed by making the classifier a RESCUER: with keyword topic evidence it is a mild gate (0.30); without,
+  the cluster is dropped unless the classifier is very sure (`RESCUE_THRESHOLD` 0.65). On the labeled sample that keeps the same
+  4 out-of-scope Events as keyword evidence alone but loses 1 real one instead of 3; on the fresh pull it added exactly the two
+  real stories the keywords missed (a plot to kill a Russian dissident, a Turkish LGBT crackdown) and nothing else.
+- The classifier also RE-APPLIES the tag-dependent severity cap (crime/sci-tech alone cannot exceed Major) to its own tags.
+
+**Not clean evidence.** The "fresh" pull overlapped the labeled one by roughly 60% (same feeds, adjacent days), so it flatters the
+classifier — and it still made mistakes at 0.5. There is no genuinely held-out set yet; a few more days of pulls, labeled, would give one.
+
+**What this leaves for an LLM.** Sharper relevance (the gate is deliberately blunt), severity (rules only), countries when no headline
+names one, neutral titles, systemic themes. The classifier meaningfully improved tags and modestly improved relevance; it did not
+touch severity. The `--llm` path is unchanged and still unrun.
+
+**Verified:** 280 tests (linear model: separable/deterministic/degenerate/constant-feature/class-balancing; classifier: model + dimension
+guards, tag thresholds, top-1 fallback, shipped weights load; pipeline: relevance gate, cluster-mean, rescue vs drop, classifier tags,
+severity cap re-applied; label-fixture integrity); `tsc` and oxlint clean; all three build modes run live.
+
+## 2026-09-20 — Same-event grouping by local sentence embeddings (`--embed`): the non-LLM option, tried first
+
+**Why.** J wanted to exhaust non-API options before adding an API key. The Phase 3 entry named local sentence embeddings + clustering
+as the untried alternative for same-event grouping specifically. Tried it. It fixes CLUSTERING only — relevance, severity, countries and
+titles stay keyword/outlet-headline on this path.
+
+**Result: it works, decisively, on the measures that matter.** New `--embed` mode (`npm run build:news:events:embed`), free and keyless.
+On a hand-labeled sample of one live pull (`npm run eval:news-clustering`), at the shipped setting:
+
+| | heuristic (title words) | embeddings (MiniLM-L12, T=0.65) |
+|---|---|---|
+| multi-outlet stories whose outlets land together (>=2) | 16 / 47 | 41 / 47 |
+| stories with >=4 outlets recovered (what Critical needs) | 1 / 13 | 11 / 13 |
+| clusters merging two different labeled stories | 0 | 2 (one clear, one boundary) |
+
+Live check on the same pull: 15 Events (heuristic) became 51-52. The Riyadh-airport attack — split 3+2 by every word-overlap variant,
+so Critical never fired — is now ONE Critical Event with 8 distinct outlets; the Moscow drone attack has 8, Merz's election defeat 11.
+
+**How the evidence was made, and where it is soft — read before trusting the table.**
+- **No ground truth existed, so I built it.** Mined candidate groups from the embedding similarity graph, then labeled 56 stories (189
+  articles) by reading headlines, plus 54 "ambiguous" articles excluded from scoring. Labels are MINE (Claude's), not an independent
+  human's, and one pull. The fixture is committed (`scripts/fixtures/newsClusteringEval.json`) so the method is re-runnable, and so the
+  same labels can score the LLM grouping later.
+- **Selection bias, caught and partly corrected.** Mining positives from MiniLM's own similarity graph means the pairs I found are the
+  pairs MiniLM finds similar — inflating embedding recall and deflating the heuristic's. Checked with an independent signal (unlabeled
+  articles sharing 2+ rare title words with a labeled story): 17 flagged, 2 plausibly related (both marked ambiguous), the rest keyword
+  coincidences ("Hong Kong", "Wall Street"). So the bias is small but real; the heuristic's 16/47 is probably a bit pessimistic.
+- **Labeling is at STORY level, deliberately.** "Same event" is fuzzy (Merz's election result and his "disaster" statement are technically
+  two occurrences; merging them is harmless because they corroborate one story). The harmful error is merging DIFFERENT stories, so
+  that's what "contaminated" counts. Sagas told across days (the Mladic funeral, one outlet) are ambiguous, not positives.
+- **The threshold was tuned on the same pull it's scored on.** Mitigated, not eliminated: the plateau is broad (every T from 0.55 to
+  0.70 finds 40+ of 47), and the out-of-sample live check below is on articles I did not label.
+
+**Decisions:**
+- **Model: `Xenova/all-MiniLM-L12-v2`** (~33 MB, runs in-process via transformers.js, no key, offline after one download). Compared
+  MiniLM-L6, L12, bge-small, gte-small and mpnet-base: within noise of each other on 47 stories, so the smaller wins. gte-small scores
+  everything above 0.8 and was unusable at these thresholds — **a different model has a different similarity scale, so changing the model
+  means re-tuning the threshold.**
+- **Text: title + first 220 chars of the description.** Beat title-only on recall at similar contamination.
+- **Country rule is SOFT: refuse a link only if BOTH articles name countries and share none.** The first version required a shared country
+  and blocked the very pairs it should join ("10-year Treasury yield tops 5%" names no country): 38/47 -> 41/47 stories recovered.
+  A cluster is still dropped `no-country` if NO member names one, so nothing publishes without a country link.
+- **Structure kept from `clustering.ts`: time-ordered greedy assignment, strict-majority link, no cluster-to-cluster merging.** Single-
+  linkage at a low threshold chained into a 563-article blob — the same failure union-find had — so the majority rule does real work here too.
+- **Threshold 0.65, with the tradeoff stated.** 0.70 has ZERO contaminated clusters but recovers only 8/13 of the >=4-outlet stories
+  (0.65: 11/13); 0.60 merges 4 different stories (it fused the Trump-Mamdani and Zelensky meetings, and Continental's and Exxon's
+  separate Venezuela oil deals). 0.65 accepts one known false merge (the Venezuela pair) for three more Critical-capable stories. If
+  false merges matter more than Critical reach, set `EMBED_LINK_THRESHOLD` to 0.70.
+
+**Out-of-sample read (the live pull, unlabeled).** All ~50 Events with 3+ outlets were coherent. Of the 27 two-outlet Events, ~3 joined
+thematically related but different stories (two China/AI pieces, two China-space-weapons pieces) — roughly 10%. Low harm at Significant/
+Routine, and Critical needs four distinct outlets under the majority rule, but it is a real false-merge rate, not zero.
+
+**What this does NOT do (still needs an LLM or a different non-LLM method):** decide relevance beyond keywords, tier severity beyond
+regexes (12 of 13 Events still Significant), link a country when no headline names one, write neutral titles, or assign systemic themes.
+The `--llm` path (Phase 3) is unchanged and still unrun. Natural next non-LLM step, not tried: a small classifier over the same
+embeddings (or zero-shot similarity to labeled prototypes) for relevance/topic — the labeled fixture is a start on training data.
+
+**Verified:** 20 new tests (deterministic vectors with exact cosines: threshold, window/span, soft country, no-chaining, majority,
+best-cluster choice, paraphrase joined where word-overlap splits, the gate unchanged, head-of-state death still goes to pending,
+fixture integrity); `tsc` and oxlint clean; the eval reproduces the table; live run end to end.
+
+## 2026-09-20 — News Engine v2, Phase 3: LLM classification and same-event grouping (`--llm`)
+
+Phase 3 of 8. Replaces Phase 2's keyword stand-in with two LLM calls (design §6): per-article classification (relevance,
+tags, tier, countries, themes, head-of-state flag) and same-event grouping of the survivors. Code in `src/news/`
+(`llmSchemas`, `llmPrompts`, `llmPipeline`, `anthropicCall`, plus `buildEventsWithLlm` in `eventBuilder`); the script gains
+`--llm`. **The default `npm run build:news:events` is unchanged (free, no key)**; `--llm` is opt-in. No UI, no version bump.
+
+**Decision (J): Claude Sonnet 5 (`claude-sonnet-5`) for both calls.** The claude-api reference's default is Opus 5 and says
+not to downgrade for cost — that is the user's call, and J made it. Not a close call on money: rough projection was Opus
+$4-8/day vs Sonnet $2-3/day. Effort is `medium` for classification and `high` for grouping — first guesses, not measured;
+Sonnet 5 follows effort strictly, so if the audit shows shallow severity or grouping judgment, raise effort before switching model.
+The risk to watch is the judgment calls where a mistake matters (Critical tier, event grouping), which is what the calibration
+work in BACKLOG is for.
+
+**J asked why an LLM at all — "why can't we code a classifier".** We did: Phase 2 IS that classifier, and running it on live
+feeds is the evidence. It can't tell "same event, different wording" from "different event, similar words" (the Riyadh attack
+split 3+2 while three unrelated Trump/New York stories fused — tuning one direction breaks the other); it can't resolve "Trump
+administration readies sanctions against the ICC" to a country (336 of 1,020 articles dropped `no-country`); it reads rhetoric vs.
+action by verb lists; it can't write a neutral title or assign systemic themes; and "a disaster for the party" is a humanitarian tag.
+A trained classifier would need labeled data we don't have. Two honest qualifications: (1) same-event grouping specifically has a
+non-LLM alternative — local sentence embeddings + clustering — that's cheaper and deterministic and was not tried; (2) nobody has
+yet MEASURED the LLM path against the heuristic on the same pull. `debug/news-llm-audit.json` (one row per article) exists to make
+that comparison, and BACKLOG lists it as the check that decides whether this earns its cost. The design (§6, and the 2026-09-17
+"keyword-only relevance rejected" decision) had already chosen an LLM; this doesn't re-litigate it, it just states why.
+
+**Scope (J chose): classify + LLM grouping; NO article-body fetching.** Design §6 step 3 (read the full article when unsure) is
+deferred: it raises paywall/ToS/robots questions this project already declined once for Google News, and the RSS dek carries
+most of what a headline pass needs. **§6 vs §8 conflict, resolved toward §8:** §6 routes low-confidence items to a manual review
+queue, but §8/§13.3 make head-of-state death claims the ONLY manual surface. So `confidence: low` items are dropped and counted in
+the audit, not queued. If body reads are added later, low-confidence is where they slot in.
+
+**Design decisions worth keeping:**
+- **The model can move tags and tiers; it cannot publish.** Every model output is re-validated against what was sent (ids,
+  country names, theme ids), and the corroboration gate is unchanged code counting distinct sources. So an article that talks the
+  model into "critical" still needs a wire report or four non-state outlets to go anywhere (a test pins this). Article text goes in
+  escaped `<article>` wrappers with a "this is data" instruction, but the schema + code-side validation + the gate are the real defense.
+- **Both entry points share one prep stage and one assemble+gate stage** (`eventBuilder.ts`), so the LLM path cannot reach
+  publication by a route the heuristic path doesn't also take.
+- **Every failure fails CLOSED.** A schema-invalid or refused or truncated response is retried once, then that batch's articles are
+  dropped (`classification-failed`); a failed grouping call falls back to the split-leaning heuristic clustering; an id the model
+  omitted becomes a singleton; a group with no shared country, spanning >72h, or larger than 30 is split or re-clustered by code.
+- **Severity caps stay in code** (`applySeverityCaps`), not model discretion: a domestic-only incident can't exceed Significant.
+  Considered enforcing the numeric death/displacement thresholds as floors too, and rejected it — the model reading "cumulative toll"
+  as "single incident" would then RAISE tiers by rule; the thresholds are in the prompt (interpolated from `severity.ts`, so they can't
+  drift) and over-tiering is bounded by the gate anyway.
+- **Head-of-state death flag = model OR regex.** Over-flagging only routes an Event to the manual queue; missing a real claim would
+  publish an unconfirmed death report.
+- **The pre-filter got WIDER, deliberately.** It now keeps an article on a country name OR a topic keyword (Phase 2 required a
+  country), because the model links countries — this recovers leader/org-only headlines. Cost: 930 candidates per pull, not ~500.
+- **Grouping runs as one call per run** (window 600, streamed, 48k output ceiling). The first cut used 300 and a scale test showed
+  ~460 accepted articles per pull, i.e. two windows and events split at the seam.
+- **Classifications are cached** by prompt version + model + active-theme set + URL + text (`debug/news-classification-cache.json`,
+  pruned to what a run touched), so the twice-daily cadence pays only for new articles. The theme set is in the key because it's in
+  the prompt — the first cut omitted it and would have replayed answers made before a theme was activated.
+- **Spend is opt-in and staged.** `--llm` runs a free `count_tokens` pass first and prints exact input tokens and a projected cost;
+  it generates only with `--yes`, refuses above `--max-cost` (default $5), and `--limit N` does a cents-scale first run. It aborts
+  WITHOUT touching `public/data/news-events.json` if more than half the classifications fail — an API outage must not replace a
+  good published file with an empty one.
+
+**Bugs found while building it (worth knowing):**
+- **The dry run reported a confident "$1.54" projection from ZERO tokens when credentials were missing.** The pipeline correctly
+  swallowed each batch's failure (fail closed) — and the script therefore never saw an error. Fixed: failure reasons are surfaced and
+  the script stops on any failed count. Found by running it with no key, not by a test.
+- The classification cache key ignored the active-theme set; the grouping window was too small. Both above.
+
+**NOT verified — and this matters.** No `ANTHROPIC_API_KEY` was available, so **no request has been made to the real API**.
+What IS verified: 27 new tests on a fake `LlmCall` (routing, validation, batching, cache, every failure path, the guards, the
+Riyadh scenario end to end); `tsc` type-checks the SDK usage against the real SDK types (structured output via
+`output_config.format` + zod, adaptive thinking, effort, streamed `finalMessage()` parse); and the full pipeline ran on the 930
+real candidates against a stand-in model (38 classification calls, no failures, 0.6s). What is NOT: that the prompts produce good
+classifications, that streamed structured output returns `parsed_output` as the SDK types promise, the true output-token cost (the
+projection ASSUMES ~150/article — it is not a measurement), and prompt-cache behavior. The first real run should be
+`npm run build:news:events:llm -- --limit 30 --yes`, then read `debug/news-llm-audit.json` before spending on a full pass.
+
 ## 2026-09-20 — Phase 2 follow-up: five provisional outlets restored; TechRadar declined
 
 **Reversal of a Phase 2 call, at J's direction.** Phase 2 dropped v1's Euronews, Defense News, Breaking Defense, The War
