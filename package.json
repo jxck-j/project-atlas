@@ -21,6 +21,7 @@
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
     "build:news": "node scripts/buildNews.mjs",
     "build:news:events": "tsx scripts/buildNewsEvents.mjs",
+    "build:news:events:llm": "tsx scripts/buildNewsEvents.mjs --llm",
     "build:regions": "node scripts/buildCountryRegions.mjs",
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",
     "docs:claims": "tsx scripts/generateClaimsDoc.mjs",

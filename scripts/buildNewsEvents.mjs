@@ -16,6 +16,21 @@
 //            awaiting a human — deliberately NOT under public/, see below)
 //   Appends a generated gap report to BACKLOG.md.
 //
+// MODES
+//   (default)                keyword classification + word-overlap clustering. Free, offline-capable,
+//                            no API key. This is Phase 2's behavior and the fallback.
+//   --llm                    Phase 3: LLM classification + same-event grouping (Sonnet 5, J's
+//                            2026-09-20 decision). NEVER spends by default: it first measures the
+//                            exact input tokens with the free count_tokens endpoint, prints a projected
+//                            cost, and stops. Add --yes to actually generate.
+//     --yes                  spend: run the classification/grouping calls.
+//     --limit N              classify only the N newest candidates — a cents-scale first run, and how
+//                            the projection's output-token assumption gets replaced by a measurement.
+//     --max-cost USD         refuse to run if the projection exceeds this (default 5).
+//   Needs ANTHROPIC_API_KEY (or an `ant auth login` profile). Classifications are cached by
+//   URL+text+prompt version+model in debug/news-classification-cache.json, so the twice-daily
+//   cadence only pays for articles it hasn't seen.
+//
 // v1's scripts/buildNews.mjs and public/data/news.json are untouched: the
 // shipped NEWS tab keeps reading v1 until the Phase 4 UI cutover.
 //
@@ -38,7 +53,8 @@ import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { parseRssItems } from './lib/rss.mjs'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
-import { buildEvents } from '../src/news/eventBuilder.ts'
+import { buildEvents, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
+import { costUsd, createAnthropicCall, createCountingCall, estimateRunCost, NEWS_MODEL, SONNET_5_PRICING } from '../src/news/anthropicCall.ts'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
 const SOURCES = 'src/news/sources.json'
@@ -46,6 +62,23 @@ const FEEDS = 'src/news/feeds.json'
 const OUTPUT = 'public/data/news-events.json'
 const PENDING_OUTPUT = 'debug/news-pending-confirmation.json'
 const BACKLOG = 'BACKLOG.md'
+const CACHE_FILE = 'debug/news-classification-cache.json'
+const AUDIT_FILE = 'debug/news-llm-audit.json'
+
+const argv = process.argv.slice(2)
+const flag = (name) => argv.includes(name)
+const numArg = (name, fallback) => {
+  const i = argv.indexOf(name)
+  if (i === -1) return fallback
+  const v = Number(argv[i + 1])
+  if (!Number.isFinite(v) || v <= 0) throw new Error(name + ' needs a positive number')
+  return v
+}
+const USE_LLM = flag('--llm')
+const SPEND = flag('--yes')
+const LIMIT = numArg('--limit', undefined)
+const MAX_COST = numArg('--max-cost', 5)
+if ((SPEND || LIMIT !== undefined) && !USE_LLM) throw new Error('--yes and --limit only apply with --llm')
 
 async function fetchTextRetry(url, attempts = 3) {
   let lastErr
@@ -102,8 +135,101 @@ await Promise.all(
 fs.mkdirSync('debug', { recursive: true })
 fs.writeFileSync('debug/news-articles.json', JSON.stringify(articles, null, 1))
 
+// ---------------------------------------------------------------------------
+// LLM mode
+// ---------------------------------------------------------------------------
+function loadCache() {
+  try {
+    return new Map(Object.entries(JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'))))
+  } catch {
+    return new Map()
+  }
+}
+
+// Tracks which entries this run touched so the file is pruned to the current
+// feed window instead of growing forever.
+function trackedCache(store) {
+  const touched = new Set()
+  return {
+    touched,
+    get: (k) => {
+      const v = store.get(k)
+      if (v) touched.add(k)
+      return v
+    },
+    set: (k, v) => {
+      store.set(k, v)
+      touched.add(k)
+    },
+  }
+}
+
+async function runLlm() {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk')
+  const themes = JSON.parse(fs.readFileSync('src/news/systemicThemes.json', 'utf8'))
+  const llmCountries = [...countries, TAIWAN_REF]
+  const client = new Anthropic()
+  const store = loadCache()
+  const base = { profiles, countryMatchers, now, model: NEWS_MODEL, countries: llmCountries, themes, limit: LIMIT }
+
+  try {
+    // Pass 1 — free: exact input tokens, nothing generated, nothing cached.
+    const readOnly = { get: (k) => store.get(k), set: () => {} }
+    const counted = await buildEventsWithLlm(articles, { ...base, call: createCountingCall(client), cache: readOnly })
+    const { usage, candidates, cacheHits } = counted.llm
+    if (counted.llm.failed > 0) {
+      // A failed count is not a zero-cost run. Stop rather than print a projection built from nothing.
+      console.error('count_tokens failed for ' + counted.llm.failed + ' article(s): ' + counted.llm.failureReasons.join(' | ') + '. Nothing was spent or written.')
+      process.exit(1)
+    }
+    const toClassify = candidates - cacheHits
+    const projection = estimateRunCost(usage.inputTokens, toClassify)
+    const a = projection.assumptions
+    console.log('LLM dry run (count_tokens, no generation):')
+    console.log('  ' + candidates + ' candidates after the wide pre-filter' + (LIMIT ? ' (--limit ' + LIMIT + ')' : '') + '; ' + cacheHits + ' already cached; ' + toClassify + ' to classify in ' + usage.calls + ' request(s).')
+    console.log('  exact classification input: ' + usage.inputTokens.toLocaleString() + ' tokens (before prompt-cache discounts)')
+    console.log('  projected cost ~ $' + projection.usd.toFixed(2) + ' at Sonnet 5 list price ($' + SONNET_5_PRICING.inputPerMTok + '/$' + SONNET_5_PRICING.outputPerMTok + ' per MTok)')
+    console.log('    ASSUMED, not measured: ' + a.outputPerArticle + ' output tokens/article incl. thinking, ' + Math.round(a.acceptRate * 100) + '% of candidates accepted, grouping ' + a.groupInputPerArticle + ' in / ' + a.groupOutputPerArticle + ' out tokens per accepted article. A --limit run measures the real figure.')
+    if (projection.usd > MAX_COST) {
+      console.error('Refusing: projection $' + projection.usd.toFixed(2) + ' exceeds --max-cost $' + MAX_COST + '. Nothing was spent or written.')
+      process.exit(1)
+    }
+    if (!SPEND) {
+      console.log('Not generating: pass --yes to spend. Nothing was written.')
+      return undefined
+    }
+
+    // Pass 2 — real calls.
+    const cache = trackedCache(store)
+    const live = await buildEventsWithLlm(articles, { ...base, call: createAnthropicCall(client), cache })
+    const l = live.llm
+    if (l.failed > 0) console.warn('  ' + l.failed + ' classification(s) failed and were dropped: ' + l.failureReasons.join(' | '))
+    if (l.candidates > 0 && l.failed / l.candidates > 0.5) {
+      // Fail closed WITHOUT overwriting: an API outage must not replace a good published file with an empty one.
+      console.error('Aborting: ' + l.failed + '/' + l.candidates + ' classifications failed. public/data/news-events.json was left untouched.')
+      process.exit(1)
+    }
+    const spent = costUsd(l.usage)
+    console.log('LLM run: ' + l.usage.calls + ' call(s), ' + l.usage.inputTokens.toLocaleString() + ' in / ' + l.usage.outputTokens.toLocaleString() + ' out (+' + l.usage.cacheReadTokens.toLocaleString() + ' cache-read, ' + l.usage.cacheWriteTokens.toLocaleString() + ' cache-write) ~ $' + spent.toFixed(3) + ' actual.')
+    const fresh = l.classified - l.cacheHits
+    if (fresh > 0) console.log('  measured: ' + (l.usage.outputTokens / fresh).toFixed(0) + ' output tokens per newly-classified article (the projection assumed ' + a.outputPerArticle + ').')
+    const g = l.grouping
+    console.log('  grouping: ' + g.windows + ' window(s); model omitted ' + g.missing + ', repeated ' + g.duplicated + ', invented ' + g.unknown + ' id(s); ' + g.splitByGuard + ' group(s) split by a code guard; ' + g.oversized + ' oversized; heuristic fallback: ' + g.fellBackToHeuristic)
+
+    fs.mkdirSync('debug', { recursive: true })
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(Object.fromEntries([...store].filter(([k]) => cache.touched.has(k)))))
+    fs.writeFileSync(AUDIT_FILE, JSON.stringify(l.audit, null, 1))
+    console.log('  cache: ' + cache.touched.size + ' entries -> ' + CACHE_FILE + '; per-article audit -> ' + AUDIT_FILE)
+    return live
+  } catch (err) {
+    console.error('LLM run failed: ' + (err instanceof Error ? err.message : err) + '\nNothing was written.')
+    process.exit(1)
+  }
+}
+
 const now = new Date().toISOString()
-const result = buildEvents(articles, { profiles, countryMatchers, now })
+const result = USE_LLM ? await runLlm() : buildEvents(articles, { profiles, countryMatchers, now })
+if (!result) process.exit(0) // LLM dry run: nothing to write
 
 fs.mkdirSync('public/data', { recursive: true })
 fs.writeFileSync(OUTPUT, JSON.stringify(result.published, null, 2))

@@ -122,6 +122,11 @@ function figure(res: RegExp[], text: string): number {
   return Math.max(0, ...res.map((re) => text.match(re)).map((m) => (m ? scaled(m) : 0)))
 }
 
+/** The regex half of the head-of-state death flag. The LLM path ORs it with the model's own flag: a false positive only routes to the manual queue. */
+export function matchesHeadOfStateDeath(text: string): boolean {
+  return HEAD_OF_STATE_DEATH_RE.test(text)
+}
+
 export function classifyText(text: string): Classification {
   const topicTags = resolveTopicTags(text)
   const has = (t: TopicTag) => topicTags.includes(t)
