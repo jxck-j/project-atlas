@@ -6,7 +6,9 @@
 import fs from 'node:fs'
 import { clusterByEmbedding, embeddingText } from '../../src/news/embeddingClustering.ts'
 
-export async function loadClassifierData(embed) {
+// `embed` produces the classifier's features. `clusterEmbed` (defaults to `embed`) produces the vectors used only for grouping/clustering,
+// whose threshold is tuned to the shipped model's similarity scale — so a candidate classifier model can be tried without disturbing it.
+export async function loadClassifierData(embed, clusterEmbed = embed) {
   const cluster = JSON.parse(fs.readFileSync('scripts/fixtures/newsClusteringEval.json', 'utf8'))
   const mainLabels = JSON.parse(fs.readFileSync('scripts/fixtures/newsClassificationLabels.json', 'utf8')).labels
   const hold = JSON.parse(fs.readFileSync('scripts/fixtures/newsClassificationHoldout.json', 'utf8'))
@@ -15,16 +17,18 @@ export async function loadClassifierData(embed) {
   const articles = [...cluster.articles, ...hold.articles]
   const labels = [...mainLabels, ...hold.labels]
   const nMain = cluster.articles.length
-  const X = await embed(articles.map((a) => embeddingText(a.title, a.description)))
+  const texts = articles.map((a) => embeddingText(a.title, a.description))
+  const X = await embed(texts)
+  const XC = clusterEmbed === embed ? X : await clusterEmbed(texts)
 
   const groupOf = new Array(articles.length)
   const storyOf = new Array(nMain).fill(null)
   for (const [name, idxs] of Object.entries(cluster.stories)) for (const i of idxs) storyOf[i] = name
   for (let i = 0; i < nMain; i++) groupOf[i] = storyOf[i] ?? `solo-${i}`
   const holdClusters = clusterByEmbedding(
-    hold.articles.map((a, i) => ({ key: String(i), title: a.title, linkedEntityIds: a.countries, time: Date.parse(a.publishedAt), vector: X[nMain + i] })),
+    hold.articles.map((a, i) => ({ key: String(i), title: a.title, linkedEntityIds: a.countries, time: Date.parse(a.publishedAt), vector: XC[nMain + i] })),
   )
   holdClusters.forEach((c, k) => c.forEach((m) => (groupOf[nMain + Number(m.key)] = `hold-${k}`)))
 
-  return { articles, labels, X, groupOf, nMain, cluster, hold }
+  return { articles, labels, X, XC, groupOf, nMain, cluster, hold }
 }

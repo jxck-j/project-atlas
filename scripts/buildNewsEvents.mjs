@@ -61,7 +61,8 @@
 // with no SourceProfile has no leaning/tier/pressControl to attach.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
-import { parseRssItems } from './lib/rss.mjs'
+import { fetchFeedArticles } from './lib/fetchFeeds.mjs'
+import { archiveArticles } from './lib/newsArchive.mjs'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
 import { buildEvents, buildEventsWithEmbeddings, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
@@ -95,23 +96,6 @@ const LIMIT = numArg('--limit', undefined)
 const MAX_COST = numArg('--max-cost', 5)
 if ((SPEND || LIMIT !== undefined) && !USE_LLM) throw new Error('--yes and --limit only apply with --llm')
 
-async function fetchTextRetry(url, attempts = 3) {
-  let lastErr
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProjectAtlasNewsBot/1.0)' }, signal: AbortSignal.timeout(20_000) })
-      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
-      return await res.text()
-    } catch (err) {
-      lastErr = err
-      if (i < attempts - 1) await new Promise((resolve) => setTimeout(resolve, 2000 * (i + 1)))
-    }
-  }
-  throw lastErr
-}
-
-const stripHtml = (s) => s?.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
-
 const topology = JSON.parse(fs.readFileSync(COUNTRIES_SOURCE, 'utf8'))
 const countries = feature(topology, topology.objects[Object.keys(topology.objects)[0]]).features.map((f) => ({
   id: String(f.id),
@@ -121,34 +105,16 @@ const countryMatchers = buildCountryMatchers([...countries, TAIWAN_REF])
 const profiles = JSON.parse(fs.readFileSync(SOURCES, 'utf8'))
 const feeds = JSON.parse(fs.readFileSync(FEEDS, 'utf8'))
 
-const feedFailures = []
-const articles = []
-await Promise.all(
-  feeds.map(async ({ sourceId, url }) => {
-    let xml
-    try {
-      xml = await fetchTextRetry(url)
-    } catch (err) {
-      feedFailures.push(`${sourceId} (${url}): ${err.message}`)
-      return
-    }
-    for (const item of parseRssItems(xml)) {
-      if (!item.title || !item.link) continue
-      const parsed = item.pubDate ? Date.parse(item.pubDate) : Number.NaN
-      articles.push({
-        sourceId,
-        title: stripHtml(item.title),
-        description: stripHtml(item.description),
-        url: item.link,
-        ...(Number.isNaN(parsed) ? {} : { publishedAt: new Date(parsed).toISOString() }),
-      })
-    }
-  }),
-)
+const { articles, feedFailures } = await fetchFeedArticles(feeds)
 
 // Raw pull, kept (gitignored) so clustering/classification can be tuned against real headlines offline.
 fs.mkdirSync('debug', { recursive: true })
 fs.writeFileSync('debug/news-articles.json', JSON.stringify(articles, null, 1))
+
+// Append-only archive of everything any run has seen (see scripts/lib/newsArchive.mjs). Done before anything that can fail or exit
+// early (model load, LLM dry run), so a run that publishes nothing still keeps its feed window.
+const archived = archiveArticles(articles, new Date().toISOString())
+console.log(`Archive: +${archived.added} new, ${archived.total} total.`)
 
 // ---------------------------------------------------------------------------
 // LLM mode

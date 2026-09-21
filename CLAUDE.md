@@ -63,6 +63,7 @@ npm run build:military       # regenerate src/data/militaryScores.ts (Intelligen
 npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:technology     # regenerate src/data/technologyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
+npm run archive:news        # Fetch-only capture of the vetted feeds into the append-only article archive (archive/news/articles.jsonl, gitignored, NOT regenerable). No model. See News & sourcing below.
 npm run build:news:events   # News Engine v2: fetch feeds -> Events -> public/data/news-events.json (runs via tsx; see News & sourcing below). DEFAULT = local-embedding grouping + a relevance/tag classifier. Free, keyless; one-time ~33 MB model download into debug/hf-cache. Fails loudly if the model can't load. Flags: `-- --no-classifier`.
 npm run build:news:events:heuristic # Phase 2's keyword classification + word-overlap clustering. No model. Much weaker grouping; the offline fallback.
 npm run eval:news-clustering # Scores the heuristic and the embedding clusterer against the hand-labeled fixture (scripts/fixtures/newsClusteringEval.json). Re-run after changing the model, threshold or clustering constants.
@@ -1706,6 +1707,13 @@ Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopic
   country-native source carries an RSF 2026 rank in `pressFreedomContext` (enforced by a test); five country-native
   entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
   Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
+
+**The article archive (2026-09-21)** — `archive/news/articles.jsonl`, append-only, one `RawArticle` + `firstSeenAt` per line, written by
+`npm run archive:news` (fetch-only) and by every `build:news:events` run. Logic is `src/news/articleArchive.ts` (pure, tested), file I/O is
+`scripts/lib/newsArchive.mjs`. It exists because RSS windows roll off and the build is stateless; unlike `debug/` it is **not regenerable**, so
+don't clear it, and it is gitignored (this machine only; `NEWS_ARCHIVE_DIR` relocates it). First sighting wins — never rewrite a record.
+Planned on top of it but NOT built: a 14-day view for the public feed (a cap on the feed only, never on the archive) and hand-defined per-
+conflict dossiers with a one-off history backfill. See `LOGBOOK.md`'s 2026-09-21 archive entry.
 
 **Phase 2 is done too: `scripts/buildNewsEvents.mjs`** (**as of 2026-09-21 its DEFAULT mode is the local-embedding path described below; the Phase 2 pipeline described in THIS paragraph runs with `--heuristic`**; `npm run build:news:events`, run via `tsx` because it imports
 `src/news/*.ts` directly, so build and client can't disagree on corroboration/gating) — a thin fetch/write shell over pure,

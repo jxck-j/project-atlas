@@ -5,6 +5,59 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Append-only article archive (first step toward a 14-day feed and per-conflict dossiers)
+
+**Why.** The build is stateless and RSS shows only the last few days, so each run's feed window was lost when it rolled off. Three wants all
+need history that can no longer be re-fetched: a rolling 14-day feed, a classifier label set that can grow (the publish gate is tuned on
+only 4 out-of-scope clusters — see the mpnet entry), and conflict dossiers covering a whole war (e.g. Iran–USA from February).
+
+**Decisions (J):** (1) The 14-day window is a cap on the PUBLIC FEED only, not on the archive — capping the archive would delete exactly the
+data dossiers and training need. (2) Dossiers will be hand-defined (J writes each one's config: parties, start date, keywords; the pipeline
+collects what matches) rather than auto-detected; auto-detection is a separate classification problem. Neither of those is built yet.
+
+**What was built.** `src/news/articleArchive.ts` (pure, tested): identity is the URL minus fragment and utm_/fbclid/gclid (other query
+params stay — `?id=` may select the article); first sighting wins and is never rewritten, so an outlet editing a headline can't change history;
+`firstSeenAt` is the fallback clock for items with no `publishedAt`; the parser skips a truncated last line and the appender re-terminates it,
+so a run killed mid-write can't fuse two records. `scripts/lib/newsArchive.mjs` is the file shell; `scripts/lib/fetchFeeds.mjs` is the feed
+fetch extracted from `buildNewsEvents.mjs` so both scripts share it. `npm run archive:news` is fetch-only (no model, no Events), cheap enough
+to run every few hours; `build:news:events` also archives, before anything that can fail or exit early.
+
+**Where it lives, and the tradeoff.** `archive/news/articles.jsonl`, gitignored — but deliberately NOT under `debug/`, whose contents are
+regenerable; this isn't. Consequence: it exists only on this machine and in this worktree. `NEWS_ARCHIVE_DIR` relocates it (e.g. outside a
+worktree that might be removed). First run: 1,166 articles (1,173 fetched; 7 cross-feed duplicates), published 2025-12-22 to 2026-09-21 — some
+feeds carry a long tail, but most of the pull is the last few days, so a full 14 days accrues only after ~2 weeks of runs.
+
+**Not decided / not built:** the 14-day feed view over the archive; the dossier schema; the backfill source for history before the archive
+began (GDELT is the candidate — its DOC API window and raw-file coverage are unverified from memory and must be checked first).
+
+## 2026-09-21 — mpnet as the classifier's feature model: tried, not adopted
+
+**Decision (J asked for the trial; not adopted on the numbers):** `Xenova/all-mpnet-base-v2` (q8, ~110 MB vs MiniLM-L12's ~33 MB) was scored as
+the relevance/tag/severity classifier's feature extractor. `EMBEDDING_MODEL`, the shipped weights and the gate thresholds are unchanged.
+
+**How it was run.** `NEWS_CLASSIFIER_MODEL=Xenova/all-mpnet-base-v2 npm run eval:news-classifier` (new, eval-only override in
+`evalNewsClassifier.mjs`; `classifierData.mjs` takes a separate `clusterEmbed`). Only the classifier's features change; clustering and the
+held-out CV groups stay on MiniLM, because `EMBED_LINK_THRESHOLD` is tuned to MiniLM's similarity scale and swapping both would have confounded
+the comparison. Each model picked its own L2 by grouped CV.
+
+**Per-article, mpnet is slightly better:** relevance AUC 0.954 vs 0.949 (CV) and 0.961 vs 0.951 (held-out); held-out relevance F1 at 0.5 0.938 vs
+0.927; report-vs-analysis AUC 0.896 vs 0.868; tag macro-F1 0.821 vs 0.795 (gains in humanitarian-displacement 0.69 -> 0.79, crime-trafficking
+0.74 -> 0.82, economic-trade 0.76 -> 0.80; terrorism-non-state-actors WORSE, 0.68 -> 0.61, on 27 labels). Critical severity F1 is 0.00 for both —
+neither embedding model beats the severity regexes, so that stays keyword rules.
+
+**At the publish gate, mpnet is worse at the shipped thresholds.** Kw-topic & mean>=0.30, else >=0.60: CV main set MiniLM ships 0 out-of-scope
+clusters and loses 1 in-scope; mpnet ships 3 out-of-scope (the Spain weather roundup, the Gaza documentary, the Ed Sheeran stories) and loses 0.
+Held-out clusters: MiniLM 0 wrong, mpnet 1 wrong (the cargo-ship collision, mean 0.61 with no keyword topic). mpnet scores those three CV clusters
+0.32-0.45; raising the gate to ~0.5 blocks them but loses 3 in-scope. The 0.30/0.60 cutoffs were tuned on MiniLM's probability calibration, so
+this is partly a calibration mismatch, not proof mpnet is worse.
+
+**Why not adopt.** (1) The per-article gains are small (+0.005-0.010 AUC) and the gate is what publishes; that check went the wrong way. (2) The
+gate comparison rests on 4 out-of-scope clusters in CV and 3 held-out, so re-tuning thresholds for mpnet would be fitting noise. (3) Cost: ~3x
+the model, slower embedding, and `embeddingClassifier.ts` rejects weights whose model differs from `EMBEDDING_MODEL`, which clustering also uses —
+shipping mpnet for the classifier alone means loading two models (~145 MB), or switching both and re-tuning the clustering threshold (the
+2026-09-20 model comparison already found mpnet within noise of MiniLM on grouping). **What would change this:** a larger labeled set that gives
+the gate enough out-of-scope clusters to tune on; revisit then.
+
 ## 2026-09-21 — Critical floor lowered to 3 outlets; evacuation ranks below displacement
 
 **Decisions (J):** (1) Critical's non-wire floor is **three** distinct non-state outlets, not four. (2) An evacuation ORDER or ADVISORY is

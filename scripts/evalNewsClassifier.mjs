@@ -17,8 +17,13 @@ import { fitStandardizer, predictProba, standardize, trainLogistic } from '../sr
 import { createCv, fmt } from './lib/classifierCv.mjs'
 import { loadClassifierData } from './lib/classifierData.mjs'
 
-const embed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
-const { articles, labels: lab, X, groupOf, nMain } = await loadClassifierData(embed)
+// NEWS_CLASSIFIER_MODEL=Xenova/all-mpnet-base-v2 scores a candidate model as the classifier's feature extractor. Clustering (the
+// held-out groups and the product-level gate tables) still uses the shipped model, whose threshold is tuned to its own similarity scale.
+const candidate = process.env.NEWS_CLASSIFIER_MODEL
+const clusterEmbed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
+const embed = candidate ? await createLocalEmbedder({ cacheDir: 'debug/hf-cache', model: candidate }) : clusterEmbed
+if (candidate) console.log(`classifier features: ${candidate} (clustering stays on the shipped model)`)
+const { articles, labels: lab, X, XC, groupOf, nMain } = await loadClassifierData(embed, clusterEmbed)
 const N = X.length
 const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
 const SEV = ['routine', 'significant', 'major', 'critical']
@@ -107,7 +112,7 @@ let relP, repP
 const inScope = (l) => (l.relevance === '0' ? 0 : 1)
 function gateTable(title, idxs, relOf) {
   // idxs: indices of the articles in this pool; relOf(i): out-of-fold / held-out relevance probability
-  const items = idxs.map((i) => ({ key: String(i), title: articles[i].title, linkedEntityIds: articles[i].countries, time: Date.parse(articles[i].publishedAt), vector: X[i] }))
+  const items = idxs.map((i) => ({ key: String(i), title: articles[i].title, linkedEntityIds: articles[i].countries, time: Date.parse(articles[i].publishedAt), vector: XC[i] }))
   const clusters = clusterByEmbedding(items).map((c) => c.map((m) => Number(m.key)))
   const distinct = (c) => new Set(c.map((i) => articles[i].sourceId)).size
   const truth = (c) => { const k = c.filter((i) => lab[i].relevance !== '?'); return k.length === 0 ? null : k.filter((i) => lab[i].relevance !== '0').length * 2 > k.length }

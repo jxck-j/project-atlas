@@ -20,6 +20,7 @@
     "build:technology": "node scripts/buildTechnology.mjs",
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
     "build:news": "node scripts/buildNews.mjs",
+    "archive:news": "tsx scripts/archiveNews.mjs",
     "build:news:events": "tsx scripts/buildNewsEvents.mjs",
     "build:news:events:heuristic": "tsx scripts/buildNewsEvents.mjs --heuristic",
     "eval:news-clustering": "tsx scripts/evalNewsClustering.mjs",
