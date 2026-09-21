@@ -1,6 +1,7 @@
 import { classifyText, matchesHeadOfStateDeath, resolveTopicTags } from './classify'
 import { clusterArticles, type ClusterArticle } from './clustering'
 import { resolveCountryIds, type CountryMatcher } from './countryResolution'
+import { RELEVANCE_THRESHOLD, RESCUE_THRESHOLD, type EmbeddingClassifier } from './embeddingClassifier'
 import { clusterByEmbedding, embeddingText, type Embedder } from './embeddingClustering'
 import { stableHash } from './hash'
 import {
@@ -17,12 +18,12 @@ import {
   emptyUsage,
 } from './llmPipeline'
 import { resolvePublishDecision } from './publishGate'
-import { maxSeverity } from './severity'
+import { applySeverityCaps, maxSeverity } from './severity'
 import type { NewsEvent, OutletProfile, OutletSourceEntry, Severity, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
 
 // Articles in, Events out (design §17). Pure — no network, no clock, no fs —
 // so the build script is a thin fetch/write shell around it and every rule
-// here is testable. Two entry points share one prep stage and one assembly +
+// here is testable. Three entry points share one prep stage and one assembly +
 // gate stage, so the LLM path cannot reach publication by any route the
 // heuristic path doesn't also go through:
 //   buildEvents         (sync)  keyword classify -> heuristic cluster -> gate   [Phase 2; the offline/no-key path]
@@ -78,6 +79,10 @@ interface Candidate extends ClusterArticle {
   severity: Severity
   headOfStateDeathClaim: boolean
   systemicThemes: string[]
+  /** P(in scope) from the embedding classifier, when one is used. */
+  relevance?: number
+  /** The KEYWORD tagger found a topic. Recorded before the classifier overwrites topicTags, because it is a precision guard in its own right. */
+  keywordTopic?: boolean
 }
 
 // Opinion, explainer and talk-show pages are not reports OF the event — they
@@ -243,15 +248,18 @@ export function buildEvents(articles: RawArticle[], { profiles, countryMatchers,
 }
 
 // ---------------------------------------------------------------------------
-// Local embeddings — same keyword classification as Phase 2, but same-event
-// grouping by sentence-embedding similarity. Free, keyless, offline after the
-// one-time model download. Fixes clustering (paraphrase) and nothing else:
-// relevance, severity, countries and titles are still keyword/outlet-headline.
+// Local embeddings — same-event grouping by sentence-embedding similarity, and
+// (when a classifier is supplied) relevance and topic tags from the same
+// vectors. Free, keyless, offline after the one-time model download. Severity,
+// countries and titles are still keyword/outlet-headline; the classifier's
+// evaluation showed it does NOT beat the severity regexes (embeddingClassifier.ts).
 
 export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now }: BuildContext, embed: Embedder,
   options: {
     /** Cosine link threshold for clustering; defaults to EMBED_LINK_THRESHOLD. */
     threshold?: number
+    /** Relevance gate + topic tags. Omit/null for keyword tags and no relevance gate. */
+    classifier?: EmbeddingClassifier | null
   } = {},
 ): Promise<BuildResult> {
   const dropped = emptyDropped()
@@ -270,11 +278,21 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
       drop('prefiltered', article)
       continue
     }
-    candidates.push({ key: article.url, title: article.title, linkedEntityIds, time, article, profile, systemicThemes: [], ...classification })
+    candidates.push({ key: article.url, title: article.title, linkedEntityIds, time, article, profile, systemicThemes: [], keywordTopic: classification.topicTags.length > 0, ...classification })
     texts.push(embeddingText(article.title, article.description))
   }
 
   const vectors = candidates.length > 0 ? await embed(texts) : []
+  const classifier = options.classifier ?? null
+  if (classifier) {
+    candidates.forEach((c, i) => {
+      const pred = classifier.classify(vectors[i])
+      c.relevance = pred.relevance
+      c.topicTags = pred.tags
+      // The tier regexes still decide severity; only the CAPS depend on tags (crime/sci-tech alone cap at Major), so re-apply them to the new tags.
+      c.severity = applySeverityCaps(c.severity, { topicTags: pred.tags })
+    })
+  }
   const clustered = clusterByEmbedding(
     candidates.map((c, i) => ({ ...c, vector: vectors[i] })),
     options.threshold,
@@ -283,9 +301,17 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
   // A cluster is only publishable if SOME member gives it a country and a topic (the Event union, as everywhere else).
   const clusters: Cluster[] = []
   for (const members of clustered) {
-    if (!members.some((m) => m.linkedEntityIds.length > 0)) {
+    // Judged per CLUSTER, on the mean relevance: several outlets' headlines are far better evidence than one, and a single
+    // mis-scored member can't sink or rescue an Event. Two regimes (embeddingClassifier.ts explains why):
+    //  - keyword topic evidence present  -> the classifier is a mild gate (RELEVANCE_THRESHOLD);
+    //  - none                            -> the classifier must be very sure (RESCUE_THRESHOLD) or the cluster is dropped, as before.
+    const keywordTopic = members.some((m) => m.keywordTopic)
+    const mean = members.reduce((a, m) => a + (m.relevance ?? 1), 0) / members.length
+    if (classifier && (keywordTopic ? mean < RELEVANCE_THRESHOLD : mean < RESCUE_THRESHOLD)) {
+      for (const m of members) drop(keywordTopic ? 'not-relevant' : 'no-topic', m.article)
+    } else if (!members.some((m) => m.linkedEntityIds.length > 0)) {
       for (const m of members) drop('no-country', m.article)
-    } else if (!members.some((m) => m.topicTags.length > 0)) {
+    } else if (!classifier && !keywordTopic) {
       for (const m of members) drop('no-topic', m.article)
     } else {
       clusters.push({ members })

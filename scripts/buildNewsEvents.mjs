@@ -18,11 +18,15 @@
 //
 // MODES
 //   (default)                same-event grouping by LOCAL sentence embeddings (all-MiniLM-L12-v2 via
-//                            transformers.js), keyword classification. Free and keyless; the only network use is
+//                            transformers.js), plus relevance and topic tags from a small classifier over the
+//                            same vectors, trained on hand labels. Free and keyless; the only network use is
 //                            a one-time ~33 MB model download into debug/hf-cache, after which it runs
-//                            offline. Severity, countries, relevance and titles are still keyword rules /
-//                            outlet headlines. On a hand-labeled sample: 40/47 multi-outlet stories grouped
-//                            (heuristic: 16/47). See LOGBOOK.md and scripts/evalNewsClustering.mjs.
+//                            offline. Severity, countries and titles are still keyword rules / outlet
+//                            headlines — the classifier did not beat the severity rules. On hand-labeled
+//                            samples: 40/47 multi-outlet stories grouped (heuristic: 16/47), relevance
+//                            F1 0.86 (keyword rule: 0.73), tag macro-F1 0.74 (keywords: 0.60). See
+//                            LOGBOOK.md, scripts/evalNewsClustering.mjs, scripts/evalNewsClassifier.mjs.
+//     --no-classifier        keyword tags and no relevance gate (embedding grouping only).
 //   --heuristic              Phase 2's keyword classification + word-overlap clustering. No model, no network
 //                            beyond the feeds; much weaker grouping (16/47 stories vs 40/47 on the eval).
 //   --llm                    Phase 3: LLM classification + same-event grouping (Sonnet 5, J's
@@ -61,6 +65,7 @@ import { parseRssItems } from './lib/rss.mjs'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
 import { buildEvents, buildEventsWithEmbeddings, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
+import { loadShippedClassifier } from '../src/news/shippedClassifier.ts'
 import { costUsd, createAnthropicCall, createCountingCall, estimateRunCost, NEWS_MODEL, SONNET_5_PRICING } from '../src/news/anthropicCall.ts'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
@@ -83,6 +88,7 @@ const numArg = (name, fallback) => {
 }
 const USE_LLM = flag('--llm')
 const USE_HEURISTIC = flag('--heuristic')
+const NO_CLASSIFIER = flag('--no-classifier')
 if (USE_LLM && USE_HEURISTIC) throw new Error('--llm and --heuristic are alternatives; pick one')
 const SPEND = flag('--yes')
 const LIMIT = numArg('--limit', undefined)
@@ -243,7 +249,9 @@ const buildCtx = { profiles, countryMatchers, now }
 // switched grouping methods would change what gets published without anyone deciding it should.
 async function runEmbed() {
   try {
-    return await buildEventsWithEmbeddings(articles, buildCtx, await createLocalEmbedder({ cacheDir: 'debug/hf-cache' }))
+    return await buildEventsWithEmbeddings(articles, buildCtx, await createLocalEmbedder({ cacheDir: 'debug/hf-cache' }), {
+      classifier: NO_CLASSIFIER ? null : loadShippedClassifier(),
+    })
   } catch (err) {
     console.error(
       'Embedding model unavailable: ' + (err instanceof Error ? err.message : err) +
