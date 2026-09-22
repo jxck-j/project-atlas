@@ -60,12 +60,13 @@ function baseCityName(name: string): string {
 // covers today (Jordan, Kuwait, US) — see city-boundaries-architecture.md.
 interface SearchEntry {
   id: string
-  // "City, ST" for a US 'city-boundary' entry (e.g. "Austin, TX") — many
-  // US cities share a name across different states (there are 7 different
-  // "Austin"s in this dataset alone), so the state qualifier is baked
-  // directly into `name` rather than shown separately, the same way a
-  // human would disambiguate them in conversation. Jordan/Kuwait entries
-  // have no such qualifier — their names are already unambiguous.
+  // Every 'city-boundary' entry always carries its state/province/country
+  // behind it — direct requirement, not conditional on whether the name
+  // happens to collide with anything else in the index. "City, ST" for a
+  // state-sharded country (e.g. "Austin, TX" — see
+  // scene/useCityOutline.ts's STATE_SHARDED_COUNTRIES); "City, Country" for
+  // every other one (e.g. "Amman, Jordan", "Houston, Canada", "Houston,
+  // United Kingdom").
   name: string
   kind: 'country' | GeoEntityType | 'city-boundary'
   lat: number
@@ -200,24 +201,57 @@ export function SearchBar() {
     })
   }, [cityFeatures, cityIndex])
 
-  // City boundaries (Jordan, Kuwait, US): not a GeoEntityRegistry lookup at
-  // all — the index entry itself already has everything a search result
-  // needs (id/name/lat/lng/countryId). See the 'city-boundary' kind's doc
-  // comment above. Always included, unfiltered — cityEntries above is the
-  // one that skips a duplicate, so this list doesn't need to know
-  // cityEntries exists. Only US entries get a state-qualified name — Jordan/
-  // Kuwait names are already unambiguous within their own country.
+  // countryId -> display name, for every non-state-sharded city-boundary
+  // entry's country qualifier (see cityBoundaryEntries below). Built off the
+  // same features countryEntries derives from — city-boundaries data covers
+  // exactly the 193 UN member states countries-un193.json does, so every
+  // countryId this map is queried with is guaranteed present.
+  const countryNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const f of features) {
+      const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
+      const name = f.properties?.name as string | undefined
+      if (id && name) map.set(id, name)
+    }
+    return map
+  }, [features])
+
+  // City boundaries (every country scripts/buildCityBoundaries.mjs covers,
+  // all 193): not a GeoEntityRegistry lookup at all — the index entry itself
+  // already has everything a search result needs (id/name/lat/lng/
+  // countryId). See the 'city-boundary' kind's doc comment above. Always
+  // included, unfiltered — cityEntries above is the one that skips a
+  // duplicate, so this list doesn't need to know cityEntries exists. Every
+  // entry ALWAYS gets a qualifier — direct requirement, not conditional on
+  // whether the bare name happens to collide with anything else in the
+  // index (an earlier version only qualified on collision; changed after
+  // direct feedback). State-sharded countries get their state (see
+  // scene/useCityOutline.ts's STATE_SHARDED_COUNTRIES) — uppercased for
+  // display, since the underlying stateAbbrev is a lowercase shard-file name
+  // (scene/useCityOutline.ts's shardUrl()), not necessarily how the
+  // abbreviation itself is conventionally written. Every other entry gets
+  // its country name. This does mean exact-name ranking (see `matches`
+  // below) essentially never fires for a city-boundary result any more —
+  // accepted, since always showing the qualifier was the explicit ask.
   const cityBoundaryEntries = useMemo<SearchEntry[]>(() => {
-    return cityIndex.map((entry) => ({
-      id: entry.id,
-      name: entry.stateAbbrev ? `${entry.name}, ${entry.stateAbbrev}` : entry.name,
-      kind: 'city-boundary' as const,
-      lat: entry.lat,
-      lng: entry.lng,
-      countryId: entry.countryId,
-      stateAbbrev: entry.stateAbbrev,
-    }))
-  }, [cityIndex])
+    return cityIndex.map((entry) => {
+      const countryName = entry.countryId ? countryNameById.get(entry.countryId) : undefined
+      const name = entry.stateAbbrev
+        ? `${entry.name}, ${entry.stateAbbrev.toUpperCase()}`
+        : countryName
+          ? `${entry.name}, ${countryName}`
+          : entry.name
+      return {
+        id: entry.id,
+        name,
+        kind: 'city-boundary' as const,
+        lat: entry.lat,
+        lng: entry.lng,
+        countryId: entry.countryId,
+        stateAbbrev: entry.stateAbbrev,
+      }
+    })
+  }, [cityIndex, countryNameById])
 
   // GeoEntityRegistry entries with no rendered geometry (currently only
   // Crimea — see entityGeometryIds.ts) fall back to their own `location`

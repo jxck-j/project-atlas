@@ -109,12 +109,16 @@ npm run build:geo:countries  # regenerate public/geo/countries-un193.json (see D
 npm run build:geo:entities   # regenerate public/geo/entities.json (see GeoEntity geometry below)
 npm run build:geo:states     # regenerate public/geo/states-provinces.json (3,938 admin-1 features, 235 countries/territories; 13 countries dissolved to their true first-level tier via scripts/lib/dissolveToFirstLevel.mjs — see LOGBOOK.md 2026-09-19)
 npm run build:geo:cities     # regenerate public/geo/cities.json (223 capital/major-city point markers)
-npm run build:geo:us-cities  # regenerate public/geo/us-cities-index.json + public/geo/us-cities/*.json
-                              # (NOT part of build:geo — much slower/heavier; run by hand when the vendored
-                              # Census shapefile changes)
 npm run build:geo:cities-global  # regenerate public/geo/global-cities-index.json (candidate global
                               # replacement for cities.json — NOT part of build:geo, NOT yet wired into any
                               # component; see city-boundaries-architecture.md)
+npm run build:geo:city-boundaries        # regenerate public/geo/city-boundaries/{countryId}[.json|/{state}.json]
+                              # for every UN member state (NOT part of build:geo — much slower/heavier, several
+                              # sources network-dependent; ONLY=<numericId> scopes a rebuild to one country; US
+                              # (840) is a static committed artifact with no rebuild step of its own — see
+                              # city-boundaries-architecture.md)
+npm run build:geo:city-boundaries-index  # regenerate public/geo/city-boundaries-index.json from the
+                              # per-country files above (local file reads only, safe to re-run any time)
 npm run docs:claims          # regenerate CLAIMS.md from data/registry/geoEntities.ts (see Geopolitical data architecture below)
 npm run build:military       # regenerate src/data/militaryScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:economy        # regenerate src/data/economyScores.ts (Intelligence Engine — see Geopolitical data architecture below)

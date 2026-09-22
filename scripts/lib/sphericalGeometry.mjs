@@ -153,12 +153,29 @@ export function geometryAreaSqKm(geometry) {
 // which this doesn't need for any country this join covers today (Jordan,
 // Kuwait sit nowhere near +/-180deg); revisit with the same unwrap
 // treatment before ever reusing this for a country that does cross it.
+//
+// "Largest" means by actual area (ringAreaSqKm), not vertex count — a real
+// bug found during the US cutover (Thirty-first pass, 2026-09-21): several
+// MultiPolygon US cities (Houston, Dallas, San Antonio, Corpus Christi,
+// Sitka...) have a small, heavily-digitized exclave/island ring with MORE
+// vertices than their own much-larger main-body ring, so comparing
+// `exterior.length` picked the wrong polygon's ring entirely — Houston's
+// centroid landed ~36km from the real city. Ring-vertex-count happened to
+// track ring area closely enough for every country checked before the US
+// comparison surfaced a real independent baseline to catch it against; it
+// isn't a safe proxy in general.
 function largestRing(geometry) {
   const polygons = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates
   let best = null
+  let bestArea = -1
   for (const rings of polygons) {
     const exterior = rings[0]
-    if (exterior && (!best || exterior.length > best.length)) best = exterior
+    if (!exterior) continue
+    const area = Math.abs(ringAreaSqKm(exterior))
+    if (area > bestArea) {
+      best = exterior
+      bestArea = area
+    }
   }
   return best
 }

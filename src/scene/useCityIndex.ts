@@ -7,12 +7,9 @@ import { useSyncExternalStore } from 'react'
 // without pulling in every city's actual (much heavier, on-demand-only)
 // boundary geometry.
 //
-// Generalizes what was useUsCitiesIndex.ts (US-only) into every country
-// city-boundaries-architecture.md's per-feature join has actually verified
-// so far — 123 of 193 UN members as of the Twenty-second pass (2026-09-18,
-// Southeast Asia) — NOT all 193 yet; see that doc's migration plan for the
-// full per-country list and why the remaining 70 (Russia and India both
-// deliberately deferred to their own dedicated passes) aren't included.
+// Generalizes what was useUsCitiesIndex.ts (US-only) into every one of the
+// 193 UN member states — see city-boundaries-architecture.md's migration
+// plan for the full per-region pass history.
 export interface CityIndexEntry {
   id: string
   name: string

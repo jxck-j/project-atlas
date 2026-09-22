@@ -2572,6 +2572,108 @@ real UI check of Moscow, Saint Petersburg, Zelenograd, and one regional city (Ka
 
 **Final status: all 193 UN members now have real city-boundary data.**
 
+### Thirty-first pass: US validation + cutover (2026-09-21) — migration plan steps 4-5, and a real cross-project centroid bug found only because a second source existed to check against
+
+**Step 4 (validate the new pipeline's US output against the old Census pipeline as ground truth):** since
+`buildCityBoundaries.mjs`'s US block did no independent join — it only reshaped `buildUsCitiesData.mjs`'s
+existing `us-cities-index.json`/`us-cities/*.json` output into `public/geo/city-boundaries/840/{state}.json` —
+this was really validating the *reshape*, not a new geometric join. Result: byte-for-byte lossless. All 56
+state files, all 32,608 features present both sides, zero geometry diffs, zero name diffs, zero features
+missing a `us-cities-index.json` population/capital match. Spot-checked the 10 largest cities by real
+population against known figures — all matched (New York 8.26M ... Austin 0.98M), `isCapital` correctly true
+only for Phoenix/Austin among them.
+
+**Step 5 (cut over, retire the old pipeline):** `scene/CityLabels.tsx`/`CityOutlineHighlight.tsx`/
+`useCityIndex.ts`/`useCityOutline.ts` were already reading exclusively from `city-boundaries-index.json` /
+`city-boundaries/{countryId}/...` for the US (the Seventh-pass generalization already covered it) — the only
+remaining consumer of the old `us-cities-index.json` file was `buildCityBoundariesIndex.mjs`'s own US block,
+which read it directly instead of going through the generic `addFromShardedDir()` path every other
+state-sharded country already uses. Switched it to `addFromShardedDir('840')` and confirmed identical
+`population`/`isCapital`/`name` output (see the centroid exception below). With that, retired: `scripts/
+buildUsCitiesData.mjs`, `scripts/lib/usStateCapitals.mjs` (its only consumer), `public/geo/us-cities-index.json`,
+`public/geo/us-cities/*.json` (56 files), and the now-dead US reshape block + `US_INDEX`/`US_SHARD_DIR`
+constants in `buildCityBoundaries.mjs` — `public/geo/city-boundaries/840/` is a static, already-committed
+artifact now, the same conceptual status as e.g. Libya's ADM1-only data; `ONLY=840` is a deliberate no-op if
+`buildCityBoundaries.mjs` is ever re-run. Also dropped `build:geo:us-cities` from `package.json`/CLAUDE.md.
+`scripts/vendor/canada/`, the migration plan's other named retirement target, turned out to already be gone
+from the repo (never committed, or cleaned up in an earlier pass) — nothing to do there.
+
+**Real bug found by the switch, not by inspection: `sphericalGeometry.mjs`'s `largestRing()` picked a
+MultiPolygon's ring with the most VERTICES, not the most AREA — silently wrong for any country with a city
+whose exclave/island fragment happens to be more heavily digitized than its own main body.** Only surfaced
+because switching the US to `addFromShardedDir()` gave two independently-computed centroids for the same
+32,608 real cities to diff against each other (the old US-only `cheapCentroid()` in `buildUsCitiesData.mjs` had
+its own, different bug — see below — but landed correctly often enough to expose this one by disagreement).
+29 US cities moved by 20km+, including major ones: Houston (36km), Dallas (36km), San Antonio (25km), Corpus
+Christi (41km), San Diego (28km), Tulsa (24km). Root cause confirmed on Houston/Dallas/etc. and independently
+on a non-US case (Kapingamarangi, Micronesia): its MultiPolygon carries nine real ~0.02°-wide islet rings
+(4-7 vertices each, correctly clustered around 154.8°E/1.05°N) plus one degenerate zero-area 7-vertex "ring"
+729km away at 155.16°E/7.62°N — enough vertices to win the old comparison outright, producing a centroid
+730km from every real islet. **Fixed by comparing actual area** (`ringAreaSqKm`, already existed in the same
+file for a different purpose, just never reused here) **instead of vertex count** — one function, ~10 lines,
+in `largestRing()`. Re-verified Houston/Dallas/San Antonio/Corpus Christi/San Diego against real-world
+city-center coordinates post-fix: all now within 4-18km, which is the expected range for a real polygon
+centroid of a large, irregularly-shaped city limit (not an exact "downtown" point) rather than a symptom of a
+remaining bug.
+
+This function (`geometryCentroid()`) is shared by every country's `city-boundaries-index.json` entry (not just
+US), so the fix's blast radius is project-wide: regenerating the index after the fix moved 251 non-US entries
+by 20km+ (some much further — several outer-island/atoll municipalities in Micronesia, Portugal, Malaysia,
+Indonesia, Russia, Chile, Australia moved 150-730km, the same "degenerate/small-but-high-vertex fragment
+beat the real landmass" shape as Kapingamarangi). Not exhaustively re-verified one by one given the volume,
+but the mechanism is sound (area is the objectively correct "largest part of a multi-part shape" criterion,
+vertex count never was) and every case actually inspected confirmed the fix, not a regression. This only
+touches the lightweight always-fetched index — none of the 193 committed `city-boundaries/{countryId}/...`
+per-feature geometry files needed or got regenerated (`geometryCentroid()` is also used inside
+`buildCityBoundaries.mjs` itself for shard-key/candidate-scoring decisions during the real join, so a future
+`ONLY=<id>` rebuild of any country now benefits from the same fix there too, quietly, without needing its own
+pass).
+
+**One more real, independent bug in the now-retired `buildUsCitiesData.mjs`'s own `cheapCentroid()`:** for a
+MultiPolygon it always averaged `geometry.coordinates[0][0]` — the first ring of the first polygon,
+unconditionally, no largest-anything comparison at all. Richmond, CA (many disconnected shoreline/island
+parts) and several other complex-shaped cities differed from the new centroid even where the new function's
+vertex-vs-area distinction wasn't itself in play, confirming the old US-only path had its own, differently-shaped
+version of the same class of bug. Not worth a standalone fix now that the file is retired — `addFromShardedDir()`
+already replaces it project-wide.
+
+**Cosmetic fix caught in the same pass:** `hud/SearchBar.tsx`'s search-dropdown state qualifier
+(`"Richmond, CA"`) read `entry.stateAbbrev` verbatim, which is the lowercase shard-file-derived value
+(`scene/useCityOutline.ts`'s `STATE_SHARDED_COUNTRIES` convention, e.g. `"ca"`) for every state-sharded
+country — US used to get real uppercase postal codes through its own now-retired index path, so switching it
+onto the shared path would have silently regressed "Richmond, CA" to "Richmond, ca" in search results. Fixed
+by uppercasing at display time (`entry.stateAbbrev.toUpperCase()`) rather than changing the stored value,
+since the stored lowercase value is what `shardUrl()` needs to build a working fetch path. This was already a
+live (if minor, unnoticed) quirk for all 12 other state-sharded countries — e.g. Mexico showed "Aguascalientes,
+ag" — not something newly introduced by the US cutover.
+
+**A second real bug, reported directly after this pass shipped:** search results for "Houston" showed Canada's
+and the UK's Houstons as bare "Houston" — indistinguishable from each other and from Houston, TX. Root cause:
+`hud/SearchBar.tsx`'s `cityBoundaryEntries` only ever qualified a name with its US-style state abbreviation
+(`STATE_SHARDED_COUNTRIES`); everything else got no qualifier at all, on the assumption (accurate back when
+this index covered 3 countries, stale the moment it covered 193) that "every other country's city names are
+already unambiguous." Neither Canada (124) nor the UK (826) is state-sharded, so both hit that bare-name path.
+
+First fix attempt only qualified a non-sharded entry when its bare name actually collided with something else
+in the index, to avoid degrading exact-match search ranking for the (large majority of) names that never
+collide. **Direct follow-up feedback: always show the state/province/country, not conditionally** — replaced
+the collision check with an unconditional one: every `city-boundary` entry now reads "City, ST" (state-sharded
+countries) or "City, Country" (everyone else), full stop. `countryNameById` (built off the same
+`useCountryFeatures()` data `countryEntries` already uses) supplies the country name. Accepted consequence:
+exact-name ranking (`matches`'s exact/starts-with/contains tiers) effectively never hits the "exact" tier for
+a city-boundary result any more, since the qualifier is now always appended — that's the direct cost of the
+explicit "always" requirement, not an oversight. Houston now reads: "Houston, Canada", "Houston, United
+Kingdom", and 7 US states' worth of "Houston, XX" — 10 total. Amman reads "Amman, Jordan"; Kuwait City reads
+"Kuwait City, Kuwait". Verified directly against the built index (simulated the same lookup logic outside
+React) rather than just reasoning about it. Typecheck/lint/Vitest all clean after both fixes.
+
+**Verification:** typecheck, lint, and Vitest all clean; `city-boundaries-index.json` regenerated (218,736
+entries, 193 countries, unchanged counts per country — only lat/lng values and this file's own internal
+US-specific code path changed). **Not yet checked in the browser** — a real look at US city label positions
+(especially the corrected ones: Houston, Dallas, San Antonio, Corpus Christi, San Diego, Tulsa) and search
+results (state/country-qualifier display, including the Houston collision fix above) is still owed. Migration
+plan step 6 (write the final decision into LOGBOOK.md, once browser-verified) is still open.
+
 ## Migration plan
 
 1. ~~Build the global point/population index (GeoNames-sourced)~~ — **done**
@@ -2739,12 +2841,19 @@ real UI check of Moscow, Saint Petersburg, Zelenograd, and one regional city (Ka
    `CityOutlineHighlight.tsx`/`useCityOutline.ts`.~~ — **done** (Seventh pass), and confirmed to need
    zero further changes when 7 more countries were added in the Eighth pass — the generalization
    held.
-4. Validate the new pipeline's US output against the existing Census data
+4. ~~Validate the new pipeline's US output against the existing Census data
    as ground truth (does it find the same major cities, comparable
-   population figures, reasonable boundary shapes) before cutover.
-5. Cut over, then retire `buildUsCitiesData.mjs`, `us-cities-index.json`,
+   population figures, reasonable boundary shapes) before cutover.~~ —
+   **done** (Thirty-first pass, 2026-09-21): byte-for-byte lossless, since
+   the US path was always a reshape of the same Census data, not an
+   independent join.
+5. ~~Cut over, then retire `buildUsCitiesData.mjs`, `us-cities-index.json`,
    `us-cities/*.json`, and `scripts/vendor/canada/` (already dead weight —
-   never going to be used now).
+   never going to be used now).~~ — **done** (Thirty-first pass,
+   2026-09-21). `scripts/vendor/canada/` was already gone from the repo by
+   the time this ran. Also surfaced and fixed a real project-wide centroid
+   bug (`largestRing()` picking by vertex count instead of area) along the
+   way — see that pass's own entry.
 6. Write the final decision + trade-off into `LOGBOOK.md` once built and
    verified in-browser, per this project's existing discipline for sourced
    data decisions.

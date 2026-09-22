@@ -70,14 +70,16 @@
 //     geoBoundaries' own canonicalName, which is sometimes blank or wrong —
 //     Belize's "Constituencies" is the reason this isn't assumed blindly),
 //     same per-feature join.
-//   - US: NO join at all — buildUsCitiesData.mjs's existing Census Places
-//     output (public/geo/us-cities-index.json + us-cities/*.json) is
-//     already real, official, city-scale data; this script only reshapes it
-//     into the same per-country output format the other sources produce,
-//     exactly as city-boundaries-architecture.md's "Second refinement"
-//     section calls for ("the right move is to feed that existing output
-//     into the unified per-country shard format directly, not re-derive
-//     similar data from OSM").
+//   - US: no join, ever — reshaped once (Thirty-first pass, 2026-09-21) from
+//     buildUsCitiesData.mjs's Census Places output into
+//     public/geo/city-boundaries/840/{state}.json directly, exactly as
+//     city-boundaries-architecture.md's "Second refinement" section called
+//     for ("the right move is to feed that existing output into the unified
+//     per-country shard format directly, not re-derive similar data from
+//     OSM"). That reshape already happened and is committed; the one-time
+//     script that did it (and the us-cities-index.json/us-cities/*.json
+//     staging files it read from) has been retired — nothing left in this
+//     repo still needs them. See that doc's migration plan step 5.
 //
 // Output: public/geo/city-boundaries/{countryId}.json (a GeoJSON
 // FeatureCollection per country, id/geometry/properties.name shape matching
@@ -91,8 +93,6 @@ import { relationToGeometry } from './lib/osmRelationToGeometry.mjs'
 
 const HEADLINE_INDEX = 'public/geo/global-cities-headline.json'
 const DETAIL_SHARD_DIR = 'public/geo/global-cities'
-const US_INDEX = 'public/geo/us-cities-index.json'
-const US_SHARD_DIR = 'public/geo/us-cities'
 const OUTPUT_DIR = 'public/geo/city-boundaries'
 const REPORT_OUTPUT = 'scripts/cityBoundariesReport.json'
 
@@ -3725,56 +3725,16 @@ out geom;`),
   report.russia = { whole: wholeJoin.report, others: othersJoin.report }
 }
 
-// --- US (numeric id 840) — reuse buildUsCitiesData.mjs's existing Census
-// Places output directly. No join, no area threshold: Census Places are
-// already real, official city-scale boundaries by construction.
-//
-// Deliberately kept SHARDED BY STATE (public/geo/city-boundaries/840/{state}.json),
-// NOT merged into one public/geo/city-boundaries/840.json the way Jordan/
-// Kuwait's much smaller datasets are. A first version of this script did
-// merge it - 32,608 features into one 49 MB file - which silently
-// reintroduced exactly the "huge flat file, eager-fetched in full" problem
-// city-boundaries-architecture.md's two-tier GeoNames index (headline +
-// per-country detail shards) was built specifically to avoid, just one
-// layer down (per-country instead of global). us-cities/{state}.json's
-// existing per-state sharding already solves this correctly for the one
-// country large enough to need it; collapsing it back down was a
-// regression, not a simplification, caught by checking the actual output
-// file size rather than assuming "reuse the existing data" meant "reuse it
-// as a single file."
-if (shouldRun('840')) {
-  console.log('\n=== United States (reused from existing Census pipeline, kept sharded by state) ===')
-  const usIndex = JSON.parse(fs.readFileSync(US_INDEX, 'utf8'))
-  const usIndexById = new Map(usIndex.map((e) => [e.id, e]))
-  const usOutputDir = `${OUTPUT_DIR}/840`
-  fs.mkdirSync(usOutputDir, { recursive: true })
-  let usFeatureTotal = 0
-  let usTotalKB = 0
-  for (const stateFile of fs.readdirSync(US_SHARD_DIR)) {
-    const fc = JSON.parse(fs.readFileSync(`${US_SHARD_DIR}/${stateFile}`, 'utf8'))
-    const features = fc.features.map((feature) => {
-      const indexEntry = usIndexById.get(feature.id)
-      return {
-        type: 'Feature',
-        id: feature.id,
-        geometry: feature.geometry,
-        properties: {
-          name: feature.properties.name,
-          population: indexEntry?.population ?? null,
-          isCapital: Boolean(indexEntry?.isStateCapital),
-          areaSqKm: null, // not computed for US - Census Places are trusted as-is, no plausibility filter applied
-          source: 'census-places',
-          matchedAdminUnit: null,
-        },
-      }
-    })
-    const outputPath = `${usOutputDir}/${stateFile}`
-    fs.writeFileSync(outputPath, JSON.stringify({ type: 'FeatureCollection', features }))
-    usFeatureTotal += features.length
-    usTotalKB += fs.statSync(outputPath).size / 1024
-  }
-  console.log(`  ${usFeatureTotal} Census Places carried over unchanged across ${fs.readdirSync(US_SHARD_DIR).length} per-state files in ${usOutputDir}/ (${(usTotalKB / 1024).toFixed(1)} MB combined, avg ${(usTotalKB / fs.readdirSync(US_SHARD_DIR).length).toFixed(0)} KB/state)`)
-}
+// --- US (numeric id 840) ---
+// No join, no build step here at all — public/geo/city-boundaries/840/
+// {state}.json is a static, already-committed artifact (32,608 Census
+// Places, reshaped once from buildUsCitiesData.mjs's output; see this
+// file's Sourcing decision comment above and city-boundaries-architecture.md's
+// migration plan step 5, Thirty-first pass, 2026-09-21). The script that did
+// that reshape, and the us-cities-index.json/us-cities/*.json files it read
+// from, were retired once the cutover was verified — this script has
+// nothing left to do for 840, so `ONLY=840` is a deliberate no-op now
+// rather than a country block, unlike every joined/reshaped country above.
 
 fs.writeFileSync(REPORT_OUTPUT, JSON.stringify(report, null, 2))
 console.log(`\nWrote ${REPORT_OUTPUT} (unmatched/rejected detail for every joined country — US has no join to report on).`)
