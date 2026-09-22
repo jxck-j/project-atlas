@@ -32,7 +32,7 @@
 //     scripts/cityAdminLevelsReport.json (+ prints a summary table).
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
-import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { NUMERIC_TO_ALPHA3 } from './lib/iso3166.mjs'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
 const REPORT_OUTPUT = 'scripts/cityAdminLevelsReport.json'
@@ -50,19 +50,11 @@ const sampleArg = process.argv.find((a) => a.startsWith('--sample='))
 const sampleSize = sampleArg ? Number(sampleArg.split('=')[1]) : null
 const isSample = sampleSize != null
 
-// ALPHA3_TO_NUMERIC is intentionally many-to-one for South Sudan (SSD, the
-// real ISO code, and SDS, a Natural-Earth-specific non-standard alias — see
-// that file's own comment) — first entry wins so this reversal keeps the
-// real ISO code, not whichever alias happens to iterate last. Verified
-// (2026-09-04) to be the only duplicate numeric id in the table today; a
-// bare "last write wins" reversal silently produced "SDS" for South Sudan,
-// which geoBoundaries' API 404s on, and got misreported as "no coverage" —
-// a real bug in this script, not a real data gap (South Sudan has real
-// ADM0/ADM1/ADM2 geoBoundaries data under its actual code, SSD).
-const NUMERIC_TO_ALPHA3 = {}
-for (const [a3, num] of Object.entries(ALPHA3_TO_NUMERIC)) {
-  if (!NUMERIC_TO_ALPHA3[num]) NUMERIC_TO_ALPHA3[num] = a3
-}
+// NUMERIC_TO_ALPHA3 (iso3166.mjs) already handles South Sudan's SSD/SDS
+// duplicate correctly (real ISO code wins) — this script is where that bug
+// was originally found, 2026-09-04, when a naive last-write-wins reversal
+// silently produced "SDS," which geoBoundaries' API 404s on, and got
+// misreported as "no coverage." See that export's own comment.
 
 const topo = JSON.parse(fs.readFileSync(COUNTRIES_SOURCE, 'utf8'))
 const countryFeatures = feature(topo, topo.objects.countries).features

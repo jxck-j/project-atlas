@@ -1242,6 +1242,11 @@ export const COUNTRY_PROFILES: Record<string, CountryProfile> = {
   // should be recognized as a country... it should still show as claimed by
   // China"). Sourced the same way every other entry here is: CIA World
   // Factbook (factbook.json), same 2026-01 snapshot.
+  //
+  // Re-add this entry by hand after every npm run build:profiles — the
+  // script fully rewrites this file from its own 193-UN-member loop, which
+  // doesn't include Taiwan, so a regeneration silently drops this entry
+  // rather than leaving it alone (confirmed 2026-09-22, see BACKLOG.md).
   Taiwan: {
     government: "Semi-Presidential Republic",
     capital: "Taipei",

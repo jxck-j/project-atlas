@@ -5,6 +5,57 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-22 — South Sudan SSD/SDS alias fixed; surfaced a second, unrelated build-script bug along the way
+
+**Fixed the confirmed-but-unfixed 2026-09-04 finding** (`BACKLOG.md`'s "Cross-cutting: every country-code/name
+join needs a real audit" section): `iso3166.mjs`'s `ALPHA3_TO_NUMERIC` maps South Sudan to both `SSD` (real
+ISO) and `SDS` (a Natural-Earth-only alias). Five build scripts (`buildTechnology.mjs`, `buildMilitary.mjs`,
+`buildEconomy.mjs`, `buildCurrentStatus.mjs`, `buildGovCapitalPopGdp.mjs`) each independently reversed that
+table with a naive `Object.fromEntries(Object.entries(ALPHA3_TO_NUMERIC).map(([a3, num]) => [num, a3]))` —
+last write wins, and `SDS` sorts after `SSD` in the table, so all five silently resolved South Sudan's numeric
+id to the invalid code. World Bank's API returns `"Invalid value"` for `SDS`, so every World-Bank-sourced
+component for South Sudan across four Intelligence Engine categories was either `null` or missing. Confirmed
+`researchCityAdminLevels.mjs` (the script that originally surfaced this exact bug shape, 2026-09-04, for its
+own geoBoundaries lookups) already had the correct fix inline — first-entry-wins — so the shape of the fix was
+already known, just not yet applied to the other five.
+
+**Fix, and why centralized rather than patched five times independently:** added a single
+`NUMERIC_TO_ALPHA3` export to `iso3166.mjs` itself (first-entry-wins over `ALPHA3_TO_NUMERIC`'s own entries,
+with a comment explaining why SSD specifically wins) and pointed all five scripts plus
+`researchCityAdminLevels.mjs`'s own now-redundant local copy at it. A per-script patch would have fixed today's
+bug but left the same "five independent reversals of one table" structure ready to reintroduce it (or a
+different single-source-of-truth bug) the next time someone adds a build script that needs this lookup.
+
+**Re-ran all four live-affected scripts (`build:technology`, `build:military`, `build:economy`,
+`build:current-status`) plus `build:profiles`, and diffed the output rather than assuming the fix worked:**
+- Technology: South Sudan stayed `unavailable`, 0/4 — re-verified this is a real data gap, not the bug: World
+  Bank genuinely has none of R&D%/patents/high-tech-exports for South Sudan under `SSD` either, and ICT IDI
+  never covered it under any code.
+- Military: `null` → `27.8`, 1/3 → 3/3 components (personnel and %GDP both now resolve; expenditure was already
+  fine, since SIPRI matches Military by literal country name, not this table).
+- Economy: `null` → `15.6`, 0/5 → 5/5 components, every `sourceUrl` now correctly embeds `SSD`.
+- Current Status: `ethnicGroups` went from entirely missing to populated (`Dinka 37.5%, Nuer 15%`, CIA
+  Factbook fallback — South Sudan has no UNSD ethnicity table, so it still falls through to Factbook, just
+  correctly this time).
+- Confirmed via `grep -n "SDS" BACKLOG.md` after the gap-report sections regenerated: every remaining hit is
+  prose describing the historical bug, not a live gap-report line.
+- Economy's percentile-rank components shifted by fractions of a point for every *other* country too (e.g.
+  Afghanistan's composite `17.4` → `17.5`) — expected, not a regression: South Sudan now correctly joins the
+  193-country ranking pool it was silently excluded from before, which nudges everyone else's rank-based
+  percentile by the width of one more entry in the pool.
+
+**Second, unrelated bug found while re-running `build:profiles` to check `buildGovCapitalPopGdp.mjs` for real**
+(the 2026-09-04 finding had logged it as "not currently broken... but will break the same way next run," and
+this was the first time it was actually re-run since): the script fully rewrites `countryProfiles.ts` from its
+own loop over the 193 UN member states — which doesn't include Taiwan — so Taiwan's hand-added
+`COUNTRY_PROFILES` exception (added 2026-08-26, see `CLAUDE.md`'s "Taiwan recognized as a country" section)
+was silently deleted, not preserved. Caught by reviewing the diff before treating the regeneration as done
+(`git diff src/data/countryProfiles.ts` showed 17 deletions, 0 additions — a clear signal something hand-authored
+had been dropped, not just refreshed). Restored by hand, with a comment on the entry itself warning it needs
+re-adding after every future `build:profiles` run. Not fixed at the script level — no merge step exists to
+preserve an entry the loop doesn't manage — logged in `BACKLOG.md` as a real follow-up if this file ever grows
+more hand-added non-UN-193 exceptions.
+
 ## 2026-09-22 — City boundaries: real per-country data for all 193 UN members, US pipeline cutover, decision closed
 
 **The `city-boundaries-architecture` branch's core campaign is done.** Every one of the 193 UN member states now

@@ -122,7 +122,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { feature } from 'topojson-client'
 import * as XLSX from 'xlsx'
-import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { NUMERIC_TO_ALPHA3 } from './lib/iso3166.mjs'
 import { ISO3_TO_GEC } from './lib/gecCrossReference.mjs'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
@@ -352,8 +352,6 @@ const allCountries = feature(topology, topology.objects.countries)
   .sort((a, b) => a.name.localeCompare(b.name))
 
 const countries = isSample ? allCountries.filter((c) => SAMPLE_COUNTRIES.includes(c.name)) : allCountries
-
-const NUMERIC_TO_ALPHA3 = Object.fromEntries(Object.entries(ALPHA3_TO_NUMERIC).map(([a3, num]) => [num, a3]))
 
 // ---------------------------------------------------------------------------
 // Name matching — SIPRI/FAS source names vs this project's UN-193 topology

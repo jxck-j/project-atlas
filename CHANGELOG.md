@@ -17,6 +17,25 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.10.6 — Fixed South Sudan's SSD/SDS alias breaking 4 Intelligence Engine build scripts
+
+**Intelligence Engine, cross-cutting build-script fix.** `scripts/lib/iso3166.mjs`'s `ALPHA3_TO_NUMERIC`
+deliberately maps South Sudan to two alpha-3 codes (`SSD`, the real ISO code, and `SDS`, a Natural-Earth-only
+alias added for the states/provinces build). Five scripts each built their own numeric→alpha3 reverse lookup
+from that table with a naive last-write-wins reduction, which silently resolved South Sudan to the invalid
+`SDS` instead of `SSD` — World Bank's API 400s on `SDS` outright. Confirmed broken: `buildTechnology.mjs`
+(0/4 components), `buildMilitary.mjs` (1/3), `buildEconomy.mjs` (0/5), `buildCurrentStatus.mjs` (missing
+`ethnicGroups`). Fixed by centralizing a correct, first-entry-wins `NUMERIC_TO_ALPHA3` export in
+`iso3166.mjs` itself; all five scripts (plus `researchCityAdminLevels.mjs`, which already had its own correct
+copy) now import it instead of reimplementing the reversal. Re-ran all four affected build scripts plus
+`build:profiles`: South Sudan's Military score went `null` → `27.8` (3/3), Economy `null` → `15.6` (5/5),
+`ethnicGroups` now populates; Technology stayed `unavailable` (World Bank genuinely has none of the 4
+components under either code — a real gap, not this bug). Every other country's Economy percentile-rank
+figures shifted by fractions of a point, since South Sudan now correctly joins that ranking pool — expected,
+not a regression. See `BACKLOG.md`'s former "Confirmed instance" entry and `LOGBOOK.md` for the full trail,
+including a second bug the fix surfaced (`buildGovCapitalPopGdp.mjs` silently drops Taiwan's hand-added
+`countryProfiles.ts` entry on every regeneration — restored by hand, not yet fixed at the script level).
+
 ## v6.10.5 — States layer: 13 countries now show their true first-level divisions
 
 **Data Engine, states/provinces layer.** Reported directly: Catalonia (capital Barcelona) wasn't on the globe —

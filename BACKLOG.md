@@ -69,41 +69,54 @@ against every entity it's supposed to cover (not just the ones that already look
 South Sudan case was only found by querying it directly rather than trusting a script's own "0 coverage"
 report.
 
-### Confirmed instance: South Sudan's `SSD`/`SDS` alias breaks 5 build scripts' World Bank lookups
+### ~~Confirmed instance: South Sudan's `SSD`/`SDS` alias breaks 5 build scripts' World Bank lookups~~ — fixed
 
-**Confirmed 2026-09-04, not yet fixed.** `scripts/lib/iso3166.mjs`'s `ALPHA3_TO_NUMERIC` deliberately maps
+**Confirmed 2026-09-04, fixed 2026-09-22.** `scripts/lib/iso3166.mjs`'s `ALPHA3_TO_NUMERIC` deliberately maps
 South Sudan to two alpha-3 codes — `SSD` (the real ISO code) and `SDS` (a non-standard code Natural Earth's
 admin-1 layer uses, added 2026-08-17 specifically for `buildStatesProvincesTopology.mjs`'s benefit — see that
-file's own comment). Every script that builds a numeric-id → alpha3 reverse lookup from this table with a
-naive last-write-wins assignment (`map[num] = a3` for every entry, no dedup) silently resolves South Sudan to
+file's own comment). Every script that built its own numeric-id → alpha3 reverse lookup from this table with a
+naive last-write-wins assignment (`map[num] = a3` for every entry, no dedup) silently resolved South Sudan to
 `SDS` instead of `SSD` — and World Bank's API 400s on `SDS` outright (verified live:
 `.../country/SDS/indicator/SP.POP.TOTL` → `"Invalid value"`; `.../country/SSD/...` returns real data).
 
-Confirmed present in, and already shipping wrong data via:
-- `scripts/buildTechnology.mjs` — South Sudan's Technology score is `null`/`unavailable`, 0 of 4 components.
+Was present in, and shipping wrong data via:
+- `scripts/buildTechnology.mjs` — South Sudan's Technology score was `null`/`unavailable`, 0 of 4 components.
 - `scripts/buildMilitary.mjs` — personnel/%GDP both null (1 of 3 components; only the SIPRI-by-name
-  expenditure figure survives, since that match is by literal country name, not this table).
+  expenditure figure survived, since that match is by literal country name, not this table).
 - `scripts/buildEconomy.mjs` — Economy score `null`/`unavailable`, 0 of 5 components, every `sourceUrl`
-  literally embeds the invalid `SDS` code.
-- `scripts/buildCurrentStatus.mjs` — South Sudan's `ethnicGroups` field is missing entirely (the Factbook
-  fallback path shares the same broken alias).
-- `scripts/buildGovCapitalPopGdp.mjs` — not currently broken (`countryEconomics.ts` was last regenerated
-  2026-08-14, before the `SDS` alias existed) but will break the same way next run.
+  literally embedded the invalid `SDS` code.
+- `scripts/buildCurrentStatus.mjs` — South Sudan's `ethnicGroups` field was missing entirely (the Factbook
+  fallback path shared the same broken alias).
+- `scripts/buildGovCapitalPopGdp.mjs` — not actually broken by this bug on the 2026-09-22 re-run (see below
+  for what that re-run *did* break).
 
-Fix is mechanical and small — same shape as the one already applied in `researchCityAdminLevels.mjs`: make
-each reversal keep the first/canonical alias instead of whichever iterates last, or centralize a single
-correct `NUMERIC_TO_ALPHA3` export in `iso3166.mjs` itself so five scripts stop reimplementing the same
-reversal (and the same bug) independently. `scripts/buildStatesProvincesTopology.mjs`/
-`scripts/buildCitiesData.mjs` do a forward (`alpha3 → numeric`) lookup only, so they're unaffected by this
-specific bug shape. Not fixed in this pass — found via an investigation fork while working on
-`city-boundaries-architecture.md`'s own, unrelated `SSD`/`SDS` mixup; logged here rather than fixed
-opportunistically, since it touches shipped `main` behavior outside this branch's actual scope.
+**Fix**: centralized a single correct `NUMERIC_TO_ALPHA3` export in `iso3166.mjs` itself (first-entry-wins,
+same shape `researchCityAdminLevels.mjs` already had), and all five scripts plus
+`researchCityAdminLevels.mjs`'s own now-redundant local copy import it instead of each reimplementing the
+reversal. `scripts/buildStatesProvincesTopology.mjs`/`scripts/buildCitiesData.mjs` do a forward
+(`alpha3 → numeric`) lookup only, so they were never affected by this bug shape and needed no change.
+Re-ran all four affected build scripts (`build:technology`, `build:military`, `build:economy`,
+`build:current-status`) plus `build:profiles` — confirmed South Sudan's real data now lands: Technology stayed
+`unavailable` (World Bank genuinely has none of the 4 components for South Sudan under either code — not a
+join bug), but Military went `null` → `27.8` (3/3 components), Economy went `null` → `15.6` (5/5 components),
+and Current Status's `ethnicGroups` now populates (`Dinka 37.5%, Nuer 15%`, CIA Factbook). Every regenerated
+`sourceUrl` now correctly embeds `SSD`, confirmed via `grep -n "SDS" BACKLOG.md` finding only prose, no live
+gap-report entries. See `LOGBOOK.md` for the fix.
+
+**Found in the course of this fix, not by the original 2026-09-04 investigation**: running `build:profiles`
+(`buildGovCapitalPopGdp.mjs`) for the first time since Taiwan's hand-added `COUNTRY_PROFILES` exception was
+added (2026-08-26) silently deleted that entry — the script fully rewrites `countryProfiles.ts` from its own
+193-UN-member loop, which doesn't include Taiwan, so anything hand-added outside that loop doesn't survive a
+regeneration. Restored by hand, with a new comment on the entry itself warning that it needs re-adding after
+every future `build:profiles` run. Not fixed at the script level (no dedicated "preserve extra entries the
+loop doesn't manage" merge step) — worth doing for real if this file gains more hand-added
+non-UN-193 exceptions.
 
 ## Data sourcing (`buildTechnology.mjs`)
 
 <!-- BEGIN buildTechnology.mjs gap report -->
 
-**Generated by `npm run build:technology` (`scripts/buildTechnology.mjs`), 2026-08-27.** Technology category component fields that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates the 3 WDI-sourced components' gaps; the ICT Development Index gap list only changes if IDI_2024 is hand-updated (see scripts/buildTechnology.mjs's own header comment).
+**Generated by `npm run build:technology` (`scripts/buildTechnology.mjs`), 2026-09-22.** Technology category component fields that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates the 3 WDI-sourced components' gaps; the ICT Development Index gap list only changes if IDI_2024 is hand-updated (see scripts/buildTechnology.mjs's own header comment).
 
 - **[Afghanistan] Patent applications, residents:** World Bank has no IP.PAT.RESD value for AFG in range — left unscored.
 - **[Afghanistan] R&D expenditure (% GDP):** World Bank has no GB.XPD.RSDV.GD.ZS value for AFG in range — left unscored.
@@ -213,10 +226,10 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **[Somalia] High-tech exports (% of manufactured exports):** World Bank has no TX.VAL.TECH.MF.ZS value for SOM in range — left unscored.
 - **[Somalia] Patent applications, residents:** World Bank has no IP.PAT.RESD value for SOM in range — left unscored.
 - **[Somalia] R&D expenditure (% GDP):** World Bank has no GB.XPD.RSDV.GD.ZS value for SOM in range — left unscored.
-- **[South Sudan] High-tech exports (% of manufactured exports):** World Bank has no TX.VAL.TECH.MF.ZS value for SDS in range — left unscored.
-- **[South Sudan] ICT Development Index:** No ITU IDI 2024 entry for SDS — not published/not an ITU member — left unscored.
-- **[South Sudan] Patent applications, residents:** World Bank has no IP.PAT.RESD value for SDS in range — left unscored.
-- **[South Sudan] R&D expenditure (% GDP):** World Bank has no GB.XPD.RSDV.GD.ZS value for SDS in range — left unscored.
+- **[South Sudan] High-tech exports (% of manufactured exports):** World Bank has no TX.VAL.TECH.MF.ZS value for SSD in range — left unscored.
+- **[South Sudan] ICT Development Index:** No ITU IDI 2024 entry for SSD — not published/not an ITU member — left unscored.
+- **[South Sudan] Patent applications, residents:** World Bank has no IP.PAT.RESD value for SSD in range — left unscored.
+- **[South Sudan] R&D expenditure (% GDP):** World Bank has no GB.XPD.RSDV.GD.ZS value for SSD in range — left unscored.
 - **[Sudan] ICT Development Index:** No ITU IDI 2024 entry for SDN — not published/not an ITU member — left unscored.
 - **[Suriname] Patent applications, residents:** World Bank has no IP.PAT.RESD value for SUR in range — left unscored.
 - **[Suriname] R&D expenditure (% GDP):** World Bank has no GB.XPD.RSDV.GD.ZS value for SUR in range — left unscored.
@@ -247,9 +260,9 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 <!-- BEGIN buildCurrentStatus.mjs gap report -->
 
-**Generated by `npm run build:current-status` (`scripts/buildCurrentStatus.mjs`), 2026-08-27.** Gleditsch-Ward country codes referenced by UCDP conflict data that couldn't be resolved to a UN-193 Country this run. Re-running the script regenerates this list.
+**Generated by `npm run build:current-status` (`scripts/buildCurrentStatus.mjs`), 2026-09-22.** Gleditsch-Ward country codes referenced by UCDP conflict data that couldn't be resolved to a UN-193 Country this run. Re-running the script regenerates this list.
 
-**Standing deviations/limitations** (see scripts/buildCurrentStatus.mjs's own header comment for the full reasoning): `sanctionTier`/`sanctionPrograms` are a hand-maintained static seed (three OFAC tiers — RED/ORANGE/YELLOW — as of 2026-08-27), not a live pull. **RED tier is fully verified** against each program's own OFAC regulatory text (Cuba, Iran, North Korea, Syria). **ORANGE tier** (Russia, Belarus, Venezuela, Myanmar, Sudan, Nicaragua) **and YELLOW tier** (Afghanistan, Central African Republic, Democratic Republic of the Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia, South Sudan, Yemen) are seeded from secondary-source characterization only — cross-referenced across several independent sanctions-compliance sites, internally consistent, but NOT yet individually checked against each country's own OFAC program page the way RED was, and the `sanctionPrograms` name text for those two tiers is a reasonable approximation of OFAC's naming convention, not copied verbatim from each program's own page either. **TODO before this ships as anything more than portfolio-demo-confidence data: verify every ORANGE/YELLOW tier assignment and program name against https://ofac.treasury.gov/sanctions-programs-and-country-information and each country's own program page.** Separately: this whole dataset is a static seed, not a live pull — **candidate for a live OFAC pull** if this project ever needs sanction-status freshness tighter than "update by hand when it changes." And unrelated to sanctions: the UCDP API (as opposed to the direct CSV downloads this script uses) requires a free but manually-issued access token — not something this script can obtain on its own; if a future need arises for API-only UCDP data (e.g. finer-grained event queries), that token would need to be requested by a human from UCDP's API maintainer first.
+**Standing deviations/limitations** (see scripts/buildCurrentStatus.mjs's own header comment for the full reasoning): `sanctionTier`/`sanctionPrograms` are a hand-maintained static seed (three OFAC tiers — RED/ORANGE/YELLOW — as of 2026-09-22), not a live pull. **RED tier is fully verified** against each program's own OFAC regulatory text (Cuba, Iran, North Korea, Syria). **ORANGE tier** (Russia, Belarus, Venezuela, Myanmar, Sudan, Nicaragua) **and YELLOW tier** (Afghanistan, Central African Republic, Democratic Republic of the Congo, Ethiopia, Iraq, Lebanon, Libya, Mali, Somalia, South Sudan, Yemen) are seeded from secondary-source characterization only — cross-referenced across several independent sanctions-compliance sites, internally consistent, but NOT yet individually checked against each country's own OFAC program page the way RED was, and the `sanctionPrograms` name text for those two tiers is a reasonable approximation of OFAC's naming convention, not copied verbatim from each program's own page either. **TODO before this ships as anything more than portfolio-demo-confidence data: verify every ORANGE/YELLOW tier assignment and program name against https://ofac.treasury.gov/sanctions-programs-and-country-information and each country's own program page.** Separately: this whole dataset is a static seed, not a live pull — **candidate for a live OFAC pull** if this project ever needs sanction-status freshness tighter than "update by hand when it changes." And unrelated to sanctions: the UCDP API (as opposed to the direct CSV downloads this script uses) requires a free but manually-issued access token — not something this script can obtain on its own; if a future need arises for API-only UCDP data (e.g. finer-grained event queries), that token would need to be requested by a human from UCDP's API maintainer first.
 
 - None this run — every referenced Gleditsch-Ward code resolved to a UN-193 Country.
 
@@ -257,7 +270,7 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 <!-- BEGIN buildCurrentStatus.mjs demographics gap report -->
 
-**Generated by `npm run build:current-status` (`scripts/buildCurrentStatus.mjs`), 2026-08-27.** Countries where the CIA World Factbook's "Ethnic groups"/"Religions" text either had no field at all, or had one but it contained no parseable "<name> <pct>%" clause (see this script's own DEMOGRAPHICS header comment for real examples — free text with no percentages at all, or percentages nested inside a parenthetical aside rather than a top-level clause). Left `undefined`, never fabricated. Re-running the script regenerates this list.
+**Generated by `npm run build:current-status` (`scripts/buildCurrentStatus.mjs`), 2026-09-22.** Countries where the CIA World Factbook's "Ethnic groups"/"Religions" text either had no field at all, or had one but it contained no parseable "<name> <pct>%" clause (see this script's own DEMOGRAPHICS header comment for real examples — free text with no percentages at all, or percentages nested inside a parenthetical aside rather than a top-level clause). Left `undefined`, never fabricated. Re-running the script regenerates this list.
 
 - **[Afghanistan (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("current, reliable statistical data on ethnicity in Afghanistan are not available; Afghanistan's 2004 Constitution cited Pashtun, Tajik, Hazara, Uzbek, Turkman, Baluch, Pashaie, Nuristani, Aymaq, Arab, Qirghiz, Qizilbash, Gujur, and Brahwui ethnicities; Afghanistan has dozens of other small ethnic groups") — left unsourced.
 - **[Bolivia (ethnicity, UNSD)]:** 2012: largest group is "Unknown" at 58.25% — a generic/residual bucket dominating the result, not a real named group. Deferred to the Factbook fallback instead of storing this (see isDominatedByGenericBucket()'s own comment for the reasoning).
@@ -289,7 +302,6 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **[Seychelles (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("predominantly Creole (mainly of East African and Malagasy heritage); also French, Indian, Chinese, and Arab populations") — left unsourced.
 - **[Somalia (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("predominantly Somali with lesser numbers of Arabs, Bantus, and others") — left unsourced.
 - **[South Korea (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("Korean") — left unsourced.
-- **[South Sudan (Factbook fallback)]:** No factbook.json path resolved for this country — left unsourced.
 - **[Sudan (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("Sudanese Arab (approximately 70%), Fur, Beja, Nuba, Ingessana, Uduk, Fallata, Masalit, Dajo, Gimir, Tunjur, Berti; there are over 500 ethnic groups") — left unsourced.
 - **[Syria (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("Arab ~50%, Alawite ~15%, Kurd ~10%, Levantine ~10%, other ~15% (includes Druze, Ismaili, Imami, Nusairi, Assyrian, Turkoman, Armenian)") — left unsourced.
 - **[Timor-Leste (Factbook fallback)]:** "Ethnic groups" text has no parseable percentages ("Austronesian (Malayo-Polynesian) (includes Tetun, Mambai, Tokodede, Galoli, Kemak, Baikeno), Melanesian-Papuan (includes Bunak, Fataluku, Bakasai), small Chinese minority") — left unsourced.
@@ -302,7 +314,7 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 <!-- BEGIN buildEconomy.mjs gap report -->
 
-**Generated by `npm run build:economy` (`scripts/buildEconomy.mjs`), 2026-08-23.** Economy category component fields that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates this list.
+**Generated by `npm run build:economy` (`scripts/buildEconomy.mjs`), 2026-09-22.** Economy category component fields that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates this list.
 
 **Tie-handling convention** (see scripts/buildEconomy.mjs's own header comment): percentile rank uses average/fractional rank for ties, confirmed with the user before this script was written, per Intelligence Docs/buildEconomy-prompt.md's explicit "stop and ask before picking a tie-breaking convention" instruction.
 
@@ -334,11 +346,6 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **[San Marino] unemployment rate:** World Bank has no SL.UEM.TOTL.ZS value for SMR in range — left unscored.
 - **[Seychelles] unemployment rate:** World Bank has no SL.UEM.TOTL.ZS value for SYC in range — left unscored.
 - **[Somalia] inflation (CPI):** World Bank has no FP.CPI.TOTL.ZG value for SOM in range — left unscored.
-- **[South Sudan] GDP (nominal):** World Bank has no NY.GDP.MKTP.CD value for SDS in range — left unscored.
-- **[South Sudan] GDP growth (5yr avg):** World Bank has no NY.GDP.MKTP.KD.ZG values for SDS in range — left unscored.
-- **[South Sudan] GDP per capita PPP:** World Bank has no NY.GDP.PCAP.PP.CD value for SDS in range — left unscored.
-- **[South Sudan] inflation (CPI):** World Bank has no FP.CPI.TOTL.ZG value for SDS in range — left unscored.
-- **[South Sudan] unemployment rate:** World Bank has no SL.UEM.TOTL.ZS value for SDS in range — left unscored.
 - **[Turkmenistan] inflation (CPI):** World Bank has no FP.CPI.TOTL.ZG value for TKM in range — left unscored.
 - **[Tuvalu] unemployment rate:** World Bank has no SL.UEM.TOTL.ZS value for TUV in range — left unscored.
 
@@ -348,7 +355,7 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 <!-- BEGIN buildMilitary.mjs gap report -->
 
-**Generated by `npm run build:military` (`scripts/buildMilitary.mjs`), 2026-08-26.** Military category coverage-gap fields (expenditure/%GDP/personnel) that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates this list.
+**Generated by `npm run build:military` (`scripts/buildMilitary.mjs`), 2026-09-22.** Military category coverage-gap fields (expenditure/%GDP/personnel) that couldn't be sourced cleanly this run — left unscored, not guessed. Re-running the script regenerates this list.
 
 **Standing deviations from the locked design** (see scripts/buildMilitary.mjs's own header comment for the full reasoning): Air fleet size (component #5, FlightGlobal) is not implemented — the source is a paid subscription paywall with no free/citable equivalent found. Arms import/export dependency (component #7, SIPRI TIV) was demoted 2026-08-20 from a scored component to a non-scoring annotation — the `100 - normalized` inversion assumed low import volume signals resilience, but that direction doesn't reliably hold once alliance-embedded procurement (reads as "import-dependent" the same as genuine exposure) and too-small-to-import micro-states (score identically to genuinely self-sufficient ones) are both in the data, and this project doesn't source the supplier-diversity/alliance-context data that would be needed to tell them apart. Still sourced and displayed (see `annotations.armsImportTiv` in src/data/militaryScores.ts), just not blended into `value`. Coverage floor/confidence tiers were revised to 3 coverage-gap components (>= 2 of 3 present) accordingly.
 
@@ -383,8 +390,6 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 - **[Solomon Islands] %GDP:** World Bank has no MS.MIL.XPND.GD.ZS value for SLB in range — left unscored.
 - **[Solomon Islands] expenditure:** Not present in SIPRI Milex xlsx (name unmatched or genuinely absent) — left unscored.
 - **[Solomon Islands] personnel:** No WDI value and no factbook.json personnel-strengths text — left unscored.
-- **[South Sudan] %GDP:** World Bank has no MS.MIL.XPND.GD.ZS value for SDS in range — left unscored.
-- **[South Sudan] personnel:** No WDI value and no factbook.json path resolved — left unscored.
 - **[Suriname] %GDP:** World Bank has no MS.MIL.XPND.GD.ZS value for SUR in range — left unscored.
 - **[Suriname] expenditure:** Not present in SIPRI Milex xlsx (name unmatched or genuinely absent) — left unscored.
 - **[Tonga] %GDP:** World Bank has no MS.MIL.XPND.GD.ZS value for TON in range — left unscored.
@@ -445,7 +450,7 @@ opportunistically, since it touches shipped `main` behavior outside this branch'
 
 <!-- BEGIN buildGovCapitalPopGdp.mjs gap report -->
 
-**Generated by `npm run build:profiles` (`scripts/buildGovCapitalPopGdp.mjs`), 2026-08-14.** Every field below couldn't be sourced cleanly from World Bank/factbook.json this run: either it fell back to countryProfiles.ts's prior value (capital/government), cited an older year than 2024 explicitly (population/GDP — see countryEconomics.ts's populationYear/gdpYear), or was left unscored entirely (a genuine gap in the source, no figure at any year in the lookback window). Re-running the script regenerates this list — don't hand-edit it.
+**Generated by `npm run build:profiles` (`scripts/buildGovCapitalPopGdp.mjs`), 2026-09-22.** Every field below couldn't be sourced cleanly from World Bank/factbook.json this run: either it fell back to countryProfiles.ts's prior value (capital/government), cited an older year than 2024 explicitly (population/GDP — see countryEconomics.ts's populationYear/gdpYear), or was left unscored entirely (a genuine gap in the source, no figure at any year in the lookback window). Re-running the script regenerates this list — don't hand-edit it.
 
 - **[Afghanistan] area:** World Bank's most recent AG.LND.TOTL.K2 figure for AFG is 2023 (no 2024 figure reported yet) — cited explicitly as 2023 rather than backfilled as current.
 - **[Albania] area:** World Bank's most recent AG.LND.TOTL.K2 figure for ALB is 2023 (no 2024 figure reported yet) — cited explicitly as 2023 rather than backfilled as current.

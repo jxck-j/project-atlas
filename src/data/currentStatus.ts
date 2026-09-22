@@ -1690,6 +1690,8 @@ export const CURRENT_STATUS: Record<string, CurrentStatus> = {
     ],
     sanctionTier: "yellow",
     sanctionPrograms: ["South Sudan-Related Sanctions"],
+    ethnicGroups: [{ name: "Dinka", pct: 37.5 }, { name: "Nuer", pct: 15 }],
+    ethnicGroupsSnapshotDate: "CIA Factbook 2026-01",
     religions: [{ name: "Catholics", pct: 53.36 }, { name: "Ethnic religionists", pct: 32.95 }, { name: "Protestants", pct: 24.84 }, { name: "Muslims", pct: 6.26 }, { name: "Independents", pct: 1.46 }, { name: "Agnostics", pct: 0.4 }, { name: "unaffiliated Christians", pct: 0.32 }, { name: "Atheists", pct: 0.04 }, { name: "Orthodox", pct: 0.02 }, { name: "Baha'is", pct: 0.01 }],
     religionsSnapshotDate: "World Religion Database (Brill), via ARDA 2025",
   },

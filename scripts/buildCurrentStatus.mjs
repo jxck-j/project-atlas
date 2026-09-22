@@ -342,7 +342,7 @@ import { feature } from 'topojson-client'
 import { parseCsv } from './lib/csv.mjs'
 import { readZipEntry } from './lib/zip.mjs'
 import { parseGwStatesFile, buildCurrentGwNameMap, GW_NAME_ALIASES } from './lib/gleditschWard.mjs'
-import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { NUMERIC_TO_ALPHA3 } from './lib/iso3166.mjs'
 import { ISO3_TO_GEC } from './lib/gecCrossReference.mjs'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
@@ -583,8 +583,6 @@ const countries = sampleArg ? allCountries.filter((c) => SAMPLE_COUNTRIES.includ
 // factbook.json path for demographics. Taiwan (id 'taiwan', not a numeric
 // topology id) is handled as a special case in resolveDemographics below,
 // the same way buildMilitary.mjs hand-resolves Taiwan's own factbook path.
-const NUMERIC_TO_ALPHA3 = Object.fromEntries(Object.entries(ALPHA3_TO_NUMERIC).map(([a3, num]) => [num, a3]))
-
 function normalizeName(name) {
   return name
     .normalize('NFD')

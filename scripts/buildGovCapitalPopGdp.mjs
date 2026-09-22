@@ -67,7 +67,7 @@
 // its two .ts sources via tsx instead of plain node.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
-import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { NUMERIC_TO_ALPHA3 } from './lib/iso3166.mjs'
 import { ISO3_TO_GEC } from './lib/gecCrossReference.mjs'
 import { COUNTRY_PROFILES as OLD_PROFILES } from '../src/data/countryProfiles.ts'
 
@@ -171,8 +171,6 @@ const allCountries = feature(topology, topology.objects.countries)
   .sort((a, b) => a.name.localeCompare(b.name))
 
 const countries = isSample ? allCountries.slice(0, sampleSize) : allCountries
-
-const NUMERIC_TO_ALPHA3 = Object.fromEntries(Object.entries(ALPHA3_TO_NUMERIC).map(([a3, num]) => [num, a3]))
 
 console.log(`Fetching factbook.json's file tree (one request) to resolve GEC code -> region path...`)
 const tree = await fetchJsonRetry(FACTBOOK_TREE_URL)

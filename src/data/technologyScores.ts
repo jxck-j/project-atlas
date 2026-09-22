@@ -2176,9 +2176,9 @@ export const TECHNOLOGY_SCORES: Record<string, TechnologyScore> = {
     coveragePresent: 0,
     coverageTotal: 4,
     components: {
-      rdExpenditurePctGdp: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SDS/indicator/GB.XPD.RSDV.GD.ZS" },
-      patentsPerMillion: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SDS/indicator/IP.PAT.RESD" },
-      highTechExportsPct: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SDS/indicator/TX.VAL.TECH.MF.ZS" },
+      rdExpenditurePctGdp: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SSD/indicator/GB.XPD.RSDV.GD.ZS" },
+      patentsPerMillion: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SSD/indicator/IP.PAT.RESD" },
+      highTechExportsPct: { raw: null, normalized: null, sourceUrl: "https://api.worldbank.org/v2/country/SSD/indicator/TX.VAL.TECH.MF.ZS" },
       ictDevelopmentIndex: { raw: null, normalized: null, year: 2022 },
     },
   },

@@ -71,7 +71,7 @@
 // existing .ts source needs importing.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
-import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'
+import { NUMERIC_TO_ALPHA3 } from './lib/iso3166.mjs'
 
 const COUNTRIES_SOURCE = 'public/geo/countries-un193.json'
 const OUTPUT = 'src/data/technologyScores.ts'
@@ -171,8 +171,6 @@ const allCountries = feature(topology, topology.objects.countries)
   .sort((a, b) => a.name.localeCompare(b.name))
 
 const countries = isSample ? allCountries.filter((c) => SAMPLE_COUNTRIES.includes(c.name)) : allCountries
-
-const NUMERIC_TO_ALPHA3 = Object.fromEntries(Object.entries(ALPHA3_TO_NUMERIC).map(([a3, num]) => [num, a3]))
 
 // ---------------------------------------------------------------------------
 // Gap log

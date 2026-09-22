@@ -274,3 +274,23 @@ export const ALPHA3_TO_NUMERIC = {
   ZMB: "894",
   ZWE: "716",
 }
+
+// Numeric country code -> canonical ISO 3166-1 alpha-3, i.e. the reverse of
+// ALPHA3_TO_NUMERIC above. Built with "first entry wins" rather than a naive
+// last-write-wins Object.fromEntries reversal, because ALPHA3_TO_NUMERIC has
+// exactly one duplicate numeric value on purpose (SSD/SDS, both "728" — see
+// that entry's own comment): South Sudan's real ISO code, SSD, is listed
+// first, so it wins here. A naive reversal instead produces "SDS" for South
+// Sudan, which isn't a real ISO code — World Bank's API 400s on it outright,
+// and it 404s against geoBoundaries too. Confirmed 2026-09-04
+// (researchCityAdminLevels.mjs) to be the only duplicate numeric id in this
+// table today. Five other scripts (buildTechnology.mjs, buildMilitary.mjs,
+// buildEconomy.mjs, buildCurrentStatus.mjs, buildGovCapitalPopGdp.mjs) used
+// to each reimplement this same reversal independently, with the naive
+// last-write-wins version — see BACKLOG.md's "Confirmed instance: South
+// Sudan's SSD/SDS alias" entry and LOGBOOK.md for the fix. Import this
+// export instead of reversing ALPHA3_TO_NUMERIC yourself.
+export const NUMERIC_TO_ALPHA3 = {}
+for (const [alpha3, numeric] of Object.entries(ALPHA3_TO_NUMERIC)) {
+  if (!NUMERIC_TO_ALPHA3[numeric]) NUMERIC_TO_ALPHA3[numeric] = alpha3
+}
