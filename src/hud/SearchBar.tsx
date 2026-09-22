@@ -21,6 +21,14 @@ import { ICONS } from './iconPaths'
 const UP_AXIS = new Vector3(0, 1, 0)
 const MAX_RESULTS = 8
 
+// The only country whose city-boundary search results are qualified by
+// state/province rather than country name — see cityBoundaryEntries below.
+// Direct feedback: every other state-sharded country (Russia, Mexico,
+// Brazil, ...) read as confusing with a bare region code/abbreviation
+// behind the city (e.g. "Saint Petersburg, SPE") where a user expects to
+// recognize the country instead.
+const US_COUNTRY_ID = '840'
+
 // A handful of cities.json's "major world city" entries (Washington D.C.,
 // New York, Chicago, Amman, Kuwait City, ...) name the exact same real-world
 // place as one specific record in the much larger city-boundary index —
@@ -60,13 +68,14 @@ function baseCityName(name: string): string {
 // covers today (Jordan, Kuwait, US) — see city-boundaries-architecture.md.
 interface SearchEntry {
   id: string
-  // Every 'city-boundary' entry always carries its state/province/country
-  // behind it — direct requirement, not conditional on whether the name
-  // happens to collide with anything else in the index. "City, ST" for a
-  // state-sharded country (e.g. "Austin, TX" — see
-  // scene/useCityOutline.ts's STATE_SHARDED_COUNTRIES); "City, Country" for
-  // every other one (e.g. "Amman, Jordan", "Houston, Canada", "Houston,
-  // United Kingdom").
+  // Every 'city-boundary' entry always carries a qualifier behind it —
+  // direct requirement, not conditional on whether the name happens to
+  // collide with anything else in the index.
+  // 'City, ST' for a US city-boundary entry (see US_COUNTRY_ID below);
+  // 'City, Country' for every other one, including every other
+  // state-sharded country (e.g. "Saint Petersburg, Russia", not "Saint
+  // Petersburg, SPE") — direct feedback that a region code/abbreviation
+  // read as unrecognizable next to a country name.
   name: string
   kind: 'country' | GeoEntityType | 'city-boundary'
   lat: number
@@ -144,16 +153,25 @@ export function SearchBar() {
   // geometry" reasoning as geoEntityGeometryEntries above, but every
   // feature's geometry id already equals its entity id (see
   // useStatesProvincesFeatures.ts) — no ENTITY_GEOMETRY_IDS lookup needed.
+  // Always qualified with the parent country's name (registerEntity() in
+  // useStatesProvincesFeatures.ts stamps every division's parentEntity
+  // displayName from the same build-time data) — same "always qualify,
+  // don't wait for a name collision" requirement as cityBoundaryEntries
+  // below, since province names collide across countries just as often as
+  // city names do (e.g. "Amazonas" in Brazil/Venezuela/Colombia/Peru,
+  // "Punjab" in India/Pakistan).
   const provinceEntries = useMemo<SearchEntry[]>(() => {
     return provinceFeatures.flatMap((f) => {
       const id = f.id !== undefined && f.id !== null ? String(f.id) : undefined
       if (!id) return []
       const registryEntity = getEntity(id)
+      const baseName = registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown'
+      const countryName = registryEntity?.parentEntity?.displayName
       const centroid = geometryToCentroid(f.geometry)
       return [
         {
           id,
-          name: registryEntity?.name ?? (f.properties?.name as string) ?? 'Unknown',
+          name: countryName ? `${baseName}, ${countryName}` : baseName,
           kind: registryEntity?.type ?? ('administrative-division' as const),
           lat: centroid.lat,
           lng: centroid.lng,
@@ -225,18 +243,24 @@ export function SearchBar() {
   // entry ALWAYS gets a qualifier — direct requirement, not conditional on
   // whether the bare name happens to collide with anything else in the
   // index (an earlier version only qualified on collision; changed after
-  // direct feedback). State-sharded countries get their state (see
-  // scene/useCityOutline.ts's STATE_SHARDED_COUNTRIES) — uppercased for
-  // display, since the underlying stateAbbrev is a lowercase shard-file name
-  // (scene/useCityOutline.ts's shardUrl()), not necessarily how the
-  // abbreviation itself is conventionally written. Every other entry gets
-  // its country name. This does mean exact-name ranking (see `matches`
-  // below) essentially never fires for a city-boundary result any more —
-  // accepted, since always showing the qualifier was the explicit ask.
+  // direct feedback). Only the US gets its state (uppercased for display,
+  // since the underlying stateAbbrev is a lowercase shard-file name — see
+  // scene/useCityOutline.ts's shardUrl() — not necessarily how the
+  // abbreviation itself is conventionally written); every other
+  // state-sharded country (Russia, Mexico, Brazil, Peru, Argentina, France,
+  // Germany, Italy, Spain, China, Indonesia, India — see
+  // scene/useCityOutline.ts's STATE_SHARDED_COUNTRIES) still shards its
+  // data by state/province for storage, but search shows its country name
+  // instead of that region, same as every non-sharded country — direct
+  // feedback that a bare region code (e.g. "Saint Petersburg, SPE") read as
+  // unrecognizable where a country name wouldn't. This does mean exact-name
+  // ranking (see `matches` below) essentially never fires for a
+  // city-boundary result any more — accepted, since always showing the
+  // qualifier was the explicit ask.
   const cityBoundaryEntries = useMemo<SearchEntry[]>(() => {
     return cityIndex.map((entry) => {
       const countryName = entry.countryId ? countryNameById.get(entry.countryId) : undefined
-      const name = entry.stateAbbrev
+      const name = entry.stateAbbrev && entry.countryId === US_COUNTRY_ID
         ? `${entry.name}, ${entry.stateAbbrev.toUpperCase()}`
         : countryName
           ? `${entry.name}, ${countryName}`

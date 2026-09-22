@@ -2669,10 +2669,26 @@ React) rather than just reasoning about it. Typecheck/lint/Vitest all clean afte
 
 **Verification:** typecheck, lint, and Vitest all clean; `city-boundaries-index.json` regenerated (218,736
 entries, 193 countries, unchanged counts per country — only lat/lng values and this file's own internal
-US-specific code path changed). **Not yet checked in the browser** — a real look at US city label positions
-(especially the corrected ones: Houston, Dallas, San Antonio, Corpus Christi, San Diego, Tulsa) and search
-results (state/country-qualifier display, including the Houston collision fix above) is still owed. Migration
-plan step 6 (write the final decision into LOGBOOK.md, once browser-verified) is still open.
+US-specific code path changed). Migration plan step 6 (write the final decision into LOGBOOK.md, once
+browser-verified) is still open.
+
+**Thirty-second pass (2026-09-22): two follow-ups from J's own browser verification pass.** First real
+finding: Saint Petersburg's search result read "Saint Petersburg, SPE" — a Russian federal-subject code, not a
+recognizable qualifier. Root cause: the Thirty-first pass's "always qualify" fix (above) treated every
+`STATE_SHARDED_COUNTRIES` entry the same as the US, showing its region abbreviation — correct for the US
+("Richmond, CA"), but every other state-sharded country (Russia, Mexico, Brazil, Peru, Argentina, France,
+Germany, Italy, Spain, China, Indonesia, India) shards its data by state/province purely for file-size
+reasons, not because a user would recognize the region code the way a US postal abbreviation reads. Fixed in
+`hud/SearchBar.tsx`'s `cityBoundaryEntries`: the state-abbreviation qualifier now only applies when
+`entry.countryId === US_COUNTRY_ID` ('840'); every other state-sharded country falls through to its country
+name instead, same as a non-sharded country already did — "Saint Petersburg, Russia", not "Saint Petersburg,
+SPE". Second, unrelated addition in the same session: admin-division (state/province) search results had no
+qualifier at all (a bare "Amazonas" doesn't say which of Brazil/Peru/Colombia/Venezuela), unlike
+city-boundary results, which already always qualify — `provinceEntries` now appends the parent country's name
+(`registryEntity.parentEntity.displayName`, already stamped onto every division at registration time in
+`useStatesProvincesFeatures.ts`) the same unconditional way city-boundary entries do. Typecheck/lint clean;
+browser-verified by J directly (this fix was written in response to a live browser check, not caught by
+inspection).
 
 ## Migration plan
 
