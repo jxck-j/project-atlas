@@ -66,6 +66,14 @@ describe('classifyText', () => {
     expect(c.severity).not.toBe('critical')
   })
 
+  it('a death toll accumulated across a recurring campaign caps at Major, not the single-incident mass-casualty Critical (J, 2026-09-21)', () => {
+    // The real headline this was found from.
+    expect(classifyText('US strikes on alleged drug boats may constitute crimes against humanity, UN expert says. Dozens of US attacks on boats in the Pacific and Caribbean have killed more than 230 people since September 2025.').severity).toBe('major')
+    expect(classifyText('Militant attacks in the region have killed over 500 people since the start of the year.').severity).not.toBe('critical')
+    // A genuine single-incident toll of the same magnitude is unaffected.
+    expect(classifyText('Airstrike kills 230 people in single strike on market').severity).toBe('critical')
+  })
+
   it('a bare "m"/"k" unit only scales a number when it is actually an abbreviation, not the start of the next word', () => {
     // Found 2026-09-21 mining the archive for label candidates: "28 militants" was reading as
     // "28 million" because the unit suffix had no word boundary, matching the 'm' of "militants".

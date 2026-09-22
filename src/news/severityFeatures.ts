@@ -36,6 +36,7 @@ const TAG_ORDER: TopicTag[] = [
 const FLAG_NAMES = [
   'headOfStateDeathClaim',
   'unconfirmedSelfClaim',
+  'cumulativeToll',
   'wmd',
   'pheic',
   'embassyAttack',

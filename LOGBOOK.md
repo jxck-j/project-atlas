@@ -5,6 +5,19 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Cumulative death toll capped at Major (J's call on the rubric gap below)
+
+**Settled the rubric gap the archive-mining entry below found:** J's call was to cap it, not leave it —
+a running total accumulated across a recurring campaign should not alone reach Critical via the
+single-incident mass-casualty rule. Added `CUMULATIVE_TOLL_RE` (`classify.ts`), matching the mechanical
+"since [year]"/"since the start of"/"over the past N months" framing actually seen in the real headline,
+and gated only the CONFLICT/TERRORISM mass-casualty Critical trigger on it (`!f.cumulativeToll &&
+massCasualtySeverity(deaths) === 'critical'`) — the WMD trigger and the humanitarian-disaster branch are
+untouched, since a disaster's toll "since it began" still describes one disaster, a different shape from
+a recurring campaign's running total. The real drug-boat-strikes headline now tiers Major (still reaches
+it via the ordinary strike+casualty rule, unaffected by the cap); a genuine single-incident 230-death
+headline with no cumulative framing is confirmed still Critical (`pipeline.test.ts`). All 320 tests pass.
+
 ## 2026-09-21 — Mining the archive for label candidates (step 3): a real regex bug found, a rubric gap surfaced, modest yield
 
 **Follow-up to the facts-based severity model entry above.** Built `scripts/mineNewsLabelCandidates.mjs`

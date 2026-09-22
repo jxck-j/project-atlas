@@ -201,6 +201,18 @@ const INDEPENDENT_CONFIRMATION_RE = /\b(independently (?:confirmed|verified)|con
 // death claim — see the Haiti/Kosovo cases in LOGBOOK.md's severity-review entry.
 const LEGAL_FOLLOWUP_RE = /\b(extradit\w+|sentenc\w+|convict\w+|verdict|trial|indict\w+|charged (?:with|over)|arrested (?:over|in connection with)|suspects?|anniversary|years? (?:after|since|on))\b/i
 
+// Settled call (2026-09-21, J): a death toll accumulated across a recurring campaign is capped at Major via
+// this gate, not Critical via the single-incident mass-casualty rule — found via a real headline, "US
+// attacks on boats... have killed more than 230 people since September 2025": 230 is a running total over
+// roughly a year of separate strikes, not one incident's toll, and design §5's mass-casualty trigger (and
+// `HumanitarianFigures`'s own doc comment) both assume a single reported incident. `DEATHS_RES` can't tell
+// "230 in this strike" from "230 since a year-old date" apart on its own, so this only blocks the
+// CONFLICT/TERRORISM mass-casualty trigger specifically (a natural disaster's toll "since it began" is
+// still describing ONE disaster, a different case) — it still lands at Major via the ordinary
+// strike+casualty rule below, unaffected. Deliberately narrow: matches the mechanical "since [year]"/"since
+// the start of"/"over the past N months" framing actually seen, not a general recurring-campaign detector.
+const CUMULATIVE_TOLL_RE = /\b(?:since\s+(?:[\p{L}]+\s+)?(?:19|20)\d{2}\b|since\s+the\s+(?:start|beginning|onset)\s+of\b|over\s+the\s+(?:past|last)\s+\d+\s+(?:months?|years?)\b|combined\s+(?:death\s+)?toll)\b/iu
+
 function scaled(match: RegExpMatchArray): number {
   const base = Number.parseFloat(match[1].replace(/,/g, ''))
   const unit = match[2]?.toLowerCase()
@@ -231,6 +243,7 @@ export interface SeverityFacts {
   evacuationOrdered: number
   headOfStateDeathClaim: boolean
   unconfirmedSelfClaim: boolean
+  cumulativeToll: boolean
   wmd: boolean
   pheic: boolean
   embassyAttack: boolean
@@ -277,6 +290,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     evacuationOrdered: Math.max(figure(EVACUATION_ORDER_RES, text), MILLIONS_EVACUATE_RE.test(text) ? 1_000_000 : 0),
     headOfStateDeathClaim,
     unconfirmedSelfClaim,
+    cumulativeToll: CUMULATIVE_TOLL_RE.test(text),
     wmd: WMD_RE.test(text),
     pheic: PHEIC_RE.test(text),
     embassyAttack: EMBASSY_ATTACK_RE.test(text),
@@ -314,7 +328,7 @@ export function classifyText(text: string): Classification {
   // conflict/terrorism-only: v1 applied it in its tag-independent override,
   // which would tier a 12-death bus crash Critical.
   const critical =
-    (conflictish && !unconfirmedSelfClaim && (massCasualtySeverity(deaths) === 'critical' || f.wmd)) ||
+    (conflictish && !unconfirmedSelfClaim && ((!f.cumulativeToll && massCasualtySeverity(deaths) === 'critical') || f.wmd)) ||
     (conflictish && f.embassyAttack) ||
     (conflictish && f.capitalAttack && f.capitalAttackRare) ||
     (has('diplomacy-politics') && (f.regimeChange || f.warDeclaration || f.pactWithdrawal)) ||
