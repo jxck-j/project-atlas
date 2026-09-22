@@ -5,6 +5,56 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — "Keyless" clarified across three uses, and a facts-based severity model tried (not adopted)
+
+**Terminology, cleared up before starting this (asked to have it on record):** "keyless" means no `ANTHROPIC_API_KEY` / no per-run
+Claude call — J's build constraint from the plan below — but it covers three different kinds of thing in this codebase, not one:
+(1) **severity** (`classify.ts`) is plain hand-written regex rules — no model of any kind, keyless or otherwise; (2) **relevance/tags**
+(`embeddingClassifier.ts`) IS a real trained model — a local sentence-embedding model (transformers.js, in-process, one-time ~33MB
+download) feeding small logistic-regression heads trained offline (`npm run train:news-classifier`) — "keyless" here only means nothing
+calls a paid API at build or runtime, not that there's no model; (3) **clustering** (`embeddingClustering.ts`) is the same local-embedding
+approach applied to grouping instead of classification. All three are contrasted with the `--llm` path (Phase 3), which does call
+Sonnet 5 and costs money. "A keyless severity model" (this entry) means building something shaped like (2) for severity — a real
+trained model, still zero API calls, zero dollar cost — rather than (1)'s hand-tuned regexes.
+
+**The experiment (step 2 of the severity-review plan below, now that both relabel phases are done):** extracted the SAME facts
+`classify.ts`'s rules already gate on — deaths/displaced/evacuation-order counts; head-of-state-death, WMD, PHEIC, embassy-attack,
+capital-attack(-rare), regime-change, war-declaration, pact-withdrawal, sovereign-default, chokepoint-closure, territorial-seizure,
+escalation, market-shock, energy-infra-attack, infrastructure-cyber, diplomatic-sever, ex-leader-verdict, pardon, sanctions-lifted,
+and self-claimed-strike flags, plus the 8 topic tags — into a fixed feature vector (`severityFeatures.ts`'s `severityFeatureVector`).
+Refactored `classify.ts` to expose the fact-gathering step itself as `extractSeverityFacts`, so the new feature vector reads the exact
+same regex matches `classifyText`'s tier logic decides on, rather than a second implementation that could drift from the tuned rules —
+`classifyText`'s decision tree is otherwise byte-for-byte unchanged (verified against the existing 63 classify/classifier tests before
+building anything on top). Trained the same ordinal approach (`P(>=significant)`, `P(>=major)`, `P(>=critical)`, one `linearModel.ts`
+logistic head per threshold) `embeddingClassifier.ts` already uses for relevance/tags, both on facts alone and on facts+embeddings
+concatenated, reusing `classifierCv.mjs`'s grouped cross-validation so a story's duplicate headlines can't straddle train/test.
+
+**Measured on the real harness (`npm run eval:news-classifier`, 562 in-scope reports, grouped 5-fold CV):**
+
+| | exact | within 1 tier | Critical F1 (P / R) | Major-or-above F1 |
+|---|---|---|---|---|
+| keyword rules (shipped) | 0.544 | 0.972 | 0.400 (0.80 / 0.27) | 0.677 |
+| embeddings, raw (prior attempt) | 0.610 | 0.964 | 0.432 (0.36 / 0.53) | 0.438 |
+| **facts (this attempt)** | 0.512 | 0.966 | 0.263 (0.22 / 0.33) | 0.542 |
+| facts + embeddings combined | 0.610 | 0.972 | 0.313 (0.29 / 0.33) | 0.380 |
+
+Also added the event-level (max-over-story) scoring `BACKLOG.md` had flagged as missing, since fairly judging this experiment needed
+it: at the level `eventBuilder.ts` actually publishes (max severity over an Event's articles, 407 groups), keyword rules reach Critical
+P 0.80 / R 0.80 (5/5 true positives) — the per-article recall of 0.27 that looks weak alone is a duplicate-headline artifact exactly as
+`BACKLOG.md` predicted, not a real miss. Facts (P 0.19 / R 0.60, 16 predicted for 5 true) and raw embeddings (P 0.14 / R 0.40) are both
+markedly worse than the rules at the event level too.
+
+**Not adopted — the keyword rules stay severity's only classifier.** Facts lost to the rules on every measure, including the one
+thing this attempt was supposed to fix (Critical). Two reasons, not one: (1) **a flat additive logistic head can't express the
+tag-gated AND/OR nesting `classifyText` actually uses** — a capital attack is Critical only combined with a rarity phrase AND a
+conflict tag; a linear model instead votes on each flag independently and over-fires on partial matches, which is a structural
+mismatch with the modeling approach, not a tuning problem. (2) **15 Critical labels across only ~5 independent events is still too
+few** to fit ~34 feature weights per ordinal threshold reliably, even with L2 regularization and class balancing — the same
+sample-size ceiling the original raw-embeddings attempt hit. Kept: `extractSeverityFacts`/`severityFeatures.ts` (real, tested
+groundwork, worth revisiting if a non-linear model or substantially more labeled independent events changes the calculus) and the
+event-level eval addition (a standing improvement to the harness regardless of this result). See `BACKLOG.md`'s "Severity stays
+rule-based on purpose" entry for the same numbers in standing-backlog form.
+
 ## 2026-09-21 — Severity review: where the rules fail, four rubric calls settled (J), and the plan (keyless)
 
 **Goal (J):** as many relevant sources as possible with the CORRECT tier (critical/major/significant/routine); work on severity first; **no Claude at

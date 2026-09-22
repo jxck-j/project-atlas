@@ -1757,8 +1757,13 @@ samples: `embeddingClustering.ts` (pure; time-ordered greedy, strict-majority li
 paths). On the labeled clustering fixture it groups 40/47 multi-outlet stories (14/19 of those with 3+ outlets — Critical's floor) vs the heuristic's 16/47 with
 no false merges; a second-pass cluster merge (`mergeClusters`, strict majority of cross pairs link) repairs order-dependent splits without
 loosening the pair threshold. Things a session touching this must know:
-- **Severity, countries and titles are still keyword rules / outlet headlines.** The classifier did NOT beat the severity regexes (Critical
-  F1 0.00-0.11 vs 0.37-0.48) and was not adopted for report-vs-analysis filtering. Only relevance and topic TAGS come from it.
+- **Severity, countries and titles are still keyword rules / outlet headlines.** The raw-embeddings classifier did NOT beat the severity
+  regexes (Critical F1 0.00-0.11 vs 0.37-0.48) and was not adopted for report-vs-analysis filtering. A second attempt (2026-09-21) trained
+  the same ordinal approach on `severityFeatures.ts`'s EXTRACTED FACTS instead of raw embeddings (the same deaths/capital-attack/
+  head-of-state/escalation/etc. signals `classify.ts`'s rules already gate on, via the refactored-out `extractSeverityFacts`) and still
+  lost (Critical F1 0.263 vs the rules' 0.400) — a flat linear model can't reproduce the rules' tag-gated AND/OR nesting, and 15 Critical
+  labels across ~5 independent events is too few to fit regardless. See `LOGBOOK.md`'s "keyless severity model" entry. Only relevance and
+  topic TAGS come from a trained model; severity is 100% hand-written rules.
 - **The classifier is a mild gate plus a rescuer, not a replacement for the keyword guard.** With keyword topic evidence a cluster is dropped
   only if mean relevance < `RELEVANCE_THRESHOLD` (0.30); with none it needs >= `RESCUE_THRESHOLD` (0.60). Removing the keyword requirement
   outright (the first integration) let in a cargo-ship collision and an ICE shooting. 0.30 vs 0.20 is a real tradeoff (0.20 keeps the

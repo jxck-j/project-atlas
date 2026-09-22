@@ -87,13 +87,10 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   2+ distinct, non-state outlets separately reporting the same toll for the same strike — is an Event/corroboration-level question
   (`corroboration.ts` already counts distinct outlets per Event; it doesn't yet check whether they report the SAME casualty figure), not
   something one article's text can answer alone. Worth building once there's a concrete case of it mattering.
-- **`evalNewsClassifier.mjs`'s SEVERITY section scores severity per ARTICLE, not per Event (max-over-cluster) — understates real
-  accuracy for any trigger that's true for the whole event but textually present in only one of several duplicate headlines** (found
-  2026-09-21 relabeling riyadh-attack for settled call 7: only 1 of 11 real Riyadh articles independently contains the rarity phrase that
-  makes a capital attack Critical, so the per-article score reads Critical F1 0.286/recall 0.200 — but the cluster MAX, which is what
-  `eventBuilder.ts` actually publishes, still correctly reaches Critical; verified directly). Add a cluster-level severity score (group by
-  the same story/embedding-cluster the PRODUCT-LEVEL section already uses, score `maxSeverity` over each cluster against the cluster's own
-  presumed-uniform truth) alongside the existing per-article one, so a real accuracy regression isn't masked by, or mistaken for, this effect.
+- **DONE (2026-09-21): `evalNewsClassifier.mjs`'s SEVERITY section now also scores event-level (max-over-story)**, not just per
+  article — added alongside the facts-based severity model experiment below, since fairly judging that experiment needed it. Confirms
+  the hypothesis this bullet originally recorded: keyword-rule Critical jumps from P 0.80/R 0.27 per-article to P 0.80/R 0.80 at the
+  event level (5/5 true positives, 407 groups) — the per-article recall really was a duplicate-headline artifact, not a real miss.
 - **Severity fixture labels have known inconsistencies, found during the 2026-09-21 rule rewrite (see `LOGBOOK.md`'s "Severity rules
   rewritten" entry) — mostly corrected by the same-day story-level relabel pass (`LOGBOOK.md`'s "Severity relabel, phase 1" entry, 14
   labels across 8 stories, including the Kosovo/Thaci example below).** Not yet done: solo (non-story) main-set articles and the entire
@@ -138,8 +135,17 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   magnitude and outlet features gave no gain).
 - **Typhoon severity.** "1.6 million urged to evacuate" tiers Significant because the keyword rules miss "urged to evacuate"; design
   section 5 makes 500,000+ displaced Critical. Needs a decision on whether an evacuation advisory counts as displacement.
-- **Severity stays rule-based on purpose.** The classifier scored Critical F1 0.11 vs the rules' 0.48 (11 examples) — too few examples
-  to learn it. Improving severity without an LLM means more Critical/Major labels or better rules; it is the clearest remaining LLM use.
+- **Severity stays rule-based on purpose — tried twice now, lost both times.** The raw-embeddings classifier scored Critical F1 0.11 vs
+  the rules' 0.48 (11 examples, pre-relabel). A second attempt (2026-09-21, post-relabel, 562 labeled reports): an ordinal logistic model
+  over `severityFeatures.ts`'s EXTRACTED FACTS (the same deaths/displaced/capital-attack/head-of-state/escalation/etc. signals the rules
+  already gate on, not opaque embeddings) still lost — Critical F1 0.263 vs the rules' 0.400, Major-or-above F1 0.542 vs 0.677; a
+  facts+embeddings combination did no better (0.313 Critical F1). See `LOGBOOK.md`'s 2026-09-21 "keyless severity model" entry for the
+  full numbers and why: a flat additive logistic head can't express the tag-gated AND/OR nesting `classifyText` uses (a capital attack is
+  Critical only combined with a rarity phrase AND a conflict tag; the linear model votes on each flag independently and over-fires on
+  partial matches), and 15 Critical labels across ~5 independent events is still too few to fit ~34 weights per ordinal threshold.
+  Improving severity without an LLM means more Critical/Major labels from independent events (not more articles) or better hand rules;
+  it is the clearest remaining LLM use. `extractSeverityFacts`/`severityFeatures.ts` are kept as real, tested infrastructure — worth
+  revisiting if a non-linear model or substantially more labeled events changes the calculus, not attempted again as-is.
 - **Report-vs-analysis was tested and NOT adopted.** AUC 0.84, but excluding predicted analysis pieces from corroboration would drop 13 of
   52 real Events (39/52 keep >=2 outlets at t=0.5). The URL-path commentary filter (`isCommentaryUrl`) remains the only such guard.
 - **The eval fixtures are third-party text.** ~320 KB (clustering) + ~55 KB (labels) + ~100 KB (held-out set) of RSS headlines/summaries

@@ -14,6 +14,7 @@ import { classifyText, resolveTopicTags } from '../src/news/classify.ts'
 import { clusterByEmbedding } from '../src/news/embeddingClustering.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
 import { fitStandardizer, predictProba, standardize, trainLogistic } from '../src/news/linearModel.ts'
+import { severityFeatureVector } from '../src/news/severityFeatures.ts'
 import { createCv, fmt } from './lib/classifierCv.mjs'
 import { loadClassifierData } from './lib/classifierData.mjs'
 
@@ -87,6 +88,9 @@ let relP, repP
 }
 
 // ===== 4. SEVERITY, among in-scope reports (ordinal: P(>=significant), P(>=major), P(>=critical))
+// Four candidates: keyword rules (shipped), raw sentence embeddings (tried first, lost on Critical —
+// see embeddingClassifier.ts's header), the extracted-facts feature vector (severityFeatures.ts — the
+// "keyless severity model" from LOGBOOK.md's 2026-09-21 plan), and facts+embeddings concatenated.
 {
   const idx = ALL.filter((i) => lab[i].relevance === '1' && lab[i].severity)
   const tier = (i) => SEV.indexOf(lab[i].severity)
@@ -101,10 +105,50 @@ let relP, repP
   const ps = [1, 2, 3].map((th) => oof(idx, (i) => (tier(i) >= th ? 1 : 0), 1))
   const emTier = (i) => ps.filter((p) => p.get(i) >= 0.5).length
   console.log(`  embeddings ord. exact ${acc(emTier).toFixed(3)} | within one tier ${within1(emTier).toFixed(3)}`)
-  for (const [name, f] of [['keyword', kwTier], ['embeddings', emTier]]) {
+
+  const Xf = articles.map((_, i) => severityFeatureVector(textOf(i)))
+  const cvF = createCv(Xf, groupOf)
+  const psF = [1, 2, 3].map((th) => {
+    const y = (i) => (tier(i) >= th ? 1 : 0)
+    return cvF.oof(idx, y, cvF.bestL2(idx, y).l2)
+  })
+  const factsTier = (i) => psF.filter((p) => p.get(i) >= 0.5).length
+  console.log(`  facts ord.      exact ${acc(factsTier).toFixed(3)} | within one tier ${within1(factsTier).toFixed(3)}`)
+
+  const Xc = Xf.map((f, i) => [...f, ...X[i]])
+  const cvC = createCv(Xc, groupOf)
+  const psC = [1, 2, 3].map((th) => {
+    const y = (i) => (tier(i) >= th ? 1 : 0)
+    return cvC.oof(idx, y, cvC.bestL2(idx, y).l2)
+  })
+  const combinedTier = (i) => psC.filter((p) => p.get(i) >= 0.5).length
+  console.log(`  combined ord.   exact ${acc(combinedTier).toFixed(3)} | within one tier ${within1(combinedTier).toFixed(3)}`)
+
+  const candidates = [['keyword', kwTier], ['embeddings', emTier], ['facts', factsTier], ['combined', combinedTier]]
+  for (const [name, f] of candidates) {
     const crit = prf(idx, (i) => (tier(i) === 3 ? 1 : 0), (i) => f(i) === 3)
     const majorUp = prf(idx, (i) => (tier(i) >= 2 ? 1 : 0), (i) => f(i) >= 2)
     console.log(`  ${name.padEnd(10)} Critical: ${fmt(crit)} | Major-or-above: ${fmt(majorUp)}`)
+  }
+
+  // ---- Event-level (max-over-story): what eventBuilder.ts actually publishes (`maxSeverity` over the
+  // cluster), not what any one article scores alone. Per-article scoring understates a trigger that's
+  // true for the whole event but textually present in only one of several duplicate headlines (the
+  // Riyadh capital-attack case — see BACKLOG.md/LOGBOOK.md's 2026-09-21 entries).
+  const groups = new Map()
+  for (const i of idx) groups.set(groupOf[i], [...(groups.get(groupOf[i]) ?? []), i])
+  const groupIds = [...groups.keys()]
+  const groupTruth = (g) => Math.max(...groups.get(g).map(tier))
+  console.log(`\n  -- event-level (max-over-story, ${groupIds.length} groups) --`)
+  for (const [name, f] of candidates) {
+    const groupPred = (g) => Math.max(...groups.get(g).map(f))
+    const exact = groupIds.filter((g) => groupPred(g) === groupTruth(g)).length / groupIds.length
+    const critTruth = groupIds.filter((g) => groupTruth(g) === 3)
+    const critPred = groupIds.filter((g) => groupPred(g) === 3)
+    const tp = critTruth.filter((g) => groupPred(g) === 3).length
+    const P = tp / (critPred.length || 1)
+    const R = tp / (critTruth.length || 1)
+    console.log(`  ${name.padEnd(10)} exact ${exact.toFixed(3)} | Critical P ${P.toFixed(2)} R ${R.toFixed(2)} (n=${critTruth.length} true, ${critPred.length} predicted)`)
   }
 }
 

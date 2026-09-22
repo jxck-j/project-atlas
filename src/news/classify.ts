@@ -210,7 +210,47 @@ export function matchesHeadOfStateDeath(text: string): boolean {
   return HEAD_OF_STATE_DEATH_RE.test(text)
 }
 
-export function classifyText(text: string): Classification {
+/**
+ * Every raw signal `classifyText`'s tier logic below gates on, gathered in one place so a second
+ * consumer (the fact-extraction severity model — `severityFeatures.ts`) can build a feature vector
+ * from the SAME regex matches the tuned rules use, instead of a parallel implementation that could
+ * silently drift from them. Pure, no policy — `classifyText` is still the only place that decides
+ * what a given combination of facts actually TIERS to.
+ */
+export interface SeverityFacts {
+  topicTags: TopicTag[]
+  conflictish: boolean
+  deaths: number
+  displaced: number
+  evacuationOrdered: number
+  headOfStateDeathClaim: boolean
+  unconfirmedSelfClaim: boolean
+  wmd: boolean
+  pheic: boolean
+  embassyAttack: boolean
+  capitalAttack: boolean
+  capitalAttackRare: boolean
+  regimeChange: boolean
+  warDeclaration: boolean
+  pactWithdrawal: boolean
+  sovereignDefault: boolean
+  chokepointClosure: boolean
+  territorial: boolean
+  strikeWithCasualty: boolean
+  escalation: boolean
+  majorPolicy: boolean
+  sanctionsLifted: boolean
+  diplomaticSever: boolean
+  exLeaderVerdict: boolean
+  pardon: boolean
+  marketShock: boolean
+  energyInfraAttack: boolean
+  infrastructureCyber: boolean
+  rhetoricOnly: boolean
+  leaderOrMilitaryAction: boolean
+}
+
+export function extractSeverityFacts(text: string): SeverityFacts {
   const topicTags = resolveTopicTags(text)
   const has = (t: TopicTag) => topicTags.includes(t)
   const conflictish = has('conflict-security') || has('terrorism-non-state-actors')
@@ -223,6 +263,44 @@ export function classifyText(text: string): Classification {
   // conflict/terrorism text only — a humanitarian disaster's official death toll ("officials say 900 dead in floods")
   // goes through humanitarianSeverity below, unaffected by this cap.
   const unconfirmedSelfClaim = conflictish && SELF_CLAIMED_STRIKE_RE.test(text) && !INDEPENDENT_CONFIRMATION_RE.test(text)
+  return {
+    topicTags,
+    conflictish,
+    deaths,
+    displaced: figure(DISPLACED_RES, text),
+    evacuationOrdered: Math.max(figure(EVACUATION_ORDER_RES, text), MILLIONS_EVACUATE_RE.test(text) ? 1_000_000 : 0),
+    headOfStateDeathClaim,
+    unconfirmedSelfClaim,
+    wmd: WMD_RE.test(text),
+    pheic: PHEIC_RE.test(text),
+    embassyAttack: EMBASSY_ATTACK_RE.test(text),
+    capitalAttack: CAPITAL_ATTACK_RE.test(text),
+    capitalAttackRare: CAPITAL_ATTACK_RARE_RE.test(text),
+    regimeChange: REGIME_CHANGE_RE.test(text),
+    warDeclaration: WAR_DECLARATION_RE.test(text),
+    pactWithdrawal: PACT_WITHDRAWAL_RE.test(text),
+    sovereignDefault: SOVEREIGN_DEFAULT_RE.test(text),
+    chokepointClosure: CHOKEPOINT_CLOSURE_RE.test(text),
+    territorial: TERRITORIAL_RE.test(text),
+    strikeWithCasualty: STRIKE_RE.test(text) && CASUALTY_RE.test(text),
+    escalation: ESCALATION_RE.test(text),
+    majorPolicy: MAJOR_POLICY_RE.test(text),
+    sanctionsLifted: SANCTIONS_LIFTED_RE.test(text),
+    diplomaticSever: DIPLOMATIC_SEVER_RE.test(text),
+    exLeaderVerdict: EX_LEADER_VERDICT_RE.test(text),
+    pardon: PARDON_RE.test(text),
+    marketShock: MARKET_SHOCK_RE.test(text),
+    energyInfraAttack: ENERGY_INFRA_ATTACK_RE.test(text),
+    infrastructureCyber: INFRASTRUCTURE_CYBER_RE.test(text),
+    rhetoricOnly: RHETORIC_RE.test(text) && !ACTION_RE.test(text) && !STRIKE_RE.test(text),
+    leaderOrMilitaryAction: LEADER_OR_MILITARY_RE.test(text) && ACTION_RE.test(text),
+  }
+}
+
+export function classifyText(text: string): Classification {
+  const f = extractSeverityFacts(text)
+  const { topicTags, conflictish, deaths, headOfStateDeathClaim, unconfirmedSelfClaim } = f
+  const has = (t: TopicTag) => topicTags.includes(t)
 
   let severity: Severity = 'routine'
 
@@ -230,49 +308,49 @@ export function classifyText(text: string): Classification {
   // conflict/terrorism-only: v1 applied it in its tag-independent override,
   // which would tier a 12-death bus crash Critical.
   const critical =
-    (conflictish && !unconfirmedSelfClaim && (massCasualtySeverity(deaths) === 'critical' || WMD_RE.test(text))) ||
-    (conflictish && EMBASSY_ATTACK_RE.test(text)) ||
-    (conflictish && CAPITAL_ATTACK_RE.test(text) && CAPITAL_ATTACK_RARE_RE.test(text)) ||
-    (has('diplomacy-politics') && (REGIME_CHANGE_RE.test(text) || WAR_DECLARATION_RE.test(text) || PACT_WITHDRAWAL_RE.test(text))) ||
-    ((has('economic-trade') || has('energy')) && (SOVEREIGN_DEFAULT_RE.test(text) || CHOKEPOINT_CLOSURE_RE.test(text))) ||
+    (conflictish && !unconfirmedSelfClaim && (massCasualtySeverity(deaths) === 'critical' || f.wmd)) ||
+    (conflictish && f.embassyAttack) ||
+    (conflictish && f.capitalAttack && f.capitalAttackRare) ||
+    (has('diplomacy-politics') && (f.regimeChange || f.warDeclaration || f.pactWithdrawal)) ||
+    ((has('economic-trade') || has('energy')) && (f.sovereignDefault || f.chokepointClosure)) ||
     // Tag-independent: a story naming one of these is high-stakes however the
     // keyword tagger happened to bucket it (v1's cross-tag override).
     headOfStateDeathClaim ||
-    WMD_RE.test(text) ||
-    PHEIC_RE.test(text) ||
-    REGIME_CHANGE_RE.test(text) ||
-    WAR_DECLARATION_RE.test(text)
+    f.wmd ||
+    f.pheic ||
+    f.regimeChange ||
+    f.warDeclaration
 
-  const humanitarian = has('humanitarian-displacement') ? humanitarianSeverity({ deaths, displaced: figure(DISPLACED_RES, text), pheic: PHEIC_RE.test(text), evacuationOrdered: Math.max(figure(EVACUATION_ORDER_RES, text), MILLIONS_EVACUATE_RE.test(text) ? 1_000_000 : 0) }) : null
+  const humanitarian = has('humanitarian-displacement') ? humanitarianSeverity({ deaths, displaced: f.displaced, pheic: f.pheic, evacuationOrdered: f.evacuationOrdered }) : null
 
   if (critical || humanitarian === 'critical') severity = 'critical'
   else if (
     humanitarian === 'major' ||
-    (conflictish && !unconfirmedSelfClaim && TERRITORIAL_RE.test(text)) ||
+    (conflictish && !unconfirmedSelfClaim && f.territorial) ||
     // A capital strike that ISN'T flagged rare (the Critical branch above) is still a real strike — Major regardless
     // of casualty count, unlike the generic contained-strike rule just below (settled call 7).
-    (conflictish && !unconfirmedSelfClaim && CAPITAL_ATTACK_RE.test(text)) ||
+    (conflictish && !unconfirmedSelfClaim && f.capitalAttack) ||
     (conflictish &&
       !unconfirmedSelfClaim &&
-      ((STRIKE_RE.test(text) && CASUALTY_RE.test(text) && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
+      ((f.strikeWithCasualty && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
         // An explicit escalation phrase is Major on its own — doesn't need a co-occurring casualty figure (found in
         // the severity relabel, phase 2: "Houthis hit Saudi Arabia, threatening further escalation" names no death
         // toll, but "further escalation"/"another round of regional escalation" is unambiguous on its own).
-        ESCALATION_RE.test(text))) ||
+        f.escalation)) ||
     (has('diplomacy-politics') &&
-      ((MAJOR_POLICY_RE.test(text) && !SANCTIONS_LIFTED_RE.test(text)) ||
-        DIPLOMATIC_SEVER_RE.test(text) ||
-        (EX_LEADER_VERDICT_RE.test(text) && !PARDON_RE.test(text)))) ||
-    ((has('economic-trade') || has('energy')) && (MARKET_SHOCK_RE.test(text) || ENERGY_INFRA_ATTACK_RE.test(text))) ||
-    ((has('science-technology') || has('crime-trafficking')) && INFRASTRUCTURE_CYBER_RE.test(text))
+      ((f.majorPolicy && !f.sanctionsLifted) ||
+        f.diplomaticSever ||
+        (f.exLeaderVerdict && !f.pardon))) ||
+    ((has('economic-trade') || has('energy')) && (f.marketShock || f.energyInfraAttack)) ||
+    ((has('science-technology') || has('crime-trafficking')) && f.infrastructureCyber)
   ) {
     severity = 'major'
   } else if (conflictish || has('diplomacy-politics') || has('humanitarian-displacement')) {
     // Talk without action is Routine (design §5: "statements, rhetoric,
     // posturing"); a concrete verb lifts it to Significant.
-    severity = RHETORIC_RE.test(text) && !ACTION_RE.test(text) && !STRIKE_RE.test(text) ? 'routine' : 'significant'
+    severity = f.rhetoricOnly ? 'routine' : 'significant'
   } else {
-    severity = fallbackSeverity(LEADER_OR_MILITARY_RE.test(text) && ACTION_RE.test(text))
+    severity = fallbackSeverity(f.leaderOrMilitaryAction)
   }
 
   return { topicTags, severity: applySeverityCaps(severity, { topicTags }), headOfStateDeathClaim }
