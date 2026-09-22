@@ -395,4 +395,22 @@ describe('topic tagging', () => {
     expect(resolveTopicTags("Merz vows to stay in office after CDU 'disaster' in state elections")).not.toContain('humanitarian-displacement')
     expect(resolveTopicTags('Natural disaster strikes coastal region')).toContain('humanitarian-displacement')
   })
+
+  it('strategic tech (chips, reusable rockets, telecom infrastructure) tags science-technology and lands Significant', () => {
+    const lithography = classifyText("China unveils prototype lithography machine from its own chipmaker, an ASML-esque leap for its chip industry")
+    expect(lithography.topicTags).toContain('science-technology')
+    expect(lithography.severity).toBe('significant')
+
+    const rocket = classifyText('SpaceX flies its reusable rocket for a record ninth time')
+    expect(rocket.topicTags).toContain('science-technology')
+    expect(rocket.severity).toBe('significant')
+
+    const cable = classifyText('Taiwan investigates suspected sabotage of undersea cable near its coast')
+    expect(cable.topicTags).toContain('science-technology')
+  })
+
+  it('a routine consumer-product story stays out of scope', () => {
+    expect(resolveTopicTags('Apple unveils new iPhone with faster chip and better camera')).not.toContain('science-technology')
+    expect(classifyText('Apple unveils new iPhone with faster chip and better camera').severity).toBe('routine')
+  })
 })

@@ -25,6 +25,24 @@ function words(list: string[]): RegExp {
   return new RegExp(`(?<![\\p{L}\\p{N}])(?:${list.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?:s|es)?(?![\\p{L}\\p{N}])`, 'iu')
 }
 
+// Geopolitically-significant tech (2026-09-22, J): the original science-technology list covered
+// AI/cyber but nothing for the "one nation catching up to another's strategic technology" story
+// shape (a domestic EUV-class lithography prototype, a reusable-rocket program, backbone telecom
+// infrastructure) — a real example (China's own ASML-esque lithography machine) fell through the
+// generic keyword net entirely. Kept as compound phrases, not bare 'chip'/'rocket'/'5g' — those
+// collide with ordinary nouns (a chocolate chip, the Houston Rockets, a phone's 5G spec sheet) and
+// bare terms would also catch routine consumer-product coverage (a new iPhone) that this is
+// deliberately NOT meant to pull in. Reused below both for topic tagging and (via STRATEGIC_TECH_RE)
+// as its own severity signal — see the "science & technology" branch in classifyText.
+const STRATEGIC_TECH_TERMS = [
+  'chipmaker', 'chip factory', 'chip export', 'chip ban', 'advanced chip', 'chip war',
+  'lithography machine', 'euv lithography', 'semiconductor foundry', 'chip foundry',
+  'reusable rocket', 'rocket launch', 'launch vehicle', 'space program', 'space race',
+  'satellite constellation', 'moon landing', 'mars mission',
+  'undersea cable', 'subsea cable', 'submarine cable', 'telecommunications network', 'telecom infrastructure',
+]
+const STRATEGIC_TECH_RE = words(STRATEGIC_TECH_TERMS)
+
 // Deliberately wide (design §6: the pre-filter "only needs to avoid discarding
 // real candidates, not be precise"). Energy is new in v2; v1 had no such tag.
 const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
@@ -72,6 +90,7 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
   'science-technology': words([
     'artificial intelligence', 'semiconductor', 'space launch', 'satellite', 'quantum computing',
     'cyberattack', 'cyber attack', 'ransomware', 'hackers',
+    ...STRATEGIC_TECH_TERMS,
   ]),
 }
 // Tokens too short/ambiguous for the plural-tolerant matcher above.
@@ -265,6 +284,7 @@ export interface SeverityFacts {
   marketShock: boolean
   energyInfraAttack: boolean
   infrastructureCyber: boolean
+  strategicTech: boolean
   rhetoricOnly: boolean
   leaderOrMilitaryAction: boolean
 }
@@ -312,6 +332,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     marketShock: MARKET_SHOCK_RE.test(text),
     energyInfraAttack: ENERGY_INFRA_ATTACK_RE.test(text),
     infrastructureCyber: INFRASTRUCTURE_CYBER_RE.test(text),
+    strategicTech: STRATEGIC_TECH_RE.test(text),
     rhetoricOnly: RHETORIC_RE.test(text) && !ACTION_RE.test(text) && !STRIKE_RE.test(text),
     leaderOrMilitaryAction: LEADER_OR_MILITARY_RE.test(text) && ACTION_RE.test(text),
   }
@@ -365,9 +386,13 @@ export function classifyText(text: string): Classification {
     ((has('science-technology') || has('crime-trafficking')) && f.infrastructureCyber)
   ) {
     severity = 'major'
-  } else if (conflictish || has('diplomacy-politics') || has('humanitarian-displacement')) {
+  } else if (conflictish || has('diplomacy-politics') || has('humanitarian-displacement') || (has('science-technology') && f.strategicTech)) {
     // Talk without action is Routine (design §5: "statements, rhetoric,
-    // posturing"); a concrete verb lifts it to Significant.
+    // posturing"); a concrete verb lifts it to Significant. A strategic-tech hit
+    // (2026-09-22, J) gets the same floor rather than the generic fallback below,
+    // which needs a named leader/government/military actor — a real capability
+    // shift (a domestic chip-lithography prototype, a reusable-rocket program) is
+    // geopolitically significant on its own, with or without a named official.
     severity = f.rhetoricOnly ? 'routine' : 'significant'
   } else {
     severity = fallbackSeverity(f.leaderOrMilitaryAction)

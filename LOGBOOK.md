@@ -5,6 +5,42 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-22 — Strategic-tech keyword coverage: real geopolitical tech gap found via a real article
+
+**Found via a real article, not the label pipeline:** J pointed at a real piece on China's own
+ASML-esque EUV-class lithography prototype and asked why it wouldn't show. Walking the pipeline by
+hand found two independent reasons: (1) `TAG_KEYWORDS['science-technology']` had no term for it at all
+— `semiconductor` was there, but "chip"/"lithography"/"foundry" weren't, so a title/dek using those
+words alone gets zero topic tags and is dropped `no-topic`/`prefiltered` before severity is even
+computed; (2) even tagged, `classifyText`'s severity ladder had no path to Significant for
+`science-technology` without a named leader/government/military actor taking action (the generic
+`fallbackSeverity` bar) — a real capability-shift story (a domestic chip-lithography prototype, not a
+government announcement) would fall all the way to Routine even once tagged.
+
+**J's direction, and the shape it took:** pull in geopolitically-weighty tech categories the original
+list missed — chips/semiconductors, reusable-rocket/space capability, backbone telecom infrastructure —
+while explicitly keeping routine consumer-product coverage (a new iPhone) out of scope. Added
+`STRATEGIC_TECH_TERMS`/`STRATEGIC_TECH_RE` (`classify.ts`) as **compound phrases only** — `chipmaker`,
+`chip factory`, `lithography machine`, `reusable rocket`, `undersea cable`, etc. — deliberately not
+bare `chip`/`rocket`/`5g`: those collide with ordinary nouns (a chocolate chip, the Houston Rockets, a
+phone's 5G spec sheet) and would have pulled consumer-product stories back in, the opposite of what was
+asked. Also wired a new `strategicTech` fact into the severity ladder's existing "tag present → Significant
+unless rhetoric-only" branch (previously only `conflictish`/`diplomacy-politics`/`humanitarian-displacement`
+got that floor; `science-technology` fell to the generic leader/military-action fallback instead) — a real
+capability shift is significant on its own, without needing a named official quoted saying so.
+`applySeverityCaps`'s existing rule (science-technology can't reach Critical alone, caps at Major) is
+unaffected — this only raises the floor from Routine to Significant, it doesn't touch the ceiling.
+
+**Scope note:** this only changes `classify.ts`, so it affects the heuristic path (`buildEvents`) and
+the default local-embedding path's PREFILTER and severity (severity is always computed by `classifyText`
+regardless of build path — the embedding classifier only overrides `topicTags` and re-applies the caps,
+per `eventBuilder.ts`) uniformly. It does NOT touch the Phase 3 LLM path's own severity, which the model
+assigns directly — only that path's prefilter (`resolveTopicTags`), which benefits the same way. Verified
+with new `pipeline.test.ts` cases (a lithography-prototype headline, a SpaceX reusable-rocket headline,
+an undersea-cable-sabotage headline all tag `science-technology` and land `significant`; a plain iPhone
+headline with "chip" in it stays untagged and Routine, confirming the compound-phrase choice actually
+holds the consumer-product line asked for). All 324 tests pass.
+
 ## 2026-09-22 — Pool 2 (relevance disagreement) hand-labeled and folded into the classifier
 
 **Follow-up to the archive-mining entry below, per J's direction.** Hand-labeled all 53 Pool 2

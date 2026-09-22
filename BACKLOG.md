@@ -70,6 +70,16 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   has yet — Phase 2 now ingests real feeds and the weakness is live (2026-09-20 pull: NPR, PBS and France 24 all
   carry the same wire-fed Ukraine-drones story), so decide whether it's worth building. A real wire feed is still worth
   getting: a wire report clears Critical alone, and would make the fallback rare.
+- **Strategic-tech keyword list (2026-09-22, `STRATEGIC_TECH_TERMS`/`STRATEGIC_TECH_RE` in `classify.ts`) is a fixed, hand-curated
+  set — chips/semiconductors, reusable-rocket/space capability, backbone telecom infrastructure — and will need revisiting as new
+  "grey-zone tech" categories become geopolitically relevant (quantum sensing, battery/EV supply chains, biotech). Not built as a
+  generalizable rule (no clean one, per §6's own "keyword-only hits a structural wall" note) — add terms by hand as real misses
+  surface, the same way this batch was found. Two things NOT yet done: (1) the Phase 3 LLM prompt (`llmPrompts.ts`) wasn't updated
+  with the same "geopolitically significant tech vs. routine consumer-product" framing — worth aligning once `--llm` is actually run
+  live, since an unguided model may draw that line differently than the curated list does; (2) the trained embedding classifier's tag
+  weights (`embeddingClassifierWeights.json`) are unaffected by this change — a new-phrase keyword hit widens the prefilter/rescue gate
+  and the severity floor, but the classifier's own semantic tag-prediction wasn't retrained on any strategic-tech-labeled examples, so
+  it won't newly recognize the category on text that uses none of the listed phrases.
 - **Peru's RSF context is partly unverified** — the design doc's "fallen 67 places since 2022" and "4 journalists
   killed in 2025" weren't restated on RSF's page. Kept, marked unverified in `sources.json`; keeping tabs per J.
 - **Refresh RSF citations yearly** — `pressFreedomContext` on every country-native source carries the RSF 2026
