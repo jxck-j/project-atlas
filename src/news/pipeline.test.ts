@@ -132,6 +132,23 @@ describe('classifyText', () => {
     expect(classifyText('Pakistan says 28 killed in airstrikes, independently confirmed by hospital officials').severity).toBe('critical')
   })
 
+  it('a regime-change mention needs a head-of-state/government term nearby, and a dated coup reference is historical, not fresh (found in the severity relabel, phase 2)', () => {
+    // Real bug: "ousted" fired Critical for military officers expelled from a party, not a government overthrown.
+    expect(classifyText('China expels two former top generals from the Party, accusing them of disloyalty').severity).not.toBe('critical')
+    // A coup dated in the past ("the 2021 coup") is a historical reference, not a live regime-change claim.
+    expect(classifyText("Myanmar accuses UN representative of illegal acts after pledging loyalty to the opposition following the 2021 coup").severity).not.toBe('critical')
+    // A live coup is still Critical.
+    expect(classifyText('Military stages coup in Niger, president ousted').severity).toBe('critical')
+  })
+
+  it('a mass-casualty attack tagged only by a bare "bomb"/"blast" still reaches the conflict tag and the death threshold', () => {
+    expect(classifyText('At least 31 killed in car bomb at mosque near police compound in Pakistan').severity).toBe('critical')
+  })
+
+  it('"early elections" is a snap-election-equivalent Major trigger', () => {
+    expect(classifyText("Serbia's Vucic calls early parliamentary elections for October 25").severity).toBe('major')
+  })
+
   it('a legal follow-up on a PAST head-of-state killing is not a fresh death claim (settled call 4)', () => {
     const extradited = classifyText("18 suspects accused in the 2021 killing of Haiti's president being extradited to U.S.")
     expect(extradited.headOfStateDeathClaim).toBe(false)

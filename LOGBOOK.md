@@ -39,6 +39,49 @@ on extracted FACTS (deaths, injured, displaced, evacuations, capital/head-of-sta
 input, scored at EVENT level (max over the cluster — what publishes); (3) grow the labeled set from the archive by disagreement between rules
 and model, since random sampling yields ~2% critical.
 
+## 2026-09-21 — Severity relabel, phase 2: solo main-set articles and the held-out set; 8 more rule fixes
+
+**Follow-up to phase 1 (all 56 main-set stories).** Covered the rest: 273 solo main-set articles (no duplicate headline to cross-check
+against) and the entire 249-article held-out set. Measured disagreement between the settled-rubric rule and the original label first (181
+items after phase 1 and settled call 7), then reviewed each — Critical-touching first (5 items), then Major-touching (26 items across two
+rounds, since fixing `ESCALATION_RE` mid-review surfaced new ones), then the remaining 156 Significant/Routine items. 21 labels changed total
+(kept the label — didn't just adopt the rule's guess — for the large majority of disagreements, which were expected keyword-rule coverage
+gaps, not label errors; e.g. "US Federal Reserve is EXPECTED TO raise rates" is a prediction, not a completed action, so Significant is
+correct even though `MARKET_SHOCK_RE` fires on "raise rates" either way).
+
+**8 more rule fixes in `classify.ts`, all keyless, found while reviewing:**
+1. **`REGIME_CHANGE_RE` was matching "ousted"/"overthrown" on ANYONE**, not a head of state — "China... Removing OUSTED Generals From
+   Party" (officers expelled from a political party) forced Critical. Now requires a head-of-state/government term nearby; bare "coup" still
+   stands alone as a strong enough signal.
+2. **A dated coup reference read as a live one** — "after the 2021 coup" still matched bare `coup`. `HISTORICAL_COUP_RE` excludes a coup
+   mentioned with its own year, the same class of bug `LEGAL_FOLLOWUP_RE` already fixed for a head-of-state DEATH claim.
+3. **Bare "bomb"/"blast" weren't terrorism keywords at all** — only "bombing"/"suicide bomber" were — so "31 killed in car bomb at mosque"
+   (the ORIGINAL bug this whole review started from) still got no topic tag and its mass-casualty check never ran.
+4. **"early parliamentary elections" didn't match `snap election`** — added as a synonym (§5's own example row).
+5. **`MARKET_SHOCK_RE`'s "market rout" missed "global BOND rout"** — broadened to bond/stock rout too.
+6. **`EX_LEADER_VERDICT_RE` fired on a PARDON**, not just a fresh conviction — "Malaysia's ex-PM can serve his 1MDB sentence under house
+   arrest" (a royal pardon reducing custody) isn't a new verdict; leniency is the opposite signal. Guarded with `PARDON_RE`.
+7. **"sanctions? on" matched LIFTING sanctions too** — "US lifts sanctions on Eritrean officials" isn't the new-sanctions-package action §5
+   means. Guarded with `SANCTIONS_LIFTED_RE`.
+8. **An explicit escalation phrase needed a co-occurring casualty word to count** — "Houthis hit Saudi Arabia, threatening further
+   escalation" names no death toll, so the old rule never reached Major despite unambiguous escalation language. `ESCALATION_RE` alone is now
+   enough within conflict-tagged text.
+
+**A genuinely new discovery, not a fixed bug:** `US warns of rapid escalation in Middle East war` (a solo article, i=760) turned out to
+describe the SAME real event as the riyadh-attack story (capital attack, "for the first time since the Yemen conflict resumed") but wasn't in
+that story's hand-grouped article list — set to Critical by hand for consistency with that story's determination, not by the rule.
+
+**Retrained (`npm run train:news-classifier`) and re-evaluated on the real harness.** Severity exact accuracy 0.520 -> 0.544; **Major-or-
+above F1 0.426 -> 0.677**; Critical precision improved to 0.800 (was 0.667) though recall reads lower (0.267) — expected and correct, not a
+regression: after settled call 7 a capital-attack Event is Critical only via the ONE duplicate headline (of several) that states the rarity
+phrase, and this eval scores each article against its own label rather than the cluster's max (the gap logged in BACKLOG.md during phase 1).
+Distribution shifted too: 15 critical / 58 major / 403 significant / 86 routine among the 562 in-scope reports (was 12/45/420/85).
+
+**Every severity label in `newsClassificationLabels.json`/`newsClassificationHoldout.json` has now been reviewed against the settled §5
+rubric at least once** (56 stories in phase 1, all solo + held-out articles in phase 2) — the original "headline-only, before the rubric was
+settled" caveat in each file's own `note` field no longer describes the current label set, though the labels remain Claude's judgment, not an
+independent human label; the `note` fields record this trail rather than being rewritten to erase it.
+
 ## 2026-09-21 — Severity relabel, phase 1: all 56 main-set stories, settled call 7 (capital-attack carve-out)
 
 **Follow-up to the rule rewrite above.** Relabeled every main-set STORY (not yet solo articles or the held-out set — see below) against the

@@ -43,6 +43,11 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
   'terrorism-non-state-actors': words([
     'terrorist', 'terrorism', 'militant', 'extremist', 'bombing', 'insurgent', 'rebel group', 'isis',
     'al-qaeda', 'hamas', 'hezbollah', 'houthi', 'taliban', 'al-shabaab', 'boko haram', 'suicide bomber',
+    // Added 2026-09-21 (severity relabel, phase 2 — LOGBOOK.md): bare 'bomb'/'blast' weren't covered at all — only
+    // the compound 'bombing'/'suicide bomber' were — so "31 killed in car bomb at mosque" got no topic tag and its
+    // 31 deaths never reached the mass-casualty Critical check. Wide per this list's own design (see the
+    // conflict-security list's 'strike'/'drone' comment for the same reasoning).
+    'bomb', 'blast',
   ]),
   'diplomacy-politics': words([
     'summit', 'treaty', 'election', 'president', 'prime minister', 'resign', 'coup', 'parliament',
@@ -130,7 +135,16 @@ const CAPITAL_ATTACK_RARE_RE = /\b(first time|first[- ]ever|for the first time|s
 // INFRASTRUCTURE_CYBER_RE below, which is a cyberattack, not a physical one.
 const ENERGY_INFRA_ATTACK_RE =
   /\b(pipeline|refinery|power grid|fuel depot|lng terminal|oil field|oilfield)\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|drone|missile|shell\w*|sabotag\w*|explo\w*|shut|shutdown|halt\w*)\b|\b(attack\w*|strikes?|struck|bomb\w*|drone|missile|shell\w*|sabotag\w*)\b[^.]{0,60}\b(pipeline|refinery|power grid|fuel depot|lng terminal|oil field|oilfield)\b/i
-const REGIME_CHANGE_RE = /\b(coup|overthrown|ousted|forced (?:to )?resign(?:ation)?)\b/i
+// Tightened 2026-09-21 (severity relabel, phase 2 — LOGBOOK.md): the original fired on bare 'ousted'/'overthrown',
+// which matched "China... Removing OUSTED Generals From Party" (military officers expelled from a party, not a
+// regime change) — a false Critical. 'ousted'/'overthrown'/'forced resignation' now need a head-of-state/
+// government term nearby; 'coup' alone is still a strong enough signal to stay unscoped, EXCEPT when the coup
+// itself is dated ("the 2021 coup") — a historical reference, not a fresh one (the same class of bug
+// LEGAL_FOLLOWUP_RE already fixes for a head-of-state DEATH claim).
+const HISTORICAL_COUP_RE = /\b(?:19|20)\d{2}\s+coup\b|\bcoup\s+(?:of|in)\s+(?:19|20)\d{2}\b/i
+const OUSTED_LEADER_RE =
+  /\b(overthrown|ousted|forced (?:to )?resign(?:ation)?)\b[^.]{0,50}\b(president|prime minister|premier|king|queen|emperor|government|regime|leader|head of state)\b|\b(president|prime minister|premier|king|queen|emperor|government|regime|leader|head of state)\b[^.]{0,50}\b(overthrown|ousted|forced (?:to )?resign(?:ation)?)\b/i
+const REGIME_CHANGE_RE = { test: (text: string) => (/\bcoup\b/i.test(text) && !HISTORICAL_COUP_RE.test(text)) || OUSTED_LEADER_RE.test(text) }
 const WAR_DECLARATION_RE = /\bdeclares? war\b/i
 const PACT_WITHDRAWAL_RE = /\bwithdraw(?:s|al|ing)? from\b[^.]{0,30}\b(nato|nuclear (?:deal|treaty)|non-proliferation treaty|new start)\b/i
 const SOVEREIGN_DEFAULT_RE = /\b(sovereign default|defaults? on (?:its )?(?:sovereign )?debt|currency collapse|hyperinflation)\b/i
@@ -144,15 +158,24 @@ const TERRITORIAL_RE = /\b(captur(?:es|ed|ing)|seiz(?:es|ed|ing)|annex(?:es|ed|a
 // Major (every routine Gaza/Ukraine strike headline). Escalation markers are approximate on purpose.
 export const CONTAINED_STRIKE_MAJOR_DEATHS = 5
 const ESCALATION_RE = /\b(first time|first[- ]ever|previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|escalat\w+)\b/i
-const MAJOR_POLICY_RE = /\b(sanctions? (?:package|on)|new sanctions|snap election|formal notice|triggers? article|treaty exit)\b/i
+// Settled call — "sanctions? on" also matches LIFTING sanctions ("US lifts sanctions on Eritrean officials"), a
+// de-escalation, not the new-sanctions-package action §5 means (found in the severity relabel, phase 2). Guarded
+// below, not folded into the regex itself, since it's the one alternative in this list that needs the guard.
+const SANCTIONS_LIFTED_RE = /\b(lifts?|lifted|removes?|removed|eases?|eased|drops?|dropped)\b[^.]{0,20}\bsanctions?\b/i
+const MAJOR_POLICY_RE = /\b(sanctions? (?:package|on)|new sanctions|snap election|early (?:parliamentary )?elections?|formal notice|triggers? article|treaty exit)\b/i
 // Settled call 6: severing relations is Major; expelling/recalling an ambassador (no severance) stays Significant via the
 // ordinary diplomacy-politics fallback, so it needs no regex of its own here.
 const DIPLOMATIC_SEVER_RE = /\b(cuts?|severs?|sever(?:ed|ing)|breaks?|broke|ends?|ended)\s+(?:diplomatic|all diplomatic)\s+(?:relations|ties)\b/i
 // Settled call 4: a verdict/sentence against an ex-head-of-state/leader is Major; an arrest, extradition or trial over a
 // PAST head-of-state killing is Significant (the ordinary fallback already gives Significant once headOfStateDeathClaim
-// is correctly suppressed for that case below — see LEGAL_FOLLOWUP_RE).
+// is correctly suppressed for that case below — see LEGAL_FOLLOWUP_RE). A pardon/clemency/commutation is neither a
+// fresh conviction nor an escalation — it's leniency — so it's guarded out (found in the severity relabel, phase 2:
+// "Malaysia's ex-PM can serve his 1MDB sentence under house arrest" after a royal pardon isn't a new verdict).
+const PARDON_RE = /\b(pardon\w*|clemency|commut\w*)\b/i
 const EX_LEADER_VERDICT_RE = /\b(sentenc\w+|convict\w+|verdict)\b[^.]{0,60}\b(?:ex-|former )?(?:president|prime minister|premier|king|leader)\b|\b(?:ex-|former )?(?:president|prime minister|premier|king|leader)\b[^.]{0,60}\b(sentenc\w+|convict\w+|verdict)\b/i
-const MARKET_SHOCK_RE = /\b(market (?:crash|rout|plunge|turmoil)|stocks? (?:plunge|tumble|crash)|central bank (?:cuts?|raises?|hikes?)|(?:cuts?|raises?|hikes?) (?:interest )?rates?|production cuts?|oil price (?:spike|surge|plunge))\b/i
+// Broadened 2026-09-21 (severity relabel, phase 2): "market (?:crash|rout|...)" missed "global BOND rout intensifies" —
+// a rout in bonds or stocks specifically is the same shock class as a market-wide one.
+const MARKET_SHOCK_RE = /\b((?:market|bond|stock)s? (?:crash|rout|plunge|turmoil)|stocks? (?:plunge|tumble|crash)|central bank (?:cuts?|raises?|hikes?)|(?:cuts?|raises?|hikes?) (?:interest )?rates?|production cuts?|oil price (?:spike|surge|plunge))\b/i
 const INFRASTRUCTURE_CYBER_RE = /\b(?:cyber ?attack|ransomware|hack\w*)\b[^.]{0,50}\b(power grid|pipeline|hospital|airport|water|infrastructure|bank)\b/i
 const RHETORIC_RE = /\b(says?|said|warns?|vows?|threatens?|calls? for|urges?|slams?|condemns?|claims?|insists?|pledges?)\b/i
 const ACTION_RE = /\b((?:air ?)?strike[sd]?|struck|attack(?:s|ed)?|launch(?:es|ed)?|deploy(?:s|ed)?|invade[sd]?|sign(?:s|ed)?|imposes?|imposed|announces?|orders?|ordered|kill(?:s|ed)?|seiz(?:es|ed)?|captur(?:es|ed)?|elects?|wins?)\b/i
@@ -231,10 +254,15 @@ export function classifyText(text: string): Classification {
     (conflictish && !unconfirmedSelfClaim && CAPITAL_ATTACK_RE.test(text)) ||
     (conflictish &&
       !unconfirmedSelfClaim &&
-      STRIKE_RE.test(text) &&
-      CASUALTY_RE.test(text) &&
-      (deaths >= CONTAINED_STRIKE_MAJOR_DEATHS || ESCALATION_RE.test(text))) ||
-    (has('diplomacy-politics') && (MAJOR_POLICY_RE.test(text) || DIPLOMATIC_SEVER_RE.test(text) || EX_LEADER_VERDICT_RE.test(text))) ||
+      ((STRIKE_RE.test(text) && CASUALTY_RE.test(text) && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
+        // An explicit escalation phrase is Major on its own — doesn't need a co-occurring casualty figure (found in
+        // the severity relabel, phase 2: "Houthis hit Saudi Arabia, threatening further escalation" names no death
+        // toll, but "further escalation"/"another round of regional escalation" is unambiguous on its own).
+        ESCALATION_RE.test(text))) ||
+    (has('diplomacy-politics') &&
+      ((MAJOR_POLICY_RE.test(text) && !SANCTIONS_LIFTED_RE.test(text)) ||
+        DIPLOMATIC_SEVER_RE.test(text) ||
+        (EX_LEADER_VERDICT_RE.test(text) && !PARDON_RE.test(text)))) ||
     ((has('economic-trade') || has('energy')) && (MARKET_SHOCK_RE.test(text) || ENERGY_INFRA_ATTACK_RE.test(text))) ||
     ((has('science-technology') || has('crime-trafficking')) && INFRASTRUCTURE_CYBER_RE.test(text))
   ) {
