@@ -2870,9 +2870,13 @@ inspection).
    the time this ran. Also surfaced and fixed a real project-wide centroid
    bug (`largestRing()` picking by vertex count instead of area) along the
    way — see that pass's own entry.
-6. Write the final decision + trade-off into `LOGBOOK.md` once built and
+6. ~~Write the final decision + trade-off into `LOGBOOK.md` once built and
    verified in-browser, per this project's existing discipline for sourced
-   data decisions.
+   data decisions.~~ — **done** (2026-09-22, see LOGBOOK.md's own entry).
+   J's browser check (Saint Petersburg/Moscow/Zelenograd outlines, Houston
+   search disambiguation, corrected US label positions) surfaced the
+   Thirty-second pass's two search-qualifier fixes above; everything else
+   confirmed good. The campaign is closed.
 
 ## Open items
 

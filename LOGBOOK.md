@@ -5,6 +5,59 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-22 — City boundaries: real per-country data for all 193 UN members, US pipeline cutover, decision closed
+
+**The `city-boundaries-architecture` branch's core campaign is done.** Every one of the 193 UN member states now
+has real city-boundary geometry sourced from geoBoundaries (primary) with OSM `admin_level` queries as a
+per-country fallback, joined against GeoNames population points via `scripts/buildCityBoundaries.mjs`. This
+replaces the original 3-country pilot (Jordan/Kuwait/US) and supersedes the old Census-only US pipeline
+entirely — see [[project-city-boundary-fallback-plan]] for the full country-by-country trail (34 passes) and
+`city-boundaries-architecture.md` for the pass-by-pass detail this entry summarizes.
+
+**Decision: geoBoundaries over raw OSM as the default source, OSM as a targeted supplement, never a full
+source swap for one country.** geoBoundaries gave a comprehensive, pre-joined administrative hierarchy for
+almost every country; OSM was reached for only where geoBoundaries didn't reach city scale (South Korea,
+Kazakhstan, Bhutan) or where a specific capital/city was missing or misjoined at the correct admin level
+(Kinshasa, Brazzaville, Belgrade, several Central American capitals) — a supplemental `extraOsm` query scoped
+to just that city, not a wholesale re-source. Real, recurring failure shapes worth remembering for any future
+country: a genuine shapeName/geometry misalignment (not just a blank/garbled name — confirmed 4 times across
+West/Central Africa); a capital present only as internal-district fragments with no whole-city polygon
+(France's Paris/Lyon/Marseille, the Philippines' Manila, New Zealand's Auckland — fixed by a geometric
+point-in-polygon identification against an OSM whole-city relation, except Auckland, where the only OSM
+alternative itself failed the area-plausibility ceiling and the fragments were kept); and real, structural
+"vast rural admin unit, no finer comprehensive tier" residuals (Mongolia, Xinjiang, South Africa's post-1994
+municipal consolidation) that are accepted gaps, not bugs.
+
+**US cutover (Thirty-first pass, 2026-09-21, commit 4888c3e):** validated the new pipeline's US output against
+the old Census-sourced pipeline (byte-for-byte lossless — the US path was always a reshape of the same Census
+data), then retired `buildUsCitiesData.mjs`/`usStateCapitals.mjs`/`us-cities-index.json`/`us-cities/*.json` in
+favor of the generic `addFromShardedDir()` path every other state-sharded country already used. Surfaced and
+fixed a real project-wide bug along the way: `sphericalGeometry.mjs`'s `largestRing()` picked a MultiPolygon's
+ring by vertex count, not area — silently wrong for any multi-part city geometry whose smaller fragment
+happened to be more heavily digitized (29 US cities moved 20km+, including Houston 36km, Dallas 36km, Corpus
+Christi 41km; 251 non-US entries also moved once the shared centroid function was fixed).
+
+**Two follow-up fixes from a live browser check the next day (Thirty-second pass, 2026-09-22, commit
+cb8a796):** J's own verification pass (Saint Petersburg, Moscow, Zelenograd outlines; Houston search
+disambiguation; the corrected US label positions) found one real bug and one real gap, both in
+`hud/SearchBar.tsx`. First: Saint Petersburg's search result read "Saint Petersburg, SPE" — every
+state-sharded country other than the US (Russia, Mexico, Brazil, Peru, Argentina, France, Germany, Italy,
+Spain, China, Indonesia, India) was showing its region abbreviation in search results, correct for the US
+("Richmond, CA") but unrecognizable everywhere else, since those countries only shard by state/province for
+file-size reasons, not because a user would recognize the region code. Fixed: only the US now gets the
+state-abbreviation qualifier; every other state-sharded country falls through to its country name, same as a
+non-sharded country already did. Second: admin-division (state/province) search results had no qualifier at
+all — a bare "Amazonas" doesn't say which of Brazil/Peru/Colombia/Venezuela — fixed to always append the
+parent country's name, the same unconditional treatment city-boundary results already got in the Thirty-first
+pass (direct feedback there: always show the qualifier, not just on name collision).
+
+**Trade-off accepted going forward:** this dataset is simplified administrative-boundary data, not
+survey-grade — real residual gaps exist per-country (logged in `BACKLOG.md`, not hidden), and a handful of
+very small city-boundary polygons (e.g. Zelenograd's ~4km² district) are real and correctly joined but may
+render too small to visually distinguish at `flyToCity()`'s fixed camera-flight distance — a rendering/camera
+question, not a data-quality one, and not chased further here. Migration plan step 6
+(`city-boundaries-architecture.md`) is now closed.
+
 ## 2026-09-19 — Spain's states layer showed provinces (second-level), not autonomous communities (first-level)
 
 **Reported as "why don't I see Catalonia with capital Barcelona?"** The 1:10m Natural Earth admin-1 layer models
