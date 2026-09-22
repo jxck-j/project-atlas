@@ -112,9 +112,11 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   strikes — see the rubric-gap item above — and a Bosnian care-home fire, 15 dead, now facing criminal charges). **The constraint is
   archive depth, not the mining technique**: `archive/news/articles.jsonl` only spans a few days of RSS pulls, and independent
   Critical/Major events are rare by nature — growing that part of the label set meaningfully needs `archive:news` to keep accumulating
-  over weeks. The tool's OTHER pool (relevance disagreement between the shipped classifier and the keyword pre-filter) had much better
-  yield — 53 candidates — real material for growing the relevance/tag classifier's corpus specifically, not yet hand-labeled or folded
-  into a fixture.
+  over weeks. **DONE (2026-09-22): the tool's OTHER pool (relevance disagreement) was hand-labeled and folded in** — all 53
+  candidates, added as `scripts/fixtures/newsClassificationArchiveBatch.json` (a third, clearly-separated pool — it's a
+  DELIBERATELY BIASED sample, so it's wired into the "main" training side of `classifierData.mjs`, never the pristine held-out
+  side) and retrained into the shipped classifier. Effect was real but modest, as expected from 53 more labels on ~1,180:
+  held-out relevance F1 0.927 → 0.929, AUC 0.951 → 0.952. See `LOGBOOK.md`.
 - **Article volume is now measured; output tokens still aren't.** One live pull (2026-09-20, 24 feeds): 1,170 articles →
   ~930 candidates after the wide pre-filter → 38 classification calls (25 per batch) + one grouping call. Exact input tokens come from
   `--llm`'s free `count_tokens` pass. The OUTPUT side (thinking + JSON, ~150/article ASSUMED) dominates cost and is unmeasured until a

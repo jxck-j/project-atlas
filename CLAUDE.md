@@ -1774,9 +1774,14 @@ loosening the pair threshold. Things a session touching this must know:
 - **Thresholds are tied to the model's similarity scale and to the labels.** Change `EMBEDDING_MODEL` and the clustering threshold AND the
   classifier weights must be re-derived (`npm run eval:news-clustering`, `npm run train:news-classifier`, `npm run eval:news-classifier`);
   the classifier refuses weights from a different model.
-- **The evidence is soft**: two pulls, labels by Claude from headlines, a label-QA pass done after seeing model output (LOGBOOK, BACKLOG).
-  `newsClassificationHoldout.json` is the out-of-sample set: the eval trains on the main set only and scores it; the SHIPPED weights are
-  trained on both, so they can't be scored on it.
+- **The evidence is soft**: labels by Claude from headlines (a third pool, `newsClassificationArchiveBatch.json`, from title+description —
+  see below), a label-QA pass done after seeing model output (LOGBOOK, BACKLOG).
+  `newsClassificationHoldout.json` is the out-of-sample set: the eval trains on the main set (+ the archive batch — see below) and
+  scores it; the SHIPPED weights are trained on all three pools, so held-out can't be scored on it directly.
+- **`scripts/fixtures/newsClassificationArchiveBatch.json` (2026-09-22)** is a third labeled pool, mined from the archive via
+  `npm run mine:news-candidates` and hand-labeled — see `LOGBOOK.md`. It is a DELIBERATELY BIASED sample (selected for classifier/
+  keyword disagreement, not a random pull), so `scripts/lib/classifierData.mjs` wires it into the "main" training side only, never
+  the pristine held-out side — `loadClassifierData`'s `holdStart` (not `nMain`) is what marks where the real held-out set begins.
 - `--heuristic` is the Phase 2 path (no model); `--llm` (Phase 3) is unchanged and still unrun.
 
 ### Data quirks worth knowing

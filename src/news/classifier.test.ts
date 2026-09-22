@@ -5,6 +5,7 @@ import { EMBEDDING_MODEL, type Embedder, type Vector } from './embeddingClusteri
 import { buildEventsWithEmbeddings, type RawArticle } from './eventBuilder'
 import { fitStandardizer, predictProba, standardize, trainLogistic } from './linearModel'
 import { loadShippedClassifier } from './shippedClassifier'
+import archiveBatchFixture from '../../scripts/fixtures/newsClassificationArchiveBatch.json'
 import clusterFixture from '../../scripts/fixtures/newsClusteringEval.json'
 import labelFixture from '../../scripts/fixtures/newsClassificationLabels.json'
 import type { SourceProfile, TopicTag } from './types'
@@ -208,6 +209,26 @@ describe('classification label fixture (scripts/fixtures/newsClassificationLabel
 
   it('is aligned one-to-one with the clustering fixture', () => {
     expect(labels).toHaveLength(clusterFixture.articles.length)
+  })
+
+  it('every label is well-formed', () => {
+    for (const [i, l] of labels.entries()) {
+      expect(['1', 'A', '0', '?'], `label ${i}`).toContain(l.relevance)
+      if (l.relevance === '1' || l.relevance === 'A') {
+        expect(l.tags!.length, `label ${i} has no tags`).toBeGreaterThan(0)
+        for (const t of l.tags!) expect(TAGS, `label ${i}`).toContain(t)
+      }
+      if (l.relevance === '1') expect(['routine', 'significant', 'major', 'critical'], `label ${i}`).toContain(l.severity)
+    }
+  })
+})
+
+describe('archive-batch label fixture (scripts/fixtures/newsClassificationArchiveBatch.json)', () => {
+  const labels = archiveBatchFixture.labels as { relevance: string; tags?: string[]; severity?: string | null }[]
+  const TAGS: TopicTag[] = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
+
+  it('is aligned one-to-one with its own articles array', () => {
+    expect(labels).toHaveLength(archiveBatchFixture.articles.length)
   })
 
   it('every label is well-formed', () => {

@@ -1,0 +1,833 @@
+{
+  "note": "Hand labels for relevance, topic tags and severity, aligned by index to this file's own articles array. Labeled by Claude from TITLE+DESCRIPTION (unlike the main/held-out fixtures, which were headline-only) against news-sourcing-design.md sections 3 (scope), 4a (tags) and 5 (severity) - a judgment, not an independent human label, per the same convention as the other two fixtures. Sourced 2026-09-21 via npm run mine:news-candidates, Pool 2 (relevance disagreement between the shipped classifier and the keyword pre-filter, on archive/news/articles.jsonl articles not already in the other two fixtures) - a DELIBERATELY BIASED sample selected for classifier/keyword disagreement, not a random pull, so this fixture must never be scored as a held-out generalization test the way newsClassificationHoldout.json is; it is training-pool data only. Four items (indices 23/24/35/45) are the same real event (UK's first Rwanda-genocide prosecution) reported by different outlets and share one label by design, matching the story-grouped-relabel convention from LOGBOOK.md; likewise indices 28/29 (China purging two generals) and 9/37/41 (the same Trump-Mamdani meeting, reported from different angles). 'A' (in-scope analysis/opinion/explainer) items carry severity: null, same schema as the other two fixtures.",
+  "articles": [
+    {
+      "sourceId": "guardian",
+      "title": "Celia Birtwell ‘humanises’ Burberry in London fashion week closing show",
+      "description": "Textile designer brings florals, vines and smiley doodles to brand’s luxury checks for one-off paired collection Burberry and Celia Birtwell are both national treasures of sorts. One is Britain’s grandest luxury name, the other the textile designer who dressed bohemian 1960s London in her prints and has a place in art history as David Hockney’s favourite muse. Burberry’s designer, Daniel Lee, has always loved Birtwell’s prints. When the two met this spring, he fell for “her energy, and her zest for life”, and a one-off Burberry meets Birtwell collection that closed London fashion week was born. Continue reading...",
+      "publishedAt": "2026-09-21T21:30:07.000Z",
+      "countries": [
+        "826"
+      ]
+    },
+    {
+      "sourceId": "france-24",
+      "title": "US, Denmark and Greenland to sign security deal on Tuesday",
+      "description": "The United States, Denmark and Greenland are set to sign a security agreement Tuesday expanding US involvement in Greenland’s defense while affirming Danish sovereignty over the Arctic territory.",
+      "publishedAt": "2026-09-21T23:30:46.000Z",
+      "countries": [
+        "840",
+        "208"
+      ]
+    },
+    {
+      "sourceId": "wsj-news",
+      "title": "Opinion | What Does Trump Want From Xi?",
+      "description": "Start with no more help for Iran to target and kill Americans.",
+      "publishedAt": "2026-09-21T21:41:00.000Z",
+      "countries": [
+        "364",
+        "840"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "State of world getting worse as UN Security Council paralysed: Guterres",
+      "description": "The UN chief's mandate ends on December 31 this year, with a successor yet to be named.",
+      "publishedAt": "2026-09-21T16:46:36.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "guardian",
+      "title": "Wildlife will be affected by current drought for years to come, UK government says",
+      "description": "The number of potentially damaging environmental incidents triggered by this year’s hot and dry weather has surpassed that of 2025 Wildlife in England and Wales will be affected by the current drought for years to come, the government has said. This summer saw large parts of England and all of Wales plunged into a serious drought, with both recording their driest Julys since records began in 1836. Continue reading...",
+      "publishedAt": "2026-09-21T16:52:27.000Z",
+      "countries": [
+        "826"
+      ]
+    },
+    {
+      "sourceId": "the-diplomat",
+      "title": "Why Sri Lanka’s Ruling NPP Has Not Abolished the Executive Presidency Yet",
+      "description": "It is prioritizing economic recovery and establishing accountability of powerful people for past crimes to build the mass support needed to pursue constitutional reform.",
+      "publishedAt": "2026-09-21T09:42:00.000Z",
+      "countries": [
+        "144"
+      ]
+    },
+    {
+      "sourceId": "france-24",
+      "title": "French farmers turn to tropical crops amid rising temperatures",
+      "description": "In the south of France, climate change is reshaping the region’s fruit production. Rather than fighting against it, a growing number of farmers are learning how to work with it – turning to tropical crops, now well-suited to the local climate. Bananas, papaya and even dragon fruit are being grown in greenhouses but also in open fields, without heating or pesticides. Our Down to Earth team reports.",
+      "publishedAt": "2026-09-21T14:39:09.000Z",
+      "countries": [
+        "250"
+      ]
+    },
+    {
+      "sourceId": "breaking-defense",
+      "title": "The US needs an information-warfare strategy for Iran — and beyond",
+      "description": "In the face of authoritarian oppression, a US-made information warfare tool set could enhance the lives of those living in restrictive countries.",
+      "publishedAt": "2026-09-21T18:46:00.000Z",
+      "countries": [
+        "840",
+        "364"
+      ]
+    },
+    {
+      "sourceId": "the-diplomat",
+      "title": "When Xi Visits Washington, Trump Must Raise China's 'Ethnic Unity' Law",
+      "description": "Trump should raise the ethnic unity law directly with Xi and make clear that attempts to enforce it against people in the United States will not be tolerated.",
+      "publishedAt": "2026-09-21T20:00:00.000Z",
+      "countries": [
+        "156",
+        "840"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "Mamdani challenges Trump over White House press ban during meeting",
+      "description": "President Trump met New York Mayor Zohran Mamdani at his official residence, one day before Trump speaks to the UNGA.",
+      "publishedAt": "2026-09-22T01:57:51.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "wsj-news",
+      "title": "Opinion | Who's Stronger, Xi or Trump?",
+      "description": "Jimmy Lai is more a threat to Beijing in prison than out.",
+      "publishedAt": "2026-09-21T21:12:00.000Z",
+      "countries": [
+        "156"
+      ]
+    },
+    {
+      "sourceId": "financial-times",
+      "title": "Germany’s Merz hits out at ‘destructive’ forces as he fights for survival",
+      "description": "Chancellor defensive after AfD’s second electoral victory in the east and far left wins in Berlin",
+      "publishedAt": "2026-09-21T14:41:00.000Z",
+      "countries": [
+        "276"
+      ]
+    },
+    {
+      "sourceId": "euronews",
+      "title": "Trial of six French Islamic State suspects opens in Baghdad",
+      "description": "The suspects were part of a group of 47 French nationals transferred last year from Syria to Iraq, where numerous suspected IS members were already being held.",
+      "publishedAt": "2026-09-21T20:44:05.000Z",
+      "countries": [
+        "250",
+        "760",
+        "368"
+      ]
+    },
+    {
+      "sourceId": "the-war-zone",
+      "title": "Alarm Bells Ring Across Europe As Security Situation With Russia Deteriorates At Accelerating Pace",
+      "description": "Russia is making some very concerning moves at a time when hybrid attacks are at an all-time high, stoking fear across Europe. The post Alarm Bells Ring Across Europe As Security Situation With Russia Deteriorates At Accelerating Pace appeared first on TWZ .",
+      "publishedAt": "2026-09-21T22:46:25.000Z",
+      "countries": [
+        "643"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "Kallas Urges EU to Bolster Red Sea Mission Against Houthi Threat",
+      "description": "The European Union’s top diplomat, Kaja Kallas, called for member states to send more naval vessels to protect commercial shipping in the Red Sea.",
+      "publishedAt": "2026-09-21T22:39:50.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "guardian",
+      "title": "Venezuelan shot by ICE seeks medical care as lawyer says bullet lodged in back",
+      "description": "Shooting of Wilber Rafael Garcés Pérez comes months after increased federal immigration enforcement in Austin The Venezuelan man who was shot by a federal immigration officer in Texas on Sunday spoke out from detention on Monday afternoon when he was able to call his lawyer, in the middle of a press conference, and plead for better medical care. Wilber Rafael Garcés Pérez, 28, was taken from a hospital in Austin into Immigration and Customs Enforcement (ICE) detention, even though he apparently still has a bullet lodged near his spine and is in much discomfort. Continue reading...",
+      "publishedAt": "2026-09-21T23:13:35.000Z",
+      "countries": [
+        "862"
+      ]
+    },
+    {
+      "sourceId": "al-monitor",
+      "title": "EU's Kallas says Red Sea naval mission needs more than 10 ships",
+      "description": "NEW YORK, Sept 21 (Reuters) - The European Union's naval mission in the Red Sea would need more than 10 warships, its foreign policy chief said on Monday, adding that for now there weren’t that many in the area. \"When Aspides (the EU military operation) was put in place, then the indication was that it needs at least 10 ships. The situation, I think, is even more grave right now,\" she told reporters on the sidelines of the annual gathering of world leaders at the United Nations.",
+      "publishedAt": "2026-09-21T22:46:28.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "ars-technica",
+      "title": "Trump rejects AI slowdown calls, launches \"AI Force\" instead",
+      "description": "The president offered few details on what his proposed new AI Force would do.",
+      "publishedAt": "2026-09-21T15:37:56.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "State Street Sees Resilience Driving Portfolios (Correct)",
+      "description": "State Street Investment Management CEO Yie-Hsin Hung says investors have entered an era where resilient portfolios are increasingly important as higher capital costs, geopolitical tensions and technological change create a wider range of potential outcomes. Hung tells Bloomberg This Weekend hosts David Gura and Christina Ruffini that institutional investors are adding liquidity and other portfolio buffers, while State Street is also expanding access to private markets and providing the default ETF for the US government's Trump Accounts program. They speak at the 2026 Qatar Economic Forum, UNGA Special Edition; Powered by Bloomberg. (Corrects title of guest in graphic) (Source: Bloomberg)",
+      "publishedAt": "2026-09-20T15:53:53.000Z",
+      "countries": [
+        "840",
+        "634"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "This Is a Healthy Environment for Deals, Rizzieri Says",
+      "description": "Jerry Rizzieri, Mizuho Securities USA president and CEO, says we're in a healthy environment for dealmaking. He also speaks about where investment opportunities are in Japan on \"Bloomberg The Close.\" (Source: Bloomberg)",
+      "publishedAt": "2026-09-21T21:05:58.000Z",
+      "countries": [
+        "392"
+      ]
+    },
+    {
+      "sourceId": "guardian",
+      "title": "Datacentres in Victoria to be banned in residential areas",
+      "description": "New rules also include a ban near schools and childcare centres and require them to source their own renewable energy Follow our Australia news live blog for latest updates Get our breaking news email , free app or daily news podcast Datacentres in Victoria will be banned in residential areas and required to use renewable energy and contribute to the community under new state government rules. On Tuesday, the premier, Ben Carroll, will release the government’s sustainable datacentre action plan after it was approved by cabinet on Monday. Continue reading...",
+      "publishedAt": "2026-09-21T19:00:23.000Z",
+      "countries": [
+        "036"
+      ]
+    },
+    {
+      "sourceId": "deutsche-welle",
+      "title": "US news outlets sue Trump over White House ban",
+      "description": "CNN, MS NOW, and Politico say the ban against them threatens press freedom and the right to independent journalism.",
+      "publishedAt": "2026-09-21T16:44:00.000Z",
+      "countries": [
+        "840"
+      ]
+    },
+    {
+      "sourceId": "wsj-news",
+      "title": "Opinion | In the End, a Good Greenland Deal",
+      "description": "Non-NATO countries won't be able to have a base on the island.",
+      "publishedAt": "2026-09-20T20:54:00.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "UK prosecutors charge first person for Rwanda genocide",
+      "description": "Vincent Brown is 'alleged to have directed and incited acts of murder and genocide carried out by others'.",
+      "publishedAt": "2026-09-21T19:48:58.000Z",
+      "countries": [
+        "826",
+        "646"
+      ]
+    },
+    {
+      "sourceId": "deutsche-welle",
+      "title": "UK: Man charged over suspected role in Rwanda genocide",
+      "description": "The suspect has been accused of directing and inciting acts of murder and genocide carried out by others in Rwanda.",
+      "publishedAt": "2026-09-21T21:57:00.000Z",
+      "countries": [
+        "826",
+        "646"
+      ]
+    },
+    {
+      "sourceId": "wsj-news",
+      "title": "In Trump, Xi Sees 'Rare Window' to Convince Taiwan That Resistance Is Futile",
+      "description": "Beijing is courting Taiwan's opposition'and quietly helped stage its leader's landmark visit to the mainland'to pull the island into its orbit.",
+      "publishedAt": "2026-09-22T01:00:00.000Z",
+      "countries": [
+        "taiwan",
+        "156"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "US threatens to ground Iranian airlines worldwide from Wednesday",
+      "description": "Treasury Secretary says airports and companies servicing Iranian carriers risk being cut off from the US dollar system.",
+      "publishedAt": "2026-09-21T15:18:12.000Z",
+      "countries": [
+        "840",
+        "364"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "NSE’s $2.4 Billion IPO Gets Subdued Demand From Retail Crowd",
+      "description": "National Stock Exchange of India Ltd.’s $2.4 billion initial public offering drew subdued demand particularly from retail investors as valuation concerns continued to weigh on one of the largest stock market debuts in India’s history.",
+      "publishedAt": "2026-09-21T11:46:53.000Z",
+      "countries": [
+        "356"
+      ]
+    },
+    {
+      "sourceId": "financial-times",
+      "title": "China accuses ousted top generals of ‘disloyalty’",
+      "description": "Communist Party leaders back expulsion of Zhang Youxia and Liu Zhenli from its ranks, alleging they ‘crossed red lines’",
+      "publishedAt": "2026-09-21T14:54:23.000Z",
+      "countries": [
+        "156"
+      ]
+    },
+    {
+      "sourceId": "semafor",
+      "title": "Xi purges top generals for 'disloyalty'",
+      "description": "China said Monday that it removed two top generals over allegations of disloyalty and corruption, the latest in a long series of expulsions under leader Xi Jinping.",
+      "publishedAt": "2026-09-21T22:28:02.000Z",
+      "countries": [
+        "156"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "‘Licence to kill:’ French protests decry police use-of-force bill",
+      "description": "Thousands of protesters across France rallied against a new law they say will give police a \"licence to kill”.",
+      "publishedAt": "2026-09-21T17:38:07.000Z",
+      "countries": [
+        "250"
+      ]
+    },
+    {
+      "sourceId": "wsj-news",
+      "title": "Opinion | Will Andrew Cuomo Confront His Own Party's Antisemitism?",
+      "description": "The former New York governor must challenge fellow Democrats who accuse Israel of genocide.",
+      "publishedAt": "2026-09-20T17:35:00.000Z",
+      "countries": [
+        "376"
+      ]
+    },
+    {
+      "sourceId": "nbc-news",
+      "title": "'NAZA' documentary facing praise and controversy ahead of U.S. premiere",
+      "description": "A new documentary about the actions of the Israeli military forces inside Gaza will screen at the New York Film Festival. So far, the film has garnered praise at the Venice Film Festival and controversy back in Israel. NBC News’ Matt Bradley reports.",
+      "publishedAt": "2026-09-22T00:27:56.000Z",
+      "countries": [
+        "840",
+        "376"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "Síkela Says Europe Looks to Expand Development Financing",
+      "description": "Jozef Síkela, EU International Partnership Commissioner, says Europe is already the largest contributor to development assistance and is looking to mobilize more private capital for emerging and developing markets. Síkela says the EU’s partnership package with Greenland is aimed at strengthening security and resilience while creating jobs and economic value. Síkela says Europe wants to work with Canada to reduce critical-mineral dependence on China. He speaks with Kailey Leinz and Joe Mathieu on Bloomberg’s \"Balance of Power.\" (Source: Bloomberg)",
+      "publishedAt": "2026-09-21T22:48:14.000Z",
+      "countries": [
+        "124",
+        "156"
+      ]
+    },
+    {
+      "sourceId": "financial-times",
+      "title": "Spanish PM’s wife to stand trial over corruption charges",
+      "description": "Pedro Sánchez’s office denounces ‘unjust’ case as wife’s enemies ask for 13-year prison term",
+      "publishedAt": "2026-09-21T15:04:51.000Z",
+      "countries": [
+        "724"
+      ]
+    },
+    {
+      "sourceId": "sky-news-uk",
+      "title": "UK brings first charges over 1994 Rwandan genocide",
+      "description": "A Rwandan man accused of taking part in the African nation's genocide has become the first person in the UK to face charges linked to the 1994 killings.",
+      "publishedAt": "2026-09-21T16:54:00.000Z",
+      "countries": [
+        "826"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "KKR Bets on Korea AI Supply Chain After Record $3 Billion Deals",
+      "description": "KKR & Co. expects more dealmaking opportunities in South Korea after plowing around $3 billion into the country this year, betting its central role in the global artificial-intelligence supply chain will fuel demand for everything from data centers to power.",
+      "publishedAt": "2026-09-21T21:00:00.000Z",
+      "countries": [
+        "410"
+      ]
+    },
+    {
+      "sourceId": "guardian",
+      "title": "Trump and Mamdani appear friendly after ‘wide-ranging’ meeting at Gracie Mansion",
+      "description": "Republican president said he hoped the democratic socialist would be a ‘great mayor’ for New York City Donald Trump said on Monday that he hoped Zohran Mamdani would be a “great mayor” for New York, an unusually warm assessment of the democratic socialist leader whom the president and his Republican allies have spent months holding up as a symbol of the Democratic party’s alleged embrace of “communism” ahead of the November midterms. At a news conference following their closed-door meeting at Gracie Mansion, Trump and Mamdani appeared friendly as they have in previous meetings. Mamdani said he and Trump held a “wide-ranging” discussion, which touched on affordable housing and immigration, but did not offer extensive details regarding any disagreements between them. Continue reading...",
+      "publishedAt": "2026-09-22T01:30:35.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "the-war-zone",
+      "title": "Chinese Next-Generation Submarine Developments Spotted In New Satellite Imagery",
+      "description": "A Chinese submarine now taking shape at Bohai Shipyard has a number of significant features and offers new insights into China's undersea ambitions. The post Chinese Next-Generation Submarine Developments Spotted In New Satellite Imagery appeared first on TWZ .",
+      "publishedAt": "2026-09-22T00:29:49.000Z",
+      "countries": [
+        "156"
+      ]
+    },
+    {
+      "sourceId": "the-diplomat",
+      "title": "Drones Offer Central Asia an Escape From Foreign Dependency",
+      "description": "Central Asian states should jointly develop drone capabilities to prepare for current and future security needs.",
+      "publishedAt": "2026-09-18T13:59:00.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "the-war-zone",
+      "title": "ADM-160 Miniature Air Launched Decoy Wreckage A Reminder Of Ongoing Spying On Iran’s Air Defenses",
+      "description": "The U.S. and Israel need to keep a close eye on the status of Iran's battered air defenses. The post ADM-160 Miniature Air Launched Decoy Wreckage A Reminder Of Ongoing Spying On Iran's Air Defenses appeared first on TWZ .",
+      "publishedAt": "2026-09-21T22:47:05.000Z",
+      "countries": [
+        "364",
+        "840",
+        "376"
+      ]
+    },
+    {
+      "sourceId": "financial-times",
+      "title": "Trump and Mamdani strike friendly tone in New York City housing talks",
+      "description": "Unlikely rapport between the Republican president and the democratic socialist mayor continues despite their differences on policies",
+      "publishedAt": "2026-09-21T23:45:03.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "pbs-newshour",
+      "title": "Polo has rapidly intensified to a hurricane and is expected to impact Mexico",
+      "description": "Hurricane Polo will rapidly intensify in the Pacific Ocean and become a major hurricane later this week, forecasters said Monday.",
+      "publishedAt": "2026-09-21T19:34:30.000Z",
+      "countries": [
+        "484"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "Elif Eralp: A leftist leader with Turkish roots dubbed ‘Germany’s Mamdani’",
+      "description": "Victory in Berlin signals that Germany continues to be liberal, that, despite the far right's rise, experts say.",
+      "publishedAt": "2026-09-21T14:55:24.000Z",
+      "countries": [
+        "792",
+        "276"
+      ]
+    },
+    {
+      "sourceId": "al-jazeera",
+      "title": "Protesters march on Islamabad over soaring fuel prices",
+      "description": "Pakistan’s Jamaat-e-Islami party has launched a protest march towards Islamabad over soaring fuel prices.",
+      "publishedAt": "2026-09-21T17:48:51.000Z",
+      "countries": [
+        "586"
+      ]
+    },
+    {
+      "sourceId": "scmp-asia",
+      "title": "First charges brought in UK for 1994 Rwanda genocide",
+      "description": "Prosecutors said on Monday they had brought the first-ever charges in the UK against a man for his alleged role in the 1994 Rwanda genocide, after a complex seven-year investigation. Vincent Brown, 65, was arrested and charged on Monday with one count of being an ancillary to genocide and six offences of aiding crimes against humanity in Rwanda, prosecutors and the London police said. “He is alleged to have directed and incited acts of murder and genocide carried out by others” against the...",
+      "publishedAt": "2026-09-21T18:51:26.000Z",
+      "countries": [
+        "826",
+        "646"
+      ]
+    },
+    {
+      "sourceId": "guardian",
+      "title": "UK politics: New leader of Reform UK in Wales named after defeating rival by just two votes – as it happened",
+      "description": "Helen Jenner will be party’s new head in Senedd after a narrow victory over Jason O’Connell Here are some more lines from Max Wilkinson ’s speech to the Lib Dem conference this morning. Wilkinson, the Lib Dem home affairs spokesperson, accused Shabana Mahmood, the home secretary, of using “divisive language” that you would expect from the “authoritarian right”. After condemning the Tories and Reform UK for their anti-migration views, he said: And what’s the Labour response to this hard right agenda? Their home secretary has indulged in the sort of divisive language that we would usually expect from the authoritarian right … W ell let me tell you home secretary – no matter how hard you chase, you’ll never catch up with [Nigel] Farage – that is a fool’s errand. He said that it was the duty of the Liberal Democrats to stand up to the Tories and Reform UK, and the “poison” they were spreading on migration. Repeatedly referring to Reform UK’s Robert Jenrick as a “plonker”, he said: [Jenrick] and his party are plonkers with dangerous ideas … and £72m to deliver them. And their allies in the Conservative party are weakly following them. He criticised the Conservatives and Reform UK for proposing to withdraw Britain from the European convention on human rights. He said: Leaving the European convention on human rights will not fix our asylum system. It will not stop dangerous Channel crossings – not a single boat – and it will not stop the criminal gangs. And he confirmed that the Lib Dems want to tax big tech to finance a new online crime agency. This was announced overnight and Peter Walker and Alexandra Topping have written the story up here. We will carry on as if nothing has happened We could have done without this bump in the road. But it has happened, We are making the best of it. Continue reading...",
+      "publishedAt": "2026-09-21T16:21:51.000Z",
+      "countries": [
+        "826"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "Turkey Freezes Fund Executives’ Assets in Redemption Crisis",
+      "description": "Turkey froze assets tied to executives at several investment firms, expanding an investigation into a fund-industry crisis that has already triggered redemption failures, arrests and a sharp selloff in stocks.",
+      "publishedAt": "2026-09-21T07:13:20.000Z",
+      "countries": [
+        "792"
+      ]
+    },
+    {
+      "sourceId": "al-monitor",
+      "title": "Man convicted of attempted murder in shooting of three Palestinian students in Vermont",
+      "description": "By Kanishka Singh WASHINGTON, Sept 21 (Reuters) - A man was convicted by a jury of attempted murder in the late 2023 shooting of three Palestinian American students in Vermont, two of whom were wounded and one was left paralyzed from the waist down, prosecutors said on Monday. Jason Eaton was found guilty on three counts of attempted second-degree murder for the shootings of Hisham Awartani, Tahseen Aliahmad and Kinnan Abdalhamid on November 25, 2023, in Burlington, Vermont, prosecutor Sarah George, the Chittenden Countystate's attorney, said in a statement.",
+      "publishedAt": "2026-09-21T21:46:32.000Z",
+      "countries": [
+        "840"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "Iowa Republican Senate Seat at Risk, GOP Super PAC Warns Donors",
+      "description": "The top Senate Republican political action committee is warning donors that the party faces a high risk of losing a US Senate seat in Iowa, previously a GOP stronghold.",
+      "publishedAt": "2026-09-21T15:03:43.000Z",
+      "countries": [
+        "840"
+      ]
+    },
+    {
+      "sourceId": "bloomberg",
+      "title": "Trump White House Media Ban: Does It Violate the First Amendment?",
+      "description": "President Donald Trump’s ban on CNN, Politico and MS NOW from the White House is headed to court, raising new questions about how far a president can go in restricting press access.",
+      "publishedAt": "2026-09-21T21:30:59.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "defense-news",
+      "title": "General Atomics delivers FQ-42 Vengeance to Nevada air base",
+      "description": "Creech Air Force Base received a new FQ-42 Vengeance aircraft on Friday, with the jet to continue regular test and evaluation operations.",
+      "publishedAt": "2026-09-21T21:12:41.000Z",
+      "countries": []
+    },
+    {
+      "sourceId": "the-diplomat",
+      "title": "Why Indonesians Feel Increasingly Bitter Today",
+      "description": "Indonesia’s rising public anger reflects deeper structural pressures – from elite impunity to digital manipulation – eroding trust in democratic institutions.",
+      "publishedAt": "2026-09-21T17:14:00.000Z",
+      "countries": [
+        "360"
+      ]
+    }
+  ],
+  "labels": [
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics",
+        "conflict-security"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics",
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "terrorism-non-state-actors"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "conflict-security",
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "science-technology",
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "science-technology"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics",
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics",
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "economic-trade",
+        "conflict-security"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "economic-trade"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "economic-trade",
+        "diplomacy-politics"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "economic-trade",
+        "science-technology"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "conflict-security",
+        "science-technology"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "humanitarian-displacement"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics",
+        "economic-trade"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "economic-trade"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": "significant"
+    },
+    {
+      "relevance": "0"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    },
+    {
+      "relevance": "1",
+      "tags": [
+        "conflict-security"
+      ],
+      "severity": "routine"
+    },
+    {
+      "relevance": "A",
+      "tags": [
+        "diplomacy-politics"
+      ],
+      "severity": null
+    }
+  ]
+}

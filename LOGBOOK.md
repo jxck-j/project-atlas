@@ -5,6 +5,44 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-22 — Pool 2 (relevance disagreement) hand-labeled and folded into the classifier
+
+**Follow-up to the archive-mining entry below, per J's direction.** Hand-labeled all 53 Pool 2
+candidates (relevance disagreement between the shipped classifier and the keyword pre-filter, mined
+from the archive) against `news-sourcing-design.md` §3/4a/5, from TITLE+DESCRIPTION rather than
+headline-only (the main/held-out fixtures' original method) since the full text was already on hand.
+31 in-scope reports, 15 in-scope analysis/opinion, 7 out of scope. Four near-duplicate headlines of
+the UK's first Rwanda-genocide prosecution share one label by story-grouping convention; likewise two
+on China purging top generals (explicitly the same shape the "OUSTED_LEADER_RE" bug-fix LOGBOOK entry
+already ruled should NOT read as regime change — kept at Significant, not Critical) and three on one
+Trump-Mamdani meeting. Two initially-empty tag arrays (a domestic ICE shooting follow-up, a Vermont
+hate-crime conviction — neither fits the design's 8 tags cleanly) were given `diplomacy-politics`
+instead, since `classifier.test.ts` enforces "no empty tags on an in-scope item," a real invariant
+this fixture needed to satisfy too — added a matching fixture-shape test for the new file.
+
+**Wired into `scripts/lib/classifierData.mjs` as a THIRD, clearly-separated pool** —
+`newsClassificationArchiveBatch.json` — not merged into "main" or "held-out" file-wise, because it is
+methodologically different from both: **it's a deliberately biased sample** (selected FOR
+classifier/keyword disagreement, the opposite of a random pull), so it must never be scored as a
+held-out generalization test — that would let a sample chosen because the classifier struggled on it
+inflate the "how good is the classifier" number. `loadClassifierData` now returns `holdStart`
+(previously conflated with `nMain`) so the genuinely-pristine held-out set is always the LAST
+`hold.articles.length` items regardless of what's inserted between "main" and it; `nMain` keeps its
+original meaning (`cluster.articles.length`) unchanged, since the PRODUCT-LEVEL section's simulated
+event-clustering test specifically needs the ORIGINAL live-pull's 56 real clusters, not archive
+articles pulled from unrelated runs. The archive batch's few duplicate-headline groups get their own
+CV group ids (hand-listed in `classifierData.mjs`, not the fixture) so they can't straddle train/test.
+
+**Measured effect — real but modest, exactly what "53 more labels on top of 1,179" should look like:**
+held-out relevance F1 (train on main+archive-batch, score the untouched later-pull set) went 0.927 →
+0.929, AUC 0.951 → 0.952. Retrained and shipped (`npm run train:news-classifier`): 1,175 labeled
+articles now train the classifier (was 1,122). All 322 tests pass (2 new: the archive-batch fixture's
+own shape validation, mirroring the existing check on the main fixture). Consistent with BACKLOG's
+already-logged finding that the relevance/tags learning curve is "still rising" but with diminishing
+per-label returns — this batch was worth doing, but growing severity's Critical/Major count needs
+independent EVENTS from a deeper archive, not more relevance-disagreement labels, which is a different
+axis entirely (see the entry below).
+
 ## 2026-09-21 — Cumulative death toll capped at Major (J's call on the rubric gap below)
 
 **Settled the rubric gap the archive-mining entry below found:** J's call was to cap it, not leave it —

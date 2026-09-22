@@ -19,8 +19,8 @@ const OUT = 'src/news/embeddingClassifierWeights.json'
 const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
 
 const embed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
-// Trains on the UNION of the main labels and the held-out set. (The held-out set stops being held out for THIS model; the honest
-// "train on main only, test on held-out" number is still reported by `npm run eval:news-classifier`.)
+// Trains on the UNION of the main labels, the archive batch, and the held-out set. (The held-out set stops being held out for
+// THIS model; the honest "train on main+archive-batch only, test on held-out" number is still reported by `npm run eval:news-classifier`.)
 const { labels: lab, X, groupOf } = await loadClassifierData(embed)
 const N = X.length
 const { bestL2 } = createCv(X, groupOf)
@@ -55,7 +55,7 @@ const weights = {
   meta: {
     trainedOn: decided.length,
     trainedAt: new Date().toISOString().slice(0, 10),
-    note: 'Trained on scripts/fixtures/newsClassificationLabels.json + newsClassificationHoldout.json (headline-only labels by Claude, two pulls). See LOGBOOK.md.',
+    note: 'Trained on scripts/fixtures/newsClassificationLabels.json + newsClassificationArchiveBatch.json + newsClassificationHoldout.json (labels by Claude, three pulls; the archive batch is a deliberately biased disagreement-mined sample). See LOGBOOK.md.',
   },
 }
 fs.writeFileSync(OUT, JSON.stringify(weights))

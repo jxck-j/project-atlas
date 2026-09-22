@@ -4,12 +4,14 @@
 //   npm run eval:news-classifier
 //
 // Two kinds of evidence, kept apart on purpose:
-//  1. Grouped cross-validation over ALL labeled data (main set + held-out set). Grouped by story/cluster so near-duplicate headlines
-//     never straddle train and test.
-//  2. A genuine HELD-OUT test: train on the main set only, score the later-pull held-out set (labeled before any model saw it).
-//     This is the number to trust for "how will it do on tomorrow's news"; the shipped model is trained on both, so it can no
-//     longer be scored on the held-out set directly.
-// Labels are Claude's, headline-only (see the fixtures' `note`), so both are soft evidence.
+//  1. Grouped cross-validation over ALL labeled data (main set + archive batch + held-out set). Grouped by story/cluster so
+//     near-duplicate headlines never straddle train and test.
+//  2. A genuine HELD-OUT test: train on the main set + archive batch, score the later-pull held-out set (labeled before any model
+//     saw it). This is the number to trust for "how will it do on tomorrow's news"; the shipped model is trained on all three, so it
+//     can no longer be scored on the held-out set directly. The archive batch is a DELIBERATELY BIASED sample (selected for
+//     classifier/keyword disagreement — see its fixture's `note`), so it's folded into the "main" side of this test, never into the
+//     pristine held-out side.
+// Labels are Claude's (see the fixtures' `note`), so both are soft evidence.
 import { classifyText, resolveTopicTags } from '../src/news/classify.ts'
 import { clusterByEmbedding } from '../src/news/embeddingClustering.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
@@ -24,7 +26,7 @@ const candidate = process.env.NEWS_CLASSIFIER_MODEL
 const clusterEmbed = await createLocalEmbedder({ cacheDir: 'debug/hf-cache' })
 const embed = candidate ? await createLocalEmbedder({ cacheDir: 'debug/hf-cache', model: candidate }) : clusterEmbed
 if (candidate) console.log(`classifier features: ${candidate} (clustering stays on the shipped model)`)
-const { articles, labels: lab, X, XC, groupOf, nMain } = await loadClassifierData(embed, clusterEmbed)
+const { articles, labels: lab, X, XC, groupOf, nMain, holdStart } = await loadClassifierData(embed, clusterEmbed)
 const N = X.length
 const TAGS = ['conflict-security', 'terrorism-non-state-actors', 'diplomacy-politics', 'economic-trade', 'energy', 'humanitarian-displacement', 'crime-trafficking', 'science-technology']
 const SEV = ['routine', 'significant', 'major', 'critical']
@@ -34,7 +36,7 @@ const textOf = (i) => `${articles[i].title}. ${articles[i].description}`
 
 const { groupCount, oof, prf, bestL2 } = createCv(X, groupOf)
 const count = (k) => lab.filter((l) => l.relevance === k).length
-console.log(`labels (main ${nMain} + held-out ${N - nMain}): ${count('1')} reports, ${count('A')} analysis, ${count('0')} out of scope, ${count('?')} borderline excluded; ${groupCount} groups, ${K}-fold grouped CV\n`)
+console.log(`labels (main ${nMain} + archive batch ${holdStart - nMain} + held-out ${N - holdStart}): ${count('1')} reports, ${count('A')} analysis, ${count('0')} out of scope, ${count('?')} borderline excluded; ${groupCount} groups, ${K}-fold grouped CV\n`)
 
 // ===== 1. RELEVANCE: in scope (report or analysis) vs not
 const ALL = [...Array(N).keys()]
@@ -197,17 +199,17 @@ function gateTable(title, idxs, relOf) {
   }
 }
 
-// ===== 6. HELD-OUT: train on the main set ONLY, score the later-pull held-out set
+// ===== 6. HELD-OUT: train on the main set + archive batch ONLY, score the pristine later-pull held-out set
 {
-  const mainIdx = [...Array(nMain).keys()].filter((i) => lab[i].relevance !== '?')
-  const holdAll = [...Array(N - nMain).keys()].map((k) => nMain + k)
+  const mainIdx = [...Array(holdStart).keys()].filter((i) => lab[i].relevance !== '?')
+  const holdAll = [...Array(N - holdStart).keys()].map((k) => holdStart + k)
   const holdIdx = holdAll.filter((i) => lab[i].relevance !== '?')
   const st = fitStandardizer(mainIdx.map((i) => X[i]))
   const y = (i) => inScope(lab[i])
   const model = trainLogistic(mainIdx.map((i) => standardize(st, X[i])), mainIdx.map(y), { l2: 1 })
   const relH = new Map(holdAll.map((i) => [i, predictProba(model, standardize(st, X[i]))]))
   const pos = holdIdx.filter((i) => y(i) === 1).length
-  console.log(`\n## HELD-OUT (train on the ${mainIdx.length} main labels, score ${holdIdx.length} later-pull articles: ${pos} in scope)`)
+  console.log(`\n## HELD-OUT (train on the ${mainIdx.length} main+archive-batch labels, score ${holdIdx.length} later-pull articles: ${pos} in scope)`)
   const P = holdIdx.filter((i) => y(i) === 1)
   const Q = holdIdx.filter((i) => y(i) === 0)
   let s = 0
