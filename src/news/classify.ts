@@ -85,7 +85,13 @@ export function resolveTopicTags(text: string): TopicTag[] {
 }
 
 // --- Severity triggers (design §5) ----------------------------------------
-const NUMBER = String.raw`(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(?:\s*(million|m|thousand|k))?`
+// The trailing \b on the unit group matters: without it, "28 militants" or "5 killed in market" would
+// match the bare 'm'/'k' abbreviation against the first letter of the NEXT word ("militants", "market")
+// and scale 28 or 5 up by a factor of a million/thousand — found 2026-09-21 mining the archive for label
+// candidates (a real headline, "Pakistan says it killed 28 militants...", read as 28,000,000 deaths).
+// DEATHS_RES's verb-first pattern's permissive `${WHO}\w*` tail is what let the bogus match survive
+// instead of failing and backtracking away from it — see LOGBOOK.md.
+const NUMBER = String.raw`(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)(?:\s*(million|m|thousand|k)\b)?`
 const WHO = String.raw`(?:people\s+|civilians\s+|others\s+|soldiers\s+|children\s+|residents\s+)?`
 // Headlines put the count on either side of the verb ("12 killed" / "kills
 // 12"), and often as a toll ("death toll rises to 600"); each is its own

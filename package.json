@@ -26,6 +26,7 @@
     "eval:news-clustering": "tsx scripts/evalNewsClustering.mjs",
     "eval:news-classifier": "tsx scripts/evalNewsClassifier.mjs",
     "train:news-classifier": "tsx scripts/trainNewsClassifier.mjs",
+    "mine:news-candidates": "tsx scripts/mineNewsLabelCandidates.mjs",
     "build:news:events:llm": "tsx scripts/buildNewsEvents.mjs --llm",
     "build:regions": "node scripts/buildCountryRegions.mjs",
     "build:geo-entity-economics": "tsx scripts/buildGeoEntityEconomics.mjs",

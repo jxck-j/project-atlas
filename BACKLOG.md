@@ -97,6 +97,26 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   held-out set haven't been re-reviewed against the now-settled §5 rubric — the story-level pass only covered stories with 2+ hand-grouped
   articles. Original example: the Kosovo/Thaci war-crimes-verdict story had near-duplicate headlines labeled both `major` and `significant`
   for the same real-world event in `scripts/fixtures/newsClassificationLabels.json` — now fixed (all `major`, settled call 4).
+- **NEW (2026-09-21), needs J's call: a cumulative death toll across a recurring campaign can trip the single-incident mass-casualty
+  Critical rule.** Found mining the archive (`npm run mine:news-candidates`): "US strikes on alleged drug boats... have killed more than
+  230 people since September 2025" tiers Critical via `MASS_CASUALTY_CRITICAL_DEATHS` (230 >= 10), but 230 is a toll accumulated over
+  roughly a year of separate strikes, not one incident — `DEATHS_RES` has no way to tell "230 in this strike" from "230 since [a
+  year-old date]" apart; both match identically. Design §5's mass-casualty trigger is written for a single reported incident. Options:
+  (a) leave it — a UN "crimes against humanity" finding about a sustained lethal campaign arguably IS Critical-worthy on its own terms,
+  just not via the mass-casualty mechanism as literally written; (b) add a "since [date]/cumulative" detector that caps this specific
+  shape at Major unless another Critical trigger independently fires; (c) something else. Not decided or implemented — see LOGBOOK.md's
+  archive-mining entry.
+- **Archive mining (`npm run mine:news-candidates`, 2026-09-21): real bug found and fixed, but yield for growing SEVERITY labels was
+  thin.** `NUMBER`'s bare `m`/`k` unit abbreviation had no word boundary, so "28 militants" parsed as "28 million" (fixed, regression
+  test added — see LOGBOOK.md; zero effect on current shipped eval numbers, since this exact shape isn't in the label fixtures, but a
+  live hazard for anything sourced from the archive and would have corrupted `severityFeatures.ts` had that model been adopted). Of 556
+  new deduped archive articles, only 2 were genuinely new independent Critical/Major-candidate stories (a UN report on US drug-boat
+  strikes — see the rubric-gap item above — and a Bosnian care-home fire, 15 dead, now facing criminal charges). **The constraint is
+  archive depth, not the mining technique**: `archive/news/articles.jsonl` only spans a few days of RSS pulls, and independent
+  Critical/Major events are rare by nature — growing that part of the label set meaningfully needs `archive:news` to keep accumulating
+  over weeks. The tool's OTHER pool (relevance disagreement between the shipped classifier and the keyword pre-filter) had much better
+  yield — 53 candidates — real material for growing the relevance/tag classifier's corpus specifically, not yet hand-labeled or folded
+  into a fixture.
 - **Article volume is now measured; output tokens still aren't.** One live pull (2026-09-20, 24 feeds): 1,170 articles →
   ~930 candidates after the wide pre-filter → 38 classification calls (25 per batch) + one grouping call. Exact input tokens come from
   `--llm`'s free `count_tokens` pass. The OUTPUT side (thinking + JSON, ~150/article ASSUMED) dominates cost and is unmeasured until a

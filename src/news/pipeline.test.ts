@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { classifyText, resolveTopicTags } from './classify'
+import { classifyText, extractSeverityFacts, resolveTopicTags } from './classify'
 import { clusterArticles, LINK_WINDOW_MS, MAX_CLUSTER_SPAN_MS, type ClusterArticle } from './clustering'
 import { buildCountryMatchers, resolveCountryIds } from './countryResolution'
 import { buildEvents, isCommentaryUrl, stableHash, type RawArticle } from './eventBuilder'
@@ -64,6 +64,15 @@ describe('classifyText', () => {
     const c = classifyText('Flood kills 12 people in Nigeria')
     expect(c.topicTags).toContain('humanitarian-displacement')
     expect(c.severity).not.toBe('critical')
+  })
+
+  it('a bare "m"/"k" unit only scales a number when it is actually an abbreviation, not the start of the next word', () => {
+    // Found 2026-09-21 mining the archive for label candidates: "28 militants" was reading as
+    // "28 million" because the unit suffix had no word boundary, matching the 'm' of "militants".
+    expect(extractSeverityFacts('Pakistan says it killed 28 militants, Afghan Taliban and UN report three civilian deaths').deaths).toBe(28)
+    expect(extractSeverityFacts('5 killed in market bombing in Baghdad').deaths).toBe(5)
+    // real abbreviations still work
+    expect(extractSeverityFacts('28m displaced by flooding in Pakistan').displaced).toBe(28_000_000)
   })
 
   it('evacuation advisories parse and rank as MAJOR at most, on the real typhoon headlines (J, 2026-09-21)', () => {

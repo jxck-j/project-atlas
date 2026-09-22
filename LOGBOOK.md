@@ -5,6 +5,62 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Mining the archive for label candidates (step 3): a real regex bug found, a rubric gap surfaced, modest yield
+
+**Follow-up to the facts-based severity model entry above.** Built `scripts/mineNewsLabelCandidates.mjs`
+(`npm run mine:news-candidates`, read-only) for step 3 of the plan — grow the labeled set from
+`archive/news/articles.jsonl` rather than random sampling, which yields ~2% critical. Two pools: (1)
+RARE-SIGNAL — articles where `extractSeverityFacts` fires a Critical/Major-tier trigger (deaths/
+displaced/evacuation thresholds, head-of-state-death, WMD, embassy/capital attack, regime change,
+war declaration, pact withdrawal, sovereign default, chokepoint closure, PHEIC); (2) DISAGREEMENT —
+the shipped relevance classifier vs. the keyword pre-filter, the same technique the 2026-09-21 label-QA
+pass already used on the existing fixtures, applied to genuinely new archive articles. Both dedupe
+against the two existing fixtures by title.
+
+**A real bug, found immediately in Pool 1's output:** "Pakistan says it killed 28 militants, Afghan
+Taliban and UN report three civilian deaths" read as **28,000,000 deaths**. `NUMBER`'s unit suffix
+(`million|m|thousand|k`) had no word boundary after it, so the bare `m`/`k` abbreviation alternative
+matched the first letter of the very next word — "28 militants" parsed the `m` of "militants" as the
+million-unit. It stayed hidden because most DEATHS_RES branches require a specific literal (like
+"killed") right after the number, and a bogus mid-word match breaks that literal, so the engine
+backtracks and recovers automatically — except the verb-first pattern's catch-all tail (`${WHO}\w*`,
+deliberately permissive so it matches almost any trailing word) has no literal to break, so it just
+absorbed the mis-parsed remainder and let the bogus 28,000,000 through. Fixed with one `\b` (`(million|
+m|thousand|k)\b`) — verified real abbreviations ("1.6 million", "600,000", "28m displaced") are
+unaffected, and confirmed the earlier "militants" headline, "5 killed in market bombing" (would have
+read "market" as thousands), and a synthetic "28m displaced" case all now parse correctly. Zero effect
+on the shipped eval numbers (identical keyword-rule severity accuracy before/after on the 562-item
+fixture — this specific pattern shape isn't present there), but it's a live hazard for anything sourced
+from the archive going forward, and would have badly corrupted `severityFeatures.ts`'s `log_deaths`
+feature had the facts model been adopted. Regression test added in `pipeline.test.ts`.
+
+**A rubric gap surfaced, not yet resolved — flagged for J, not decided here:** the same mining pass
+turned up "US strikes on alleged drug boats may constitute 'crimes against humanity', UN expert says"
+— "Dozens of US attacks... have killed more than 230 people since September 2025." `classifyText`
+tiers this **Critical** via the ordinary mass-casualty rule (230 >= `MASS_CASUALTY_CRITICAL_DEATHS`),
+but 230 is a **cumulative total across roughly a year of separate strikes**, not deaths in the single
+reported incident the rule was written for (design §5's mass-casualty trigger, and
+`HumanitarianFigures`'s own doc comment, both assume a single incident). Nothing in `DEATHS_RES`
+distinguishes "230 killed [in this strike]" from "230 killed since [a year-old start date]" — both
+match the same patterns. Whether a slow-accumulating toll from a recurring campaign should read as
+Critical the moment the running total crosses 10 is a real rubric call, not a bug to silently patch;
+logged to `BACKLOG.md` for J rather than guessed at here (the day's session ran out of room to raise
+it before wrapping up this entry).
+
+**Yield was modest, and that's itself the finding:** of 556 new (deduped, not-already-labeled) archive
+articles, only 6 tripped a rare-signal trigger, and of those only 2 were genuinely new independent
+stories (the drug-boat-strikes UN report above; a Bosnian nursing-home fire that killed 15, now facing
+criminal charges) rather than duplicate headlines of already-labeled stories (the Typhoon Dujuan
+evacuation) or non-incident false triggers (an NHS policy report's "20,000 early deaths a year"
+projection, correctly still tiered Routine since it carries no relevant topic tag). **The real
+constraint is depth, not the mining technique**: `archive/news/articles.jsonl` only spans the last few
+days of RSS pulls (1379 articles total), and independent Critical/Major EVENTS are rare by nature (the
+whole reason step 3 exists) — growing that part of the label set meaningfully needs `archive:news` to
+keep accumulating over weeks, not a bigger one-shot mining pass today. Pool 2 (relevance disagreement)
+had much better yield (53 candidates) — real signal for growing the ALREADY-SHIPPED relevance/tag
+classifier's corpus specifically, a separate, smaller task from severity-label growth. Not yet acted
+on: hand-labeling either pool and folding the results into a fixture.
+
 ## 2026-09-21 — "Keyless" clarified across three uses, and a facts-based severity model tried (not adopted)
 
 **Terminology, cleared up before starting this (asked to have it on record):** "keyless" means no `ANTHROPIC_API_KEY` / no per-run

@@ -69,6 +69,7 @@ npm run build:news:events:heuristic # Phase 2's keyword classification + word-ov
 npm run eval:news-clustering # Scores the heuristic and the embedding clusterer against the hand-labeled fixture (scripts/fixtures/newsClusteringEval.json). Re-run after changing the model, threshold or clustering constants.
 npm run eval:news-classifier # Grouped cross-validation of the relevance/tag/severity classifier vs the keyword rules, plus a product-level "which Events would publish" test.
 npm run train:news-classifier # Retrains the classifier heads on the labeled fixtures and rewrites src/news/embeddingClassifierWeights.json. Re-run after changing EMBEDDING_MODEL, the embedded text, or the labels.
+npm run mine:news-candidates # Read-only: mines archive/news/articles.jsonl for new label-fixture candidates not already in the two existing fixtures (rare severity-trigger articles, plus relevance disagreement between the shipped classifier and the keyword pre-filter). Prints candidates; a human (or Claude, spot-checked) hand-labels and adds them. See News & sourcing below.
 npm run build:news:events:llm # Phase 3: same, but LLM classification + grouping (Sonnet 5). Needs ANTHROPIC_API_KEY. Dry run by default (free count_tokens + projected cost); add `-- --yes` to spend, `-- --limit N` for a small first run.
 npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts, news/)
 ```
