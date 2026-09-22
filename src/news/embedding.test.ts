@@ -143,8 +143,11 @@ describe('buildEventsWithEmbeddings — end to end on a fake embedder', () => {
   // The embedder is looked up by headline, so a test decides which articles "mean" the same thing.
   const embedderFor = (angles: Record<string, number>): Embedder => async (texts) => texts.map((t) => at(angles[t.split('. ')[0]] ?? 170))
 
+  // 'a' names the capital attack as rare (settled call 7, LOGBOOK.md 2026-09-21: a capital attack is Critical only
+  // when flagged rare/first-time — Riyadh's real headline said exactly this; a routine capital strike in an
+  // already-active war, like Ukraine's drone attacks on Moscow, is Major instead, whatever the wording).
   const riyadh = [
-    ['a', 'Flames seen near Riyadh airport as Houthis claim attack on Saudi capital'],
+    ['a', 'Flames seen near Riyadh airport as Houthis attack Saudi capital for the first time since the Yemen conflict resumed'],
     ['b', 'Saudi Arabia says it intercepted Yemen rebel drones aimed at Riyadh'],
     ['c', 'Fuel depot ablaze after air raid in Saudi capital'],
     ['d', 'Houthi missile strike on Riyadh prompts Gulf alarm in Saudi Arabia'],

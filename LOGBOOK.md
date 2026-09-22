@@ -5,6 +5,107 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-21 — Severity review: where the rules fail, four rubric calls settled (J), and the plan (keyless)
+
+**Goal (J):** as many relevant sources as possible with the CORRECT tier (critical/major/significant/routine); work on severity first; **no Claude at
+build time** (the point of all these tests is a keyless path); J spot-checks labels to seed it.
+
+**Measured, 562 labeled in-scope reports (rows truth, cols keyword-rule prediction: routine / significant / major / critical):** routine
+45/38/2/0; significant 177/225/8/10; major 18/20/7/0; critical 1/5/1/5. Exact accuracy 0.50 (rules), 0.63 (embeddings), 0.75 (always
+"significant"). Recall: critical 5/12, major 7/45. **The biggest error mass is significant-predicted-routine (177), not critical.**
+
+**The 12 critical labels are 4 independent stories** (Nepal floods x2, a Pakistan mosque bombing x1, the Houthi attack near Riyadh x8 near-
+identical headlines, a typhoon evacuation x1). Story-grouped CV therefore has ~4 critical positives; this, not the embedding model, is why
+nothing could learn the tier, and why more labels must mean more independent events, not more articles.
+
+**Problems found that are not modelling problems:** (1) a regex bug — "18 suspects extradited over the 2021 Haiti president killing" reads as a
+fresh head-of-state death (critical); (2) a plain miss — "31 killed in car bomb at mosque" predicted routine; (3) STALE label — the typhoon
+evacuation is still labeled critical though J moved evacuation orders to Major the same day; (4) labels that contradict the rubric as written
+("Pakistan says 28 killed" labeled significant; treasury-yield records labeled major). The labels were mine from headlines, so they need a
+consistency pass against the settled rubric before any model is trusted to them.
+
+**Why false Critical is costly:** an Event's severity is the MAX over its articles (`eventBuilder.ts`), and Critical needs 3+ outlets; an Event
+wrongly lifted to Critical that only has 2 outlets is not emitted at all, where it would have published as Significant.
+
+**Rubric calls settled (J) — now in `news-sourcing-design.md` §5:** state-claimed strike casualties are Significant until independently
+confirmed; an attack on a capital is Critical without casualties, on infrastructure Major; unexplained market records are Significant; a verdict
+against an ex-leader is Major while arrests/extraditions over a past head-of-state killing are Significant. NOT yet implemented in
+`classify.ts`, and the labels are not yet relabeled.
+
+**Two more calls settled the same session:** a contained strike in an ongoing war is Major only at 5+ deaths (or a notable escalation regardless of count); 1-4 deaths with no escalation is Significant (§5 literally read as "any casualties = Major" would make every routine Gaza/Ukraine strike headline Major). A diplomatic rupture is split: severing relations is Major, expelling/recalling an ambassador is Significant.
+
+**Plan:** (1) settle the remaining ambiguous cases, then relabel every severity label against the settled rubric; (2) a keyless severity model
+on extracted FACTS (deaths, injured, displaced, evacuations, capital/head-of-state/nuclear cues, attribution "X says") with embeddings as one
+input, scored at EVENT level (max over the cluster — what publishes); (3) grow the labeled set from the archive by disagreement between rules
+and model, since random sampling yields ~2% critical.
+
+## 2026-09-21 — Severity relabel, phase 1: all 56 main-set stories, settled call 7 (capital-attack carve-out)
+
+**Follow-up to the rule rewrite above.** Relabeled every main-set STORY (not yet solo articles or the held-out set — see below) against the
+now-settled §5 rubric, one decision per story reused across its duplicate headlines — this is what directly fixes the exact Kosovo/Thaci
+inconsistency flagged in the rule-rewrite entry. 8 stories changed (14 labels): riyadh-attack -> critical (was split significant/critical/
+major); kosovo-thaci-verdict -> major, settled call 4 (was split major/significant); uk-village-secede -> routine (a non-binding symbolic
+vote, was split significant/routine); eu-canada-associate -> major (a first-of-kind structural realignment, was split); greenland-deal ->
+significant uniformly (2 reaction headlines were routine); icc-sanctions -> major (a real sanctions package being readied, 2 were
+significant); houthi-mecca-attack -> significant (Houthis denied the claim — settled call 1's unconfirmed-claim logic, was split major/
+significant); russia-sanctions-advance -> major (the same real sanctions package as russia-sanctions-signed, one legislative stage earlier;
+a standalone judgment call, not a within-story fix).
+
+**Settled call 7, found while doing this (J):** applying call 2 literally ("capital attack = Critical, no casualties needed") to
+moscow-drone-attack — 11/11 real headlines, ALL already, deliberately, labeled Major — would have force-relabeled all of them to Critical,
+since Ukrainian drone attacks on Moscow are one of the most frequent headline shapes in that war. Asked J directly: a capital attack is
+Critical only when the text itself signals it's rare/first-time (the real Riyadh headline said "for the first time since the Yemen conflict
+resumed"; no real Moscow headline ever did, even the one calling it "the biggest ever"); a routine/recurring capital strike within an already-
+active war is Major instead, no casualty or escalation bar needed since it's already a real strike. Same "ongoing war has its own baseline"
+shape as call 5. Embassy attacks keep NO carve-out — inherently rare even in an active war. Implemented as `EMBASSY_ATTACK_RE` (unconditional
+Critical) split from `CAPITAL_ATTACK_RE` + `CAPITAL_ATTACK_RARE_RE` (Critical only together, else Major) in `classify.ts`.
+
+**Found and fixed along the way: bare "strike(s)"/"drone(s)" wasn't a conflict-security keyword at all** — only compound phrases
+('airstrike', 'drone strike', 'strike on') were, so real wire headlines like "Kyiv launches massive strikes on the Russian capital" or
+"Ukraine pummels Moscow with drones" got NO topic tag and fell all the way to Routine via the fallback. Added bare 'strike'/'drone' to
+`TAG_KEYWORDS`, deliberately wide per this list's own stated design (§6: the pre-filter should over-tag, not be precise).
+
+**A real gap found in the EVAL SCRIPT itself, not the pipeline:** `evalNewsClassifier.mjs`'s SEVERITY section scores each ARTICLE against
+its own label. After this relabel, riyadh-attack's Critical F1 (per-article) reads as low as 0.286/0.200 recall — alarming on its face — but
+what actually PUBLISHES is the Event's MAX severity over its cluster (`eventBuilder.ts`), and verified directly: only 1 of the 11 real Riyadh
+articles independently contains the rarity phrase, but that's enough — the cluster max still correctly reaches Critical. The eval's per-article
+score understates real accuracy for any trigger that's event-wide-true but textually present in only one of several duplicate headlines.
+Flagged in BACKLOG.md as a real follow-up (score severity at the cluster-max level, not just per-article) rather than fixed here.
+
+**Not yet done: solo main-set articles (273) and the entire held-out set (249) are still on their PRE-relabel severities.** Only the 56
+main-set stories (covering 167 articles) were reviewed. All Vitest tests pass (309, +2 new for call 7), full `eval:news-classifier`/
+`eval:news-clustering` rerun with no clustering regression.
+
+## 2026-09-21 — Severity rules rewritten against the settled calls; measured gain on the real eval harness
+
+**Follow-up to the severity review above.** Implemented in `classify.ts` (still keyless): (1) `SELF_CLAIMED_STRIKE_RE` caps a striker's
+own unconfirmed toll claim ("X says N killed") at Significant — approximate and one-directional by design (can under-tier a confirmed strike
+whose headline still reads "X says", never over-tier), full corroboration-aware confirmation left for the Event level, logged in BACKLOG.md.
+(2) `CAPITAL_EMBASSY_ATTACK_RE` broadened — the original required the literal "attack on the capital"; missed "attack**s** on Saudi capital"
+(plural), "tried to attack ITS capital", "targeted ... capital", "missile AT ... capital" — all real headlines from the Houthi/Riyadh story
+that predicted Significant instead of Critical. (3) `ENERGY_INFRA_ATTACK_RE` — a physical strike on a pipeline/refinery/power grid/fuel depot
+now reaches Major (previously only a CYBERattack on infrastructure did; "Saudi pipeline shut after drone attacks" fell all the way to Routine).
+(4) `CONTAINED_STRIKE_MAJOR_DEATHS` = 5 — a strike needs 5+ deaths (or an escalation marker: first-ever, a new weapon/missile type, crossing
+a border) to reach Major; §5's literal wording ("real strike with casualties") made every strike with any casualty count Major, which would
+have made ordinary Gaza/Ukraine strike headlines Major. (5) `EX_LEADER_VERDICT_RE`/`DIPLOMATIC_SEVER_RE` for the verdict and diplomatic-
+rupture calls. (6) `LEGAL_FOLLOWUP_RE` suppresses `headOfStateDeathClaim` for a trial/sentence/extradition/arrest over a PAST killing — the
+actual bug that made "18 suspects extradited over the 2021 killing of Haiti's president" read as a live assassination and force Critical.
+(7) `ambassador` added to the diplomacy-politics tag keywords — found while writing a test for the diplomatic-rupture call: an ambassador
+story had NO topic tag at all before this, meaning it would have been silently dropped by the build's no-topic gate, not just mistiered.
+
+**Measured on the real eval harness (`npm run eval:news-classifier`, 562 labeled in-scope reports, title+description text — not the title-only
+manual check used to design the rules):** exact accuracy 0.502 -> 0.520. **Critical F1 0.370 -> 0.741** (precision 0.333 -> 0.667, recall
+0.417 -> 0.833 — 10 of 12 critical labels now caught, up from 5). Major-or-above F1 0.289 -> 0.426. Clustering (`eval:news-clustering`) and
+relevance/tag numbers are unaffected, confirmed by rerunning both — this pass only touched severity and the one new tag keyword. All 308
+Vitest tests pass, including 6 new `classifyText` cases (one per settled call) in `pipeline.test.ts`.
+
+**What this is NOT:** not the full "relabel every severity label against the settled rubric" the plan called for. Real, uncorrected problems
+remain in the FIXTURE LABELS themselves, found during this pass: the Kosovo/Thaci war-crimes-verdict story has near-duplicate headlines
+labeled both `major` and `significant` for the same event — a real inconsistency, not a model error, and a concrete example of why the
+relabel pass matters before trusting these numbers further. Also unfixed: `EX_LEADER_VERDICT_RE` requires the literal singular "leader"/
+"president"/etc. and misses "KLA Leaders" (plural) headlines about the same Thaci story. Left as a documented gap rather than chased further
+in this pass — diminishing returns on hand-tuning one story's wording vs. the relabel-and-grow-the-archive plan already committed to above.
+
 ## 2026-09-21 — 14-day News feed with a recency filter (24 hrs / 3 / 7 / 14 days) — on the v1 pipeline, not a new architecture
 
 **Decision (J):** the feed is "just like the current feed" but holds everything from the last 14 days, and the News tab gets a control to narrow

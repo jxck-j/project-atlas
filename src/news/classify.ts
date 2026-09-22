@@ -32,6 +32,13 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
     'war', 'military', 'troop', 'airstrike', 'air strike', 'offensive', 'invasion', 'combat', 'ceasefire',
     'front line', 'missile', 'drone strike', 'army', 'battle', 'shelling', 'clash', 'fighting', 'gunmen',
     'gunfire', 'airforce', 'air force', 'navy', 'strike on', 'defence', 'defense ministry',
+    // Added 2026-09-21 (LOGBOOK.md severity review): bare "strike(s)"/"drone(s)" is common real wire wording
+    // ("Kyiv launches massive strikes on Moscow", "Ukraine pummels Moscow with drones") that the phrase-only
+    // entries above ('strike on', 'airstrike', 'drone strike') missed, leaving real war headlines untagged
+    // entirely and falling all the way to Routine. Deliberately wide per this list's own design (§6: the
+    // pre-filter should over-tag, not be precise) — a labor/court "strike" landing an extra, spurious
+    // conflict-security tag is a much smaller cost than a real strike going completely untagged.
+    'strike', 'drone',
   ]),
   'terrorism-non-state-actors': words([
     'terrorist', 'terrorism', 'militant', 'extremist', 'bombing', 'insurgent', 'rebel group', 'isis',
@@ -39,7 +46,7 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
   ]),
   'diplomacy-politics': words([
     'summit', 'treaty', 'election', 'president', 'prime minister', 'resign', 'coup', 'parliament',
-    'diplomat', 'diplomatic', 'embassy', 'security council', 'nato', 'sanction', 'talks', 'minister',
+    'diplomat', 'diplomatic', 'ambassador', 'embassy', 'security council', 'nato', 'sanction', 'talks', 'minister',
   ]),
   'economic-trade': words([
     'tariff', 'trade deal', 'trade war', 'gdp', 'inflation', 'currency', 'default', 'stock market',
@@ -102,7 +109,27 @@ const HEAD_OF_STATE_DEATH_RE = new RegExp(
   'iu',
 )
 const WMD_RE = /\b(nuclear (weapon|strike|attack|warhead|detonation)|chemical (weapon|attack)|biological (weapon|attack)|radiological (weapon|attack)|dirty bomb)\b/i
-const CAPITAL_EMBASSY_ATTACK_RE = /\b(embassy|capital city)\b[^.]{0,40}\b(attack|attacked|bombed|struck|storm|stormed|shelled)\b|\b(attack|strike|bombing) on (?:the )?[^.]{0,30}\b(embassy|capital)\b/i
+// Broadened 2026-09-21 (see LOGBOOK.md's severity-review entry): the original required the literal phrase "attack on
+// [the] embassy/capital", which missed the far more common wire-headline shapes "attack(s) ON [country's] capital" (plural
+// dropped the match), "tried to ATTACK its capital", "targeted ... capital", "missile AT ... capital". Both orders,
+// tolerant of tense/number, still gated to conflictish text by the caller so "capital" alone (as in "capital markets")
+// can't fire this on its own. Split into two patterns (settled call 7): an embassy attack is inherently rare and stays
+// unconditionally Critical; a capital attack needs CAPITAL_ATTACK_RARE_RE too (below) — applied literally, "capital =
+// Critical" would make every Ukraine drone attack on Moscow Critical, one of the most frequent headline shapes in that
+// war, contradicting 11/11 real labeled examples all deliberately called Major.
+const EMBASSY_ATTACK_RE =
+  /\bembassy\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b|\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b[^.]{0,60}\bembassy\b/i
+const CAPITAL_ATTACK_RE =
+  /\bcapital\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b|\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b[^.]{0,60}\bcapital\b/i
+// A rarity/novelty phrase — the mechanical signal that a capital strike is NOT the routine baseline of an already-
+// active war. Riyadh's real headline said "for the first time since the Yemen conflict resumed"; none of the 11 real
+// Moscow-drone-attack headlines said anything like it, even calling one the "largest ever."
+const CAPITAL_ATTACK_RARE_RE = /\b(first time|first[- ]ever|for the first time|since (?:the )?[\p{L}\s]{0,30}(?:conflict|war) resumed|unprecedented|never before)\b/iu
+// A physical strike/sabotage on energy infrastructure short of the capital/embassy case above — settled call 2
+// (LOGBOOK.md 2026-09-21): capital = Critical without casualties, infrastructure = Major. Separate from
+// INFRASTRUCTURE_CYBER_RE below, which is a cyberattack, not a physical one.
+const ENERGY_INFRA_ATTACK_RE =
+  /\b(pipeline|refinery|power grid|fuel depot|lng terminal|oil field|oilfield)\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|drone|missile|shell\w*|sabotag\w*|explo\w*|shut|shutdown|halt\w*)\b|\b(attack\w*|strikes?|struck|bomb\w*|drone|missile|shell\w*|sabotag\w*)\b[^.]{0,60}\b(pipeline|refinery|power grid|fuel depot|lng terminal|oil field|oilfield)\b/i
 const REGIME_CHANGE_RE = /\b(coup|overthrown|ousted|forced (?:to )?resign(?:ation)?)\b/i
 const WAR_DECLARATION_RE = /\bdeclares? war\b/i
 const PACT_WITHDRAWAL_RE = /\bwithdraw(?:s|al|ing)? from\b[^.]{0,30}\b(nato|nuclear (?:deal|treaty)|non-proliferation treaty|new start)\b/i
@@ -112,12 +139,38 @@ const PHEIC_RE = /\b(pandemic declared|public health emergency of international 
 const STRIKE_RE = /\b((?:air ?)?strike[sd]?|struck|attack(?:s|ed)?|bomb(?:s|ed|ing)?|shell(?:s|ed|ing)?|missile|drone|raid(?:s|ed)?|assault)\b/i
 const CASUALTY_RE = /\b(kill(?:s|ed|ing)?|dead|deaths?|wounded|injured|casualties|fatalities)\b/i
 const TERRITORIAL_RE = /\b(captur(?:es|ed|ing)|seiz(?:es|ed|ing)|annex(?:es|ed|ation)|takes control of)\b/i
+// Settled call 5 (LOGBOOK.md 2026-09-21): a contained strike in an ongoing war is Major only at 5+ deaths in the single
+// incident, or a notable escalation regardless of count — not any casualty count, which §5's literal wording would make
+// Major (every routine Gaza/Ukraine strike headline). Escalation markers are approximate on purpose.
+export const CONTAINED_STRIKE_MAJOR_DEATHS = 5
+const ESCALATION_RE = /\b(first time|first[- ]ever|previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|escalat\w+)\b/i
 const MAJOR_POLICY_RE = /\b(sanctions? (?:package|on)|new sanctions|snap election|formal notice|triggers? article|treaty exit)\b/i
+// Settled call 6: severing relations is Major; expelling/recalling an ambassador (no severance) stays Significant via the
+// ordinary diplomacy-politics fallback, so it needs no regex of its own here.
+const DIPLOMATIC_SEVER_RE = /\b(cuts?|severs?|sever(?:ed|ing)|breaks?|broke|ends?|ended)\s+(?:diplomatic|all diplomatic)\s+(?:relations|ties)\b/i
+// Settled call 4: a verdict/sentence against an ex-head-of-state/leader is Major; an arrest, extradition or trial over a
+// PAST head-of-state killing is Significant (the ordinary fallback already gives Significant once headOfStateDeathClaim
+// is correctly suppressed for that case below — see LEGAL_FOLLOWUP_RE).
+const EX_LEADER_VERDICT_RE = /\b(sentenc\w+|convict\w+|verdict)\b[^.]{0,60}\b(?:ex-|former )?(?:president|prime minister|premier|king|leader)\b|\b(?:ex-|former )?(?:president|prime minister|premier|king|leader)\b[^.]{0,60}\b(sentenc\w+|convict\w+|verdict)\b/i
 const MARKET_SHOCK_RE = /\b(market (?:crash|rout|plunge|turmoil)|stocks? (?:plunge|tumble|crash)|central bank (?:cuts?|raises?|hikes?)|(?:cuts?|raises?|hikes?) (?:interest )?rates?|production cuts?|oil price (?:spike|surge|plunge))\b/i
 const INFRASTRUCTURE_CYBER_RE = /\b(?:cyber ?attack|ransomware|hack\w*)\b[^.]{0,50}\b(power grid|pipeline|hospital|airport|water|infrastructure|bank)\b/i
 const RHETORIC_RE = /\b(says?|said|warns?|vows?|threatens?|calls? for|urges?|slams?|condemns?|claims?|insists?|pledges?)\b/i
 const ACTION_RE = /\b((?:air ?)?strike[sd]?|struck|attack(?:s|ed)?|launch(?:es|ed)?|deploy(?:s|ed)?|invade[sd]?|sign(?:s|ed)?|imposes?|imposed|announces?|orders?|ordered|kill(?:s|ed)?|seiz(?:es|ed)?|captur(?:es|ed)?|elects?|wins?)\b/i
 const LEADER_OR_MILITARY_RE = /\b(president|prime minister|parliament|government|military|army|minister|senate|congress|troops|navy|air force)\b/i
+
+// --- Settled call 1: a state's own claim about its OWN strike's toll (LOGBOOK.md 2026-09-21) --------------------------
+// Stays Significant until independently confirmed; once confirmed the ordinary single-incident rule (10+ deaths =
+// Critical, 5+ = Major) applies. Detecting genuine third-party confirmation from headline text alone isn't reliable, so
+// this is deliberately approximate and one-directional: it can under-tier a confirmed strike whose headline still reads
+// "X says" (e.g. a neutral outlet's "Officials say N killed"), never over-tier one — the same safe-failure-mode bias
+// this file's header already states for every other trigger here. A genuinely confirmed count (two independent,
+// non-state outlets reporting the same toll) is better resolved at the Event/corroboration level than per-article text;
+// flagged in BACKLOG.md as a follow-up, not attempted here.
+const SELF_CLAIMED_STRIKE_RE = /^\s*[\p{Lu}][\p{L}.'-]*(?:\s+[\p{Lu}][\p{L}.'-]*){0,2}\s+says?\b[^.]{0,80}\bkill(?:ed|s|ing)?\b/u
+const INDEPENDENT_CONFIRMATION_RE = /\b(independently (?:confirmed|verified)|confirmed by [^.]{0,30}(?:witnesses|monitors|hospital|officials)|verified by)\b/i
+// Legal follow-ups (a trial, sentence, extradition, arrest over a PAST killing) must not read as a fresh head-of-state
+// death claim — see the Haiti/Kosovo cases in LOGBOOK.md's severity-review entry.
+const LEGAL_FOLLOWUP_RE = /\b(extradit\w+|sentenc\w+|convict\w+|verdict|trial|indict\w+|charged (?:with|over)|arrested (?:over|in connection with)|suspects?|anniversary|years? (?:after|since|on))\b/i
 
 function scaled(match: RegExpMatchArray): number {
   const base = Number.parseFloat(match[1].replace(/,/g, ''))
@@ -138,8 +191,15 @@ export function classifyText(text: string): Classification {
   const topicTags = resolveTopicTags(text)
   const has = (t: TopicTag) => topicTags.includes(t)
   const conflictish = has('conflict-security') || has('terrorism-non-state-actors')
-  const headOfStateDeathClaim = HEAD_OF_STATE_DEATH_RE.test(text)
+  // A legal follow-up (trial/sentence/extradition/arrest) over a PAST head-of-state killing is not a fresh death claim —
+  // settled call 4 (LOGBOOK.md 2026-09-21). Without this, "18 suspects extradited over the 2021 killing of Haiti's
+  // president" read as a live assassination and forced Critical.
+  const headOfStateDeathClaim = HEAD_OF_STATE_DEATH_RE.test(text) && !LEGAL_FOLLOWUP_RE.test(text)
   const deaths = figure(DEATHS_RES, text)
+  // Settled call 1: the striking party's own unconfirmed toll claim stays Significant regardless of count. Scoped to
+  // conflict/terrorism text only — a humanitarian disaster's official death toll ("officials say 900 dead in floods")
+  // goes through humanitarianSeverity below, unaffected by this cap.
+  const unconfirmedSelfClaim = conflictish && SELF_CLAIMED_STRIKE_RE.test(text) && !INDEPENDENT_CONFIRMATION_RE.test(text)
 
   let severity: Severity = 'routine'
 
@@ -147,7 +207,9 @@ export function classifyText(text: string): Classification {
   // conflict/terrorism-only: v1 applied it in its tag-independent override,
   // which would tier a 12-death bus crash Critical.
   const critical =
-    (conflictish && (massCasualtySeverity(deaths) === 'critical' || WMD_RE.test(text) || CAPITAL_EMBASSY_ATTACK_RE.test(text))) ||
+    (conflictish && !unconfirmedSelfClaim && (massCasualtySeverity(deaths) === 'critical' || WMD_RE.test(text))) ||
+    (conflictish && EMBASSY_ATTACK_RE.test(text)) ||
+    (conflictish && CAPITAL_ATTACK_RE.test(text) && CAPITAL_ATTACK_RARE_RE.test(text)) ||
     (has('diplomacy-politics') && (REGIME_CHANGE_RE.test(text) || WAR_DECLARATION_RE.test(text) || PACT_WITHDRAWAL_RE.test(text))) ||
     ((has('economic-trade') || has('energy')) && (SOVEREIGN_DEFAULT_RE.test(text) || CHOKEPOINT_CLOSURE_RE.test(text))) ||
     // Tag-independent: a story naming one of these is high-stakes however the
@@ -163,9 +225,17 @@ export function classifyText(text: string): Classification {
   if (critical || humanitarian === 'critical') severity = 'critical'
   else if (
     humanitarian === 'major' ||
-    (conflictish && ((STRIKE_RE.test(text) && CASUALTY_RE.test(text)) || TERRITORIAL_RE.test(text))) ||
-    (has('diplomacy-politics') && MAJOR_POLICY_RE.test(text)) ||
-    ((has('economic-trade') || has('energy')) && MARKET_SHOCK_RE.test(text)) ||
+    (conflictish && !unconfirmedSelfClaim && TERRITORIAL_RE.test(text)) ||
+    // A capital strike that ISN'T flagged rare (the Critical branch above) is still a real strike — Major regardless
+    // of casualty count, unlike the generic contained-strike rule just below (settled call 7).
+    (conflictish && !unconfirmedSelfClaim && CAPITAL_ATTACK_RE.test(text)) ||
+    (conflictish &&
+      !unconfirmedSelfClaim &&
+      STRIKE_RE.test(text) &&
+      CASUALTY_RE.test(text) &&
+      (deaths >= CONTAINED_STRIKE_MAJOR_DEATHS || ESCALATION_RE.test(text))) ||
+    (has('diplomacy-politics') && (MAJOR_POLICY_RE.test(text) || DIPLOMATIC_SEVER_RE.test(text) || EX_LEADER_VERDICT_RE.test(text))) ||
+    ((has('economic-trade') || has('energy')) && (MARKET_SHOCK_RE.test(text) || ENERGY_INFRA_ATTACK_RE.test(text))) ||
     ((has('science-technology') || has('crime-trafficking')) && INFRASTRUCTURE_CYBER_RE.test(text))
   ) {
     severity = 'major'

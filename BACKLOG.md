@@ -80,6 +80,26 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   statement counts toward corroboration. `deriveCorroboration` honors the per-entry flag; Phase 2's builder
   should default it to `false` (a government isn't an independent source on its own strike) unless decided
   otherwise.
+- **Severity: a striking state's own casualty claim has no real "independently confirmed" detection** (2026-09-21, `classify.ts`'s
+  `SELF_CLAIMED_STRIKE_RE`). Settled call 1 (`news-sourcing-design.md` §5) says an unconfirmed toll claim stays Significant, and once
+  independently confirmed the normal threshold applies — but detecting genuine third-party confirmation from one article's headline text is
+  unreliable (`INDEPENDENT_CONFIRMATION_RE` only catches the literal phrase "independently confirmed"/"verified by"). The real signal —
+  2+ distinct, non-state outlets separately reporting the same toll for the same strike — is an Event/corroboration-level question
+  (`corroboration.ts` already counts distinct outlets per Event; it doesn't yet check whether they report the SAME casualty figure), not
+  something one article's text can answer alone. Worth building once there's a concrete case of it mattering.
+- **`evalNewsClassifier.mjs`'s SEVERITY section scores severity per ARTICLE, not per Event (max-over-cluster) — understates real
+  accuracy for any trigger that's true for the whole event but textually present in only one of several duplicate headlines** (found
+  2026-09-21 relabeling riyadh-attack for settled call 7: only 1 of 11 real Riyadh articles independently contains the rarity phrase that
+  makes a capital attack Critical, so the per-article score reads Critical F1 0.286/recall 0.200 — but the cluster MAX, which is what
+  `eventBuilder.ts` actually publishes, still correctly reaches Critical; verified directly). Add a cluster-level severity score (group by
+  the same story/embedding-cluster the PRODUCT-LEVEL section already uses, score `maxSeverity` over each cluster against the cluster's own
+  presumed-uniform truth) alongside the existing per-article one, so a real accuracy regression isn't masked by, or mistaken for, this effect.
+- **Severity fixture labels have known inconsistencies, found during the 2026-09-21 rule rewrite (see `LOGBOOK.md`'s "Severity rules
+  rewritten" entry) — mostly corrected by the same-day story-level relabel pass (`LOGBOOK.md`'s "Severity relabel, phase 1" entry, 14
+  labels across 8 stories, including the Kosovo/Thaci example below).** Not yet done: solo (non-story) main-set articles and the entire
+  held-out set haven't been re-reviewed against the now-settled §5 rubric — the story-level pass only covered stories with 2+ hand-grouped
+  articles. Original example: the Kosovo/Thaci war-crimes-verdict story had near-duplicate headlines labeled both `major` and `significant`
+  for the same real-world event in `scripts/fixtures/newsClassificationLabels.json` — now fixed (all `major`, settled call 4).
 - **Article volume is now measured; output tokens still aren't.** One live pull (2026-09-20, 24 feeds): 1,170 articles →
   ~930 candidates after the wide pre-filter → 38 classification calls (25 per batch) + one grouping call. Exact input tokens come from
   `--llm`'s free `count_tokens` pass. The OUTPUT side (thinking + JSON, ~150/article ASSUMED) dominates cost and is unmeasured until a

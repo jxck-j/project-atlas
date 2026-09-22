@@ -104,6 +104,47 @@ describe('classifyText', () => {
   it('crime/sci-tech alone caps at Major', () => {
     expect(classifyText('Ransomware hits hospital network in India, cyberattack on infrastructure').severity).toBe('major')
   })
+
+  // Settled calls from the 2026-09-21 severity review (LOGBOOK.md) — real headlines the keyword rules got wrong.
+  it('an attack on an EMBASSY is Critical with no casualties (inherently rare); on infrastructure it is Major (settled call 2)', () => {
+    expect(classifyText('Gunmen storm the embassy compound in the capital, no casualties reported yet').severity).toBe('critical')
+    expect(classifyText('Saudi pipeline shut after drone attacks').severity).toBe('major')
+  })
+
+  it('a capital attack is Critical only if it is a first-time/rare strike; a routine capital strike in an active war is Major regardless of casualty count (settled call 7)', () => {
+    // Riyadh's real headline: rare (this is the first attack on this capital since the conflict resumed) -> Critical.
+    expect(classifyText('Houthis targeted Saudi capital for the first time since the Yemen conflict resumed').severity).toBe('critical')
+    // Moscow's real headlines: routine/recurring in an active war, no rarity phrase, 2 deaths -> Major, never Critical.
+    expect(classifyText("Ukraine pummels Moscow with drones, mayor calls it the biggest ever drone attack on the Russian capital; two killed").severity).toBe('major')
+    expect(classifyText('Kyiv launches massive strikes on the Russian capital as Russians vote').severity).toBe('major')
+  })
+
+  it('a contained strike is Major only at 5+ deaths or a clear escalation, not any casualty count (settled call 5)', () => {
+    expect(classifyText('Israeli airstrike kills three people in Gaza, medics say').severity).toBe('significant')
+    expect(classifyText('Russian airstrike kills 5 in Ukrainian city, officials say').severity).toBe('major')
+    expect(classifyText('Russia launches first-ever strike with new hypersonic missile on Kyiv, one wounded').severity).toBe('major')
+  })
+
+  it("a striking state's own unconfirmed toll claim stays Significant regardless of count (settled call 1)", () => {
+    expect(classifyText('Pakistan says 28 killed in airstrikes on three targets in Afghanistan').severity).toBe('significant')
+    expect(classifyText('Pakistan says it killed 28 militants in airstrikes').severity).toBe('significant')
+    // Independently confirmed: the ordinary threshold applies again.
+    expect(classifyText('Pakistan says 28 killed in airstrikes, independently confirmed by hospital officials').severity).toBe('critical')
+  })
+
+  it('a legal follow-up on a PAST head-of-state killing is not a fresh death claim (settled call 4)', () => {
+    const extradited = classifyText("18 suspects accused in the 2021 killing of Haiti's president being extradited to U.S.")
+    expect(extradited.headOfStateDeathClaim).toBe(false)
+    expect(extradited.severity).toBe('significant')
+    expect(classifyText('Kosovo ex-president Thaci sentenced to 25 years for war crimes').severity).toBe('major')
+  })
+
+  it('severing diplomatic relations is Major; expelling an ambassador stays Significant (settled call 6)', () => {
+    expect(classifyText('Algiers cuts diplomatic relations with Abu Dhabi').severity).toBe('major')
+    const expelled = classifyText('Algeria expels Emirati ambassador over remarks')
+    expect(expelled.topicTags).toContain('diplomacy-politics')
+    expect(expelled.severity).toBe('significant')
+  })
 })
 
 describe('clusterArticles', () => {
