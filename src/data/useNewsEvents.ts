@@ -12,7 +12,7 @@ import type { NewsEvent } from '../news/types'
 // and no DEV-only queue panel for the client to render.
 const NEWS_EVENTS_URL = '/data/news-events.json'
 
-// Singleton fetch-once store, same shape as useNewsFeatures.ts/useCountryFeatures.ts:
+// Singleton fetch-once store, same shape as scene/useCountryFeatures.ts:
 // NewsPanel and IntelligencePanel's per-country section need the same list.
 let events: NewsEvent[] = []
 let loaded = false

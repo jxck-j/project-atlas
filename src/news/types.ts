@@ -1,14 +1,14 @@
 // News Engine v2 schema — see news-sourcing-design.md (repo root), §4-§8,
-// §12, §17. That doc is the source of truth wherever it disagrees with v1's
-// `data/newsTypes.ts` (NewsItem, 3 severity tiers, 7 topic tags), which stays
-// untouched until the Phase 4 UI cutover so the shipped NEWS tab keeps working
-// in the meantime. Type names here are deliberately distinct from v1's
-// (`TopicTag` vs `NewsTopicTag`, `Severity` vs `NewsSeverity`) so an import
-// can never silently pick up the wrong generation.
+// §12, §17. These types are now the only news model in the app: v1's
+// `data/newsTypes.ts` (NewsItem, 3 severity tiers, 7 topic tags) was deleted
+// after the Phase 4 cutover. They were deliberately named apart from v1's
+// (`TopicTag` vs `NewsTopicTag`, `Severity` vs `NewsSeverity`) so that while
+// both generations existed an import could never silently pick up the wrong
+// one — which is what made the cutover a matter of swapping two components'
+// imports rather than a migration.
 //
 // Everything under src/news/ is pure (no DOM, no network, no React) so it can
-// run identically in Vitest, in scripts/buildNews.mjs's eventual v2 rewrite,
-// and in the client.
+// run identically in Vitest, in scripts/buildNewsEvents.mjs, and in the client.
 
 /** Event-type tags (§4a) — eight, one per topic tab except World. An Event can carry several; it appears in every matching tab (multi-tag placement rule). */
 export type TopicTag =

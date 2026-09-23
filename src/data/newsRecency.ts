@@ -1,7 +1,7 @@
 // How recent a News-tab item has to be to show — the 24 hrs / 3 days / 7 days / 14 days control in hud/NewsPanel.tsx.
 //
-// The longest window here must match RETENTION_DAYS in scripts/buildNews.mjs: that script only keeps 14 days of items, so a wider
-// window in the UI would silently promise history the file doesn't hold. (The script is plain node and can't import this .ts.)
+// The longest window here must match FEED_RETENTION_DAYS in src/news/feedWindow.ts: the build publishes a rolling 14-day window out
+// of the article archive, so a wider window in the UI would silently promise history the file doesn't hold.
 
 const HOUR_MS = 60 * 60 * 1000
 

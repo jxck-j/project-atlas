@@ -49,9 +49,9 @@
 //
 // Since the Phase 4 cutover (2026-09-23) this file's output IS the shipped
 // NEWS tab: hud/NewsPanel.tsx and IntelligencePanel.tsx both read
-// public/data/news-events.json. v1's scripts/buildNews.mjs and
-// public/data/news.json are dormant, not deleted — they come out once the
-// cutover is confirmed in the browser.
+// public/data/news-events.json. v1 (scripts/buildNews.mjs, public/data/news.json,
+// the NewsItem model and its registry) was deleted once the cutover was confirmed
+// in the browser.
 //
 // WHY THE PENDING QUEUE IS A SEPARATE, UNSHIPPED FILE: an Event in
 // `pending-confirmation` is, by definition, an unconfirmed claim that a head
@@ -273,7 +273,8 @@ console.log(
 
 // ---------------------------------------------------------------------------
 // BACKLOG.md — marker-delimited idempotent section, same pattern as v1's
-// buildNews.mjs (its own markers, so the two reports don't overwrite each other).
+// v1's buildNews.mjs used (its own markers, kept so an older v1 report block in
+// BACKLOG.md is never clobbered by this one).
 // ---------------------------------------------------------------------------
 function writeBacklogReport() {
   const BEGIN = '<!-- BEGIN buildNewsEvents.mjs gap report -->'

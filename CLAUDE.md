@@ -1655,7 +1655,7 @@ Nothing about ranking, the dropdown UI, camera flight, or highlighting
 needs to change — they're already generic over `SearchEntry`/
 `ResolvedEntity` and don't know or care how many kinds exist.
 
-### News & sourcing (v2 shipped as of Phase 4; v1 dormant)
+### News & sourcing (v2 only — v1 deleted at the Phase 4 cutover)
 
 **Phase 4 cut the NEWS tab over to v2 Events (2026-09-23).** `hud/NewsPanel.tsx` and
 `hud/IntelligencePanel.tsx`'s RECENT NEWS section now read `public/data/news-events.json` via
@@ -1677,16 +1677,20 @@ tab can't show a standing the build didn't gate on. Three decisions made at cuto
   (a just-in Routine item above an older Significant one reads as a broken feed). `splitFeatured` sorts the
   remainder that way and §10 carries the amendment note.
 
-v1 (`scripts/buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts`, `data/registry/NewsRegistry.ts`,
-`data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts`) is dormant — nothing in the UI imports it — and is
-scheduled for deletion once the cutover is confirmed in the browser. The sections below describe v1 and v2's
-build phases; read them with that in mind.
+v1 was **deleted** once the cutover was confirmed in the browser: `scripts/buildNews.mjs`,
+`public/data/news.json`, `data/newsTypes.ts` (`NewsItem`), `data/registry/NewsRegistry.ts`,
+`data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts`, their `data/index.ts` re-exports and the `build:news`
+script are all gone. `data/newsRecency.ts` stayed — v2's recency control uses it. There is now exactly one
+news model in the app; where an older comment or doc still describes `NewsItem`, it is history, not a
+second generation you have to keep working.
 
-**The feed is a rolling 14-day window (v1, 2026-09-21; v2 since Phase 4):** v1's `buildNews.mjs` carried the previous `news.json` forward (re-ingested through the same path as fresh items, so it dedups and re-classifies), dropping anything older than `RETENTION_DAYS` = 14; v2 gets the same window from the archive instead (`FEED_RETENTION_DAYS` in `src/news/feedWindow.ts`). `NewsPanel.tsx`'s 24 hrs / 3 / 7 / 14 days recency control (`src/data/newsRecency.ts`, default 14 days, applied before every other filter) is shared by both generations. **Keep the 14 in all three places in step.** See `LOGBOOK.md`'s 2026-09-21 14-day feed entry.
+**The feed is a rolling 14-day window** (v1 did it by carrying its own previous output forward; v2 gets it from
+the article archive instead — `FEED_RETENTION_DAYS` in `src/news/feedWindow.ts`). `NewsPanel.tsx`'s
+24 hrs / 3 / 7 / 14 days recency control (`src/data/newsRecency.ts`, default 14 days, applied before every
+other filter) is the reader-facing half of the same number. **Keep the 14 in both places in step.** See
+`LOGBOOK.md`'s 2026-09-21 14-day feed entry.
 
-v1 still exists on this branch, dormant: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
-`public/data/news.json`, which nothing has read since the Phase 4 cutover; it was built around the standalone
-`NewsItem` model. **`news-sourcing-design.md` (repo
+**`news-sourcing-design.md` (repo
 root) is the v2 design and is the source of truth where it disagrees with v1 or `news-engine-design.md`;**
 `LOGBOOK.md`'s 2026-09-20 entry has the decision history and rejected alternatives. Don't re-litigate them
 here. What a session building v2 must respect:
@@ -1726,7 +1730,7 @@ generation — which is what made the Phase 4 cutover a matter of swapping two c
   by `linkedEntityIds.length` first; top 3 featured, remainder pure recency; `filterEvents` drops
   non-reader-visible statuses and implements multi-tag tab placement), `tabs.ts` (World + 8), `themes.ts`
   (archival, not deletion).
-- **`sources.json` and `systemicThemes.json` are plain JSON on purpose** — `buildNews.mjs` reads them with
+- **`sources.json` and `systemicThemes.json` are plain JSON on purpose** — `buildNewsEvents.mjs` reads them with
   `fs` and the Phase 5 Admin Console edits them in place; `sourceConfig.ts` is the typed view, and
   `sourceConfig.test.ts` validates their shape every test run (that test, not the cast, is what makes the
   types honest). `sources.json` carries only what the design doc states; anything unspecified is `vetting:

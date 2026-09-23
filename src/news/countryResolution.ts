@@ -1,4 +1,5 @@
-// Headline/summary text → country ids. Ported from v1's buildNews.mjs, with
+// Headline/summary text → country ids. Ported from v1's buildNews.mjs (deleted
+// at the Phase 4 cutover), with
 // three fixes to bugs that were real in v1 (see LOGBOOK.md, Phase 2 entry):
 //  - matching is case-SENSITIVE — v1's case-insensitive "US" alias matched the
 //    pronoun in "tell us", and "Turkey" matched the bird;

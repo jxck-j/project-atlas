@@ -17,6 +17,19 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.12.2 — News Engine v1 removed
+
+**Cleanup, not a behavior change.** With the v2 cutover confirmed in the browser, v1 is gone:
+`scripts/buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts` (the `NewsItem` model),
+`data/registry/NewsRegistry.ts`, `data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts`, their `data/index.ts`
+re-exports, the `build:news` script, and v1's generated gap-report section of `BACKLOG.md`. Nothing had
+imported any of it since v6.12.0. `data/newsRecency.ts` stays — v2's recency control uses it.
+
+One simplification fell out of the deletion: `scripts/lib/rss.mjs` carried a duplicated copy of the
+HTML-entity decoder purely because v1 loaded it under plain `node`, which can't import a `.ts` module. Every
+remaining consumer runs under `tsx`, so it now imports `src/news/htmlEntities.ts` like everything else and
+the two copies can't drift.
+
 ## v6.12.1 — News tab: one sticky header, evenly-spread topic tabs, no page title
 
 **Layout, direct request after seeing v6.12.0 in the browser.** The nine topic tabs are now equal-width and

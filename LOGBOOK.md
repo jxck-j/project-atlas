@@ -5,6 +5,25 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — News Engine v1 deleted, and the duplication it was forcing
+
+Straight cleanup once the v2 tab was confirmed working, but one detail is worth recording because it ran the
+other way round from the usual "delete dead code" story: **removing v1 removed a constraint, not just files.**
+
+`scripts/lib/rss.mjs` had a hand-copied duplicate of the HTML-entity decoder, with a comment explaining that
+it could not simply import `src/news/htmlEntities.ts` because v1's `buildNews.mjs` loaded it under plain
+`node`, which cannot import a `.ts` module — the same constraint `newsRecency.ts` documents for its own
+14-day constant. With v1 gone, every remaining consumer of `rss.mjs` (`fetchFeeds.mjs`, reached from
+`buildNewsEvents.mjs` and `archiveNews.mjs`) runs under `tsx`, so the import is now legal and the duplicate
+is gone. Worth checking for the same shape elsewhere: a duplicated helper whose justification was a
+now-deleted caller.
+
+Deleted: `buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts`, `data/registry/NewsRegistry.ts`,
+`data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts`, the `data/index.ts` re-exports, the `build:news`
+script, and v1's generated gap-report section of `BACKLOG.md` (nothing regenerates it any more, so leaving it
+would have left a stale report that looks generated). `data/newsRecency.ts` stays: v2's recency control uses
+it, and only its header comment needed repointing at `feedWindow.ts`.
+
 ## 2026-09-23 — News tab header: two sticky bars don't stack, and `basis-0` clips text
 
 J's layout call after seeing Phase 4 render: the topic tabs should be a sticky strip, evenly spread across

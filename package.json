@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "6.12.1",
+  "version": "6.12.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,7 +19,6 @@
     "build:economy": "node scripts/buildEconomy.mjs",
     "build:technology": "node scripts/buildTechnology.mjs",
     "build:current-status": "node scripts/buildCurrentStatus.mjs",
-    "build:news": "node scripts/buildNews.mjs",
     "archive:news": "tsx scripts/archiveNews.mjs",
     "build:news:events": "tsx scripts/buildNewsEvents.mjs",
     "build:news:events:heuristic": "tsx scripts/buildNewsEvents.mjs --heuristic",
