@@ -146,6 +146,12 @@ function SourceDossier({ event }: { event: NewsEvent }) {
                   <span className="ml-1 text-[#ff9a3c]">· state-controlled</span>
                 )}
                 {entry.sourceCategory === 'outlet' && entry.leaning && <span className="ml-1 text-[#51648a]">· {entry.leaning}</span>}
+                {/* §7: an analysis org carries a fixed label in place of a leaning, never a left/right rating. */}
+                {entry.sourceCategory === 'analysis' && (
+                  <span className="ml-1 text-[#51648a]">
+                    · {entry.specialistVerified ? 'specialist-verified' : entry.label.toLowerCase()}
+                  </span>
+                )}
               </a>
               <span className="shrink-0 text-[9px] text-[#51648a]">{new Date(entry.timestamp).toLocaleDateString()}</span>
             </li>

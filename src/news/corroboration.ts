@@ -53,6 +53,10 @@ function countsTowardCriticalOutlets(entry: SourceEntry): boolean {
   return entry.sourceCategory === 'outlet' && entry.pressControl !== 'state-controlled'
 }
 
+function isStateControlled(entry: SourceEntry): boolean {
+  return entry.sourceCategory === 'outlet' && entry.pressControl === 'state-controlled'
+}
+
 function isSpecialistVerified(entry: SourceEntry): boolean {
   return (entry.sourceCategory === 'analysis' || entry.sourceCategory === 'first-hand') && entry.specialistVerified === true
 }
@@ -71,8 +75,11 @@ function isSpecialistVerified(entry: SourceEntry): boolean {
  * - specialist-verified: any one counting entry from ISW/ACLED/Bellingcat or a
  *   §15a tier-1 verification-specialist channel.
  * - osint-corroborated (2+): counting entries from at least two DISTINCT
- *   sources. Distinct by `sourceId`, so two feeds from one outlet, or two
- *   posts from one channel, are one source, not two.
+ *   sources, AT LEAST ONE of them not state-controlled (J, 2026-09-23). Distinct
+ *   by `sourceId`, so two feeds from one outlet, or two posts from one channel,
+ *   are one source, not two. State media can be the second source, never the
+ *   whole count: the first build over the full roster published a Yemen
+ *   airstrike Event on IRNA + the Houthi SABA alone, two allied state outlets.
  * - unconfirmed otherwise.
  * The highest applicable state wins.
  */
@@ -82,7 +89,7 @@ export function deriveCorroboration(sources: SourceEntry[]): Corroboration {
   const outletCount = new Set(counting.filter(countsTowardCriticalOutlets).map((e) => e.sourceId)).size
   if (outletCount >= CRITICAL_OUTLET_COUNT) return 'outlet-corroborated (3+)'
   if (counting.some(isSpecialistVerified)) return 'specialist-verified'
-  if (new Set(counting.map((e) => e.sourceId)).size >= 2) return 'osint-corroborated (2+)'
+  if (new Set(counting.map((e) => e.sourceId)).size >= 2 && counting.some((e) => !isStateControlled(e))) return 'osint-corroborated (2+)'
   return 'unconfirmed'
 }
 

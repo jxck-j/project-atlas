@@ -66,13 +66,12 @@
 // that lives separately in the article archive (lib/newsConfirmations.mjs) and
 // is read back in below, so a confirmation survives the next rebuild.
 //
-// SOURCES: src/news/feeds.json maps a feed URL to a sources.json id. Only
-// `outlet` profiles are ingested — `analysis` orgs (ISW, Bellingcat, ACLED,
-// Crisis Group, ...) have reachable feeds but need their own dossier-entry
-// construction (specialist-verified is the point of them); that's BACKLOG.md.
-// v1's feeds for outlets NOT in the vetted roster (Euronews, Defense News,
-// Breaking Defense, The War Zone, NASA, Ars Technica) are dropped: an outlet
-// with no SourceProfile has no leaning/tier/pressControl to attach.
+// SOURCES: src/news/feeds.json maps a feed URL to a sources.json id (outlet or
+// analysis org), with a `language` on non-English feeds. Together with
+// src/news/feedGaps.json it covers every roster profile — a test holds that.
+// Non-English feeds are archived but not built from (eventBuilder.ts,
+// BUILD_LANGUAGES). An article from a source with no SourceProfile drops as
+// unknown-source: it has no leaning/tier/pressControl to attach.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { fetchFeedArticles } from './lib/fetchFeeds.mjs'
@@ -277,7 +276,7 @@ console.log(`Wrote ${OUTPUT}: ${result.published.length} Events (${result.cluste
 console.log(`  severity — critical=${bySeverity('critical')}, major=${bySeverity('major')}, significant=${bySeverity('significant')}, routine=${bySeverity('routine')}`)
 console.log(`  pending-confirmation (not shipped): ${result.pending.length} -> ${PENDING_OUTPUT}` + (confirmations.length > 0 ? ` (${confirmations.length} prior decision(s) applied)` : ''))
 console.log(
-  `  dropped articles — not-a-report=${result.dropped['not-a-report'].length}, no-country=${result.dropped['no-country'].length}, no-topic=${result.dropped['no-topic'].length}, ` +
+  `  dropped articles — unsupported-language=${result.dropped['unsupported-language'].length}, not-a-report=${result.dropped['not-a-report'].length}, no-country=${result.dropped['no-country'].length}, no-topic=${result.dropped['no-topic'].length}, ` +
     `below-floor=${result.dropped['below-floor'].length}, unknown-source=${result.dropped['unknown-source'].length}, review-rejected=${result.dropped['review-rejected'].length}, duplicate-urls=${result.duplicateUrls}`,
 )
 

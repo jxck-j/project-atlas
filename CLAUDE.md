@@ -1730,7 +1730,8 @@ generation — which is what made the Phase 4 cutover a matter of swapping two c
 - `corroboration.ts` — `deriveCorroboration(sources)`: wire-confirmed (any counting wire-tier entry) >
   outlet-corroborated (4+ *distinct non-state* `'outlet'` sources — `pressControl: 'state-controlled'` outlets
   don't count toward the four — J's 2026-09-20 amendment to §8, standing in for a wire report while none is
-  reachable) > specialist-verified > osint-corroborated (2+ distinct `sourceId`s) >
+  reachable) > specialist-verified > osint-corroborated (2+ distinct `sourceId`s, at least one not
+  `state-controlled` — J, 2026-09-23: state media can be the second source, never the whole count) >
   unconfirmed. Ignores
   `community-discussion` and `live-video` entries regardless of their stored flag, so §9b's wall can't be
   breached by a mis-stamped entry.
@@ -1768,12 +1769,22 @@ conflict dossiers with a one-off history backfill. See `LOGBOOK.md`'s 2026-09-21
 
 **Phase 2 is done too: `scripts/buildNewsEvents.mjs`** (**as of 2026-09-21 its DEFAULT mode is the local-embedding path described below; the Phase 2 pipeline described in THIS paragraph runs with `--heuristic`**; `npm run build:news:events`, run via `tsx` because it imports
 `src/news/*.ts` directly, so build and client can't disagree on corroboration/gating) — a thin fetch/write shell over pure,
-tested modules: `feeds.json` (feed URL → `sources.json` id; only vetted-roster **outlets** are ingested), `countryResolution.ts`,
+tested modules: `feeds.json` (feed URL → `sources.json` id, plus `language` for non-English feeds), `countryResolution.ts`,
 `classify.ts`, `clustering.ts`, `eventBuilder.ts` (`buildEvents()`: unknown source → commentary URL → country → topic →
 cluster → dossier → `resolvePublishDecision`). It writes `public/data/news-events.json` (reader-visible Events **only**) and
 gitignored `debug/news-pending-confirmation.json` — the head-of-state-death queue is deliberately NOT under `public/`, since a
 served file publishes the rumor whatever the client filters. Since Phase 4, `news-events.json` is what the NEWS tab renders.
 Things a session touching this must know:
+- **Every roster profile is either fetched or accounted for (2026-09-23).** `feeds.json` (106 feeds, 104 of 141 sources)
+  and `feedGaps.json` (the other 37, each with a status/reason/checked date) must partition `sources.json` exactly. A
+  test enforces it, so a profile added in the Admin Console fails the suite until its feed is found or its gap recorded.
+  Per-type rules in `eventBuilder.ts`'s `prepare()`: **analysis orgs** become `AnalysisSourceEntry`s (they corroborate,
+  never toward Critical's three; only `specialistVerified` ones make an Event specialist-verified); **country-native**
+  outlets fall back to their `countryName` as the linked country ONLY when the text names none; **non-English feeds**
+  (`language` in feeds.json) are fetched and archived but dropped as `unsupported-language`, because the matcher, the
+  severity rules and MiniLM are all English-only (`BUILD_LANGUAGES`). Verify a new feed through `fetchFeedArticles`
+  itself, not curl: three sites refuse the build's bot User-Agent but answer a browser. See `LOGBOOK.md`'s
+  full-roster entry.
 - **`classify.ts` is the keyword stand-in and the no-key fallback** behind the `Classification` interface — don't tune it; Phase 3's
   `--llm` path (below) is the real classifier. On the default path `systemicThemes` is `[]` and `title` is an outlet's own headline.
 - **Clustering leans toward splitting, deliberately.** Over-merging inflates corroboration (unsafe); over-splitting only

@@ -5,6 +5,71 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Ingesting the whole 141-profile roster, and the per-source-type rules it forced
+
+**J's correction, before Phase 6 (cadence) started:** the build was fetching 24 feeds for 23 sources while the vetted
+roster had 141 profiles. Wire, analysis orgs and all 88 country-native sources had never been fed, so the rules the
+roster encodes for them (`pressControl`, `specialistVerified`, `countryName`) had never run against real data. The work
+here is to fetch every source that can be fetched, and to account in writing for every one that can't.
+
+**Discovery was done by probing, not assumed.** Each unfed profile got a list of candidate feed URLs plus homepage
+`<link rel="alternate">` autodiscovery, and every hit was checked for parseable items, a current newest date and
+readable titles. Results: **104 of 141 sources are now fetched (106 feeds)**. The other 37 are in
+`src/news/feedGaps.json`, each with a status and a reason (blocked, unreachable, no feed found, stale, not a news feed,
+blocks the bot User-Agent). A test in `pipeline.test.ts` requires feeds.json plus feedGaps.json to cover the roster
+exactly once, so a profile added in the Admin Console fails the suite until someone finds its feed or records why
+there isn't one. Without that test, a new source is silently never ingested.
+
+Things the probe caught that a "just add the URLs" pass would have shipped:
+
+- **AFP's only public feed is its corporate press releases** ("AFP and Dalet Partner to…"). AFP is wire tier, and one
+  wire entry wire-confirms an Event on its own. So a press release that clustered with anything would have cleared
+  Critical by itself. It's excluded, and the existing "no wire id in feeds.json" test still holds.
+- **Stale feeds that still answer 200**: CSIS (newest item 2016), Xinhua (2017-2018), SANA (not updated since
+  2026-07-28 although the site is live). A fetch test alone would have called these working.
+- **National Review is profiled as "(News)"**, but its only feed is magazine and opinion content with no `/news/` items.
+  **El Espectador's** only advertised feed is reader comments. **Al-Masdar Online's** domain is now parked. **The Daily
+  Star (Lebanon)** 403s, and the paper suspended publication in 2020, so the profile needs re-vetting, not just a feed.
+- **The production User-Agent is not the probe's.** World Politics Review, Haaretz and CBC answer a browser UA and
+  refuse (403, or hang) the build's `ProjectAtlasNewsBot` UA. They're listed as `blocks-bot-user-agent` gaps pending
+  J's call on whether to impersonate a browser. Verifying through `fetchFeedArticles` itself, not curl, is what caught this.
+- **Two parser bugs**: `extractTag('link')` matched SABA's `<linkShortURL>` (the tag regex had no boundary), and
+  `res.text()` decoded ISO-8859-1 feeds (Reforma, Folha) as UTF-8 ("M�xico"). Business Insider and Maritime Executive
+  are Atom, which the RSS-only parser returned as zero items. All three are fixed in `scripts/lib/`.
+
+**Rules applied per source type (design §7/§8, plus one new call from J):**
+
+- **Analysis orgs (`sourceType: 'analysis'`) are ingested as `AnalysisSourceEntry`**, not dropped as `unknown-source`.
+  They count toward corroboration (§17b), never toward Critical's three outlets (already enforced in
+  `corroboration.ts`), and only a `specialistVerified` org (ISW/ACLED/Bellingcat; only Bellingcat has a feed) makes
+  an Event specialist-verified. Consequence, per §8 as written: **one Bellingcat investigation publishes on its own**
+  at Major or below. It did on the first build (a Mali drone-campaign piece). That's the rule working, not a leak.
+- **Country-native sources link to their home country, as a fallback only.** §7 said `countryName` is "resolved to a
+  linked entity id at build time". Nothing did that, so "Flu epidemic continues as deaths hit new high" (Taipei Times)
+  dropped as no-country. The home country is used only when the text names no country. Adding it unconditionally
+  would make the Times of Israel's US-election story an Israeli one.
+- **Non-English feeds are fetched and archived, not built from.** 31 of the reachable sources have no English edition
+  (Spanish, Portuguese, French, Arabic, Persian, Russian, Japanese, Somali). The country matcher, the severity rules
+  and all-MiniLM-L12-v2 are all English-only. A Spanish headline would match whichever country names happen to be
+  spelled the same ("Venezuela") and get tiered by whichever English words happen to appear, and that kind of partial,
+  unpredictable classification is worse than none. `feeds.json` tags each such feed with a `language`, the fetcher
+  stamps it on the article, and `prepare()` drops it as `unsupported-language`. Archiving them now means a future
+  multilingual path gets the history an RSS window can't give back (BACKLOG.md).
+- **State media needs one non-state source beside it at every tier (J, 2026-09-23, extending §8).** This is the first
+  build where state-controlled outlets were fetched at all. §8 excluded them only from Critical's count, so below
+  Critical two state outlets corroborated each other. The first full build published "Saudi forces conduct 15
+  airstrikes on Yemen's Hodeidah province" on IRNA and the Houthi SABA alone, two allied state outlets. Options
+  put to J: require one non-state source (chosen), exclude state media from every count (would have dropped ~42 of
+  246 Events, including every TASS + NV Ukraine pairing), or keep §8 as written. State media can still be the
+  *second* source. `pressControl: 'state-run-democratic'` (Focus Taiwan) and unlabeled state-funded outlets (Al
+  Jazeera) are unaffected, as they already were for Critical.
+
+**Effect on one build** (same archive, before/after): 90 → 244 published Events; articles fetched per run
+1,170 → ~4,740; 56 distinct sources appear in published Events. 21 English-fed sources appear in none, which is
+mostly the floor doing its job: a single-country depth outlet's domestic story rarely has a second source. Three
+feeds (China Digital Times 403, LANA Tripoli, Daily Star BD) failed on one run after succeeding on the previous one,
+so the per-run feed-failure list is worth watching once cadence (Phase 6) makes runs unattended.
+
 ## 2026-09-23 — News Engine v2, Phase 5: the Admin Console, and where a human's decision lives
 
 Phase 5 of eight. §14 left two questions open ("access control? tech stack?") and `BACKLOG.md` left a third

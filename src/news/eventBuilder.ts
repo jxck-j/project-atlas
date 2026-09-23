@@ -21,7 +21,7 @@ import {
 import { decodeHtmlEntities } from './htmlEntities'
 import { resolvePublishDecision } from './publishGate'
 import { applySeverityCaps, maxSeverity } from './severity'
-import type { NewsEvent, OutletProfile, OutletSourceEntry, Severity, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
+import type { AnalysisSourceEntry, NewsEvent, OutletSourceEntry, Severity, SourceEntry, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
 
 // Articles in, Events out (design §17). Pure — no network, no clock, no fs —
 // so the build script is a thin fetch/write shell around it and every rule
@@ -44,6 +44,11 @@ export interface RawArticle {
   publishedAt?: string
   /** The feed item's own thumbnail (media:thumbnail / enclosure / media:content), when it has one. Partial coverage by nature. */
   imageUrl?: string
+  /**
+   * The FEED's configured language (feeds.json), not detected per article. Absent = English: every archive record written
+   * before non-English feeds were ingested came from an English feed.
+   */
+  language?: string
 }
 
 export interface BuildContext {
@@ -61,6 +66,8 @@ export interface BuildContext {
 
 export type DropReason =
   | 'unknown-source'
+  /** A non-English feed's article. Archived (so a future multilingual path has the history), never classified: see BUILD_LANGUAGES. */
+  | 'unsupported-language'
   | 'not-a-report'
   | 'no-country'
   | 'no-topic'
@@ -86,7 +93,7 @@ export interface BuildResult {
 
 interface Candidate extends ClusterArticle {
   article: RawArticle
-  profile: OutletProfile
+  profile: SourceProfile
   topicTags: TopicTag[]
   severity: Severity
   headOfStateDeathClaim: boolean
@@ -114,19 +121,36 @@ export function isCommentaryUrl(url: string): boolean {
   }
 }
 
-function outletEntry(candidate: Candidate): OutletSourceEntry {
+/**
+ * One report's dossier entry, shaped by who published it (§7). Both kinds count toward corroboration (§17b:
+ * "outlet/analysis/specialist-verified first-hand = true"); what differs is what they can count TOWARD, and that is
+ * corroboration.ts's call, not this one's: an analysis org never counts toward Critical's three outlets, and only an
+ * org flagged `specialistVerified` (ISW/ACLED/Bellingcat) makes an Event specialist-verified. The Community/live-video
+ * wall is enforced there too. Official-statement entries (not built yet) should default to false — see BACKLOG.md.
+ */
+function sourceEntry(candidate: Candidate): SourceEntry {
   const { article, profile, time } = candidate
-  return {
+  const base = {
     id: `${profile.id}:${stableHash(article.url)}`,
-    sourceCategory: 'outlet',
     sourceId: profile.id,
-    // Every ingested outlet report counts; the Community/live-video wall is
-    // enforced in corroboration.ts, not here. Official-statement entries (not
-    // built yet) should default to false — see BACKLOG.md.
     countsTowardCorroboration: true,
     refUrl: article.url,
     timestamp: new Date(time).toISOString(),
     ...(article.imageUrl ? { imageUrl: article.imageUrl } : {}),
+  }
+  if (profile.sourceType === 'analysis') {
+    const entry: AnalysisSourceEntry = {
+      ...base,
+      sourceCategory: 'analysis',
+      org: profile.name,
+      label: profile.label,
+      ...(profile.specialistVerified ? { specialistVerified: true } : {}),
+    }
+    return entry
+  }
+  const entry: OutletSourceEntry = {
+    ...base,
+    sourceCategory: 'outlet',
     outlet: profile.name,
     ...(profile.leaning ? { leaning: profile.leaning } : {}),
     ...(profile.leaningSource ? { leaningSource: profile.leaningSource } : {}),
@@ -136,10 +160,33 @@ function outletEntry(candidate: Candidate): OutletSourceEntry {
     ...(profile.caveat ? { caveat: profile.caveat } : {}),
     ...(profile.pressControl ? { pressControl: profile.pressControl } : {}),
   }
+  return entry
+}
+
+/**
+ * Languages the build can classify. Everything downstream of prepare() is English-only: the country matchers are English
+ * names and aliases, the severity/topic rules are English regexes, and all-MiniLM-L12-v2 is an English sentence model —
+ * so a Spanish headline would be matched by whichever country names happen to be spelled the same ("Venezuela") and
+ * tiered by whichever English keywords happen to appear in it. Partial, unpredictable classification is worse than none,
+ * so a non-English feed is archived but not built from until there is a multilingual path (BACKLOG.md).
+ */
+export const BUILD_LANGUAGES: ReadonlySet<string> = new Set(['en'])
+
+/**
+ * A country-native source's articles link to its own country when the text names none (§7: `countryName` is "resolved to
+ * a linked entity id at build time"). "Flu epidemic continues as deaths and cases hit new high" in the Taipei Times is a
+ * Taiwan story that names no country; without this every such domestic report drops as no-country, which is most of
+ * what a single-country depth source exists to add. FALLBACK ONLY, never added alongside countries the text does name —
+ * the Times of Israel covering a US election is a US story, not an Israeli one.
+ */
+function linkCountries(text: string, homeCountryId: string | undefined, matchers: CountryMatcher[]): string[] {
+  const found = resolveCountryIds(text, matchers)
+  return found.length === 0 && homeCountryId ? [homeCountryId] : found
 }
 
 const emptyDropped = (): BuildResult['dropped'] => ({
   'unknown-source': [],
+  'unsupported-language': [],
   'not-a-report': [],
   'no-country': [],
   'no-topic': [],
@@ -152,13 +199,24 @@ const emptyDropped = (): BuildResult['dropped'] => ({
 })
 
 interface Prepared {
-  eligible: { article: RawArticle; profile: OutletProfile; time: number }[]
+  eligible: { article: RawArticle; profile: SourceProfile; time: number; homeCountryId?: string }[]
   duplicateUrls: number
 }
 
-/** Shared by both paths: dedupe URLs, require a vetted outlet profile, drop commentary URLs, decode feed text. */
-function prepare(articles: RawArticle[], profiles: SourceProfile[], now: string, drop: (r: DropReason, a: RawArticle) => void): Prepared {
-  const outletProfiles = new Map(profiles.filter((p): p is OutletProfile => p.sourceType === 'outlet').map((p) => [p.id, p]))
+/**
+ * Shared by every path: dedupe URLs, require a vetted roster profile (outlet OR analysis org), drop non-English feeds and
+ * commentary URLs, decode feed text, and resolve a country-native source's home country.
+ */
+function prepare(
+  articles: RawArticle[],
+  profiles: SourceProfile[],
+  now: string,
+  drop: (r: DropReason, a: RawArticle) => void,
+  countryMatchers: CountryMatcher[],
+): Prepared {
+  const rosterProfiles = new Map(profiles.map((p) => [p.id, p]))
+  // One matcher per name a country goes by; the canonical one is what sources.json's countryName stores.
+  const idByName = new Map(countryMatchers.map((m) => [m.name, m.id]))
   // The same URL can arrive through two feeds (Bloomberg markets + politics).
   const seenUrls = new Set<string>()
   const unique = articles.filter((a) => (seenUrls.has(a.url) ? false : (seenUrls.add(a.url), true)))
@@ -174,9 +232,13 @@ function prepare(articles: RawArticle[], profiles: SourceProfile[], now: string,
       title: decodeHtmlEntities(raw.title),
       ...(raw.description ? { description: decodeHtmlEntities(raw.description) } : {}),
     }
-    const profile = outletProfiles.get(article.sourceId)
+    const profile = rosterProfiles.get(article.sourceId)
     if (!profile) {
       drop('unknown-source', article)
+      continue
+    }
+    if (!BUILD_LANGUAGES.has(article.language ?? 'en')) {
+      drop('unsupported-language', article)
       continue
     }
     if (isCommentaryUrl(article.url)) {
@@ -184,7 +246,8 @@ function prepare(articles: RawArticle[], profiles: SourceProfile[], now: string,
       continue
     }
     const parsed = article.publishedAt ? Date.parse(article.publishedAt) : Number.NaN
-    eligible.push({ article, profile, time: Number.isNaN(parsed) ? Date.parse(now) : parsed })
+    const homeCountryId = profile.sourceType === 'outlet' && profile.countryName ? idByName.get(profile.countryName) : undefined
+    eligible.push({ article, profile, time: Number.isNaN(parsed) ? Date.parse(now) : parsed, ...(homeCountryId ? { homeCountryId } : {}) })
   }
   return { eligible, duplicateUrls: articles.length - unique.length }
 }
@@ -206,7 +269,7 @@ function assemble(
   const published: NewsEvent[] = []
   const pending: NewsEvent[] = []
   for (const { members, title } of clusters) {
-    const first = members.find((c) => c.profile.tier === 'wire') ?? members[0]
+    const first = members.find((c) => c.profile.sourceType === 'outlet' && c.profile.tier === 'wire') ?? members[0]
     const event: NewsEvent = {
       // Keyed to the earliest article, so an id survives later reports
       // joining the cluster. It does NOT survive an earlier report arriving
@@ -225,7 +288,7 @@ function assemble(
       severity: maxSeverity(members.map((c) => c.severity)),
       ...(members.some((c) => c.headOfStateDeathClaim) ? { headOfStateDeathClaim: true } : {}),
       reviewStatus: 'auto-published',
-      sources: members.map(outletEntry),
+      sources: members.map(sourceEntry),
       snapshotDate: now,
     }
 
@@ -262,12 +325,12 @@ function assemble(
 export function buildEvents(articles: RawArticle[], { profiles, countryMatchers, now, confirmations }: BuildContext): BuildResult {
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
-  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
+  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop, countryMatchers)
 
   const candidates: Candidate[] = []
-  for (const { article, profile, time } of eligible) {
+  for (const { article, profile, time, homeCountryId } of eligible) {
     const text = `${article.title}. ${article.description ?? ''}`
-    const linkedEntityIds = resolveCountryIds(text, countryMatchers)
+    const linkedEntityIds = linkCountries(text, homeCountryId, countryMatchers)
     if (linkedEntityIds.length === 0) {
       drop('no-country', article)
       continue
@@ -307,15 +370,15 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
 ): Promise<BuildResult> {
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
-  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
+  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop, countryMatchers)
 
   // Wide pre-filter, as on the LLM path: a country name OR a topic keyword. A story whose headline names no country
   // ("10-year Treasury yield tops 5%") can still join a cluster whose other members do.
   const candidates: Candidate[] = []
   const texts: string[] = []
-  for (const { article, profile, time } of eligible) {
+  for (const { article, profile, time, homeCountryId } of eligible) {
     const text = `${article.title}. ${article.description ?? ''}`
-    const linkedEntityIds = resolveCountryIds(text, countryMatchers)
+    const linkedEntityIds = linkCountries(text, homeCountryId, countryMatchers)
     const classification = classifyText(text)
     if (linkedEntityIds.length === 0 && classification.topicTags.length === 0) {
       drop('prefiltered', article)
@@ -412,16 +475,16 @@ export async function buildEventsWithLlm(articles: RawArticle[], ctx: LlmBuildCo
   const { profiles, countryMatchers, now, confirmations } = ctx
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
-  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
+  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop, countryMatchers)
 
   // Wide pre-filter (design §6: "deliberately crude/wide — only needs to avoid
   // discarding real candidates"). Unlike Phase 2 it does NOT require a country
   // hit — the model links countries, which recovers "Trump ... ICC" style
   // stories the keyword matcher can't — so an article survives on EITHER a
   // country name OR a topic keyword. Sports and product news match neither.
-  let candidates = eligible.filter(({ article }) => {
+  let candidates = eligible.filter(({ article, homeCountryId }) => {
     const text = `${article.title}. ${article.description ?? ''}`
-    const keep = resolveCountryIds(text, countryMatchers).length > 0 || resolveTopicTags(text).length > 0
+    const keep = linkCountries(text, homeCountryId, countryMatchers).length > 0 || resolveTopicTags(text).length > 0
     if (!keep) drop('prefiltered', article)
     return keep
   })
@@ -448,7 +511,7 @@ export async function buildEventsWithLlm(articles: RawArticle[], ctx: LlmBuildCo
   let failed = 0
   const failureReasons = new Set<string>()
   for (const item of items) {
-    const { article, profile, time } = candidates[item.candidateIndex]
+    const { article, profile, time, homeCountryId } = candidates[item.candidateIndex]
     const outcome = outcomes.get(item.id)
     const base = { url: article.url, source: profile.name, title: article.title }
     if (!outcome || outcome.status === 'failed') {
@@ -459,7 +522,8 @@ export async function buildEventsWithLlm(articles: RawArticle[], ctx: LlmBuildCo
       continue
     }
     if (outcome.cached) cacheHits++
-    const c = outcome.result
+    // Same country-native fallback as the keyword paths (linkCountries): only when the model linked no country at all.
+    const c = outcome.result.countryIds.length === 0 && homeCountryId ? { ...outcome.result, countryIds: [homeCountryId] } : outcome.result
     const route = routeClassification(c)
     audit.push({ ...base, route, cached: outcome.cached, severity: c.severity, severityReason: c.severityReason, confidence: c.confidence, isReport: c.isReport, headOfStateDeathClaim: c.headOfStateDeathClaim })
     if (route !== 'accept') {

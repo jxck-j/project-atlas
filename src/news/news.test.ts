@@ -179,9 +179,13 @@ describe('deriveCorroboration', () => {
     expect(deriveCorroboration([...['guardian', 'bbc'].map((id) => outlet(id)), reddit])).toBe('osint-corroborated (2+)')
   })
 
-  it('state-controlled outlets do not count toward the three — four state media alone is not corroboration', () => {
+  it('state-controlled outlets alone corroborate nothing at any tier — four state media is still unconfirmed', () => {
     const state = ['tass', 'xinhua', 'irna', 'kcna'].map((id) => outlet(id, { pressControl: 'state-controlled' }))
-    expect(deriveCorroboration(state)).toBe('osint-corroborated (2+)')
+    expect(deriveCorroboration(state)).toBe('unconfirmed')
+  })
+
+  it('state media can be the second source behind one non-state outlet (J, 2026-09-23)', () => {
+    expect(deriveCorroboration([outlet('tass', { pressControl: 'state-controlled' }), outlet('nv-ukraine')])).toBe('osint-corroborated (2+)')
   })
 
   it('a state-media claim reaches the three only alongside three non-state outlets', () => {

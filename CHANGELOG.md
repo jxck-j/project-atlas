@@ -17,6 +17,31 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.13.1 — News: every vetted source is ingested, or accounted for
+
+**The build now reads 106 feeds covering 104 of the roster's 141 sources, up from 24 feeds covering 23.**
+Wire, analysis orgs and every country-native source had never been fetched. The other 37 are listed in
+`src/news/feedGaps.json`, each with a reason: no public feed (Reuters, AP), blocked or unreachable, stale
+(CSIS, Xinhua, SANA), not a news feed (AFP's corporate press releases, National Review's opinion feed), or
+blocks the build's bot User-Agent (World Politics Review, Haaretz, CBC). A test keeps the two files covering
+the roster exactly, so a newly added source can't be silently skipped.
+
+Rules applied by source type:
+
+- **Analysis orgs** (Chatham House, Crisis Group, Foreign Policy, Geopolitical Futures, Bellingcat) enter an
+  Event's dossier as analysis entries, captioned "non-partisan analysis" or "specialist-verified" instead of a
+  leaning. They never count toward Critical's three outlets.
+- **Country-native outlets** link a story to their own country when the headline names none, so a Taipei
+  Times domestic story is no longer dropped for "no country".
+- **Non-English feeds** (31 sources) are fetched and archived but not built from yet. The classifier is
+  English-only, and a half-understood Spanish headline is worse than none.
+- **State media can no longer corroborate on its own at any tier** (J's call). An Event needs at least one
+  non-state source. The first full build had published a Yemen airstrike on IRNA plus the Houthi SABA alone.
+
+Also fixed in the feed reader: Atom feeds (Business Insider, Maritime Executive) returned nothing,
+ISO-8859-1 feeds (Reforma, Folha) came through garbled, and a `<link>` tag matched `<linkShortURL>`.
+One build over the same archive went from 90 to 244 published Events.
+
 ## v6.13.0 — News Engine v2 Phase 5: the Admin Console
 
 **A new capability, and a separate app.** `npm run admin` starts a private, local-only editorial console

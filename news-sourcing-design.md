@@ -322,6 +322,8 @@ Distinct from `regional-specialist` (macro-region correspondent coverage) — th
 
 **Amendment (2026-09-20, J's direction): Critical also accepts 4+ distinct outlets — lowered to 3+ on 2026-09-21 (J).** No wire feed (Reuters/AP/AFP) is currently reachable, so a wire-only floor would keep Critical permanently dark. Only `outlet`-category sources count toward the three (not analysis orgs, first-hand, or official statements), distinct by source, and community discussion never counts. **State-controlled outlets (`pressControl: "state-controlled"`) do not count toward the three** — they may appear in the dossier, but a state-media claim reaches Critical only alongside three non-state outlets. A wire report still clears Critical alone. **Known weakness, open:** the count is of sources, not independent newsgathering, so three outlets carrying one syndicated wire story pass — a weakness the lower floor makes slightly worse.
 
+**Amendment (2026-09-23, J's direction): every floor needs at least one non-state source.** Below Critical, state-controlled outlets still count toward the 2+ — but never as the whole count. The first build over the full roster (the first time any state outlet was fetched) published a Yemen airstrike Event on IRNA and the Houthi SABA alone: two allied state outlets corroborating each other. State media may be the *second* source beside a non-state one. `state-run-democratic` and unlabeled state-funded outlets are unaffected, as for Critical.
+
 `Unconfirmed` items never publish regardless of tier. The head-of-state-death review queue is now the **only** manual review surface in the system — a narrow, purpose-built queue, not a general moderation backlog.
 
 ------------------------------------------------------------------------

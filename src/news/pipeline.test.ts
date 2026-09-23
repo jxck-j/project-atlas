@@ -8,6 +8,7 @@ import { recordDecision } from './confirmations'
 import { SOURCES } from './sourceConfig'
 import type { SourceProfile } from './types'
 import feeds from './feeds.json'
+import feedGaps from './feedGaps.json'
 
 const COUNTRIES = [
   { id: '840', name: 'United States of America' },
@@ -484,17 +485,89 @@ describe('buildEvents', () => {
     const entry = r.published[0].sources.find((s) => s.sourceId === 'a')
     expect(entry).toMatchObject({ leaning: 'lean-left', leaningSource: 'AllSides', leaningConfidence: 'medium', caveat: 'state-funded' })
   })
+
+  describe('per source type', () => {
+    const analysis = (id: string, extra: Partial<SourceProfile> = {}) =>
+      ({ id, name: id.toUpperCase(), sourceType: 'analysis', label: 'Non-partisan analysis', vetting: 'confirmed', ...extra }) as SourceProfile
+    const roster = [...profiles, analysis('thinktank'), analysis('isw', { specialistVerified: true })]
+    const story = 'Russian army launches offensive near Kyiv, troops advance'
+
+    it('an analysis org enters the dossier as an analysis entry, not an outlet', () => {
+      const r = buildEvents([art('a', story), art('thinktank', 'Russian troops advance in offensive near Kyiv', 5)], { ...ctx, profiles: roster })
+      expect(r.dropped['unknown-source']).toHaveLength(0)
+      const entry = r.published[0].sources.find((s) => s.sourceId === 'thinktank')
+      expect(entry).toMatchObject({ sourceCategory: 'analysis', org: 'THINKTANK', label: 'Non-partisan analysis', countsTowardCorroboration: true })
+      expect(entry).not.toHaveProperty('leaning')
+    })
+
+    it('a specialist-verified org alone makes an Event specialist-verified, but never counts toward Critical', () => {
+      // §8: Major-and-below accept specialist-verified in place of 2+ sources, so one ISW/Bellingcat report publishes.
+      const lone = buildEvents([art('isw', story)], { ...ctx, profiles: roster })
+      expect(lone.published).toHaveLength(1)
+      expect(deriveCorroboration(lone.published[0].sources)).toBe('specialist-verified')
+      // A non-specialist analysis org is one ordinary source.
+      expect(buildEvents([art('thinktank', story)], { ...ctx, profiles: roster }).published).toHaveLength(0)
+      // Two outlets plus an analysis org is not three outlets.
+      const critical = 'Airstrike kills 15 people in Kyiv, troops say army struck apartment block'
+      const withAnalysis = [art('a', `${critical} a`), art('b', `${critical} b`, 1), art('isw', `${critical} isw`, 2)]
+      expect(buildEvents(withAnalysis, { ...ctx, profiles: roster }).published).toHaveLength(0)
+    })
+
+    it('a non-English feed is dropped before classification, whatever it says', () => {
+      const r = buildEvents(
+        [art('a', story), art('b', 'Russian troops advance in offensive near Kyiv', 5, { language: 'es' })],
+        ctx,
+      )
+      expect(r.dropped['unsupported-language']).toHaveLength(1)
+      expect(r.published).toHaveLength(0)
+    })
+
+    it('a country-native source links to its home country only when the text names none', () => {
+      const native = [profile('tt', { tier: 'country-native', countryName: 'Taiwan' }), profile('tt2', { tier: 'country-native', countryName: 'Taiwan' })]
+      const domestic = buildEvents(
+        [art('tt', 'Army launches offensive drills as troops advance on the coast'), art('tt2', 'Troops advance in army offensive drills on the coast', 5)],
+        { ...ctx, profiles: native },
+      )
+      expect(domestic.dropped['no-country']).toHaveLength(0)
+      expect(domestic.published[0]?.linkedEntityIds).toEqual(['taiwan'])
+
+      const foreign = buildEvents([art('tt', story), art('tt2', 'Russian troops advance in offensive near Kyiv', 5)], { ...ctx, profiles: native })
+      expect(foreign.published[0].linkedEntityIds).not.toContain('taiwan')
+    })
+  })
 })
 
 describe('feeds.json', () => {
-  it('every feed points at a real outlet profile, with a unique url', () => {
-    const outletIds = new Set(SOURCES.filter((s) => s.sourceType === 'outlet').map((s) => s.id))
-    for (const f of feeds) expect(outletIds.has(f.sourceId), `${f.url} -> unknown outlet ${f.sourceId}`).toBe(true)
+  it('every feed points at a real roster profile, with a unique url', () => {
+    const ids = new Set(SOURCES.map((s) => s.id))
+    for (const f of feeds) expect(ids.has(f.sourceId), `${f.url} -> unknown source ${f.sourceId}`).toBe(true)
     expect(new Set(feeds.map((f) => f.url)).size).toBe(feeds.length)
   })
 
   it('never points a wire-tier id at a feed it cannot actually serve (Reuters/AP/AFP have no reachable feed)', () => {
     for (const f of feeds) expect(['reuters', 'ap', 'afp']).not.toContain(f.sourceId)
+  })
+
+  it('declares a language only when it is not English, as a two-letter code', () => {
+    for (const f of feeds as { sourceId: string; language?: string }[]) {
+      if (f.language !== undefined) expect(f.language, f.sourceId).toMatch(/^[a-z]{2}$/)
+      expect(f.language, f.sourceId).not.toBe('en')
+    }
+  })
+
+  // Every vetted profile is either fetched or explicitly accounted for — so a roster addition (the Admin Console can
+  // add one) fails here until someone finds its feed or records why there isn't one, instead of silently never ingesting.
+  it('together with feedGaps.json, covers every sources.json profile exactly once', () => {
+    const fed = new Set(feeds.map((f) => f.sourceId))
+    const gapIds = feedGaps.map((g) => g.sourceId)
+    expect(new Set(gapIds).size, 'duplicate gap').toBe(gapIds.length)
+    for (const id of gapIds) expect(fed.has(id), `${id} is both fed and listed as a gap`).toBe(false)
+    for (const s of SOURCES) expect(fed.has(s.id) || gapIds.includes(s.id), `${s.id} has no feed and no feedGaps.json entry`).toBe(true)
+    for (const g of feedGaps) {
+      expect(SOURCES.some((s) => s.id === g.sourceId), `gap for unknown source ${g.sourceId}`).toBe(true)
+      expect(g.reason.length, g.sourceId).toBeGreaterThan(10)
+      expect(g.checked, g.sourceId).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
   })
 })
 
