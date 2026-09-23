@@ -102,9 +102,42 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
 const AI_RE = /\bAI\b/
 const TAG_ORDER = Object.keys(TAG_KEYWORDS) as TopicTag[]
 
+// Lives here rather than with the severity triggers below because both use it: the attack
+// co-occurrence rule (next) and `strikeWithCasualty`.
+const CASUALTY_RE = /\b(kill(?:s|ed|ing)?|dead|deaths?|wounded|injured|casualties|fatalities)\b/i
+
+// Bare "attack" — a CO-OCCURRENCE rule, not a keyword (2026-09-23, J). The last of the
+// untagged-violence family (bare 'bomb'/'blast' 2026-09-21, bare 'terror' 2026-09-23): "Court opens
+// trial of 8 accused over the 2015 Paris attacks that killed 130 people" names no other
+// conflict/terrorism keyword at all, so it got NO topic tag and its 130 deaths never reached the
+// tag-scoped mass-casualty check. Unlike 'terror', 'attack' can't just join a keyword list —
+// "attacks critics", "attack on the policy", "attack ad" are ordinary political speech. So it tags
+// only when a casualty word co-occurs, and only after stripping the senses that sit next to death
+// words by nature: medical ("heart attack") and animal ("fatal dog attacks" — a real archive false
+// positive). Stripped rather than used as a veto, so a real attack still tags in text that also
+// mentions one ("Attacker with a history of panic attacks kills 4").
+// Deliberately a gap-filler: it fires only when NOTHING else made the text conflictish, so it can
+// never add a second tag (and a second tab placement) to text already tagged.
+const ATTACK_RE = /(?<![\p{L}\p{N}])attack(?:s|ed|ing|er|ers)?(?![\p{L}\p{N}])/iu
+const NON_VIOLENT_ATTACK_RE =
+  /\b(?:heart|panic|asthma|anxiety|angina|dog|canine|shark|bear|wolf|elephant|crocodile|lion|tiger|hippo|snake|monkey)\s+attacks?\b/gi
+// conflict-security, not terrorism-non-state-actors: an unattributed attack is generic violence,
+// and calling it terrorism would assert a non-state actor the text gives no evidence for. Both tags
+// feed `conflictish` identically, so the mass-casualty path — the point of the rule — works either way.
+function hasUnattributedViolentAttack(text: string): boolean {
+  return ATTACK_RE.test(text.replace(NON_VIOLENT_ATTACK_RE, '')) && CASUALTY_RE.test(text)
+}
+
 export function resolveTopicTags(text: string): TopicTag[] {
   const tags = TAG_ORDER.filter((tag) => TAG_KEYWORDS[tag].test(text))
   if (AI_RE.test(text) && !tags.includes('science-technology')) tags.push('science-technology')
+  if (
+    !tags.includes('conflict-security') &&
+    !tags.includes('terrorism-non-state-actors') &&
+    hasUnattributedViolentAttack(text)
+  ) {
+    tags.push('conflict-security')
+  }
   return tags
 }
 
@@ -181,8 +214,16 @@ const SOVEREIGN_DEFAULT_RE = /\b(sovereign default|defaults? on (?:its )?(?:sove
 const CHOKEPOINT_CLOSURE_RE = /\b(?:closes?|closed|closure of|blockad\w+)\b[^.]{0,30}\b(strait of hormuz|suez canal|bab el-mandeb|strait of malacca)\b/i
 const PHEIC_RE = /\b(pandemic declared|public health emergency of international concern|pheic)\b/i
 const STRIKE_RE = /\b((?:air ?)?strike[sd]?|struck|attack(?:s|ed)?|bomb(?:s|ed|ing)?|shell(?:s|ed|ing)?|missile|drone|raid(?:s|ed)?|assault)\b/i
-const CASUALTY_RE = /\b(kill(?:s|ed|ing)?|dead|deaths?|wounded|injured|casualties|fatalities)\b/i
 const TERRITORIAL_RE = /\b(captur(?:es|ed|ing)|seiz(?:es|ed|ing)|annex(?:es|ed|ation)|takes control of)\b/i
+// "captured"/"seized" also describe detaining a PERSON — an arrest, not a territorial gain. Found
+// 2026-09-23 on the archive, exposed (not caused) by the attack co-occurrence rule above: "Eleven
+// injured in shooting outside Turkish school... the attacker has been captured" newly carried a
+// conflict tag, and `territorial` then made a school shooting Major. The veto is text-wide, so a
+// real territorial gain reported alongside an arrest loses its `territorial` flag too — accepted
+// because it only ever LOWERS a tier, this file's stated safe direction, and that story reaches
+// Major by the ordinary strike+casualty route anyway.
+const PERSON_CAPTURE_RE =
+  /\b(?:attacker|assailant|suspect|gunman|shooter|hijacker|fugitive|militant|insurgent|hostage)s?\b[^.]{0,30}\b(?:captur|seiz)\w*|\b(?:captur|seiz)\w*\b[^.]{0,30}\b(?:attacker|assailant|suspect|gunman|shooter|hijacker|fugitive)s?\b/i
 // Settled call 5 (LOGBOOK.md 2026-09-21): a contained strike in an ongoing war is Major only at 5+ deaths in the single
 // incident, or a notable escalation regardless of count — not any casualty count, which §5's literal wording would make
 // Major (every routine Gaza/Ukraine strike headline). Escalation markers are approximate on purpose.
@@ -340,7 +381,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     pactWithdrawal: PACT_WITHDRAWAL_RE.test(text),
     sovereignDefault: SOVEREIGN_DEFAULT_RE.test(text),
     chokepointClosure: CHOKEPOINT_CLOSURE_RE.test(text),
-    territorial: TERRITORIAL_RE.test(text),
+    territorial: TERRITORIAL_RE.test(text) && !PERSON_CAPTURE_RE.test(text),
     strikeWithCasualty: STRIKE_RE.test(text) && CASUALTY_RE.test(text),
     escalation: ESCALATION_RE.test(text),
     majorPolicy: MAJOR_POLICY_RE.test(text),

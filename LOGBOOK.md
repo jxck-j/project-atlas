@@ -5,6 +5,55 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Bare "attack" tags by CO-OCCURRENCE, not as a keyword (J)
+
+**Closes the last member of the untagged-violence family** (bare `bomb`/`blast`, 2026-09-21; bare `terror`, earlier
+today). "Court opens trial of 8 accused over the 2015 Paris attacks that killed 130 people" names no other
+conflict/terrorism keyword at all, so it got no topic tag, and an untagged article can't reach any tag-scoped
+severity trigger. The previous two gaps were fixed by adding a word to a list; this one can't be — "attacks
+critics", "attack on the policy", "attack ad" are ordinary political speech, and a bare keyword would hand the
+relevance gate keyword topic evidence for all of them.
+
+**The rule: `attack` tags `conflict-security` only when a casualty word co-occurs, and only when nothing else
+already made the text conflictish.** Three deliberate parts:
+
+1. **Casualty co-occurrence** (the existing `CASUALTY_RE`, moved up the file so the tagger and the
+   `strikeWithCasualty` trigger share one definition rather than drifting apart).
+2. **`conflict-security`, not `terrorism-non-state-actors`.** An unattributed attack is generic violence; calling
+   it terrorism asserts a non-state actor the text gives no evidence for. Both tags feed `conflictish` identically,
+   so the mass-casualty path — the whole point — works either way, and the reader-facing tab placement stays honest.
+3. **Gap-filler only.** It fires just when neither violence tag is already present, so it can never add a *second*
+   tag (and a second tab) to text that was already tagged.
+
+**The non-violent senses are stripped from the text, not used as a veto.** "Heart/panic/asthma attack" and animal
+attacks sit next to death words by nature. Stripping them (rather than rejecting the whole article) keeps "Attacker
+with a history of panic attacks kills 4" taggable.
+
+**Verified against the archive, which is what earned both guards.** Of 1,794 deduped archived articles, the first
+version changed 7. Reading them found two real problems, neither visible in the fixture: "Fatal dog attacks trigger
+safety fears in Hong Kong" (hence the animal list), and a worse one below. After both guards, 6 articles change and
+every one lands Significant — including the three-outlet Turkish school shooting, which is exactly where design §3
+puts a domestic incident.
+
+**The one that mattered: `territorial` fired on an ARREST.** "Eleven injured in shooting outside Turkish school...
+the attacker has been captured" newly carried a conflict tag, and `TERRITORIAL_RE` matched "captured" — a person
+detained, not ground taken — making a school shooting **Major**. This is a pre-existing bug the attack rule merely
+exposed (untagged text never reached the trigger). `PERSON_CAPTURE_RE` now vetoes `territorial` when capture/seize
+sits next to attacker/suspect/gunman/hostage/militant. The veto is text-wide, so a genuine territorial gain
+reported alongside an arrest loses the flag too — accepted, because it can only *lower* a tier (this file's stated
+safe direction) and that story still reaches Major by strike+casualty.
+
+**The eval does not move — every printed number is identical before and after**, keyword exact 0.533, event-level
+0.563, Critical P 0.80 / R 0.27 per article and 0.80 / 0.80 event-level, held-out keyword relevance P 0.876 /
+R 0.719. Same story as this morning's entry: the labeled fixture contains no article of this shape, so the eval
+can neither catch the bug nor score the fix, and the archive is the only evidence there is. Five regression tests
+cover the rule, both guards, and the gap-filler property.
+
+**Noticed and deliberately not fixed** (logged to BACKLOG): `TERRITORIAL_RE` matches `captures/captured/capturing`
+but not the bare infinitive `capture`, so "Russian troops capture the town" has never counted as territorial.
+Real gap, separate from this change, and adding the word risks "carbon capture"/"capture the moment" — it deserves
+its own look, not a drive-by.
+
 ## 2026-09-23 — Settled call 4 generalized: a legal follow-up no longer inherits a past attack's death toll
 
 **Found by running a fresh build and actually reading the output, not by a test.** The 2026-09-23 build published

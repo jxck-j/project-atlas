@@ -120,11 +120,22 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   "terrified" (asserted in a test). Ran on its own eval as the earlier version of this item asked: keyword exact
   0.531 -> 0.533, event-level 0.560 -> 0.563, Critical P/R unchanged at 0.80/0.27 per article and 0.80/0.80
   event-level — a small gain with no regression.
-- **Still open, same family: bare "attack" carries no topic tag either.** "Court opens trial of 8 accused over the 2015
-  Paris attacks that killed 130 people" (no "terror", no "bombing") still tags nothing and lands Routine via the
-  untagged fallback. Unlike `terror`, `attack` is genuinely risky to add — "attacks critics", "attack on the policy" —
-  so it needs either a co-occurrence rule (attack + a casualty figure) or a phrase list ("terror attack", "militant
-  attack"), not a bare keyword. Not attempted.
+- **DONE (2026-09-23, J): bare "attack" now tags via a co-occurrence rule**, closing the last member of this family.
+  `attack`/`attacker` tags `conflict-security` only when a casualty word co-occurs, only when neither violence tag is
+  already present (so it never adds a second tab placement), and never for the medical/animal senses, which are
+  stripped from the text rather than vetoing it ("Attacker with a history of panic attacks kills 4" still tags).
+  `conflict-security` rather than terrorism on purpose — an unattributed attack is generic violence, and both tags
+  feed `conflictish` identically. Eval numbers are byte-identical before and after (the fixture has no article of
+  this shape); the evidence is the archive: 6 of 1,794 deduped articles change, all to Significant. See `LOGBOOK.md`.
+- **Open, found by the above: `TERRITORIAL_RE` misses the bare infinitive "capture".** It matches
+  `captures`/`captured`/`capturing` only, so "Russian troops capture the eastern town" has never counted as a
+  territorial gain — a real, pre-existing under-tier (Major → Significant) unrelated to the attack rule. Adding the
+  word isn't free: "carbon capture", "capture the moment". Not attempted; needs its own check against the archive.
+- **Open, weaker but noted: the keyword path has no domestic-incident detector**, so §3's "domestic incident with no
+  state response caps at Significant" cap (`applySeverityCaps`'s `domesticNoStateResponse`) is never actually passed
+  `true` by `classifyText` — only the LLM path could set it. It happens not to bite today (the newly-tagged school
+  shootings land Significant on their own, and the `PERSON_CAPTURE_RE` guard removed the one case that didn't), but
+  a domestic attack with 10+ deaths would reach Critical through the mass-casualty trigger with nothing to stop it.
 - **DONE (2026-09-21): `evalNewsClassifier.mjs`'s SEVERITY section now also scores event-level (max-over-story)**, not just per
   article — added alongside the facts-based severity model experiment below, since fairly judging that experiment needed it. Confirms
   the hypothesis this bullet originally recorded: keyword-rule Critical jumps from P 0.80/R 0.27 per-article to P 0.80/R 0.80 at the

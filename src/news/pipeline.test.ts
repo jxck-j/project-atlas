@@ -203,6 +203,39 @@ describe('classifyText', () => {
     expect(resolveTopicTags('Residents terrified as storm approaches coast')).not.toContain('terrorism-non-state-actors')
   })
 
+  it('bare "attack" tags only when a casualty word co-occurs, so rhetoric stays untagged', () => {
+    // The case the 'terror' fix left open: the same Paris sentence with no other violence keyword.
+    expect(resolveTopicTags('Court opens trial of 8 accused over the 2015 Paris attacks that killed 130 people')).toContain('conflict-security')
+    expect(classifyText('Court opens trial of 8 accused over the 2015 Paris attacks that killed 130 people').severity).toBe('significant')
+    // Attack without casualties, and casualties without an attack, both stay out.
+    expect(resolveTopicTags('Senator attacks critics of the new farm policy')).not.toContain('conflict-security')
+    expect(resolveTopicTags('Candidate launches attack ad against rival')).not.toContain('conflict-security')
+    expect(resolveTopicTags('Factory fire leaves 3 dead in Dhaka')).not.toContain('conflict-security')
+  })
+
+  it('the medical and animal senses of "attack" never tag, but do not mask a real attack in the same text', () => {
+    expect(resolveTopicTags('Man dies of a heart attack at a stadium; two others injured in the crush')).not.toContain('conflict-security')
+    // A real archive false positive the rule was tightened against.
+    expect(resolveTopicTags('Fatal dog attacks trigger safety fears in Hong Kong after a cyclist was killed')).not.toContain('conflict-security')
+    expect(resolveTopicTags('Attacker with a history of panic attacks kills 4 at a market')).toContain('conflict-security')
+  })
+
+  it('capturing a SUSPECT is an arrest, not a territorial gain', () => {
+    // Archive case: the attack rule newly tagged this, and "captured" then made a school shooting Major.
+    const text = 'Eleven injured in shooting outside Turkish school. Officials say the attacker has been captured.'
+    expect(resolveTopicTags(text)).toContain('conflict-security')
+    expect(extractSeverityFacts(text).territorial).toBe(false)
+    expect(classifyText(text).severity).toBe('significant')
+    // A real territorial claim is untouched.
+    expect(extractSeverityFacts('Russian troops captured the eastern town after weeks of fighting').territorial).toBe(true)
+    expect(classifyText('Russian troops captured the eastern town after weeks of fighting').severity).toBe('major')
+  })
+
+  it('the attack rule is a gap-filler: text already tagged conflict/terrorism gets no extra tag', () => {
+    expect(resolveTopicTags('Airstrike attack kills 12 in Sudan')).toEqual(['conflict-security'])
+    expect(resolveTopicTags('Militant attack kills 12 at a market')).toEqual(['terrorism-non-state-actors'])
+  })
+
   it('severing diplomatic relations is Major; expelling an ambassador stays Significant (settled call 6)', () => {
     expect(classifyText('Algiers cuts diplomatic relations with Abu Dhabi').severity).toBe('major')
     const expelled = classifyText('Algeria expels Emirati ambassador over remarks')
