@@ -138,8 +138,15 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   the next items. Before spending on `--llm` grouping, score it on `scripts/fixtures/newsClusteringEval.json` — it has to beat
   embeddings on that fixture to justify its cost (`scripts/lib/clusterEval.mjs` scores any clustering).
 - **Embedding grouping: known weaknesses.** (1) ~10% of two-outlet Events on the live pull joined thematically related but different
-  stories (China/AI, China/space). (2) At the shipped 0.70 there are no known false merges on the labeled sample; 0.65 had one (Continental vs Exxon
-  Venezuela deals) but reached 18/19 of the 3+-outlet stories vs 14/19 at 0.70. (3) Tuned and scored on ONE pull with
+  stories (China/AI, China/space). **2026-09-22: this is now reproduced on the labeled fixture, not just the live pull** — the fixture's
+  unlabeled China/space/AI articles (a lunar-mission delay, a Raptor 3 engine report, a space-weapons warning, all already present but
+  never given their own story labels) were labeled as the distinct stories they are (`scripts/fixtures/newsClusteringEval.json`); at 0.70
+  the three space stories stayed correctly separate, but a distinct Sept-15 US-China "AI risk" analysis piece
+  (`us-china-ai-risks-nbc-sept15`) still merges into the earlier, unrelated `china-rejects-ai-slowdown` story (contaminated 0→1 on the
+  same eval run) — a real, now-repeatable case, not just an out-of-sample anecdote. See `LOGBOOK.md`'s 2026-09-22 entry. Still open: no
+  fix attempted yet. (2) At the shipped 0.70 there is 1 known false merge on the labeled sample (above); 0.65 has 3 (that one, the
+  Continental-vs-Exxon Venezuela-deals pair, and a same-day Russia election/drone-attack pair — the latter two pre-date this labeling
+  pass and were already on the fixture) but reached 18/19 of the 3+-outlet stories vs 14/19 at 0.70. (3) Tuned and scored on ONE pull with
   labels made by Claude — re-label a second, later pull to see whether 0.65 holds. (4) The fixture's positives were mined from
   embedding similarity, a small bias in embeddings' favour. (5) Changing `EMBEDDING_MODEL` invalidates the threshold; re-run the eval.
 - **`--embed` is now the default (J, 2026-09-21); `--heuristic` is the fallback.** It needs a ~33 MB model download on first run (cached in

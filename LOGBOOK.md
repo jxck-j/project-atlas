@@ -5,6 +5,47 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-22 — Clustering false-merge: the China/AI-vs-China/space report is now on the labeled fixture
+
+**Follow-up on the open BACKLOG item from the 2026-09-20 embeddings entry** ("~10% of two-outlet Events
+on the live pull joined thematically related but different stories — China/AI, China/space"), which had
+never been reproduced on `scripts/fixtures/newsClusteringEval.json` itself — only observed on one past
+live pull that wasn't saved. J asked to expand the fixture's evidence rather than attempt a fix yet.
+
+**What was added, and why no new articles were needed.** Pulled real China/AI and China/space articles
+from `archive/news/articles.jsonl` to build test cases, then discovered five of them were already sitting
+in the fixture, unlabeled (the archive and the fixture's original 2026-09-20 live pull overlap in feed
+coverage and dates) — a first attempt at this that duplicated them as new articles was reverted once the
+duplication surfaced as a bogus "contamination" between a labeled story and its own unlabeled twin (a
+labeling bug, not a clusterer bug). The real fix: label the five ALREADY-PRESENT unlabeled articles
+directly, adding no new rows to `articles` at all:
+- Three distinct China/space stories as their own singleton stories — `china-lunar-mission-delay` [242],
+  `china-space-weapons-warning` [380], `china-raptor3-engine-report` [552] — close in topic and time to
+  each other, the exact shape of the reported failure.
+- A distinct Sept-15 "US-China AI risk" analysis piece as `us-china-ai-risks-nbc-sept15` [315] — same
+  broad topic as two already-labeled AI stories either side of it in time (`china-rejects-ai-slowdown`,
+  Sept 14; `us-china-ai-talks`, Sept 20-21) but not the same development as either.
+- One genuinely fuzzy piece (`guardian`, [704], "Why China is pushing back on US AI-slowdown warnings" —
+  a strategy feature, not a report of a specific development) marked ambiguous rather than forced into a
+  same/different call, plus a second Sept-15 piece already sitting next to [315] ([281], "Kissinger's
+  worst AI nightmare") also marked ambiguous for the same reason.
+
+**Result: real, reproducible on the fixture now.** `npm run eval:news-clustering --detail` at the shipped
+0.70 threshold: contaminated clusters went 0 → 1 — `us-china-ai-risks-nbc-sept15` [315] merges into the
+unrelated, five-day-earlier `china-rejects-ai-slowdown` [221, 224] (plus the pre-existing unlabeled [281]
+in the same cluster). The three new space-story labels did NOT get pulled into each other or anything
+else at 0.70 — a clean pass on that half of the reported pattern; only the AI half reproduced. At 0.65 the
+same cluster still merges (contaminated 3 total there — the new one, plus two that pre-date this pass:
+Continental-vs-Exxon Venezuela deals, and a same-day Russia election/drone-attack pair that turns out to
+have been on the fixture uncounted since 2026-09-20 too). See `BACKLOG.md`'s embedding-grouping bullet for
+the updated numbers.
+
+**Not attempted:** any fix. This was scoped as evidence-gathering only — a next session picking up the
+open BACKLOG item now has one concrete, re-runnable failure to test a mitigation against, instead of an
+anecdote from an unsaved pull. `tsc`/oxlint/`npm test` all clean; no article counts changed, so nothing
+downstream (`classifierData.mjs`'s `mainLabels.length !== cluster.articles.length` alignment check,
+`embedding.test.ts`'s fixture-consistency tests) needed touching.
+
 ## 2026-09-22 — Strategic-tech keyword coverage: real geopolitical tech gap found via a real article
 
 **Found via a real article, not the label pipeline:** J pointed at a real piece on China's own
