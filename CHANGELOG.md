@@ -17,6 +17,40 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.13.0 — News Engine v2 Phase 5: the Admin Console
+
+**A new capability, and a separate app.** `npm run admin` starts a private, local-only editorial console
+(`admin/`, its own Vite config on 127.0.0.1:5175) for the News Engine's build inputs — design
+`news-sourcing-design.md` §14. It is not part of the globe app: `npm run build` neither builds nor ships it,
+and it only functions behind its own dev-server middleware.
+
+Two views, deliberately kept apart because their rhythms are nothing alike (§14 asked for this):
+
+- **Editorial data** — the source roster (`src/news/sources.json`, 141 profiles) with filters for the work
+  that's actually queued (Provisional 10, Contested 4, Unrated 49, Country-native 88, Analysis 11), and the
+  systemic-theme quarterly review (`src/news/systemicThemes.json`), where archiving is the only retirement —
+  there is no delete button, because an archived theme keeps its linkage to every historical Event.
+- **Review queue** — the head-of-state/government death claims awaiting a human (design §8), each shown with
+  its full dossier, its derived corroboration, and a link to every individual report, plus the decision trail.
+
+**Confirmations now survive a rebuild**, which they previously could not. The build is stateless: it
+re-clusters and re-gates from scratch every run, so a `manuallyConfirmed` flag set in memory evaporated the
+moment the run ended — a confirmed claim would have published exactly once and then silently un-published
+itself. Decisions are now recorded in a store the build reads back in (`src/news/confirmations.ts`), and a
+decision re-attaches by *article URL* as well as Event id, so it isn't lost when an earlier report arrives and
+re-keys the Event. A rejected claim is dropped outright — never published, never re-queued.
+
+**Writes are validated before they land.** `src/news/configValidation.ts` holds the §7 invariants
+`sourceConfig.test.ts` has always asserted, as a function the console runs live while you type and the server
+runs again before writing; a roster that would break one is refused with the offending field named, and the
+file is left untouched. The console also surfaces the two places where a legitimate edit trips a test that
+asserts a starting state (the 9/10/3 leaning tally, the ten-all-active theme list), naming the file to update
+in the same commit.
+
+One housekeeping change came with it: `sources.json`'s key order is now canonical (22 of 141 lines
+re-ordered, no content changed), so a one-field edit from the console is a one-line diff rather than a
+reformat of the whole file.
+
 ## v6.12.2 — News Engine v1 removed
 
 **Cleanup, not a behavior change.** With the v2 cutover confirmed in the browser, v1 is gone:

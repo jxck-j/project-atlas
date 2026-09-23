@@ -1,5 +1,6 @@
 import { classifyText, matchesHeadOfStateDeath, resolveTopicTags } from './classify'
 import { clusterArticles, type ClusterArticle } from './clustering'
+import { resolveReviewState, type ConfirmationRecord } from './confirmations'
 import { resolveCountryIds, type CountryMatcher } from './countryResolution'
 import { RELEVANCE_THRESHOLD, RESCUE_THRESHOLD, type EmbeddingClassifier } from './embeddingClassifier'
 import { clusterByEmbedding, embeddingText, type Embedder } from './embeddingClustering'
@@ -50,6 +51,12 @@ export interface BuildContext {
   countryMatchers: CountryMatcher[]
   /** Build time, ISO 8601. Injected so the function stays pure and tests are deterministic. */
   now: string
+  /**
+   * Head-of-state-death review decisions from the Admin Console's store
+   * (confirmations.ts). Omit for none — the gate then leaves every such claim
+   * pending, which is the safe default.
+   */
+  confirmations?: ConfirmationRecord[]
 }
 
 export type DropReason =
@@ -58,6 +65,8 @@ export type DropReason =
   | 'no-country'
   | 'no-topic'
   | 'below-floor'
+  /** A head-of-state death claim a human reviewed and turned down (Admin Console). Never published, and never re-queued. */
+  | 'review-rejected'
   // LLM path only
   | 'prefiltered'
   | 'not-relevant'
@@ -135,6 +144,7 @@ const emptyDropped = (): BuildResult['dropped'] => ({
   'no-country': [],
   'no-topic': [],
   'below-floor': [],
+  'review-rejected': [],
   prefiltered: [],
   'not-relevant': [],
   'low-confidence': [],
@@ -187,7 +197,12 @@ interface Cluster {
 }
 
 /** Shared by both paths: build each Event's dossier and run it through the corroboration gate. */
-function assemble(clusters: Cluster[], now: string, drop: (r: DropReason, a: RawArticle) => void): { published: NewsEvent[]; pending: NewsEvent[] } {
+function assemble(
+  clusters: Cluster[],
+  now: string,
+  drop: (r: DropReason, a: RawArticle) => void,
+  confirmations: ConfirmationRecord[] = [],
+): { published: NewsEvent[]; pending: NewsEvent[] } {
   const published: NewsEvent[] = []
   const pending: NewsEvent[] = []
   for (const { members, title } of clusters) {
@@ -214,6 +229,19 @@ function assemble(clusters: Cluster[], now: string, drop: (r: DropReason, a: Raw
       snapshotDate: now,
     }
 
+    // A human's decision on a head-of-state death claim, re-attached across
+    // rebuilds (confirmations.ts). Only consulted when the claim flag is set,
+    // so a stale record can never lift an ordinary Event past its floor —
+    // `manuallyConfirmed` is read by the gate for this one claim type only.
+    if (event.headOfStateDeathClaim) {
+      const review = resolveReviewState(confirmations, event)
+      if (review === 'rejected') {
+        for (const c of members) drop('review-rejected', c.article)
+        continue
+      }
+      if (review === 'confirmed') event.manuallyConfirmed = true
+    }
+
     const decision = resolvePublishDecision(event)
     if (decision.outcome === 'below-floor') {
       for (const c of members) drop('below-floor', c.article)
@@ -231,7 +259,7 @@ function assemble(clusters: Cluster[], now: string, drop: (r: DropReason, a: Raw
 // Phase 2 — keyword classification, heuristic clustering. Still the path when
 // there is no API key, and the reference the LLM path is compared against.
 
-export function buildEvents(articles: RawArticle[], { profiles, countryMatchers, now }: BuildContext): BuildResult {
+export function buildEvents(articles: RawArticle[], { profiles, countryMatchers, now, confirmations }: BuildContext): BuildResult {
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
   const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
@@ -257,6 +285,7 @@ export function buildEvents(articles: RawArticle[], { profiles, countryMatchers,
     clusters.map((members) => ({ members })),
     now,
     drop,
+    confirmations,
   )
   return { published, pending, dropped, articlesIn: articles.length, duplicateUrls, clusters: clusters.length }
 }
@@ -268,7 +297,7 @@ export function buildEvents(articles: RawArticle[], { profiles, countryMatchers,
 // countries and titles are still keyword/outlet-headline; the classifier's
 // evaluation showed it does NOT beat the severity regexes (embeddingClassifier.ts).
 
-export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now }: BuildContext, embed: Embedder,
+export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now, confirmations }: BuildContext, embed: Embedder,
   options: {
     /** Cosine link threshold for clustering; defaults to EMBED_LINK_THRESHOLD. */
     threshold?: number
@@ -331,7 +360,7 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
       clusters.push({ members })
     }
   }
-  const { published, pending } = assemble(clusters, now, drop)
+  const { published, pending } = assemble(clusters, now, drop, confirmations)
   return { published, pending, dropped, articlesIn: articles.length, duplicateUrls, clusters: clustered.length }
 }
 
@@ -380,7 +409,7 @@ export interface LlmBuildResult extends BuildResult {
 }
 
 export async function buildEventsWithLlm(articles: RawArticle[], ctx: LlmBuildContext): Promise<LlmBuildResult> {
-  const { profiles, countryMatchers, now } = ctx
+  const { profiles, countryMatchers, now, confirmations } = ctx
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
   const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop)
@@ -476,7 +505,7 @@ export async function buildEventsWithLlm(articles: RawArticle[], ctx: LlmBuildCo
     title: g.title,
     members: g.members.map((m) => candidateByUrl.get(m.key)!),
   }))
-  const { published, pending } = assemble(clusters, now, drop)
+  const { published, pending } = assemble(clusters, now, drop, confirmations)
 
   return {
     published,

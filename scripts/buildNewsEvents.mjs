@@ -57,8 +57,14 @@
 // of state/government was killed. `isReaderVisible()` keeps it out of the UI,
 // but anything under public/ is served to everyone — a "hidden" rumor in a
 // public JSON file is still published. So the public asset carries reader-
-// visible Events only. debug/ is gitignored; Phase 5 (Admin Console) decides
-// the queue's real home.
+// visible Events only.
+//
+// Phase 5 settled the queue's home: it STAYS here. The queue itself is
+// regenerable — every run re-derives it from the feed window — so debug/ is
+// the honest place for it, and `npm run admin` reads it from there. What is
+// NOT regenerable is a human's decision about a queued claim, which is why
+// that lives separately in the article archive (lib/newsConfirmations.mjs) and
+// is read back in below, so a confirmation survives the next rebuild.
 //
 // SOURCES: src/news/feeds.json maps a feed URL to a sources.json id. Only
 // `outlet` profiles are ingested — `analysis` orgs (ISW, Bellingcat, ACLED,
@@ -71,6 +77,7 @@ import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { fetchFeedArticles } from './lib/fetchFeeds.mjs'
 import { archiveArticles, readArchive } from './lib/newsArchive.mjs'
+import { readConfirmations } from './lib/newsConfirmations.mjs'
 import { applyPullMetadata, FEED_RETENTION_DAYS, selectFeedWindow } from '../src/news/feedWindow.ts'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
 import { buildEvents, buildEventsWithEmbeddings, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
@@ -174,7 +181,7 @@ async function runLlm() {
   const llmCountries = [...countries, TAIWAN_REF]
   const client = new Anthropic()
   const store = loadCache()
-  const base = { profiles, countryMatchers, now, model: NEWS_MODEL, countries: llmCountries, themes, limit: LIMIT }
+  const base = { profiles, countryMatchers, now, confirmations, model: NEWS_MODEL, countries: llmCountries, themes, limit: LIMIT }
 
   try {
     // Pass 1 — free: exact input tokens, nothing generated, nothing cached.
@@ -232,7 +239,11 @@ async function runLlm() {
 }
 
 const now = new Date().toISOString()
-const buildCtx = { profiles, countryMatchers, now }
+// Head-of-state-death decisions recorded in the Admin Console (Phase 5). The
+// build is stateless, so without this a confirmation would publish the Event
+// on one run and silently un-publish it on the next.
+const confirmations = readConfirmations()
+const buildCtx = { profiles, countryMatchers, now, confirmations }
 
 // Default: local embeddings. Fails LOUDLY rather than silently degrading to the heuristic — a build that quietly
 // switched grouping methods would change what gets published without anyone deciding it should.
@@ -264,10 +275,10 @@ console.log(`Fetched ${pulled.length} articles from ${feeds.length - feedFailure
 for (const failure of feedFailures) console.warn(`  feed failed: ${failure}`)
 console.log(`Wrote ${OUTPUT}: ${result.published.length} Events (${result.clusters} clusters from ${result.articlesIn} articles).`)
 console.log(`  severity — critical=${bySeverity('critical')}, major=${bySeverity('major')}, significant=${bySeverity('significant')}, routine=${bySeverity('routine')}`)
-console.log(`  pending-confirmation (not shipped): ${result.pending.length} -> ${PENDING_OUTPUT}`)
+console.log(`  pending-confirmation (not shipped): ${result.pending.length} -> ${PENDING_OUTPUT}` + (confirmations.length > 0 ? ` (${confirmations.length} prior decision(s) applied)` : ''))
 console.log(
   `  dropped articles — not-a-report=${result.dropped['not-a-report'].length}, no-country=${result.dropped['no-country'].length}, no-topic=${result.dropped['no-topic'].length}, ` +
-    `below-floor=${result.dropped['below-floor'].length}, unknown-source=${result.dropped['unknown-source'].length}, duplicate-urls=${result.duplicateUrls}`,
+    `below-floor=${result.dropped['below-floor'].length}, unknown-source=${result.dropped['unknown-source'].length}, review-rejected=${result.dropped['review-rejected'].length}, duplicate-urls=${result.duplicateUrls}`,
 )
 
 // ---------------------------------------------------------------------------

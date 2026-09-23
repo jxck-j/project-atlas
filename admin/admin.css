@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import 'tailwindcss';
+
+/* The globe's palette and type, so the console reads as the same system — but
+   NOT src/index.css, which sets `overflow: hidden` for a full-screen canvas.
+   This is a scrolling document. */
+@theme {
+  --font-display: 'Rajdhani', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: #04070a;
+  color: #dff9ff;
+  font-family: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}

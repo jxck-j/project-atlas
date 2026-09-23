@@ -1,10 +1,11 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "6.12.2",
+  "version": "6.13.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "admin": "vite --config vite.admin.config.ts",
     "build": "tsc -b && vite build",
     "build:geo": "npm run build:geo:countries && npm run build:geo:entities && npm run build:geo:states && npm run build:geo:cities && npm run build:geo:lakes && npm run build:geo:rivers",
     "build:geo:countries": "tsx scripts/buildCountryTopology.mjs",

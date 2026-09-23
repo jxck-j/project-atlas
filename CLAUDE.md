@@ -47,6 +47,9 @@ again until new prototyping work on this branch creates them.
 
 ```bash
 npm run dev        # dev server, http://localhost:5173
+npm run admin      # Admin Console (private, local-only), http://127.0.0.1:5175 — News Engine editorial
+                   # data + the head-of-state-death review queue. Separate Vite app; NOT built by `npm run
+                   # build` and only works behind its own dev server. See News & sourcing below.
 npm run build      # tsc -b (project-references typecheck) + vite build to dist/
 npm run lint       # oxlint
 npm run preview    # preview the production build
@@ -1717,7 +1720,7 @@ here. What a session building v2 must respect:
 
 **v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
 build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
-surfaces; **Phases 1, 2 and 4 are done, 3 is built but unrun — the next one is Phase 5, the Admin Console**).
+surfaces; **Phases 1, 2, 4 and 5 are done, 3 is built but unrun — the next one is Phase 6, cadence**).
 **Phase 1 is `src/news/`**, a pure (no DOM/network/React) directory; its types are named distinctly from v1's
 (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`) so an import can't silently pick up the wrong
 generation — which is what made the Phase 4 cutover a matter of swapping two components' imports.
@@ -1742,9 +1745,13 @@ generation — which is what made the Phase 4 cutover a matter of swapping two c
   non-reader-visible statuses and implements multi-tag tab placement), `tabs.ts` (World + 8), `themes.ts`
   (archival, not deletion).
 - **`sources.json` and `systemicThemes.json` are plain JSON on purpose** — `buildNewsEvents.mjs` reads them with
-  `fs` and the Phase 5 Admin Console edits them in place; `sourceConfig.ts` is the typed view, and
+  `fs` and the Admin Console (Phase 5, below) edits them in place; `sourceConfig.ts` is the typed view, and
   `sourceConfig.test.ts` validates their shape every test run (that test, not the cast, is what makes the
-  types honest). `sources.json` carries only what the design doc states; anything unspecified is `vetting:
+  types honest). Since Phase 5 the same §7 invariants ALSO exist as a pure function,
+  `configValidation.ts` — a test only fires when someone runs the suite, and the console writes these files
+  directly, so it needs rules it can run before a save and refuse on. Change one, change the other.
+  **`sources.json`'s key order is canonical as of Phase 5** (`configSerialize.ts`) and one record per LINE —
+  don't reformat it with `JSON.stringify(x, null, 2)`, which turns a one-field edit into a 1,400-line diff. `sources.json` carries only what the design doc states; anything unspecified is `vetting:
   'provisional'` with a note. **Wire tier is Reuters/AP/AFP only — Bloomberg is not wire in v2** (v1's
   `WIRE_TIER_OUTLETS` includes it). No working wire feed exists yet, which is why Critical also accepts 4+
   distinct outlets; the fallback's remaining weakness (three outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
@@ -1774,8 +1781,9 @@ Things a session touching this must know:
   three unrelated stories into one Event). The thresholds were tuned on one live snapshot; consequence: **the multi-outlet
   Critical fallback rarely fired** on headline-only clustering. See `LOGBOOK.md`'s Phase 2 entry before loosening anything.
 - **Opinion/explainer/video-programme URLs are dropped** (`isCommentaryUrl`) — commentary on an event isn't a report of it.
-- **The build is stateless** (each run rewrites the file from whatever the feeds hold); a `manuallyConfirmed` flag would not
-  survive a rebuild. That's a Phase 5 problem; see `BACKLOG.md`.
+- **The build is stateless** (each run rewrites the file from whatever the feeds hold). Phase 5 fixed the consequence for
+  `manuallyConfirmed` specifically — see the Admin Console section below — but nothing ELSE survives a run, so don't assume
+  any other per-Event state does.
 
 **Phase 3 is done too, but UNVERIFIED against the real API** (no key was available; the request/response path is type-checked and
 tested on a fake, never exercised live): `npm run build:news:events:llm` (`--llm`). Two Sonnet 5 calls (J's decision, logged in
@@ -1824,6 +1832,51 @@ loosening the pair threshold. Things a session touching this must know:
   keyword disagreement, not a random pull), so `scripts/lib/classifierData.mjs` wires it into the "main" training side only, never
   the pristine held-out side — `loadClassifierData`'s `holdStart` (not `nMain`) is what marks where the real held-out set begins.
 - `--heuristic` is the Phase 2 path (no model); `--llm` (Phase 3) is unchanged and still unrun.
+
+### Admin Console (`admin/`, Phase 5, v6.13.0)
+
+`npm run admin` — a **private, local-only** editorial console for the News Engine's build inputs (design
+§14), on its own Vite config (`vite.admin.config.ts`, 127.0.0.1:5175) so it can run alongside `npm run dev`.
+**It is not part of the globe app and is never built into `dist/`** — there is deliberately no build script
+for it, because it only functions behind its own dev-server middleware. Its own `tsconfig.admin.json` is a
+third project reference, so `tsc -b` typechecks it with everything else.
+
+- **`admin/server/adminApi.ts`** — a Vite plugin adding `/api/*` middleware. The console edits the *inputs*
+  to the build, so the one capability it needs beyond a browser's is writing files on this machine; a dev-
+  server middleware is the smallest thing that provides it. **No auth, deliberately** (§14's open question):
+  it binds to loopback, and the middleware independently refuses any request whose socket isn't loopback.
+  Revisit that decision before ever giving this a non-loopback bind address.
+- **Every write is validated server-side before it lands** (`configValidation.ts`, shared with the browser so
+  the same rules light up a field as you type). A roster that would break a §7 invariant is refused with the
+  offending field named and the file left untouched — never half-written.
+- **Two views, kept navigationally apart** because §14 asked for it and the rhythms are nothing alike:
+  EDITORIAL DATA (`SourcesView.tsx` — the 141-profile roster with filters for the standing work: provisional,
+  contested, unrated, country-native, analysis; `ThemesView.tsx` — the quarterly theme review) and REVIEW
+  QUEUE (`ReviewQueueView.tsx` — head-of-state death claims). `ThemesView` has **no delete button by
+  construction**: retirement is archival, an archived theme keeps its linkage to historical Events.
+
+**The confirmation store is the part to understand before touching any of this.** The build is stateless —
+it re-clusters and re-gates from scratch every run — so `manuallyConfirmed` set in memory used to evaporate
+at the end of a run, meaning a confirmed claim would publish exactly once and then silently un-publish.
+`src/news/confirmations.ts` (pure, tested) + `scripts/lib/newsConfirmations.mjs` (fs) fix that:
+
+- **A decision matches on article URLs as well as Event id.** An Event id hashes its EARLIEST member's URL,
+  so it survives later reports joining but NOT an earlier one arriving — which would re-key the Event and
+  lose the decision. Any URL overlap re-attaches it. Don't "simplify" this to an id lookup.
+- **The gate consults a decision only for `headOfStateDeathClaim` events**, so a stale record can never lift
+  an ordinary Event past its corroboration floor. A `'rejected'` claim is dropped outright (`DropReason`
+  `'review-rejected'`) — never published, never re-queued.
+- **Three files, three different homes, on purpose.** `public/data/news-events.json` is served (reader-visible
+  Events only). `debug/news-pending-confirmation.json` is the queue, which IS regenerable — every run
+  re-derives it — so Phase 5 left it there. `archive/news/confirmations.json` is the decisions, which are
+  NOT regenerable and are NOT committed: these records carry the headlines of unconfirmed death claims
+  including the ones rejected as false, and committing a rejected rumor's text is the same mistake as serving
+  it from `public/`. See `LOGBOOK.md`'s Phase 5 entry.
+
+**Two tests assert a Phase 1 starting state that using this console legitimately invalidates** —
+`sourceConfig.test.ts`'s 9/10/3 leaning tally and its "ten themes, all active". Both were kept rather than
+loosened; the console warns and names the file to update in the same commit. If you re-rate an outlet or
+archive a theme, expect to update that expectation too.
 
 ### Data quirks worth knowing
 

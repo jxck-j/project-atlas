@@ -4,6 +4,7 @@ import { clusterArticles, LINK_WINDOW_MS, MAX_CLUSTER_SPAN_MS, type ClusterArtic
 import { buildCountryMatchers, resolveCountryIds } from './countryResolution'
 import { buildEvents, isCommentaryUrl, stableHash, type RawArticle } from './eventBuilder'
 import { deriveCorroboration } from './corroboration'
+import { recordDecision } from './confirmations'
 import { SOURCES } from './sourceConfig'
 import type { SourceProfile } from './types'
 import feeds from './feeds.json'
@@ -399,6 +400,52 @@ describe('buildEvents', () => {
     expect(r.published).toHaveLength(0)
     expect(r.pending).toHaveLength(1)
     expect(r.pending[0].reviewStatus).toBe('pending-confirmation')
+  })
+
+  // Phase 5: the Admin Console's decisions have to survive the next rebuild,
+  // because the build is stateless and re-runs the gate from scratch.
+  describe('with recorded review decisions (Admin Console)', () => {
+    const deathStory = 'President assassinated in Niger, state television says, reports of army takeover'
+    const articles = ['a', 'b', 'c', 'd'].map((s, i) => art(s, `${deathStory} ${s}`, i))
+    const queued = buildEvents(articles, ctx).pending[0]
+
+    it('publishes a confirmed claim as manual-only on the next build', () => {
+      const confirmations = recordDecision([], queued, 'confirmed', now)
+      const r = buildEvents(articles, { ...ctx, confirmations })
+      expect(r.pending).toHaveLength(0)
+      expect(r.published).toHaveLength(1)
+      expect(r.published[0].reviewStatus).toBe('manual-only')
+    })
+
+    it('drops a rejected claim entirely — not published, and not re-queued', () => {
+      const r = buildEvents(articles, { ...ctx, confirmations: recordDecision([], queued, 'rejected', now) })
+      expect(r.published).toHaveLength(0)
+      expect(r.pending).toHaveLength(0)
+      expect(r.dropped['review-rejected']).toHaveLength(articles.length)
+    })
+
+    it('re-attaches the decision after the Event id moves, via a shared article URL', () => {
+      // An EARLIER report arriving re-keys the cluster's id (the id is the
+      // first member's URL hash), which is exactly what the URL match is for.
+      const earlier = art('e', `${deathStory} e`, -30)
+      const confirmations = recordDecision([], queued, 'confirmed', now)
+      const r = buildEvents([earlier, ...articles], { ...ctx, confirmations })
+      expect(r.published).toHaveLength(1)
+      expect(r.published[0].id).not.toBe(queued.id)
+      expect(r.published[0].reviewStatus).toBe('manual-only')
+    })
+
+    it('never lets a stale decision lift an ordinary Event — the gate reads it for death claims only', () => {
+      const ordinary = [art('a', 'Russian army launches offensive near Kyiv, troops advance'), art('b', 'Russian troops advance in offensive near Kyiv', 5)]
+      // A confirmation whose URL set covers these articles, which a normal
+      // Event must ignore entirely rather than treat as pre-approval.
+      const confirmations = recordDecision([], { id: 'x', title: 'unrelated', sources: queued.sources }, 'confirmed', now)
+      const lone = buildEvents([ordinary[0]], { ...ctx, confirmations })
+      expect(lone.published).toHaveLength(0) // still below its floor
+      const pair = buildEvents(ordinary, { ...ctx, confirmations })
+      expect(pair.published[0].reviewStatus).toBe('auto-published')
+      expect(pair.published[0]).not.toHaveProperty('manuallyConfirmed')
+    })
   })
 
   it('drops unknown sources, country-less and topic-less articles, with reasons', () => {

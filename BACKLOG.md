@@ -289,12 +289,14 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   country), and it isn't in the roster. Reachable but not added: Insight Crime, Rest of World. AllAfrica, ISS Africa and
   the country-native roster were not probed — Critical's 3-outlet floor is only as reachable as the number of distinct
   outlets ingested (24 feeds / 23 outlets today), and none of the country-native press-freedom sources are ingested yet.
-- **The pending-confirmation queue has no home yet.** `buildNewsEvents.mjs` writes it to gitignored
-  `debug/news-pending-confirmation.json` — deliberately not under `public/`, since a "hidden" unconfirmed
-  head-of-state death claim in a served file is still published. Phase 5 (Admin Console) has to decide where it
-  lives, and how `manuallyConfirmed` persists: Event ids key to the earliest article's URL, so they survive later
-  reports joining but NOT an earlier one arriving, and the build keeps no state between runs — a confirmation
-  would silently evaporate on the next rebuild.
+- **The confirmation store is per-machine and has no backup story.** Phase 5 settled where the queue and its
+  decisions live (`debug/` and gitignored `archive/news/confirmations.json` respectively — see `CLAUDE.md`), but
+  the decisions are deliberately uncommitted, so a lost `archive/` loses every recorded review and re-queues
+  claims already decided. Same exposure the article archive has, with a smaller file and higher stakes per row.
+- **A confirmation covers one Event, not one claim.** The store matches on Event id plus any shared article URL,
+  which handles a re-keyed cluster. It does NOT handle the same real-world claim resurfacing on entirely new
+  reporting a week later, with zero URL overlap — that re-queues for a fresh decision. Arguably correct (new
+  reports deserve a fresh look), but it's an assumption, not a verified one.
 - **The build is stateless — an Event vanishes when its articles roll off the feeds.** Each run rewrites
   `news-events.json` from whatever the feeds currently hold (a few days). Fine for a live feed; matters as soon
   as anything wants history, the archival-not-deletion theme rule, or a stable link to an Event.
@@ -364,9 +366,18 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
 - **Telegram/X candidate channel vetting list** — only examples exist; needs the same vetting pass outlets got.
   Also open whether combatant-affiliated channels get extra visual distinction (e.g. a badge color) beyond the
   `affiliationNote`, so affiliation reads at a glance.
-- **Admin Console access control and stack** — scope is settled (manual data entry, head-of-state-death review
-  queue, Calibration Review mode); who can use it (likely local-only, no auth) and the tech stack (likely
-  React/Vite) are not.
+- **Admin Console — Calibration Review mode is not built** (design §15f: the ~100-video pass that tunes the
+  content-safety thresholds). Phase 5 shipped the other two §14 jobs (editorial data entry, the
+  head-of-state-death queue) and settled access control (none; loopback-only) and stack (its own Vite app);
+  Calibration Review waits on the first-hand/video pipeline existing at all, since it reviews clips.
+- **Admin Console edits aren't reflected until the next build.** Changing a source's leaning rewrites
+  `sources.json`, but every Event already in `news-events.json` carries a denormalized copy of that leaning in
+  its dossier entries — so the NEWS tab keeps showing the old caption until `npm run build:news:events` runs.
+  The console says as much for review decisions and should probably say it for source edits too.
+- **The console has no test coverage above the pure layer.** Validation, serialization and the confirmation
+  store are tested (`adminConfig.test.ts`, `pipeline.test.ts`); the middleware and the React views were
+  verified by hand in the browser only, consistent with the rest of this repo's UI, but the middleware is
+  plain logic that could be tested if it grows.
 - **Community Pulse needs its own standalone design doc** — a different subsystem (no severity or
   corroboration logic, structurally walled off from both); ingestion method, API integration, and UI are
   unspecified.

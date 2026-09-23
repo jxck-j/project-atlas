@@ -5,6 +5,73 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — News Engine v2, Phase 5: the Admin Console, and where a human's decision lives
+
+Phase 5 of eight. §14 left two questions open ("access control? tech stack?") and `BACKLOG.md` left a third
+that turned out to be the real one. Taking them in order:
+
+**Stack: a separate Vite app with dev-server middleware, not a service.** The console edits the *inputs* to
+the build, so it needs exactly one thing a browser can't do — write four files on this machine. A Vite plugin
+(`admin/server/adminApi.ts`) is the smallest thing that provides it: no second process, no deployment story,
+and no way to ship it by accident, since a production build of the console has no server behind it (there is
+deliberately no build script for it). It is its own Vite config rather than a route in the globe's app for the
+same reason `vitest.config.ts` is its own file: the globe's config carries bundle concerns that mean nothing
+here, and `npm run build` must never emit private tooling into `dist/`.
+
+**Access control: none, and that is a decision, not an omission.** It binds to 127.0.0.1, and the middleware
+additionally refuses any request whose socket isn't loopback — belt and braces, because this middleware writes
+to the working tree and `--host` is one flag away. Auth here would be guarding a developer's own files from
+themselves. The loopback check is the thing to revisit if that bind address ever changes.
+
+**The real question was where a DECISION lives, and it is not where the queue lives.** `BACKLOG.md` had
+flagged that `manuallyConfirmed` "would silently evaporate on the next rebuild," and it was right for a
+sharper reason than it stated: the build is stateless by design — it re-clusters the archive and re-runs the
+gate from scratch every run — so confirming a claim would have published it exactly once and then
+un-published it on the next build, with nothing anywhere recording that a human had ever looked at it. Two
+separate artifacts, two different homes:
+
+- **The queue stays in gitignored `debug/`** where Phase 2 put it. It *is* regenerable — every run re-derives
+  it — so `debug/` is the honest description. The earlier worry was only ever about `public/`, which is
+  served; `debug/` isn't.
+- **The decisions go to gitignored `archive/news/confirmations.json`.** Not `debug/`, because a human's
+  decision is the one thing here that is *not* regenerable. Not `src/news/*.json` alongside the other
+  editorial config, because these records carry the headline of an unconfirmed claim that a head of state was
+  killed — including the ones a human **rejected as false**. Committing a rejected rumor's text to git is the
+  same mistake as serving it from `public/`, just slower. `archive/` is already defined as "data, not source:
+  not regenerable, not committed, this machine only," which is exactly this file.
+
+**A decision matches on article URLs, not just the Event id.** An Event's id hashes its *earliest* member's
+URL, so it survives later reports joining but not an earlier one arriving (a slow feed catching up). That
+re-keys the Event and would have dropped the decision on the floor — the failure mode being an already-
+confirmed death claim quietly returning to the queue, or worse, a rejected one returning as publishable. A
+record therefore stores every member URL it was decided over, and any overlap re-attaches it. Verified
+against a live rebuild, not just in tests: same articles → `manual-only`; an earlier report added → id moves
+from `evt-eb5fcafb60fc886e` to `evt-5538dc9fc4826dde`, still `manual-only`; store removed → back to
+`pending-confirmation`. The gate reads a decision **only** for `headOfStateDeathClaim` events, so a stale
+record can never lift an ordinary Event past its corroboration floor.
+
+**Validation had to become a function, not only a test.** `sourceConfig.test.ts` has asserted §7's invariants
+since Phase 1, and its own comment said it existed because "the Admin Console will edit these files by hand,
+so a typo needs to fail a test, not a build." That's now insufficient in one direction: a test only fires when
+someone runs the suite, and the console writes the file directly. `configValidation.ts` is the same rules as a
+pure function — run live in the browser while typing, and again server-side before the write, which is
+refused with the offending field named rather than half-applied. It validates structure only, never roster
+content: "every leaning has a citation" is an invariant, "the Telegraph is Center" is the editorial judgment
+the console exists to change.
+
+**Two tests assert a starting state that using the console legitimately invalidates**, and rather than loosen
+either one silently, the console warns and names the file. `sourceConfig.test.ts` hard-asserts the 9/10/3
+left/center/right tally, and re-rating one outlet moves it — so the sources panel shows the old and new tally
+and says to update that expectation in the same commit. Same for the "ten themes, all active" assertion,
+which the first real quarterly archive necessarily breaks. Keeping the tripwire and explaining it beats
+deleting a guard that was put there on purpose.
+
+**Why the roster was re-ordered in this commit.** `sources.json` is one record per line, and
+`JSON.stringify(x, null, 2)` would have exploded 141 records across ~1,400 lines — turning every future
+one-field edit into an unreadable diff. The serializer writes one line per record with a fixed key order; 22
+of 141 lines had a different (and internally inconsistent) key order already, so the normalization is done
+here, once, deliberately, instead of hiding inside whatever J's first real edit turns out to be.
+
 ## 2026-09-23 — Every script runs under `tsx` (J)
 
 **Follow-on from the v1 deletion, and J's call.** Removing v1 exposed a duplicated HTML-entity decoder in
