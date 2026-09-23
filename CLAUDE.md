@@ -77,6 +77,17 @@ npm test                     # Vitest — pure-function coverage (geo.ts, lodLev
 `tsc -b --noEmit` (project references mode, not plain `tsc --noEmit`) is the
 correct way to typecheck without emitting — matches what `npm run build` does.
 
+**Every script in `scripts/` runs under `tsx`, not plain `node`** (2026-09-23).
+The scripts are `.mjs`, but many of them import modules from `src/**` — the
+country allowlist, the GeoEntity registry, the whole of `src/news/` — and
+sharing the real module is what stops a script and the app drifting into two
+versions of the same rule. Node's own TypeScript support can't be relied on
+for that: it strips types but rejects non-erasable syntax (`enum`, namespaces,
+parameter properties) and won't resolve the extensionless relative imports
+several `src/` modules use, so "can plain node run this one?" has a different
+answer per file. One runner for every script makes the question go away; when
+adding a script, use `tsx` and don't think about it again.
+
 Vitest (`vitest.config.ts`, separate from `vite.config.ts` — build-only
 concerns like `manualChunks` have no meaning for the test runner) covers this
 project's pure geometry/math functions (`utils/geo.ts`'s

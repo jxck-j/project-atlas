@@ -60,11 +60,10 @@
 //     couldn't be sourced cleanly and had to fall back, cite an older year,
 //     or be left unscored.
 //
-// Run via `tsx`, not plain `node` — this script imports the current
-// src/data/countryProfiles.ts (as a fallback source for capital
-// name/coordinates when factbook.json's own value is ambiguous or missing,
-// see resolveCapital below), the same reason generateClaimsDoc.mjs imports
-// its two .ts sources via tsx instead of plain node.
+// Imports the current src/data/countryProfiles.ts as a fallback source for
+// capital name/coordinates, for when factbook.json's own value is ambiguous
+// or missing (see resolveCapital below). Every script in this directory runs
+// under `tsx` — see package.json.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { ALPHA3_TO_NUMERIC } from './lib/iso3166.mjs'

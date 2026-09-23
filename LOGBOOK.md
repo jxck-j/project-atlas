@@ -5,6 +5,33 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Every script runs under `tsx` (J)
+
+**Follow-on from the v1 deletion, and J's call.** Removing v1 exposed a duplicated HTML-entity decoder in
+`scripts/lib/rss.mjs` that existed only to dodge "a script run by plain `node` can't import a `.ts` module."
+Checking that rationale turned up something worse than a stale comment: the constraint had become
+*conditional*, and nobody could tell where it applied without testing each case.
+
+- Node 23.6+ (this machine runs 24.18) strips types natively, so plain `node` CAN import a `.ts` file —
+  `buildCountryTopology.mjs` and `buildEntityTopology.mjs` were already doing it, while `rss.mjs`'s comment
+  insisted it was impossible.
+- But only for **erasable** syntax. A file with an `enum` fails outright: "TypeScript enum is not supported in
+  strip-only mode" (verified, not assumed).
+- And Node's resolver requires explicit extensions, so a `src/` module importing a sibling as `'./types'` —
+  which `geoEntities.ts`/`GeoEntityRegistry.ts` do — can't be loaded by plain `node` at all, on any version.
+  `generateClaimsDoc.mjs` already documented this; `entityGeometryIds.ts` only worked because it has zero
+  imports of its own.
+
+So "can plain `node` run this script?" had a different answer per file, depending on syntax someone might add
+later and on import style in a module the script doesn't even own. J's call: run everything under `tsx` and
+delete the question. 12 `"node scripts/..."` entries became `"tsx scripts/..."`; `tsx` was already a
+devDependency driving eight others.
+
+**Checked by re-running, not by reasoning:** `build:geo:countries` and `build:geo:entities` both produced
+byte-identical output under the new runner (same md5, clean `git status`). No version bump — no user-facing
+behavior changed. The `engines` pin this was heading toward is moot: nothing depends on Node's type-stripping
+behavior any more.
+
 ## 2026-09-23 — News Engine v1 deleted, and the duplication it was forcing
 
 Straight cleanup once the v2 tab was confirmed working, but one detail is worth recording because it ran the

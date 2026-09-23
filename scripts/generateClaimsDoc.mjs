@@ -12,12 +12,14 @@
 // scripts/buildEntityTopology.mjs generates public/geo/entities.json
 // instead of it being hand-maintained: one source of truth, no drift.
 //
-// Run via `tsx`, not plain `node` — geoEntities.ts/GeoEntityRegistry.ts
-// import each other with extensionless relative specifiers ('./types',
-// './GeoEntityRegistry'), which plain Node's built-in TypeScript support
-// doesn't resolve (it requires explicit extensions); tsx's resolver does.
-// entityGeometryIds.ts (imported by buildEntityTopology.mjs) gets away
-// with plain `node` only because it has zero imports of its own.
+// Every script in this directory runs under `tsx` (see package.json), and
+// this one is a good illustration of why that is the rule rather than a
+// per-script choice: geoEntities.ts/GeoEntityRegistry.ts import each other
+// with extensionless relative specifiers ('./types', './GeoEntityRegistry').
+// Node's own TypeScript support cannot resolve those — it requires explicit
+// extensions — so "does plain node happen to cope with this .ts file?" is a
+// question with a different answer per file. tsx's resolver handles them all,
+// which makes the question go away.
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import '../src/data/registry/geoEntities.ts'

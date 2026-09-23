@@ -34,10 +34,10 @@
 //     Full run: queries every in-scope entity, writes
 //     scripts/geoEntityEconomicsReport.json.
 //
-// Run via `tsx`, not plain `node` — imports the live GeoEntityRegistry (via
-// src/data/index.ts's side-effect registration of geoEntities.ts) to
-// enumerate entities, rather than hardcoding a second, driftable copy of
-// their ids/types here.
+// Imports the live GeoEntityRegistry (via src/data/index.ts's side-effect
+// registration of geoEntities.ts) to enumerate entities, rather than
+// hardcoding a second, driftable copy of their ids/types here. Every script
+// in this directory runs under `tsx` — see package.json.
 import fs from 'node:fs'
 import { getEntities } from '../src/data/index.ts'
 

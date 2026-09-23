@@ -11,10 +11,9 @@
 // therefore publishes a rolling two-week feed, not just what broke since the
 // previous run.
 //
-// Runs via `tsx`, not `node` (unlike v1's buildNews.mjs): it imports the .ts
-// modules in src/news/ directly so the build and the client can never
-// disagree about corroboration, gating, or ranking. Same precedent as
-// generateClaimsDoc.mjs.
+// Imports the .ts modules in src/news/ directly — that is the point of the
+// design, since it makes it impossible for the build and the client to
+// disagree about corroboration, gating or ranking.
 //
 // Usage:  npm run build:news:events
 //   Writes public/data/news-events.json  (reader-visible Events only)

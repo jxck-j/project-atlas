@@ -15,7 +15,7 @@ import type { RawArticle } from './eventBuilder'
 // forever (it is not regenerable), and narrowing the window here only changes
 // what today's published asset covers.
 
-/** Matches v1's `RETENTION_DAYS` and `newsRecency.ts`'s widest option — keep the three in step. */
+/** Matches `data/newsRecency.ts`'s widest reader-facing option — keep the two in step, or the UI offers history the feed doesn't hold. */
 export const FEED_RETENTION_DAYS = 14
 
 const DAY_MS = 86_400_000
