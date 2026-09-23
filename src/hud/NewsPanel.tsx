@@ -333,57 +333,91 @@ export function NewsPanel() {
 
   return (
     <div className="pointer-events-auto fixed inset-x-0 top-14 bottom-0 z-20 overflow-y-auto bg-[#04070a]">
-      <div className="mx-auto w-full max-w-6xl px-6 py-8">
-        <div className={`${PANEL_SECTION_LABEL} mb-1`}>NEWS ENGINE</div>
-        <div className="mb-4 flex items-center gap-3">
-          <h1 className="font-display text-[26px] font-bold tracking-[0.09em] text-white [text-shadow:0_0_24px_rgba(63,139,255,0.35)]">
-            NEWS
-          </h1>
-          {activeFilter && (
-            <div className="flex items-center gap-2 text-[11px] text-[#8aa0c6]">
-              <span>
-                Showing news for{' '}
-                <span className="font-bold text-white">
-                  {activeFilter.kind === 'country' ? activeFilter.name : activeFilter.region}
-                </span>
-              </span>
+      <div className="mx-auto w-full max-w-6xl px-6 pt-3 pb-8">
+        {/* One sticky header holding BOTH the tab strip and the search, rather
+            than two separately-sticky bars — two elements pinned to the same
+            `top-0` in one scroll container land on top of each other, and
+            offsetting the second by a hardcoded height would break the moment
+            either row's padding changed. No page title above it: the top-nav
+            tab already says NEWS (direct request). */}
+        <div className="sticky top-0 z-20 -mx-6 mb-4 border-b border-[#16233c] bg-[#04070a] px-6 pt-1 pb-3">
+          {/* Topic tabs (§9a) — World plus one per topicTag. An Event carrying
+              several tags appears in every matching tab: these are an
+              overlapping filter, not a partition. Counts are live against the
+              reader's current window/search/filter. Equal-width and evenly
+              spread across the full width (`flex-1 basis-0`), and rolling
+              sideways rather than wrapping to a second line when it runs out
+              of room — nine tabs is exactly the count §9a flagged for an
+              in-app check. `min-w-max` is load-bearing: a flex item's default
+              `min-width: auto` is what normally stops it shrinking past its
+              text, and `basis-0` needs a minimum of its own or the longest
+              label (HUMANITARIAN) would be clipped at narrow widths instead of
+              the row becoming scrollable. */}
+          <div className="flex w-full gap-1 overflow-x-auto pb-2">
+            {NEWS_TABS.map((def) => {
+              const active = tab === def.id
+              const count = filterEvents(scoped, { tab: def.id, countryIds }).length
+              return (
+                <button
+                  key={def.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setTab(def.id)}
+                  className={`min-w-max flex-1 basis-0 rounded border px-2 py-1.5 text-center text-[10px] font-bold tracking-[0.06em] whitespace-nowrap transition-colors ${
+                    active
+                      ? 'border-[#3f8bff] bg-[rgba(63,139,255,0.2)] text-white'
+                      : 'border-[#1c2c4b] text-[#7f93b8] hover:border-[#3f8bff] hover:text-white'
+                  }`}
+                >
+                  {def.label.toUpperCase()}
+                  <span className={`ml-1.5 ${active ? 'text-[#a9c6ff]' : 'text-[#51648a]'}`}>{count}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="relative mt-2">
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#5a729a]">
+              <Icon paths={ICONS.search} size={14} />
+            </span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search events or a country..."
+              className="w-full rounded border border-[#1c2c4b] bg-[rgba(10,16,28,0.8)] py-2 pr-3 pl-9 text-[12px] text-[#e6efff] placeholder:text-[#51648a] focus:border-[#3f8bff] focus:outline-none"
+            />
+            {query && (
               <button
                 type="button"
-                onClick={() => setActiveFilter(null)}
-                className="rounded border border-[#1c2c4b] px-2 py-0.5 font-bold tracking-[0.06em] transition-colors hover:border-[#3f8bff] hover:text-white"
+                onClick={() => setQuery('')}
+                aria-label="Clear search"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-[#5a729a] transition-colors hover:text-white"
               >
-                × CLEAR FILTER
+                ×
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Topic tabs (§9a) — World plus one per topicTag. An Event carrying
-            several tags appears in every matching tab: these are an
-            overlapping filter, not a partition. Counts are live against the
-            reader's current window/search/filter. */}
-        <div className="mb-4 flex flex-wrap gap-1.5 border-b border-[#16233c] pb-3">
-          {NEWS_TABS.map((def) => {
-            const active = tab === def.id
-            const count = filterEvents(scoped, { tab: def.id, countryIds }).length
-            return (
-              <button
-                key={def.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setTab(def.id)}
-                className={`rounded border px-3 py-1.5 text-[10px] font-bold tracking-[0.08em] transition-colors ${
-                  active
-                    ? 'border-[#3f8bff] bg-[rgba(63,139,255,0.2)] text-white'
-                    : 'border-[#1c2c4b] text-[#7f93b8] hover:border-[#3f8bff] hover:text-white'
-                }`}
-              >
-                {def.label.toUpperCase()}
-                <span className={`ml-1.5 ${active ? 'text-[#a9c6ff]' : 'text-[#51648a]'}`}>{count}</span>
-              </button>
-            )
-          })}
-        </div>
+        {/* The country/region filter banner — it used to sit beside the page
+            title that just went away, so it lives with the filter controls it
+            describes instead. */}
+        {activeFilter && (
+          <div className="mb-3 flex items-center gap-2 text-[11px] text-[#8aa0c6]">
+            <span>
+              Showing news for{' '}
+              <span className="font-bold text-white">{activeFilter.kind === 'country' ? activeFilter.name : activeFilter.region}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveFilter(null)}
+              className="rounded border border-[#1c2c4b] px-2 py-0.5 font-bold tracking-[0.06em] transition-colors hover:border-[#3f8bff] hover:text-white"
+            >
+              × CLEAR FILTER
+            </button>
+          </div>
+        )}
 
         {/* Recency window — applies before everything else, so the tab counts
             above and the feed below always agree. */}
@@ -431,32 +465,6 @@ export function NewsPanel() {
               </button>
             )
           })}
-        </div>
-
-        {/* Sticky search bar, pinned to this tab's own scroll area. */}
-        <div className="sticky top-0 z-10 -mx-6 mb-6 border-b border-[#16233c] bg-[#04070a] px-6 py-3">
-          <div className="relative">
-            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-[#5a729a]">
-              <Icon paths={ICONS.search} size={14} />
-            </span>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search events or a country..."
-              className="w-full rounded border border-[#1c2c4b] bg-[rgba(10,16,28,0.8)] py-2 pr-3 pl-9 text-[12px] text-[#e6efff] placeholder:text-[#51648a] focus:border-[#3f8bff] focus:outline-none"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery('')}
-                aria-label="Clear search"
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-[#5a729a] transition-colors hover:text-white"
-              >
-                ×
-              </button>
-            )}
-          </div>
         </div>
 
         {total === 0 ? (

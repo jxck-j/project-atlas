@@ -348,7 +348,7 @@ News is organized into tabs — one word each — both to aid navigation and to 
 
 An article carrying multiple `topicTags` appears in every matching tab (§4a multi-tag placement rule) — tabs are an overlapping filter, not a strict partition.
 
-**Open, pending in-app visual check:** eight content tabs plus World may be more than comfortably fits a tab bar — J flagged this needs to be seen in-app before finalizing the count; possible that some tabs get consolidated or presented differently (e.g. a "more" overflow) once real layout is visible.
+~~**Open, pending in-app visual check:** eight content tabs plus World may be more than comfortably fits a tab bar — J flagged this needs to be seen in-app before finalizing the count; possible that some tabs get consolidated or presented differently (e.g. a "more" overflow) once real layout is visible.~~ **Resolved 2026-09-23 (Phase 4, checked in-app):** all nine fit on one bar at equal width, evenly spread across the page, in a sticky header shared with the search box. No tab was consolidated and no overflow menu was needed; the strip rolls sideways rather than wrapping when the window is narrow. Each tab carries a live count of the Events currently in it.
 
 ### 9b. Community Pulse — new, separate subsystem
 

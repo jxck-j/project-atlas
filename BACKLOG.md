@@ -69,8 +69,9 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   - **v1 is dormant, not deleted** — `scripts/buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts`,
     `data/registry/NewsRegistry.ts`, `data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts` and `data/index.ts`'s
     re-exports. Nothing imports them. Delete once the cutover is confirmed in a browser.
-  - **Not yet verified in a browser at all.** Typecheck, lint, 337 tests and a production build pass; no one has
-    looked at the tab. Nine tabs in one bar is exactly the count §9a flagged as needing an in-app check.
+  - **DONE (2026-09-23): checked in the browser**, which is where the escalation/ordering/entity bugs and the
+    duplicate-thumbnail report came from — all fixed. §9a's open tab-count question is resolved with it: nine
+    tabs fit on one evenly-spread sticky bar, no consolidation and no overflow menu.
   - **Community Pulse (§9b) and the first-hand ticker (§15b) are absent**, though `NEWS_TABS` already carries
     each tab's `communityPulse`/`firstHandTicker` flag — the tab bar reads neither yet.
   - **Systemic-theme filters (§11) have no UI** — the default build leaves `systemicThemes` empty on every

@@ -5,6 +5,26 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — News tab header: two sticky bars don't stack, and `basis-0` clips text
+
+J's layout call after seeing Phase 4 render: the topic tabs should be a sticky strip, evenly spread across
+the top, and the "NEWS ENGINE"/NEWS titles should go (the top-nav tab already says NEWS). Two details worth
+keeping, because both are the kind of thing that looks fine until a window is resized:
+
+- **The tab strip and the search share ONE sticky container.** Making the tab bar sticky on its own looks
+  right until you scroll: the search bar was already `sticky top-0` in the same scroll container, so the two
+  land on top of each other. The alternative — offsetting the second by a hardcoded pixel height — breaks
+  the moment either row's padding changes. One pinned block containing both rows needs no magic number.
+- **`min-w-max` on each tab is load-bearing.** Equal-width tabs come from `flex-1 basis-0`, but `basis-0`
+  overrides a flex item's default `min-width: auto`, which is exactly the thing that normally stops an item
+  shrinking past its own text. Without an explicit minimum, a narrow window clips HUMANITARIAN instead of
+  making the row scrollable — the row's scroll width is computed from the items' widths, so shrunk items
+  produce no overflow to scroll. `min-w-max` keeps every tab at least as wide as its label, so the strip
+  rolls sideways instead.
+
+This also answers §9a's open question ("eight content tabs plus World may be more than comfortably fits a
+tab bar… needs to be seen in-app"): nine fits, at equal width, with no consolidation and no overflow menu.
+
 ## 2026-09-23 — Raw HTML entities in headlines ("Saudi Arabia&#x2019;s")
 
 Reported off the live tab. `scripts/lib/rss.mjs`'s `decodeEntities` handled six named entities plus the single

@@ -17,6 +17,19 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.12.1 — News tab: one sticky header, evenly-spread topic tabs, no page title
+
+**Layout, direct request after seeing v6.12.0 in the browser.** The nine topic tabs are now equal-width and
+evenly spread across the full width, rolling sideways rather than wrapping to a second line when the window
+gets narrow — the in-app check §9a asked for, resolved without consolidating any tabs. They share one pinned
+header with the search box instead of the tab strip and the search each being their own sticky bar: two
+elements pinned to the same `top-0` in one scroll container overlap, and offsetting the second by a
+hardcoded height would break as soon as either row's padding changed. The recency and region-hub rows sit
+below it and scroll away, being set-and-forget controls.
+
+The "NEWS ENGINE" label and the NEWS page title are gone — the top-nav tab already says NEWS. The
+country/region filter banner that sat beside that title moved down to the filter controls it describes.
+
 ## v6.12.0 — News Engine v2 Phase 4: the NEWS tab reads Events
 
 **News Engine, second generation.** The NEWS tab and `IntelligencePanel.tsx`'s RECENT NEWS section now render
