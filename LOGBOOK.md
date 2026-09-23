@@ -5,6 +5,36 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Severity inverted: a deadly Kyiv strike at Significant, three speeches/announcements at Major
+
+**J's report:** "Waves of Russian drones hammer Kyiv, 2 dead, 43 injured" published Significant, while a Trump-Zelensky
+meeting, Pezeshkian's UN speech and a UK air chief's "space is a warfighting frontier" warning published Major. "It should be
+the other way around." Traced each Event to the one member article that set its tier (Event severity is the max of its members):
+
+- **The Kyiv strike missed settled call 7 entirely.** Call 7 says a strike on a capital is Major regardless of casualties, but
+  `CAPITAL_ATTACK_RE` only matched the literal WORD "capital". None of the four outlets wrote it — they wrote "hammer Kyiv",
+  "pounds Kyiv", "bombards Kyiv", "attacks on Kyiv" — so it fell to the contained-strike rule, where 2 deaths < 5 is Significant.
+  Fix: `NAMED_CAPITAL_ATTACK_RE`, over a capital-name list (`src/news/capitalCities.ts`). **Object position only** — the city must
+  follow the strike word — because a capital's name is also shorthand for its government ("Kyiv launches strikes on Moscow" must
+  not read as an attack on Kyiv). Threat/hypothetical verbs before it ("vows strikes on Kyiv", "calls for strikes on Moscow",
+  "could resume fresh strikes on Tehran") are excluded. **A named-capital match is Major only; it never pairs with the rarity
+  phrase for Critical.** That phrase is matched text-wide, and the existing test "first-ever strike with new hypersonic missile on
+  Kyiv" showed why: the novelty is the weapon's, not the city's. The literal-"capital" path keeps its Critical route unchanged.
+- **The three Majors were all `escalation`, all spurious.** "Promote stability and AVOID ESCALATION" (a negation — same class as
+  the existing `de-escalation` exclusion); "attacks from both sides KEEP ESCALATING" (a background trend clause in a meeting
+  story — treated like bare "war", which FIGHTING already excludes for the same reason); and "Pezeshkian STRUCK a defiant tone
+  speaking at the UN for the FIRST TIME" (strike-as-idiom + "first time" = a novelty escalation). Fixes: negation/trend lookbehind
+  on `escalat\w+`; a `NOT_STRIKE_IDIOM` lookahead ("struck a … tone/note/deal/balance", "strike a deal") on the strike words in
+  both `STRIKE_RE` and `FIGHTING`.
+
+**Measured:** 18 of 5,736 archived articles change tier — the 3 false Majors drop to Significant, 15 real capital strikes
+(Kyiv, Moscow, Riyadh) rise to Major, none touch Critical. On the labeled fixture, Major-or-above F1 0.677 → 0.708 (recall
+0.575 → 0.630, FP 9 → 11); Critical unchanged (0.400); held-out exact 0.567 → 0.565 (one item).
+
+**Not fixed, logged in BACKLOG:** the max-over-members rule means the most widely covered stories get the most chances at a false
+Major (J's policy call, not changed here); Dawn ships whole articles as RSS descriptions, and both its false Majors came from deep
+paragraphs; a secondary mention in a blurb still tiers the whole article.
+
 ## 2026-09-23 — Ingesting the whole 141-profile roster, and the per-source-type rules it forced
 
 **J's correction, before Phase 6 (cadence) started:** the build was fetching 24 feeds for 23 sources while the vetted

@@ -9,6 +9,8 @@ import { SOURCES } from './sourceConfig'
 import type { SourceProfile } from './types'
 import feeds from './feeds.json'
 import feedGaps from './feedGaps.json'
+import { CAPITAL_CITY_NAMES, EXCLUDED_CAPITAL_NAMES } from './capitalCities'
+import { COUNTRY_PROFILES } from '../data/countryProfiles'
 
 const COUNTRIES = [
   { id: '840', name: 'United States of America' },
@@ -136,6 +138,32 @@ describe('classifyText', () => {
     // Moscow's real headlines: routine/recurring in an active war, no rarity phrase, 2 deaths -> Major, never Critical.
     expect(classifyText("Ukraine pummels Moscow with drones, mayor calls it the biggest ever drone attack on the Russian capital; two killed").severity).toBe('major')
     expect(classifyText('Kyiv launches massive strikes on the Russian capital as Russians vote').severity).toBe('major')
+  })
+
+  it('a NAMED capital in object position is a capital attack too; a threatened one, or the capital as its government, is not (2026-09-23)', () => {
+    // The live report: this tiered Significant (2 deaths < 5) because the headline never says the word "capital".
+    expect(classifyText('Waves of Russian drones hammer Kyiv, 2 dead, 43 injured, historic market set ablaze').severity).toBe('major')
+    expect(classifyText('Russia pounds Kyiv with drones, killing 2 and wounding 23').severity).toBe('major')
+    expect(classifyText('Yemen’s Houthis claim strikes on Riyadh and the port of Yanbu').severity).toBe('major')
+    // Named-capital matches stay Major even with a rarity phrase: that phrase is text-wide, and can be about the weapon
+    // ("first-ever strike with a new hypersonic missile on Kyiv", asserted Major below), not the city.
+    expect(classifyText('Houthis claim missile attacks on Riyadh for the first time since the Yemen conflict resumed').severity).toBe('major')
+    // Threats and calls for a strike are not strikes.
+    expect(extractSeverityFacts('Russia vows strikes on Kyiv in response to election-day attacks').namedCapitalAttack).toBe(false)
+    expect(extractSeverityFacts('Ukrainian tennis legend calls for strikes on Moscow').namedCapitalAttack).toBe(false)
+    expect(extractSeverityFacts('Kudlow asked Keane if Trump could resume fresh strikes on Tehran').namedCapitalAttack).toBe(false)
+    // Subject position is the government, not the city.
+    expect(extractSeverityFacts('Kyiv launches drone strikes on Russian refineries').namedCapitalAttack).toBe(false)
+  })
+
+  it('a negated or trend-description "escalation", and "struck a ... tone", are not an escalation (2026-09-23)', () => {
+    // Each of these lifted a diplomacy story (a UN speech, a Trump-Zelensky meeting, a UK space squadron) to Major.
+    expect(extractSeverityFacts('The UK will always operate responsibly in ways that promote stability and avoid escalation').escalation).toBe(false)
+    expect(extractSeverityFacts('Zelenskyy met Trump, even as attacks from both sides keep escalating').escalation).toBe(false)
+    expect(extractSeverityFacts('The president struck a defiant tone speaking at the UN for the first time since the war began').escalation).toBe(false)
+    // The shapes the trigger exists for still fire.
+    expect(extractSeverityFacts('Houthis hit Saudi Arabia, threatening further escalation').escalation).toBe(true)
+    expect(extractSeverityFacts('Troops in combat for first time since the May 2025 military clashes').escalation).toBe(true)
   })
 
   it('a contained strike is Major only at 5+ deaths or a clear escalation, not any casualty count (settled call 5)', () => {
@@ -616,5 +644,14 @@ describe('topic tagging', () => {
   it('a routine consumer-product story stays out of scope', () => {
     expect(resolveTopicTags('Apple unveils new iPhone with faster chip and better camera')).not.toContain('science-technology')
     expect(classifyText('Apple unveils new iPhone with faster chip and better camera').severity).toBe('routine')
+  })
+})
+
+describe('capitalCities.ts', () => {
+  it('covers every country profile capital, apart from the deliberate exclusions', () => {
+    const clean = (c: string) => c.replace(/\([^)]*\)/g, '').split(/,| in /)[0].trim()
+    const listed = new Set([...CAPITAL_CITY_NAMES, ...EXCLUDED_CAPITAL_NAMES])
+    const missing = Object.values(COUNTRY_PROFILES).map((p) => clean(p.capital)).filter((c) => !listed.has(c))
+    expect(missing).toEqual([])
   })
 })

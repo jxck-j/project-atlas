@@ -349,6 +349,32 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   is grouped fresh each time from whatever the feeds hold. Fine while Events aren't persisted; revisit with the Phase 5 confirmation store.
 - **Event severity is the MAX of its members'.** One over-tiered article lifts the Event; the corroboration gate still counts the whole
   dossier, but not whether the members agree on the tier. Consider "highest tier at least two members assign" if the audit shows outliers.
+  **Concrete case (2026-09-23, see LOGBOOK):** a UN speech, a UK space-squadron announcement and a Trump-Zelensky meeting all
+  published Major because ONE member each tripped `escalation`, while the other 1-9 members said Significant/Routine. The
+  regexes behind those three are fixed, but the amplification isn't: a 10-outlet Event gets 10 chances to trip a keyword, so
+  the stories most widely covered are the most exposed to a false Major. Not changed yet — it's a policy call (J).
+  **Recommendation:** "the highest tier at least two DISTINCT outlets assign" (fall back to the max for a single-outlet
+  Event). On 2026-09-23 it would have held all three false Majors at Significant with no rule changes at all, and it mirrors
+  what the corroboration gate already does for publication. Cost: a real Major that only one outlet's blurb states plainly
+  (the others headline it vaguely) drops a tier — the safe direction, but measure it with `eval:news-classifier`'s
+  event-level scoring before adopting.
+- **Some feeds ship the whole article as the RSS description** (Dawn does; most ship one sentence). The rules were tuned on
+  headline + a short lede, and a 4,000-character body gives every regex many more chances to fire on a background clause —
+  both of Dawn's false Majors on 2026-09-23 came from paragraph 3+. Candidate fix: classify on the title + the first ~300
+  characters of the description. Needs the eval re-run before adopting; it will also lose real signals that sit deep in a body.
+- **A secondary mention still tiers the whole article** (2026-09-23): "Ukrainian tennis legend calls for strikes on Moscow"
+  reads Major because its description adds "reacted to Russia's attack on Kyiv". Same class as any keyword rule reading a
+  whole blurb; accepted for now. The "first ~300 characters" fix above would catch most of this class too — try that first.
+- **A strike on a NAMED capital can reach Major but never Critical** (2026-09-23 judgment call, not J's — please confirm).
+  Settled call 7's Critical route (capital strike + a rarity phrase like "first time since…") is left to the literal word
+  "capital", because the rarity phrase is matched anywhere in the text and "first-ever strike with a new hypersonic missile on
+  Kyiv" is novel for the weapon, not the city. So "Houthis attack Riyadh for the first time since the conflict resumed" now
+  tiers Major, while "…attack the Saudi capital for the first time…" tiers Critical. The proper fix is requiring the rarity
+  phrase to sit in the same clause as the capital match (as `NOVELTY_ESCALATION_RE` already does with its `[^.]{0,60}` window).
+- **`capitalCities.ts` excludes Victoria, Kingston, Kingstown and Georgetown** (ordinary town names), and matches a
+  capital only in object position after a strike word ("drones hammer Kyiv", not "Russia attacks Kyiv overnight" — bare
+  verb forms like "attacks Washington" are too often figurative). Both are recall losses, in the safe direction. Revisit if a
+  real strike on one of those capitals, or a "Russia attacks Kyiv"-shaped headline, tiers too low.
 - **Batch API for scheduled runs.** Twice-daily builds tolerate the Batch API's async latency and its 50% discount, which would roughly
   halve the classification cost. Not done: it changes the run from one process to submit-then-poll.
 - **The classification cache lives in gitignored `debug/`.** A cron or CI runner (Phase 6) needs a persistent location for it, or every

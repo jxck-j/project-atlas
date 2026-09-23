@@ -17,6 +17,22 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.13.2 — News: severity fixes for named capitals and false "escalation"
+
+A deadly drone strike on Kyiv was publishing as Significant while a UN speech, a UK space-squadron announcement and a
+Trump-Zelensky meeting published as Major. Fixed in `src/news/classify.ts`:
+
+- **A strike on a capital named in the text ("drones hammer Kyiv", "strikes on Riyadh") is now Major.** Before, the
+  capital-strike rule only matched the literal word "capital". The city has to come after the strike word, so a capital
+  used as shorthand for its government ("Kyiv launches strikes") doesn't count, and neither does a threatened strike ("vows
+  strikes on Kyiv"). Capital names are in the new `src/news/capitalCities.ts`, with a test that checks the list against the
+  country profiles.
+- **"Escalation" no longer fires on** a negation ("avoid escalation"), a trend clause ("attacks keep escalating"), or
+  "struck a defiant tone" / "strike a deal".
+
+18 of 5,736 archived articles change tier; none move into or out of Critical. On the labeled test set, Major-or-above F1
+goes from 0.677 to 0.708. Remaining issues are in `BACKLOG.md`, and the reasoning is in `LOGBOOK.md`.
+
 ## v6.13.1 — News: every vetted source is ingested, or accounted for
 
 **The build now reads 106 feeds covering 104 of the roster's 141 sources, up from 24 feeds covering 23.**

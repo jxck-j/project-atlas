@@ -1,3 +1,4 @@
+import { CAPITAL_CITY_NAMES } from './capitalCities'
 import { applySeverityCaps, fallbackSeverity, humanitarianSeverity, massCasualtySeverity } from './severity'
 import type { Severity, TopicTag } from './types'
 
@@ -189,6 +190,19 @@ const EMBASSY_ATTACK_RE =
   /\bembassy\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b|\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b[^.]{0,60}\bembassy\b/i
 const CAPITAL_ATTACK_RE =
   /\bcapital\b[^.]{0,60}\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b|\b(attack\w*|strikes?|struck|bomb\w*|storm\w*|shell\w*|target\w*|missile|drone)\b[^.]{0,60}\bcapital\b/i
+// The same trigger when the capital is NAMED rather than called "the capital" (2026-09-23): "Russian drones hammer Kyiv",
+// "Russia pounds Kyiv", "attacks on Kyiv". Object position only — the city must FOLLOW the strike word — because a
+// capital's name is also the usual shorthand for its government ("Kyiv launches strikes", "Washington imposes
+// sanctions"), and a subject-position match would tier every strike a government orders as an attack on its own
+// capital. Verbs that are mostly figurative with a city object ("attacks Washington", "targets Moscow") are left out.
+// A threatened or hypothetical strike ("Russia VOWS strikes on Kyiv", "CALLS FOR strikes on Moscow", "could RESUME fresh
+// strikes on Tehran") is not a strike — it falls through to the ordinary rhetoric/escalation rules instead.
+const NAMED_CAPITAL_ATTACK_RE = new RegExp(
+  String.raw`(?<!\b(?:vow\w*|threat\w*|call(?:s|ed|ing)? for|urg\w*|demand\w*|promis\w*|resum\w*|could|would|should|will|may|might|possible|potential|plan\w*)\s+(?:\w+\s+)?)\b(?:attacks? on|(?:air ?)?strikes? on|raids? on|drones? (?:attacks? )?on|missiles? (?:at|on)|bombard\w*|shell(?:s|ed|ing)|pound(?:s|ed|ing)?|pummel\w*|hammer(?:s|ed|ing)?|bomb(?:s|ed|ing)?|struck)\s+(?:the\s+)?(?:city of\s+|central\s+|downtown\s+)?(?:` +
+    CAPITAL_CITY_NAMES.map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') +
+    String.raw`)(?![\p{L}\p{N}])`,
+  'iu',
+)
 // A rarity/novelty phrase — the mechanical signal that a capital strike is NOT the routine baseline of an already-
 // active war. Riyadh's real headline said "for the first time since the Yemen conflict resumed"; none of the 11 real
 // Moscow-drone-attack headlines said anything like it, even calling one the "largest ever."
@@ -213,7 +227,14 @@ const PACT_WITHDRAWAL_RE = /\bwithdraw(?:s|al|ing)? from\b[^.]{0,30}\b(nato|nucl
 const SOVEREIGN_DEFAULT_RE = /\b(sovereign default|defaults? on (?:its )?(?:sovereign )?debt|currency collapse|hyperinflation)\b/i
 const CHOKEPOINT_CLOSURE_RE = /\b(?:closes?|closed|closure of|blockad\w+)\b[^.]{0,30}\b(strait of hormuz|suez canal|bab el-mandeb|strait of malacca)\b/i
 const PHEIC_RE = /\b(pandemic declared|public health emergency of international concern|pheic)\b/i
-const STRIKE_RE = /\b((?:air ?)?strike[sd]?|struck|attack(?:s|ed)?|bomb(?:s|ed|ing)?|shell(?:s|ed|ing)?|missile|drone|raid(?:s|ed)?|assault)\b/i
+// "Struck a defiant tone", "strike a deal": 'strike' in its non-military senses (2026-09-23 — "Pezeshkian STRUCK a
+// defiant tone speaking at the UN for the FIRST TIME since..." read as a first-ever strike, i.e. an escalation). Only the
+// strike/struck alternatives need it; the other fighting words have no such everyday idiom.
+const NOT_STRIKE_IDIOM = String.raw`(?!\s+an?\s+(?:[\w-]+\s+){0,2}(?:tone|note|chord|deal|balance|agreement|bargain|pose|compromise|optimistic|conciliatory))`
+const STRIKE_RE = new RegExp(
+  String.raw`\b((?:air ?)?strike[sd]?${NOT_STRIKE_IDIOM}|struck${NOT_STRIKE_IDIOM}|attack(?:s|ed)?|bomb(?:s|ed|ing)?|shell(?:s|ed|ing)?|missile|drone|raid(?:s|ed)?|assault)\b`,
+  'i',
+)
 const TERRITORIAL_RE = /\b(captur(?:es|ed|ing)|seiz(?:es|ed|ing)|annex(?:es|ed|ation)|takes control of)\b/i
 // "captured"/"seized" also describe detaining a PERSON — an arrest, not a territorial gain. Found
 // 2026-09-23 on the archive, exposed (not caused) by the attack co-occurrence rule above: "Eleven
@@ -243,13 +264,18 @@ export const CONTAINED_STRIKE_MAJOR_DEATHS = 5
 //    military clashes" and "In Combat For First Time" (both labeled Major) while dropping the diplomatic ones.
 // The original Houthi case that motivated an unscoped escalation trigger ("threatening further escalation", no
 // casualty figure, no fighting word at all) still matches via MILITARY_ESCALATION_RE — asserted in a test.
+// 2026-09-23 (a live report — a UN speech and a Trump-Zelensky meeting tiering Major above a deadly Kyiv strike): two more
+// `escalat\w+` shapes that aren't an escalation EVENT. A negated one ("promote stability and AVOID ESCALATION", "to prevent
+// further escalation") is the same class of bug as `de-escalation`. A trend clause ("attacks from both sides KEEP
+// ESCALATING", "continues to escalate") is background on the state of a war, the way bare "war" is (see FIGHTING below)
+// — it rode along in a diplomacy story and made the meeting Major.
 const MILITARY_ESCALATION_RE =
-  /\b(previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|(?<!de-)(?<!de)escalat\w+)\b/i
+  /\b(previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|(?<!de-)(?<!de)(?<!\b(?:avoid|avoids|avoiding|prevent|prevents|preventing|without|against|no|curb|contain|limit|keep|keeps|kept|continues? to|continued to)\s+(?:(?:any|further|an?|the)\s+)?)escalat\w+)\b/i
 const NOVELTY = String.raw`(?:first[ -]time|first[- ]ever)`
 // Bare "war" is deliberately NOT here: it is background context in a great deal of economic coverage ("diesel
 // topped $6.50 for the FIRST TIME, extending a WAR-driven rally" — two real labeled articles, both Significant,
 // both tiered Major while it was in the list). The words kept are ones that name a fighting EVENT.
-const FIGHTING = String.raw`(?:(?:air ?)?strikes?|struck|attacks?|attacked|bomb\w*|shell\w*|missiles?|drones?|raids?|assault\w*|combat|clash\w*|fighting|offensive|invasion|troops)`
+const FIGHTING = String.raw`(?:(?:air ?)?strikes?${NOT_STRIKE_IDIOM}|struck${NOT_STRIKE_IDIOM}|attacks?|attacked|bomb\w*|shell\w*|missiles?|drones?|raids?|assault\w*|combat|clash\w*|fighting|offensive|invasion|troops)`
 const NOVELTY_ESCALATION_RE = new RegExp(
   String.raw`\b${NOVELTY}\b[^.]{0,60}\b${FIGHTING}\b|\b${FIGHTING}\b[^.]{0,60}\b${NOVELTY}\b`,
   'i',
@@ -345,6 +371,8 @@ export interface SeverityFacts {
   pheic: boolean
   embassyAttack: boolean
   capitalAttack: boolean
+  /** A strike on a capital NAMED rather than called "the capital" — Major only; never combined with capitalAttackRare, since that phrase is text-wide and "first-ever strike with a new missile on Kyiv" is about the weapon, not the city. */
+  namedCapitalAttack: boolean
   capitalAttackRare: boolean
   regimeChange: boolean
   warDeclaration: boolean
@@ -400,6 +428,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     pheic: PHEIC_RE.test(text),
     embassyAttack: EMBASSY_ATTACK_RE.test(text),
     capitalAttack: CAPITAL_ATTACK_RE.test(text),
+    namedCapitalAttack: NAMED_CAPITAL_ATTACK_RE.test(text),
     capitalAttackRare: CAPITAL_ATTACK_RARE_RE.test(text),
     regimeChange: REGIME_CHANGE_RE.test(text),
     warDeclaration: WAR_DECLARATION_RE.test(text),
@@ -455,7 +484,7 @@ export function classifyText(text: string): Classification {
     (conflictish && !unconfirmedSelfClaim && f.territorial) ||
     // A capital strike that ISN'T flagged rare (the Critical branch above) is still a real strike — Major regardless
     // of casualty count, unlike the generic contained-strike rule just below (settled call 7).
-    (conflictish && !unconfirmedSelfClaim && f.capitalAttack) ||
+    (conflictish && !unconfirmedSelfClaim && (f.capitalAttack || f.namedCapitalAttack)) ||
     (conflictish &&
       !unconfirmedSelfClaim &&
       ((f.strikeWithCasualty && !f.legalFollowUp && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
