@@ -11,6 +11,11 @@ import { parseArchive, planAppend } from '../../src/news/articleArchive.ts'
 const DIR = process.env.NEWS_ARCHIVE_DIR ?? 'archive/news'
 export const ARCHIVE_FILE = path.join(DIR, 'articles.jsonl')
 
+/** Every archived record, oldest-appended first. Empty when the archive doesn't exist yet (a fresh clone builds from the live pull alone). */
+export function readArchive() {
+  return fs.existsSync(ARCHIVE_FILE) ? parseArchive(fs.readFileSync(ARCHIVE_FILE, 'utf8')) : []
+}
+
 /** Appends whatever isn't archived yet. Returns { added, total, oldest, newest } for the caller to report. */
 export function archiveArticles(articles, now) {
   fs.mkdirSync(DIR, { recursive: true })

@@ -1,0 +1,5059 @@
+[
+  {
+    "id": "evt-372e3a5d8c48e9cc",
+    "title": "Burnham Warns UN That AI Can Enhance Russian Disinformation",
+    "eventTimestamp": "2026-09-22T23:45:54.000Z",
+    "linkedEntityIds": [
+      "643",
+      "826"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:372e3a5d8c48e9cc",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/burnham-warns-un-that-ai-can-enhance-russian-disinformation",
+        "timestamp": "2026-09-22T23:45:54.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-jazeera:feafadbb7d10fb1c",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/23/uk-pm-burnham-condemns-repulsive-russian-electoral-interference?traffic_source=rss",
+        "timestamp": "2026-09-23T01:01:17.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "bloomberg:be75dcac64d9b489",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-23/burnham-warns-un-about-russian-disinformation-video",
+        "timestamp": "2026-09-23T02:15:50.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a827ed1cc1b7190d",
+    "title": "Zelensky says Ukraine is ready for an energy ceasefire with Russia",
+    "eventTimestamp": "2026-09-22T21:38:04.000Z",
+    "linkedEntityIds": [
+      "804",
+      "643",
+      "840"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics",
+      "energy"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "france-24:a827ed1cc1b7190d",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/europe/20260922-zelensky-says-ukraine-is-ready-for-an-energy-ceasefire-with-russia",
+        "timestamp": "2026-09-22T21:38:04.000Z",
+        "imageUrl": "https://s.france24.com/media/display/8fc1ad66-b6cd-11f1-9bea-557acd7c815c/w:1024/p:16x9/2026-09-22T185321Z-294428292-RC2IONAPQIAG-RTRMADP-3-UN-ASSEMBLY-ZELENSKIY-TRUMP.jpg",
+        "outlet": "France 24"
+      },
+      {
+        "id": "scmp-asia:138de8bc965a1db3",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/russia-central-asia/article/3368442/zelensky-meets-trump-says-ukraine-ready-energy-truce-russia?utm_source=rss_feed",
+        "timestamp": "2026-09-22T22:34:24.000Z",
+        "imageUrl": "https://cdn.i-scmp.com/sites/default/files/styles/1280x720/public/d8/images/canvas/2026/09/23/0840f445-412c-4680-9f18-e3dc13070b60_05b1e935.jpg?itok=Kb96QwKu&v=1790127777",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:525655cb60f4d45c",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/23/zelenskyy-says-ukraine-ready-for-energy-truce-with-russia-after-trump-talks?traffic_source=rss",
+        "timestamp": "2026-09-23T01:20:39.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-bb8fcdb57ddbb3ce",
+    "title": "How Ceuta, football and Israel are shaping Morocco's election",
+    "eventTimestamp": "2026-09-22T20:59:00.000Z",
+    "linkedEntityIds": [
+      "376",
+      "504"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bbc:bb8fcdb57ddbb3ce",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c8r4v7n6py97o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T20:59:00.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/ea6d/live/eb5cde20-b6af-11f1-bc1f-3f186ca4140c.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-monitor:b86c28f87a38b8cb",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/moroccans-vote-election-set-shape-government-world-cup",
+        "timestamp": "2026-09-23T01:46:30.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-6f2f6a2678a622ed",
+    "title": "Canada is giving C$100 million in international aid for Palestine, says Carney",
+    "eventTimestamp": "2026-09-22T20:46:34.000Z",
+    "linkedEntityIds": [
+      "124",
+      "826",
+      "250",
+      "376"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "humanitarian-displacement"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-monitor:6f2f6a2678a622ed",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/canada-giving-c100-million-international-aid-palestine-says-carney",
+        "timestamp": "2026-09-22T20:46:34.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:24ad806dab16217a",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/23/canada-pledges-aid-for-palestine-as-uk-and-france-demand-action-at-unga?traffic_source=rss",
+        "timestamp": "2026-09-23T02:36:32.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-c70001a66c62edcd",
+    "title": "US ties Sudanese army leader's UN visa to ceasefire plan, sources say",
+    "eventTimestamp": "2026-09-22T19:46:35.000Z",
+    "linkedEntityIds": [
+      "840",
+      "729",
+      "288",
+      "250",
+      "056",
+      "710",
+      "384"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-monitor:c70001a66c62edcd",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/us-ties-sudanese-army-leaders-un-visa-ceasefire-plan-sources-say",
+        "timestamp": "2026-09-22T19:46:35.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "france-24:f0a284162679fd25",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/us-refusing-to-give-sudan-s-de-facto-leader-visa-for-un",
+        "timestamp": "2026-09-22T20:13:30.000Z",
+        "imageUrl": "https://s.france24.com/media/display/0e378640-b6c2-11f1-8a88-e554abee39f5/w:1024/p:16x9/capture-10838219656ab2e15fe7a857-34442302.jpg",
+        "outlet": "France 24"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-c13467acb6026297",
+    "title": "Takaichi Urges UN to Cut Japan’s 1940s-Era ‘Enemy State’ Tag",
+    "eventTimestamp": "2026-09-22T19:05:42.000Z",
+    "linkedEntityIds": [
+      "392",
+      "276",
+      "156",
+      "taiwan"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:c13467acb6026297",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/takaichi-urges-un-to-cut-japan-s-1940s-era-enemy-state-label",
+        "timestamp": "2026-09-22T19:05:42.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "wsj-news:fbe96c73e0874ad2",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/asia/japans-leader-calls-on-u-n-to-drop-enemy-state-label-7da04175?mod=rss_worldnews",
+        "timestamp": "2026-09-23T02:32:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-55038152",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ccce3aba03e1f325",
+    "title": "Trump Hails ‘Very Good’ Iran Talks Following Annihilation Threat",
+    "eventTimestamp": "2026-09-22T17:59:24.000Z",
+    "linkedEntityIds": [
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:ccce3aba03e1f325",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/trump-says-us-team-met-with-iranians-earlier-tuesday-in-new-york",
+        "timestamp": "2026-09-22T17:59:24.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-jazeera:ed8a9528799a1d2b",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/trump-says-us-officials-met-with-iranian-delegation-for-three-hours-2?traffic_source=rss",
+        "timestamp": "2026-09-22T18:14:12.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "al-jazeera:1a9865d48511a7a5",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/22/trump-us-iran-meeting-at-un-was-very?traffic_source=rss",
+        "timestamp": "2026-09-22T20:23:48.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "guardian:51899a402fc52f9f",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/22/iran-us-talks-sidelines-un-summit-trump-israel-us",
+        "timestamp": "2026-09-22T21:21:59.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/0e83809b06b6077027cd3b905b78c52f8cc12e22/87_0_2573_2058/master/2573.jpg?width=140&quality=85&auto=format&fit=max&s=fdd42bc65efdbfe686c8a9f3caecf31e",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "financial-times:42921f821337de6b",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/1434496d-0eaf-4270-8ad3-87724cd3721e?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T21:26:14.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "bloomberg:6062104da46ec5e2",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-22/bloomberg-businessweek-daily-9-22-2026-video",
+        "timestamp": "2026-09-22T21:29:04.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-jazeera:7c9ee7452a1d12c2",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/liveblog/2026/9/23/iran-war-live-trump-confirms-very-good-meeting-with-iran-at-un?traffic_source=rss",
+        "timestamp": "2026-09-23T00:00:00.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-1790bd814771bed2",
+    "title": "Lula warns against foreign interference in Brazil election at UN",
+    "eventTimestamp": "2026-09-22T17:51:07.000Z",
+    "linkedEntityIds": [
+      "076",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-jazeera:1790bd814771bed2",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/lula-warns-against-foreign-interference-defends-brazils-sovereignty-at-un?traffic_source=rss",
+        "timestamp": "2026-09-22T17:51:07.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "pbs-newshour:2acd3573374a471a",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/brazils-lula-warns-against-foreign-interference-in-elections-urges-leaders-to-respond-to-global-conflicts",
+        "timestamp": "2026-09-22T19:35:37.000Z",
+        "imageUrl": "https://d3i6fh83elv35t.cloudfront.net/static/2026/09/2026-09-22T141035Z_1993633698_RC2EONAPZPAE_RTRMADP_3_UN-ASSEMBLY-1024x683.jpg",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a47a894e894761b3",
+    "title": "EU to lift sanctions on two Russian oligarchs",
+    "eventTimestamp": "2026-09-22T17:15:48.000Z",
+    "linkedEntityIds": [
+      "643",
+      "372",
+      "804",
+      "250",
+      "442"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "financial-times:a47a894e894761b3",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/760091dd-20be-4152-aa0d-561475a99ee8?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T17:15:48.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "guardian:2877be8a6c4ab6c1",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/22/eu-removes-oligarchs-from-russia-sanctions-list-as-deadline-looms",
+        "timestamp": "2026-09-22T18:07:19.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/fec21ff9823021bcdda79255837000ad9f664613/91_0_3008_2406/master/3008.jpg?width=140&quality=85&auto=format&fit=max&s=8fed3bc6a8ada0f828ac9d8ad3d53614",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "bbc:d2c0e0298e9957ea",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c6dj4k98107do?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T19:06:06.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/9373/live/8fd92fe0-b6b4-11f1-a430-4d16ee157c41.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "deutsche-welle:f897da9d44e4a2a4",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/eu-drops-sanctions-for-russian-oligarchs-usmanov-and-fridman/a-79381048?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T19:43:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ac336c9bcfb42430",
+    "title": "Torpedo Fired From Uncrewed Submarine For The First Time By U.S., U.K.",
+    "eventTimestamp": "2026-09-22T17:09:42.000Z",
+    "linkedEntityIds": [
+      "840",
+      "826"
+    ],
+    "topicTags": [
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "the-war-zone:ac336c9bcfb42430",
+        "sourceCategory": "outlet",
+        "sourceId": "the-war-zone",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.twz.com/sea/torpedo-fired-from-uncrewed-submarine-for-the-first-time-by-u-s-u-k",
+        "timestamp": "2026-09-22T17:09:42.000Z",
+        "imageUrl": "https://www.twz.com/wp-content/uploads/2026/09/excalibur-uuv-mk-48-torpedo-launch-test-us-uk.jpg?quality=85",
+        "outlet": "The War Zone"
+      },
+      {
+        "id": "defense-news:0834e77dc3a291a8",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/news/your-military/2026/09/22/royal-navy-successfully-launches-us-mk-48-torpedo-from-uncrewed-submersible/",
+        "timestamp": "2026-09-22T18:15:09.000Z",
+        "imageUrl": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/HIQ7VZV75FEY3HX2OCU6O3RUAM.jpg",
+        "outlet": "Defense News"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-6afd97731e21980e",
+    "title": "Iran, AI and the ICC: Trump makes threats, touts policies at UN General Assembly",
+    "eventTimestamp": "2026-09-22T17:09:26.000Z",
+    "linkedEntityIds": [
+      "364",
+      "840",
+      "376",
+      "192",
+      "862",
+      "484"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "france-24:6afd97731e21980e",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/americas/20260922-iran-ai-and-the-icc-trump-makes-threats-touts-policies-un-general-assembly",
+        "timestamp": "2026-09-22T17:09:26.000Z",
+        "imageUrl": "https://s.france24.com/media/display/089d084a-b69f-11f1-8123-557acd7c815c/w:1024/p:16x9/2026-09-22T152351Z-782234015-RC2FONAJ9I0O-RTRMADP-3-UN-ASSEMBLY.jpg",
+        "outlet": "France 24"
+      },
+      {
+        "id": "al-monitor:8ac0040874f88b05",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/trump-un-threats-diplomacy-and-super-intelligence",
+        "timestamp": "2026-09-22T17:46:36.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "pbs-newshour:7b650e33a0b415ba",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/show/trump-defends-iran-war-and-threatens-annihilation-at-un-general-assembly",
+        "timestamp": "2026-09-22T22:55:13.000Z",
+        "imageUrl": "https://d3i6fh83elv35t.cloudfront.net/static/2026/09/worldstage-1-1024x683.jpg",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "guardian:761c38200db01e55",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/us-news/live/2026/sep/22/donald-trump-unga-speech-iran-middle-east-ukraine-latest-news-updates",
+        "timestamp": "2026-09-22T23:35:36.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/fd3d54e78610502dcdc3d7f85a3039e191f836db/651_287_3396_2718/master/3396.jpg?width=140&quality=85&auto=format&fit=max&s=4bb4728edcfaf434b2e6f8c8b7b63e55",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-f4a1be4cf7224ca5",
+    "title": "Trumps says the U.S. will 'only encourage superintelligence' in AI",
+    "eventTimestamp": "2026-09-22T15:36:15.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "nbc-news:f4a1be4cf7224ca5",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/now/video/trumps-says-the-u-s-will-only-encourage-superintelligence-in-ai-270293573917",
+        "timestamp": "2026-09-22T15:36:15.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/mpx/2704722219/2026_09/1790091371077_now_brk_trump_unitednations_ai_260922_S3_1920x1080-64rx6e.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "breaking-defense:f3f9669d4fd395e4",
+        "sourceCategory": "outlet",
+        "sourceId": "breaking-defense",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://breakingdefense.com/2026/09/trump-orders-all-us-agencies-to-refer-to-ai-as-super-intelligence/",
+        "timestamp": "2026-09-22T18:10:00.000Z",
+        "outlet": "Breaking Defense"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8a50ff55e2c417fc",
+    "title": "Trump Summit With Xi Unlikely to Include Chinese CEOs",
+    "eventTimestamp": "2026-09-22T15:35:00.000Z",
+    "linkedEntityIds": [
+      "156",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "wsj-news:8a50ff55e2c417fc",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/china/trump-summit-with-xi-unlikely-to-include-chinese-ceos-7a9e90dd?mod=rss_worldnews",
+        "timestamp": "2026-09-22T15:35:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-58149732",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "bloomberg:7a8dd5e40cd6a2cb",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/xi-unlikely-to-bring-ceos-to-summit-where-trump-is-seeking-deals",
+        "timestamp": "2026-09-22T22:15:45.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-f044ec4399869548",
+    "title": "Military aircraft crashes near US air base in Spangdahlem, Germany",
+    "eventTimestamp": "2026-09-22T14:12:00.000Z",
+    "linkedEntityIds": [
+      "840",
+      "276"
+    ],
+    "topicTags": [
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:f044ec4399869548",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/military-aircraft-crashes-near-us-air-base-in-spangdahlem-germany/a-79376025?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T14:12:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "the-war-zone:b6cb449507bff8cc",
+        "sourceCategory": "outlet",
+        "sourceId": "the-war-zone",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.twz.com/air/usaf-f-16-crashes-at-spangdahlem-air-base-in-germany",
+        "timestamp": "2026-09-22T15:38:15.000Z",
+        "imageUrl": "https://www.twz.com/wp-content/uploads/2026/09/F16-Crash-Germany.jpg?quality=85",
+        "outlet": "The War Zone"
+      },
+      {
+        "id": "financial-times:b36043a92c7ec8e8",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/15d68d49-5a31-4e2a-a108-f35baa391295?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T15:46:03.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "defense-news:2c454bb449aa97ff",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/news/your-military/2026/09/22/f-16-fighter-jet-crashes-at-us-air-base-in-western-germany/",
+        "timestamp": "2026-09-22T16:23:40.000Z",
+        "imageUrl": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/QPD7BU564VAIJBHZRF24ILABE4.jpeg",
+        "outlet": "Defense News"
+      },
+      {
+        "id": "guardian:1b6f564cad08f233",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/us-news/2026/sep/22/fighter-jet-crashes-germany",
+        "timestamp": "2026-09-22T16:49:18.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/c88f64fceaf69d5970ae2afdb8604cb1258ddfaa/108_0_784_627/master/784.jpg?width=140&quality=85&auto=format&fit=max&s=b6265f85f4022fdde091c6752105619c",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ce70c60f24245e5c",
+    "title": "What Is Saudi Arabia’s East-West Pipeline and Why Is It Rocking Oil Markets?",
+    "eventTimestamp": "2026-09-22T14:01:00.000Z",
+    "linkedEntityIds": [
+      "682"
+    ],
+    "topicTags": [
+      "economic-trade",
+      "energy",
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "wsj-news:ce70c60f24245e5c",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/middle-east/what-is-saudi-arabias-east-west-pipeline-and-why-is-it-rocking-oil-markets-3e9823a3?mod=rss_worldnews",
+        "timestamp": "2026-09-22T14:01:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-26127255",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "financial-times:a8cb46a78d9484fa",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/5b4f8738-3b93-40c8-88d6-08c8ea684e83?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T15:18:53.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b62cf2a4c396729d",
+    "title": "Doctor was 'supervisor' of killings during Rwanda genocide, court hears",
+    "eventTimestamp": "2026-09-22T12:52:00.000Z",
+    "linkedEntityIds": [
+      "646",
+      "826"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "humanitarian-displacement"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "sky-news-uk:b62cf2a4c396729d",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/doctor-was-supervisor-of-killings-during-rwanda-genocide-court-hears-13590686",
+        "timestamp": "2026-09-22T12:52:00.000Z",
+        "imageUrl": "https://e3.365dm.com/26/09/1920x1080/skynews-westminster-joshua-cammidge_7346965.jpg?20260910115749",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "al-jazeera:362c30f2fe123eed",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/22/what-led-to-the-1994-tutsi-genocide-in-rwanda?traffic_source=rss",
+        "timestamp": "2026-09-22T19:17:44.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-c3d46082dcc43f67",
+    "title": "US open to meeting Iran at UN as conflicting reports over peace deal swirl",
+    "eventTimestamp": "2026-09-22T12:51:30.000Z",
+    "linkedEntityIds": [
+      "840",
+      "364"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics",
+      "energy"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:c3d46082dcc43f67",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/us-open-to-meeting-iran-at-un-as-conflicting-reports-over-peace-deal-swirl",
+        "timestamp": "2026-09-22T12:51:30.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "guardian:23920e925045921d",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/live/2026/sep/22/middle-east-iran-irgc-donald-trump-mahmoud-mahmoud-pezeshkian-abbas-araqchi-unga-latest-news-updates",
+        "timestamp": "2026-09-22T19:09:42.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/d86db91f83c79dc9d05cf6ef49d1cc5f71a34dd2/228_0_4043_3235/master/4043.jpg?width=140&quality=85&auto=format&fit=max&s=a00096a82049654f6df072a3325aed07",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8aa83ddf5eef6cda",
+    "title": "Republican Senator Calls for Investigation Into Trump Family",
+    "eventTimestamp": "2026-09-22T12:30:39.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:8aa83ddf5eef6cda",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/gop-senator-calls-for-investigation-into-trump-family",
+        "timestamp": "2026-09-22T12:30:39.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-jazeera:ae643864ba6381e7",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/us-republican-calls-for-probe-into-donald-trump-jrs-business-dealings?traffic_source=rss",
+        "timestamp": "2026-09-22T22:07:50.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-21677a48da174e71",
+    "title": "Saudi issues new warnings, as Houthi attacks intensify",
+    "eventTimestamp": "2026-09-22T12:03:18.000Z",
+    "linkedEntityIds": [
+      "682",
+      "887",
+      "364"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:21677a48da174e71",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/22/2026/saudi-issues-new-warnings-as-houthi-attacks-intensify",
+        "timestamp": "2026-09-22T12:03:18.000Z",
+        "imageUrl": "https://img.semafor.com/2bb8170b5a920e35cbed8c561c6cecc0fb7af569-2048x1152.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "bbc:8f90c31bb0204c0c",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cwm2qpmepmlzo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T13:39:09.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/3d7c/live/6082be10-b686-11f1-b1d1-571ed4d7ff2c.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-011001dd382652e2",
+    "title": "Trump readies diplomatic push at the UN General Assembly",
+    "eventTimestamp": "2026-09-22T11:33:00.000Z",
+    "linkedEntityIds": [
+      "862",
+      "840",
+      "364",
+      "792",
+      "760",
+      "422",
+      "400",
+      "368"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:011001dd382652e2",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/22/2026/trump-readies-diplomatic-push-at-the-un-general-assembly",
+        "timestamp": "2026-09-22T11:33:00.000Z",
+        "imageUrl": "https://img.semafor.com/25da3b489ea94e0ca06e44e4cd211bc25aea917d-2048x1365.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "al-monitor:908cf1ff21dd481e",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/trump-tells-middle-east-leaders-us-iran-talks-have-momentum",
+        "timestamp": "2026-09-22T20:15:41.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-4131aa855f7fb31a",
+    "title": "Russia, Ukraine trade deadly strikes as Zelenskyy attends UNGA",
+    "eventTimestamp": "2026-09-22T10:07:00.000Z",
+    "linkedEntityIds": [
+      "643",
+      "804"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:4131aa855f7fb31a",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/russia-ukraine-trade-deadly-strikes-as-zelenskyy-attends-unga/a-79366022?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T10:07:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "pbs-newshour:6f0c0e82b80955ef",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/russia-and-ukraine-trade-strikes-ahead-of-zelenskyys-meeting-with-trump",
+        "timestamp": "2026-09-22T19:02:52.000Z",
+        "imageUrl": "https://d3i6fh83elv35t.cloudfront.net/static/2026/09/2026-09-22T175028Z_586299362_RC2HONA599SW_RTRMADP_3_UKRAINE-CRISIS-TRUMP-ZELENSKIY-1024x722.jpg",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-06a1813657c2be4f",
+    "title": "Sri Lanka court convicts 15 over 2019 Easter bombings, 9 acquitted",
+    "eventTimestamp": "2026-09-22T09:26:58.000Z",
+    "linkedEntityIds": [
+      "144"
+    ],
+    "topicTags": [
+      "terrorism-non-state-actors",
+      "humanitarian-displacement"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:06a1813657c2be4f",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/asia/south-asia/article/3368385/sri-lanka-trial-2019-easter-sunday-bombings-set-finish?utm_source=rss_feed",
+        "timestamp": "2026-09-22T09:26:58.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "npr:99491c41b3223cee",
+        "sourceCategory": "outlet",
+        "sourceId": "npr",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.npr.org/2026/09/22/g-s1-144514/sri-lanka-court-convicts-15-over-deadly-2019-easter-bombings",
+        "timestamp": "2026-09-22T13:30:01.000Z",
+        "outlet": "NPR",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "sky-news-uk:294f74c1714530a4",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/fifteen-jailed-for-life-over-involvement-in-sri-lanka-bombings-that-killed-more-than-260-13590838",
+        "timestamp": "2026-09-22T19:42:00.000Z",
+        "imageUrl": "https://e3.365dm.com/26/09/1920x1080/skynews-sri-lanka-colombo-easter_7358968.jpg?20260922212758",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "bbc:820a9ae23de50a19",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cqy7z275yx65o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T19:47:44.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/c53f/live/e033b760-b684-11f1-b1d1-571ed4d7ff2c.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "guardian:4ffc2a113662c2e0",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/23/sri-lanka-easter-bombings-15-sentenced-prison-terror-attacks",
+        "timestamp": "2026-09-23T00:43:00.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/2a0f4977a90f62bd3e93c42f0a49025baace9ef2/303_2_4914_3931/master/4914.jpg?width=140&quality=85&auto=format&fit=max&s=ee9aa125578192c5263e12caa7f6ae64",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-e5f5fdf8eba2aa9f",
+    "title": "Trump tells U.N. he could ‘annihilate’ Iran but expects a deal after the midterm elections",
+    "eventTimestamp": "2026-09-22T09:00:41.000Z",
+    "linkedEntityIds": [
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "nbc-news:e5f5fdf8eba2aa9f",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/politics/trump-administration/trump-address-united-nations-general-assembly-iran-war-rcna599085",
+        "timestamp": "2026-09-22T09:00:41.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/rockcms/2026-09/260921-president-trump-vsb-1621-1819ba.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "france-24:aaa8d8a417051c5d",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/video/20260922-iran-trump-believes-in-an-agreement-after-us-midterms",
+        "timestamp": "2026-09-22T16:17:06.000Z",
+        "imageUrl": "https://s.france24.com/media/display/e8874df6-b6a1-11f1-939f-d382746d948a/w:1024/p:16x9/Trump-onu.jpg",
+        "outlet": "France 24"
+      },
+      {
+        "id": "euronews:b6dfe60fca7431a4",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/trump-threatens-to-annihilate-iran-at-un-then-confirms-direct-talks",
+        "timestamp": "2026-09-22T18:50:18.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "al-monitor:7992a48fc458f81a",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/trump-threatens-iran-hell-reveals-fresh-talks",
+        "timestamp": "2026-09-22T19:30:23.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "wsj-news:fac4575b0112dafa",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/politics/policy/trump-tells-u-n-he-is-confronting-world-threats-and-putting-america-first-5fe48626?mod=rss_worldnews",
+        "timestamp": "2026-09-22T20:27:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-60954566",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "bbc:ca92e8f3d068ff00",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c52e0ywl9pr7o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T21:50:31.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/2ce7/live/a35e4ee0-b6a2-11f1-ba3d-1d5c8a47f823.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "semafor:5855e3b1e3aa3d0a",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/22/2026/trump-hails-productive-us-iran-talks",
+        "timestamp": "2026-09-22T22:21:06.000Z",
+        "imageUrl": "https://img.semafor.com/d3c8305347aaf1a53ad503cb2b18c6dab10a9d62-5900x3319.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "nbc-news:924c4812cfe5cd3b",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/nightly-news/video/u-s-negotiators-meet-with-iranian-officials-at-u-n-270330437734",
+        "timestamp": "2026-09-22T22:51:05.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/mpx/2704722219/2026_09/1790117459658_nn_ggu_negotiators_meet_with_iranian_officials_at_un_260922_S3_1920x1080-9pvuom.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-aa73284f5afc5d56",
+    "title": "UNGA: Trump and world leaders discuss global conflicts",
+    "eventTimestamp": "2026-09-22T08:55:00.000Z",
+    "linkedEntityIds": [
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:aa73284f5afc5d56",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/unga-trump-and-world-leaders-discuss-global-conflicts/live-79366211?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T08:55:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "al-jazeera:192ed205d7d0bf96",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/22/unga-day-1-us-and-iran-hold-talks-despite-trumps-threat?traffic_source=rss",
+        "timestamp": "2026-09-22T22:48:56.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-49ce6da318a43a90",
+    "title": "At least 11 wounded in shooting outside Turkey school, suspect detained",
+    "eventTimestamp": "2026-09-22T07:10:18.000Z",
+    "linkedEntityIds": [
+      "792"
+    ],
+    "topicTags": [
+      "crime-trafficking",
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:49ce6da318a43a90",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/at-least-five-wounded-in-shooting-outside-school-in-western-turkey-media-report",
+        "timestamp": "2026-09-22T07:10:18.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "euronews:2782f828423cce47",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/turkey-school-shooting-cctv-footage-of-the-gunman",
+        "timestamp": "2026-09-22T10:15:56.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "scmp-asia:669e0c52cff56e59",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/article/3368398/turkey-student-arrested-after-11-injured-shotgun-shooting?utm_source=rss_feed",
+        "timestamp": "2026-09-22T10:18:51.000Z",
+        "imageUrl": "https://cdn.i-scmp.com/sites/default/files/styles/1280x720/public/d8/images/canvas/2026/09/22/67bcf59d-a15c-49af-a9f3-2e9ef6a3b421_af651c46.jpg?itok=KKPYVgTQ&v=1790072317",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "bbc:b911f764a216942b",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c6y0z4gv0le4o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T10:42:47.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/a20b/live/bbf34cc0-b671-11f1-b711-df5e4d50c2fd.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "deutsche-welle:8584c1acb91f0efd",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/turkey-several-pupils-injured-in-shooting-outside-school/a-79368728?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T11:03:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-fba4a4034bdd3236",
+    "title": "Shadow of Xi summit hangs over Trump’s high-stakes talks with Japan’s Takaichi",
+    "eventTimestamp": "2026-09-22T01:00:07.000Z",
+    "linkedEntityIds": [
+      "392",
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:fba4a4034bdd3236",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/china/diplomacy/article/3368288/shadow-xi-summit-hangs-over-trumps-high-stakes-talks-japans-takaichi?utm_source=rss_feed",
+        "timestamp": "2026-09-22T01:00:07.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "bloomberg:58473fd9f80e0206",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/trump-takaichi-discuss-china-in-meeting-ahead-of-xi-s-us-visit",
+        "timestamp": "2026-09-22T18:10:47.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-62839379b0270678",
+    "title": "Macron and Trump Discuss Kyiv and Moscow Halting Energy Strikes",
+    "eventTimestamp": "2026-09-21T23:47:37.000Z",
+    "linkedEntityIds": [
+      "804",
+      "643",
+      "250"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics",
+      "energy"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:62839379b0270678",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/macron-and-trump-discuss-kyiv-and-moscow-halting-energy-strikes",
+        "timestamp": "2026-09-21T23:47:37.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "financial-times:2f9d88f2c3f34561",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/16d676c9-94c4-4df1-8fa6-56966b2c9aa7",
+        "timestamp": "2026-09-22T19:27:56.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-fccb77ccdee228ad",
+    "title": "‘Stop the bleeding’: Republicans tell Trump to ban US diesel exports",
+    "eventTimestamp": "2026-09-21T23:28:40.000Z",
+    "linkedEntityIds": [
+      "840",
+      "364",
+      "804"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade",
+      "energy"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "financial-times:fccb77ccdee228ad",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/319c7b67-b585-407e-a0da-6e23b1612180?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T23:28:40.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "bloomberg:72fd3add5390f76a",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/trump-says-he-s-pushed-for-fuel-export-ban-amid-price-crunch",
+        "timestamp": "2026-09-22T18:04:29.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "financial-times:b84b942b51a84166",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/22d1154b-8bea-4f8d-bfc4-5db7761d3612?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T21:23:42.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a78288c2a45dbd73",
+    "title": "Vietnam Leader Says US Deal Close, Denies Re-Routing China Goods",
+    "eventTimestamp": "2026-09-21T23:00:00.000Z",
+    "linkedEntityIds": [
+      "704",
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:a78288c2a45dbd73",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/vietnam-leader-says-us-deal-close-denies-re-routing-china-goods",
+        "timestamp": "2026-09-21T23:00:00.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "bloomberg:1ffe00006973a161",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-21/vietnam-s-leader-declares-us-trade-deal-close-video",
+        "timestamp": "2026-09-21T23:00:23.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "bloomberg:97395b9482361629",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-22/vietnam-s-top-leader-says-us-trade-deal-close-video",
+        "timestamp": "2026-09-22T01:54:29.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "the-diplomat:f9bdcf8ecda16c99",
+        "sourceCategory": "outlet",
+        "sourceId": "the-diplomat",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://thediplomat.com/2026/09/reciprocal-trade-deal-with-the-us-close-to-completion-vietnamese-media-reports/",
+        "timestamp": "2026-09-22T04:44:00.000Z",
+        "imageUrl": "https://images.thediplomat.com/v1/td-list-l-2/2024/09/thediplomat_2024-09-24-233156.jpg",
+        "outlet": "The Diplomat",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-aeac7c323ffd8f33",
+    "title": "Mamdani Presses Trump at Meeting on Status of Haiti Migrants",
+    "eventTimestamp": "2026-09-21T21:57:55.000Z",
+    "linkedEntityIds": [
+      "332",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:aeac7c323ffd8f33",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/mamdani-presses-trump-at-meeting-on-status-of-haiti-tps-holders",
+        "timestamp": "2026-09-21T21:57:55.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "al-jazeera:c5b6d7caa2a4ea43",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/22/mamdani-challenges-trump-over-white-house-press-ban-during-meeting?traffic_source=rss",
+        "timestamp": "2026-09-22T01:57:51.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-80fc048a3f53d06d",
+    "title": "UK Confirms Burnham’s Former Fiefdom of Manchester to Host G20",
+    "eventTimestamp": "2026-09-21T21:30:00.000Z",
+    "linkedEntityIds": [
+      "826"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:80fc048a3f53d06d",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/uk-confirms-burnham-s-former-fiefdom-of-manchester-to-host-g20",
+        "timestamp": "2026-09-21T21:30:00.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "scmp-asia:b1f5627b9df597fa",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/europe/article/3368312/uk-confirms-pm-burnhams-former-fiefdom-manchester-host-g20-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-21T23:23:16.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-9fd2ae1256033f41",
+    "title": "British Columbia Sues OpenAI, Alleging ChatGPT Aided Mass School Shooting",
+    "eventTimestamp": "2026-09-21T21:26:00.000Z",
+    "linkedEntityIds": [
+      "826",
+      "124",
+      "840"
+    ],
+    "topicTags": [
+      "crime-trafficking",
+      "science-technology",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "wsj-news:9fd2ae1256033f41",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/tech/ai/british-columbia-sues-openai-alleging-chatgpt-aided-mass-school-shooting-aac66568?mod=rss_worldnews",
+        "timestamp": "2026-09-21T21:26:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-57554777",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "scmp-asia:a2d68b4d7b038752",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368310/canadas-british-columbia-sues-openai-us-court-over-school-shooting?utm_source=rss_feed",
+        "timestamp": "2026-09-21T21:50:59.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "financial-times:8b5aa240333d8edd",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/30d2f29b-e750-4a90-9e8d-b1a7f14e4908?syn-25a6b1a6=1",
+        "timestamp": "2026-09-22T01:28:52.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "guardian:b9c0b0509037875d",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/technology/2026/sep/22/british-columbia-sues-openai-sam-altman-tumbler-ridge-school-shooting",
+        "timestamp": "2026-09-22T04:29:22.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/46cd27119d365fb4e0fcb8b1a7e4456e941a3908/1245_0_4590_3674/master/4590.jpg?width=140&quality=85&auto=format&fit=max&s=dd084ea8eff0a89d37edf644c6807fce",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "ars-technica:47596098167ec2f3",
+        "sourceCategory": "outlet",
+        "sourceId": "ars-technica",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://arstechnica.com/tech-policy/2026/09/lawsuit-demands-openai-pay-for-new-school-after-chatgpt-used-in-shooting/",
+        "timestamp": "2026-09-22T19:28:23.000Z",
+        "imageUrl": "https://cdn.arstechnica.net/wp-content/uploads/2026/09/GettyImages-2260756748-500x500-1790101320.jpg",
+        "outlet": "Ars Technica"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8de869bd863cbe90",
+    "title": "Zelenskiy and US spy chief Ratcliffe meet in Ireland, sources say",
+    "eventTimestamp": "2026-09-21T20:46:28.000Z",
+    "linkedEntityIds": [
+      "840",
+      "372",
+      "804"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-monitor:8de869bd863cbe90",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/zelenskiy-and-us-spy-chief-ratcliffe-meet-ireland-sources-say",
+        "timestamp": "2026-09-21T20:46:28.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "scmp-asia:a9f318baf399ccd9",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/europe/article/3368307/zelensky-and-us-spy-chief-ratcliffe-meet-ireland-sources-say?utm_source=rss_feed",
+        "timestamp": "2026-09-21T20:58:39.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ce2116489a129571",
+    "title": "Trump inaugurates White House helipad but networks skip coverage over media ban",
+    "eventTimestamp": "2026-09-21T19:13:08.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:ce2116489a129571",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368304/trump-inaugurates-white-house-helipad-networks-skip-coverage-over-media-ban?utm_source=rss_feed",
+        "timestamp": "2026-09-21T19:13:08.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:957667ac4c6a9067",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/21/trump-speech-inaudible-as-us-networks-boycott-white-house-event?traffic_source=rss",
+        "timestamp": "2026-09-21T20:38:51.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-5f90ce66a4fe67d3",
+    "title": "Trump approval rating hits career low of 32% amid Iran war, high costs",
+    "eventTimestamp": "2026-09-21T19:10:52.000Z",
+    "linkedEntityIds": [
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-jazeera:5f90ce66a4fe67d3",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/21/trumps-approval-rating-hits-record-low-amid-iran-war-economy-fallout?traffic_source=rss",
+        "timestamp": "2026-09-21T19:10:52.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "scmp-asia:7a6934a8d9ad08d7",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368305/trumps-approval-rating-falls-career-low-32-high-living-costs-bite-poll-shows?utm_source=rss_feed",
+        "timestamp": "2026-09-21T19:34:01.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b90e855dfe6004a8",
+    "title": "Flights halted on US east coast as world leaders arrive for New York UN meeting",
+    "eventTimestamp": "2026-09-21T18:18:07.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:b90e855dfe6004a8",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368302/flights-halted-eastern-us-airports-world-leaders-arrive-new-york-un-meeting?utm_source=rss_feed",
+        "timestamp": "2026-09-21T18:18:07.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:d0f6a7d14b24675c",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/economy/2026/9/21/faa-halts-flights-to-major-us-east-coast-airports-amid-outage?traffic_source=rss",
+        "timestamp": "2026-09-21T20:01:37.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-fa5ffe3990ec7e98",
+    "title": "UK to Give Saudi Arabia Defensive Support to Counter Houthis",
+    "eventTimestamp": "2026-09-21T17:31:14.000Z",
+    "linkedEntityIds": [
+      "826",
+      "682",
+      "364",
+      "887",
+      "840",
+      "376"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors",
+      "economic-trade",
+      "energy"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:fa5ffe3990ec7e98",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/uk-close-to-helping-saudi-arabia-counter-houthi-attacks",
+        "timestamp": "2026-09-21T17:31:14.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "guardian:30a481c95d9459de",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/politics/2026/sep/21/uk-to-give-support-to-saudi-jets-in-attempt-to-counter-houthi-fighters",
+        "timestamp": "2026-09-21T21:33:09.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/c064acc957ed88de865b05e835b344c59a89d871/403_0_4893_3914/master/4893.jpg?width=140&quality=85&auto=format&fit=max&s=a026629d388248b4506a7736bc0ff030",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "al-monitor:b70debdbe82ae3da",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/uks-burnham-agrees-saudi-request-refuelling-support",
+        "timestamp": "2026-09-21T21:46:32.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "financial-times:83aebac831e5b575",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/17a6b374-df35-4e12-96c6-53e30ed64fe4?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T23:25:45.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "al-monitor:c92ebc01456b1bbe",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/uk-agrees-support-saudi-struggle-houthis-reports",
+        "timestamp": "2026-09-21T23:30:21.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:f25acf12d4aba9a3",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/uk-to-refuel-saudi-jets-to-help-counter-houthi-attacks?traffic_source=rss",
+        "timestamp": "2026-09-22T00:29:28.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a86acf37d64fb00e",
+    "title": "OpenAI joins call for US-led global AI standards",
+    "eventTimestamp": "2026-09-21T17:24:34.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "financial-times:a86acf37d64fb00e",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/4e502288-b611-4193-acdb-46ef34b1e3b0?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T17:24:34.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "semafor:6a32eda81522c9a1",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/21/2026/openai-calls-for-global-us-led-coalition-on-ai-safety",
+        "timestamp": "2026-09-21T22:26:01.000Z",
+        "imageUrl": "https://img.semafor.com/f3fe23564f24c84870b00f39570260d9123fe339-3280x2192.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-d0317bedfa1c796e",
+    "title": "China expels two top ‘disloyal’ military leaders from Communist Party",
+    "eventTimestamp": "2026-09-21T16:56:30.000Z",
+    "linkedEntityIds": [
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-jazeera:d0317bedfa1c796e",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/21/china-expels-two-top-disloyal-military-leaders-from-communist-party?traffic_source=rss",
+        "timestamp": "2026-09-21T16:56:30.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "semafor:3689dbe28daae3e9",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/21/2026/chinas-xi-jinping-purges-top-generals-for-disloyalty",
+        "timestamp": "2026-09-21T22:28:02.000Z",
+        "imageUrl": "https://img.semafor.com/84d34549f9b52c1e791c7c91afee9ad2adce5f07-2161x1441.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-677511c7b20476f6",
+    "title": "UK brings first charges over 1994 Rwandan genocide",
+    "eventTimestamp": "2026-09-21T16:54:00.000Z",
+    "linkedEntityIds": [
+      "826",
+      "646"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "sky-news-uk:677511c7b20476f6",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/uk-brings-first-charges-over-1994-rwandan-genocide-13590500",
+        "timestamp": "2026-09-21T16:54:00.000Z",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "scmp-asia:484dcb958cf6fa68",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/europe/article/3368303/first-charges-brought-uk-1994-rwanda-genocide?utm_source=rss_feed",
+        "timestamp": "2026-09-21T18:51:26.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-jazeera:103167ad75b62890",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/21/uk-prosecutors-charge-first-person-for-rwanda-genocide?traffic_source=rss",
+        "timestamp": "2026-09-21T19:48:58.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "deutsche-welle:8a1c68e1c6cb31c6",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/uk-man-charged-over-suspected-role-in-rwanda-genocide/a-79364493?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T21:57:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-1b53dc748aac9455",
+    "title": "Houthis move to seize strategic terrain after Trump calls off airstrikes at last minute",
+    "eventTimestamp": "2026-09-21T16:14:38.000Z",
+    "linkedEntityIds": [
+      "840",
+      "682",
+      "887"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "guardian:1b53dc748aac9455",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/houthis-seize-strategic-terrain-yemen-trump-calls-off-airstrikes-last-minute",
+        "timestamp": "2026-09-21T16:14:38.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "euronews:d8198d7956ee2050",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/g7-leaders-call-on-iran-backed-houthis-to-stop-strikes-on-saudi-arabia",
+        "timestamp": "2026-09-22T06:40:26.000Z",
+        "outlet": "Euronews"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-e9c485c0cdf54a2f",
+    "title": "Trump Says Belarus Potash Deal in Works Amid Canada Fight",
+    "eventTimestamp": "2026-09-21T15:22:01.000Z",
+    "linkedEntityIds": [
+      "112",
+      "124",
+      "840",
+      "643"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:e9c485c0cdf54a2f",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/trump-says-potash-deal-with-belarus-in-works-amid-canada-fight",
+        "timestamp": "2026-09-21T15:22:01.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "euronews:c3e06fefde7197d0",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/21/trump-promotes-massive-belarus-potash-deal-to-undercut-canada",
+        "timestamp": "2026-09-21T16:14:38.000Z",
+        "outlet": "Euronews"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-1476b4bd2dfeba80",
+    "title": "US TV networks refuse White House pool duties after Trump bans CNN, MS Now, Politico",
+    "eventTimestamp": "2026-09-21T14:28:07.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:1476b4bd2dfeba80",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368294/trump-sued-cnn-ms-now-politico-over-white-house-ban?utm_source=rss_feed",
+        "timestamp": "2026-09-21T14:28:07.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "guardian:37883d89c0a26400",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/us-news/live/2026/sep/21/donald-trump-arch-media-white-house-press-ban-mamdani-ai-unga-latest-news-updates",
+        "timestamp": "2026-09-21T16:59:11.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "guardian:82ce4580dce2d87b",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/us-news/2026/sep/21/trump-tv-networks-white-house-pool-coverage",
+        "timestamp": "2026-09-22T01:37:29.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "euronews:ca23fab90947b5e2",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/all-major-us-networks-suspend-trump-coverage-in-revolt-over-white-house-ban",
+        "timestamp": "2026-09-22T03:42:27.000Z",
+        "outlet": "Euronews"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b73c00299530c9c0",
+    "title": "Global diplomacy takes center stage in New York",
+    "eventTimestamp": "2026-09-21T14:09:05.000Z",
+    "linkedEntityIds": [
+      "840",
+      "804",
+      "364",
+      "792",
+      "376"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:b73c00299530c9c0",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/21/2026/global-diplomacy-takes-center-stage-in-new-york",
+        "timestamp": "2026-09-21T14:09:05.000Z",
+        "imageUrl": "https://img.semafor.com/43d3c7ede71e973200de70fe1359dbccfabdd07c-5808x3872.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "deutsche-welle:dccc50774161eb2c",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/un-general-assembly-opens-with-macron-trump-erdogan-lula-others-in-nyc/live-79366211?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T08:55:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-6686ed1ccf8d648f",
+    "title": "What’s the US–China AI ‘hotline’ that Trump plans to pitch to Xi Jinping?",
+    "eventTimestamp": "2026-09-21T13:32:55.000Z",
+    "linkedEntityIds": [
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-jazeera:6686ed1ccf8d648f",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/21/whats-the-us-china-ai-hotline-that-trump-plans-to-pitch-to-xi?traffic_source=rss",
+        "timestamp": "2026-09-21T13:32:55.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "scmp-asia:008798ee22aab2b1",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/economy/global-economy/article/3368409/why-chinas-frontier-ai-pioneers-are-expected-miss-weeks-xi-trump-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-22T14:00:05.000Z",
+        "imageUrl": "https://cdn.i-scmp.com/sites/default/files/styles/1280x720/public/d8/images/canvas/2026/09/22/2f9b07fd-daab-49f0-975a-ead48237663d_f8221bb8.jpg?itok=1ZFcfQOI&v=1790087154",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-0d97da868b69d7d5",
+    "title": "Former top PLA generals expelled from Communist Party for factionalism and disloyalty",
+    "eventTimestamp": "2026-09-21T13:10:07.000Z",
+    "linkedEntityIds": [
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "scmp-asia:0d97da868b69d7d5",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/china/politics/article/3368287/former-top-pla-generals-expelled-communist-party-factionalism-and-disloyalty?utm_source=rss_feed",
+        "timestamp": "2026-09-21T13:10:07.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "financial-times:c2499e2e37c477af",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/378926f5-0494-4f5e-8bd1-e1775980ab82?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T14:54:23.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-90ef6856d95ccedf",
+    "title": "Germany's Merz vows to hold ruling coalition together after election gains by far right, hard left",
+    "eventTimestamp": "2026-09-21T13:02:34.000Z",
+    "linkedEntityIds": [
+      "276",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "france-24:90ef6856d95ccedf",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/europe/20260921-germany-merz-vows-to-keep-ruling-coalition-together-after-election-defeats",
+        "timestamp": "2026-09-21T13:02:34.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "guardian:080b77db5d97957a",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/live/2026/sep/21/merz-german-chancellor-state-elections-russia-ukraine-europe-live-latest-news",
+        "timestamp": "2026-09-21T15:02:44.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b4e9a85da7bb0576",
+    "title": "US strikes on alleged drug boats could be crimes against humanity, says UN",
+    "eventTimestamp": "2026-09-21T12:08:56.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bbc:b4e9a85da7bb0576",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/ck5ye7v88qy7o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-21T12:08:56.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "guardian:b35e8fa297b6b3a3",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/us-boat-strikes-crime-against-humanity",
+        "timestamp": "2026-09-21T15:54:43.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-54b247c98702c20a",
+    "title": "UK's Burnham heads to US with pragmatism in mind for Trump meeting",
+    "eventTimestamp": "2026-09-21T10:46:31.000Z",
+    "linkedEntityIds": [
+      "826",
+      "840",
+      "804",
+      "376",
+      "364",
+      "682"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-monitor:54b247c98702c20a",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/uks-burnham-heads-us-pragmatism-mind-trump-meeting",
+        "timestamp": "2026-09-21T10:46:31.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "pbs-newshour:f97eab37d6e8b0e6",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/british-pm-burnham-set-to-meet-trump-for-first-time-at-un-in-new-york",
+        "timestamp": "2026-09-21T17:42:02.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "scmp-asia:9ae0d0fd4b56226c",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/europe/article/3368308/uk-pm-burnham-agrees-saudi-request-refuelling-support?utm_source=rss_feed",
+        "timestamp": "2026-09-21T21:12:06.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "financial-times:214032e8222210e1",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/697c5196-3aa4-4c59-bad9-a455bcc1858f?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T21:30:12.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "pbs-newshour:36297055266d41c4",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/politics/britains-burnham-to-meet-trump-and-make-un-debut-after-offering-uk-military-support-for-saudis",
+        "timestamp": "2026-09-21T22:22:23.000Z",
+        "imageUrl": "https://d3i6fh83elv35t.cloudfront.net/static/2026/09/2026-09-21T150645Z_188871032_RC2QNNAX9O4W_RTRMADP_3_BRITAIN-POLITICS-1024x683.jpg",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "euronews:0aa6e62e3f2c26df",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/british-pm-andy-burnham-to-meet-trump-for-the-first-time-at-the-un-in-new-york",
+        "timestamp": "2026-09-22T05:17:32.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "bbc:0838aaa23594dc8d",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cqevwpmvpekeo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T06:03:22.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/9db6/live/f0a69f40-b670-11f1-b711-df5e4d50c2fd.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b6315570fb5792d9",
+    "title": "CNN, MS NOW, Politico Sue Over Trump’s White House Press Ban",
+    "eventTimestamp": "2026-09-21T10:30:42.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:b6315570fb5792d9",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/cnn-ms-now-and-politico-to-sue-jointly-over-white-house-ban",
+        "timestamp": "2026-09-21T10:30:42.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "euronews:9e456966262bf585",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/21/cnn-ms-now-politico-to-sue-trump-administration-over-white-house-access",
+        "timestamp": "2026-09-21T12:04:37.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "financial-times:0c5f030613b10707",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/63140a82-8af6-4af8-90bd-0325c5724e74?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T13:45:50.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "france-24:6fbf6672c63baa4f",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/americas/20260921-cnn-ms-now-politico-sue-trump-administration-after-white-house-ban",
+        "timestamp": "2026-09-21T14:34:15.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "bbc:f4c2f9aab6793b15",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cm0e32rwvrryo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-21T15:58:53.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "deutsche-welle:ac27ba0425d1e6f5",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/us-news-outlets-sue-trump-over-white-house-ban/a-79362618?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T16:44:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "bloomberg:a4a358958ed13e60",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/trump-white-house-media-ban-does-it-violate-the-first-amendment",
+        "timestamp": "2026-09-21T21:30:59.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a5e154d9c1a07b64",
+    "title": "Yemen's Houthis pledge not to target US ships after Trump cancels strikes",
+    "eventTimestamp": "2026-09-21T10:02:00.000Z",
+    "linkedEntityIds": [
+      "887",
+      "840",
+      "682"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:a5e154d9c1a07b64",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/21/yemens-houthis-pledge-not-to-target-us-ships-after-trump-cancels-strikes",
+        "timestamp": "2026-09-21T10:02:00.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "al-monitor:6361c6e818c471cd",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/houthis-push-control-yemen-highlands-trump-said-have-called-strikes",
+        "timestamp": "2026-09-21T11:46:30.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-78e7ae244c55c2ed",
+    "title": "Denmark says NATO shares responsibility for Arctic security under Greenland deal",
+    "eventTimestamp": "2026-09-21T09:52:22.000Z",
+    "linkedEntityIds": [
+      "208",
+      "840",
+      "643",
+      "156"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "defense-news:78e7ae244c55c2ed",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/global/europe/2026/09/21/denmark-says-nato-shares-responsibility-for-arctic-security-under-greenland-deal/",
+        "timestamp": "2026-09-21T09:52:22.000Z",
+        "imageUrl": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/QQUBRNDB6RGFDKEUN5JGWWPOTE.jpg",
+        "outlet": "Defense News"
+      },
+      {
+        "id": "france-24:addf17b939a715a6",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/americas/20260921-us-denmark-and-greenland-to-sign-security-deal-on-tuesday",
+        "timestamp": "2026-09-21T23:30:46.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "defense-news:4fc8e0daf23a639f",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/global/europe/2026/09/22/us-to-open-two-new-military-bases-in-greenland-sources-say/",
+        "timestamp": "2026-09-22T13:03:04.000Z",
+        "imageUrl": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/FIEXOI6NCVCVHBEMLAT5FDOBJ4.jpg",
+        "outlet": "Defense News"
+      },
+      {
+        "id": "scmp-asia:1cf570b1ba118b5a",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/world/united-states-canada/article/3368427/us-greenland-denmark-sign-deal-new-york-bid-end-arctic-stand?utm_source=rss_feed",
+        "timestamp": "2026-09-22T13:56:04.000Z",
+        "imageUrl": "https://cdn.i-scmp.com/sites/default/files/styles/1280x720/public/d8/images/canvas/2026/09/23/d7ea36b9-1d03-4c75-90b9-ccc92c8599b9_212c724b.jpg?itok=FXbBiwvd&v=1790131810",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "euronews:af9da5693103f4ba",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/my-europe/2026/09/22/trump-signs-greenland-security-deal-allowing-us-to-expand-military-presence",
+        "timestamp": "2026-09-22T16:32:59.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "nbc-news:04597a9c7d4a2949",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/video/trump-signs-deal-with-denmark-over-u-s-military-presence-in-greenland-270298181545",
+        "timestamp": "2026-09-22T16:40:12.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/mpx/2704722219/2026_09/greenland-4c3hjz.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "guardian:02550ad94c8090e4",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/live/2026/sep/22/eu-trump-russia-putin-sanctions-ukraine-greenland-denmark-zelenskyy-latest-news-updates",
+        "timestamp": "2026-09-22T16:51:13.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/fa257f237e84468a2e25a61b0ec14437ac1bfae5/436_0_4680_3744/master/4680.jpg?width=140&quality=85&auto=format&fit=max&s=9e63ae86b18a1b02a4f613ae482be115",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "pbs-newshour:fe1502522ad353d3",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/watch-trump-signs-agreement-with-leaders-of-denmark-and-greenland",
+        "timestamp": "2026-09-22T17:53:12.000Z",
+        "imageUrl": "https://d3i6fh83elv35t.cloudfront.net/static/2026/09/2026-09-21T110604Z_1195851173_RC2SDNAHY330_RTRMADP_3_USA-TRUMP-GREENLAND-DENMARK-1024x683.jpg",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "al-jazeera:b30ee299dc602f92",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/us-signs-tremendous-arctic-security-deal-with-denmark-greenland?traffic_source=rss",
+        "timestamp": "2026-09-22T18:46:32.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "wsj-news:4c00ab36ac1af945",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/heres-what-trumps-greenland-deal-means-for-the-u-s-16c26745?mod=rss_worldnews",
+        "timestamp": "2026-09-22T18:59:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-32956168",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "al-jazeera:09d4f79a78af7d63",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/video/newsfeed/2026/9/22/us-signs-tremendous-security-deal-with-denmark-and-greenland?traffic_source=rss",
+        "timestamp": "2026-09-22T21:11:47.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "bbc:a5003c91bb3c8a82",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c9dr74g32g8go?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-22T21:36:55.000Z",
+        "imageUrl": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/ad23/live/08b181f0-b6b6-11f1-8448-334c53ba4316.jpg",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "deutsche-welle:c107f916a8080e8b",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/trump-signs-tremendous-greenland-security-deal/a-79381148?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T23:14:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-83102dddc494af98",
+    "title": "At Trump-Xi meeting, Taiwan will be on back burner",
+    "eventTimestamp": "2026-09-21T09:01:23.000Z",
+    "linkedEntityIds": [
+      "taiwan",
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:83102dddc494af98",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/21/2026/at-trump-xi-meeting-taiwan-will-be-on-back-burner",
+        "timestamp": "2026-09-21T09:01:23.000Z",
+        "imageUrl": "https://img.semafor.com/8193a049877bc0cde93200e917b104a2cf5d859f-3000x2000.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "scmp-asia:2ae96a345729ed41",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/china/politics/article/3368407/taiwans-opposition-casts-doubt-rock-solid-us-ties-ahead-xi-trump-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-22T11:30:05.000Z",
+        "imageUrl": "https://cdn.i-scmp.com/sites/default/files/styles/1280x720/public/d8/images/canvas/2026/09/22/2725cae0-b000-4f9e-ac81-f121e82d9a40_964f26ca.jpg?itok=bDmTkXgl&v=1790075105",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-3962393e396c2f53",
+    "title": "What to know as world leaders converge at the United Nations this week",
+    "eventTimestamp": "2026-09-21T09:00:00.000Z",
+    "linkedEntityIds": [
+      "804"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "npr:3962393e396c2f53",
+        "sourceCategory": "outlet",
+        "sourceId": "npr",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.npr.org/2026/09/21/nx-s1-5971262/united-nations-general-assembly",
+        "timestamp": "2026-09-21T09:00:00.000Z",
+        "outlet": "NPR",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "pbs-newshour:1111e0b9272adb86",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/world-leaders-meet-at-un-as-planet-grapples-with-war-runaway-ai-and-climate-shocks",
+        "timestamp": "2026-09-21T12:07:52.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-32754ac248e08e0d",
+    "title": "Pakistan says strikes in Afghanistan killed '28 terrorists'",
+    "eventTimestamp": "2026-09-21T08:44:00.000Z",
+    "linkedEntityIds": [
+      "586",
+      "004"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:32754ac248e08e0d",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/pakistan-says-strikes-in-afghanistan-killed-28-terrorists/a-79350604?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T08:44:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "al-monitor:6042382c46d8c2d7",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/pakistan-says-it-killed-28-militants-afghan-taliban-and-un-report-three-civilian",
+        "timestamp": "2026-09-21T08:46:30.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "al-monitor:daa827a102ef6646",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/pakistan-says-28-killed-airstrikes-three-targets-afghanistan",
+        "timestamp": "2026-09-21T09:46:31.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-18c8f14c02de78a1",
+    "title": "Romanian Ex-Presidential Candidate Detained in Fraud Case",
+    "eventTimestamp": "2026-09-21T07:14:04.000Z",
+    "linkedEntityIds": [
+      "642",
+      "643"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:18c8f14c02de78a1",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/romanian-ex-presidential-candidate-georgescu-probed-for-fraud",
+        "timestamp": "2026-09-21T07:14:04.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "balkan-insight:da18acbc84daace3",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/21/romania-probes-far-right-former-presidential-candidate-georgescu-for-fraud/bi/",
+        "timestamp": "2026-09-21T11:37:33.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2025/12/13588410-e1766494033877-640x360.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-f1652642d4480767",
+    "title": "Japan: Typhoon Dujuan sparks flood, landslide warnings",
+    "eventTimestamp": "2026-09-21T06:27:00.000Z",
+    "linkedEntityIds": [
+      "392"
+    ],
+    "topicTags": [
+      "humanitarian-displacement",
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:f1652642d4480767",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/japan-typhoon-dujuan-sparks-flood-landslide-warnings/a-79349957?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T06:27:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "guardian:be599441477b43bc",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/environment/2026/sep/21/weather-tracker-japan-typhoon-dujuan",
+        "timestamp": "2026-09-21T09:45:49.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/75245953703b96bfe68f64455ac1b9c766743e53/251_0_903_723/master/903.jpg?width=140&quality=85&auto=format&fit=max&s=2a015b619a7d9690a5971201e574aa2e",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "scmp-asia:f76091b1235b1be0",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/asia/east-asia/article/3368271/over-16-million-japan-urged-evacuate-typhoon-dujuan-nears-tokyo?utm_source=rss_feed",
+        "timestamp": "2026-09-21T10:44:38.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "bbc:6bb1b8595aee6fc6",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cm3wj2lexl97o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-21T14:06:12.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "france-24:82a50d0f17ac665c",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/video/20260921-typhoon-dujuan-japan-urges-two-million-to-evacuate",
+        "timestamp": "2026-09-21T16:12:03.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "al-jazeera:af3c2da7537ab9c2",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/22/typhoon-dujuan-hits-japan-with-deadly-floods-travel-chaos-near-tokyo?traffic_source=rss",
+        "timestamp": "2026-09-22T00:09:59.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      },
+      {
+        "id": "guardian:9a4b15c8a7593a0f",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/22/typhoon-dujuan-japan-latest-weather-millions-told-to-evacuate-tokyo",
+        "timestamp": "2026-09-22T04:48:59.000Z",
+        "imageUrl": "https://i.guim.co.uk/img/media/2677ceb1cc927a808c0dc8d48d9d324e226ec454/332_0_3305_2645/master/3305.jpg?width=140&quality=85&auto=format&fit=max&s=8ae47c0edb12dd9e01cbfb0416367ae1",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "euronews:c5a1c685db4a7f4c",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/video/2026/09/22/flooded-streets-and-rescues-as-typhoon-dujuan-hits-japan",
+        "timestamp": "2026-09-22T14:48:56.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "euronews:bee0beb41f90f045",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/22/at-least-four-dead-and-six-missing-in-japan-day-after-typhoon-dujuan-made-landfall",
+        "timestamp": "2026-09-22T20:09:10.000Z",
+        "outlet": "Euronews"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-2cdefa6821532ed7",
+    "title": "Putin's United Russia party wins record 355 parliament seats, election chief says",
+    "eventTimestamp": "2026-09-21T05:39:59.000Z",
+    "linkedEntityIds": [
+      "643",
+      "804"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:2cdefa6821532ed7",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/21/russians-vote-in-final-day-of-parliamentary-elections",
+        "timestamp": "2026-09-21T05:39:59.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "deutsche-welle:6631966d36bb75a8",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/russia-putin-party-retains-majority-in-controlled-parliamentary-vote/a-79353231?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T10:48:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "guardian:d3a9ae8d24807b20",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/putin-consolidates-grip-russia-ukraine-war-veterans-elected-duma",
+        "timestamp": "2026-09-21T13:40:39.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "al-jazeera:c10718891808fbb6",
+        "sourceCategory": "outlet",
+        "sourceId": "al-jazeera",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.aljazeera.com/news/2026/9/21/pro-putin-party-wins-supermajority-amid-ramped-up-ukrainian-attacks?traffic_source=rss",
+        "timestamp": "2026-09-21T20:17:39.000Z",
+        "outlet": "Al Jazeera",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial",
+        "caveat": "state-funded"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-46423d6bb5d9c06a",
+    "title": "U.S. proposes AI alert system with China ahead of Trump-Xi summit",
+    "eventTimestamp": "2026-09-21T04:46:52.000Z",
+    "linkedEntityIds": [
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "nbc-news:46423d6bb5d9c06a",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/world/asia/us-proposes-exchanging-ai-safety-alerts-china-bessent-says-rcna598923",
+        "timestamp": "2026-09-21T04:46:52.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/rockcms/2026-09/260921-bessent-he-lifeng-mb-0906-1d439f.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "bbc:30b5ea52b74f827d",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c8vgyzn2d31yo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-21T05:50:56.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "deutsche-welle:ac1b21db33b04b28",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/us-proposes-ai-safety-mechanism-in-talks-with-china/a-79350248?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T08:06:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "scmp-asia:0e45915fafed1204",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/tech/tech-war/article/3368281/ai-safety-fears-mount-can-us-china-hotline-prevent-global-crisis?utm_source=rss_feed",
+        "timestamp": "2026-09-21T13:00:08.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "semafor:9083729142ceb26e",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/21/2026/rifts-ahead-of-us-china-talks-on-ai-safety",
+        "timestamp": "2026-09-21T14:10:58.000Z",
+        "imageUrl": "https://img.semafor.com/4d75712c4fe77353347857bd979073266e742cd6-7864x5243.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "scmp-asia:7718cc0c2ddd9c5b",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/us/diplomacy/article/3368311/us-china-need-nuclear-style-ai-safeguards-congressman-says-xi-trump-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-21T22:48:38.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "nbc-news:58dc6736b1bb3ae1",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/video/scott-bessent-meets-with-chinese-official-on-ai-safety-270262853834",
+        "timestamp": "2026-09-22T01:19:07.000Z",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "the-diplomat:789d57e1668268d4",
+        "sourceCategory": "outlet",
+        "sourceId": "the-diplomat",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://thediplomat.com/2026/09/americas-ai-safety-dilemma-and-at-the-trump-xi-summit/",
+        "timestamp": "2026-09-22T14:35:00.000Z",
+        "imageUrl": "https://images.thediplomat.com/v1/td-list-l-2/2022/11/thediplomat_2022-11-30-143250.jpg",
+        "outlet": "The Diplomat",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-9af0ea22cea8fb9b",
+    "title": "Xi rolls into Trump summit with China's trade engine roaring",
+    "eventTimestamp": "2026-09-21T03:46:24.000Z",
+    "linkedEntityIds": [
+      "156",
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "al-monitor:9af0ea22cea8fb9b",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/xi-rolls-trump-summit-chinas-trade-engine-roaring",
+        "timestamp": "2026-09-21T03:46:24.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "scmp-asia:5e183180cc04b59f",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/economy/policy/article/3367533/rising-toll-us-china-trade-tech-curbs-focus-ahead-xi-trump-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-21T09:00:17.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a38d19a418a4a45d",
+    "title": "Iran closes language center in Tehran, France vows response",
+    "eventTimestamp": "2026-09-21T01:20:00.000Z",
+    "linkedEntityIds": [
+      "364",
+      "250"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:a38d19a418a4a45d",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/iran-closes-language-center-in-tehran-france-vows-response/a-79348984?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T01:20:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "al-monitor:7ef8eabc98a7a631",
+        "sourceCategory": "outlet",
+        "sourceId": "al-monitor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.al-monitor.com/originals/2026/09/france-vows-response-after-iran-closes-language-centre-tehran",
+        "timestamp": "2026-09-21T06:46:27.000Z",
+        "outlet": "Al-Monitor",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-06623bbf6385e5ba",
+    "title": "US and China Hail Talks as Positive Ahead of Trump-Xi Summit",
+    "eventTimestamp": "2026-09-21T00:15:18.000Z",
+    "linkedEntityIds": [
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "bloomberg:06623bbf6385e5ba",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/bessent-hails-very-successful-china-talks-on-ai-threats-trade",
+        "timestamp": "2026-09-21T00:15:18.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "euronews:f449eb17facde0da",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/next/2026/09/21/us-and-china-to-seek-ai-dialogue-to-communicate-shared-concerns",
+        "timestamp": "2026-09-21T03:54:45.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "scmp-asia:73d6dceeee17b475",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/plus/news/china/diplomacy/article/3368245/us-china-agree-ai-dialogue-ahead-trump-xi-summit?utm_source=rss_feed",
+        "timestamp": "2026-09-21T09:01:49.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "bloomberg:6caa3755e7a6d5d8",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-22/china-us-discuss-ai-investment-on-second-day-of-trade-talks",
+        "timestamp": "2026-09-22T00:07:53.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "bloomberg:0c2821adf2035a3a",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-22/low-expectations-for-us-china-ai-talks-video",
+        "timestamp": "2026-09-22T00:39:50.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-de1fa22609739d55",
+    "title": "ICE agent shoots man in Texas after traffic stop, city officials say",
+    "eventTimestamp": "2026-09-21T00:12:00.000Z",
+    "linkedEntityIds": [
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "sky-news-uk:de1fa22609739d55",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/ice-agent-shoots-man-in-texas-after-traffic-stop-city-officials-say-13590300",
+        "timestamp": "2026-09-21T00:12:00.000Z",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "deutsche-welle:d81b418e9bbc1561",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/us-man-wounded-in-texas-after-being-shot-by-ice-agent/a-79349482?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-21T03:42:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-09102ebaadb9caf1",
+    "title": "Canada, France agree to closer ties in defense, economy",
+    "eventTimestamp": "2026-09-20T21:29:00.000Z",
+    "linkedEntityIds": [
+      "124",
+      "250",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:09102ebaadb9caf1",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/canada-france-agree-to-closer-ties-in-defense-economy/a-79348843?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-20T21:29:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "guardian:19f161888996571b",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/france-canada-relations-eu-europe-macron-carney",
+        "timestamp": "2026-09-21T01:09:23.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "france-24:ad25b6670c73b07e",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/france-and-canada-deepen-economic-and-defense-ties",
+        "timestamp": "2026-09-21T14:59:44.000Z",
+        "outlet": "France 24"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ace31a68f434287b",
+    "title": "German state elections deal a blow to Chancellor Friedrich Merz",
+    "eventTimestamp": "2026-09-20T21:20:00.000Z",
+    "linkedEntityIds": [
+      "276",
+      "250",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:ace31a68f434287b",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/german-state-elections-deal-a-blow-to-chancellor-friedrich-merz/a-79348585?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-20T21:20:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "semafor:b6973b5a1564f87b",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/20/2026/merzs-cdu-collapses-in-german-regional-elections-disaster",
+        "timestamp": "2026-09-20T22:26:35.000Z",
+        "imageUrl": "https://img.semafor.com/8ebe8fcf82656ccb611cfa9ef5c959c58ce2aeb2-3223x2150.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "france-24:adc3781ac400ec39",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/afd-surges-as-merz-s-cdu-suffers-regional-elections-setback",
+        "timestamp": "2026-09-21T09:54:25.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "guardian:02ef9f4519cd5eb2",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/german-state-election-humiliation-friedrich-merz-borrowed-time-cdu-unrest-grows",
+        "timestamp": "2026-09-21T10:04:46.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "france-24:220a00aa109419bf",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/regional-losses-for-germany-s-ruling-cdu",
+        "timestamp": "2026-09-21T11:04:17.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "france-24:0c3e6ced48ce6df2",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/replay-german-chancellor-friedrich-merz-in-post-vote-comments",
+        "timestamp": "2026-09-21T12:56:09.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "france-24:fc38222cf66c49df",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/merz-s-election-setback-what-it-means-for-germany",
+        "timestamp": "2026-09-21T15:02:19.000Z",
+        "outlet": "France 24"
+      },
+      {
+        "id": "guardian:0ca055b63a0e645b",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/21/germany-chancellor-freidrich-merz-cdu-christian-democratic-union-state-election-defeats-mecklenburg-western-pomerania-berlin",
+        "timestamp": "2026-09-21T15:38:22.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-bfb9937426c8b03d",
+    "title": "Trump’s Greenland Deal Eases Way for U.S. Business on Arctic Island",
+    "eventTimestamp": "2026-09-20T21:00:00.000Z",
+    "linkedEntityIds": [
+      "840",
+      "208"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "economic-trade",
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "wsj-news:bfb9937426c8b03d",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/trumps-greenland-deal-eases-way-for-u-s-business-on-arctic-island-1cbef960?mod=rss_worldnews",
+        "timestamp": "2026-09-20T21:00:00.000Z",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "semafor:e40ce2ea868a9bcd",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/20/2026/nato-backs-us-denmark-deal-over-greenland-security",
+        "timestamp": "2026-09-20T22:34:41.000Z",
+        "imageUrl": "https://img.semafor.com/aa4bc0e1faf47b43f46311071baea850895729b8-5088x3392.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-6ac4d31b62f25d96",
+    "title": "More than a dozen arrested in connection with 2021 assassination of Haitian president",
+    "eventTimestamp": "2026-09-20T20:17:44.000Z",
+    "linkedEntityIds": [
+      "332",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "guardian:6ac4d31b62f25d96",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/20/more-than-a-dozen-arrested-in-connection-with-assassination-of-haitian-president",
+        "timestamp": "2026-09-20T20:17:44.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "euronews:f9906abea10d7e9b",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/21/us-arrests-18-suspects-in-killing-of-haitian-president-jovenel-moise-officials-say",
+        "timestamp": "2026-09-21T05:22:55.000Z",
+        "outlet": "Euronews"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-9161d16cfd97c713",
+    "title": "18 suspects accused in the 2021 killing of Haiti's president being extradited from Haiti to U.S.",
+    "eventTimestamp": "2026-09-20T19:38:38.000Z",
+    "linkedEntityIds": [
+      "332",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "pbs-newshour:9161d16cfd97c713",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/18-suspects-accused-in-the-2021-killing-of-haitis-president-being-extradited-from-haiti-to-u-s",
+        "timestamp": "2026-09-20T19:38:38.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "npr:d9ceb37a5c6d8223",
+        "sourceCategory": "outlet",
+        "sourceId": "npr",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.npr.org/2026/09/21/nx-s1-5976026/suspects-killing-haiti-president-extradited",
+        "timestamp": "2026-09-21T08:41:50.000Z",
+        "outlet": "NPR",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-e412e2bec23c6fb9",
+    "title": "Merz vows to press ahead with reforms after party's historic defeat in 2 German state elections",
+    "eventTimestamp": "2026-09-20T16:50:46.000Z",
+    "linkedEntityIds": [
+      "276"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "pbs-newshour:e412e2bec23c6fb9",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/merz-vows-to-press-ahead-with-reforms-after-partys-historic-defeat-in-2-german-state-elections",
+        "timestamp": "2026-09-20T16:50:46.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "npr:0481481d15154098",
+        "sourceCategory": "outlet",
+        "sourceId": "npr",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.npr.org/2026/09/20/g-s1-144211/germanys-merz-vows-to-press-ahead-with-reforms-after-historic-state-election-defeat",
+        "timestamp": "2026-09-20T17:29:29.000Z",
+        "outlet": "NPR",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "bloomberg:0ab934fcacbc567f",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/articles/2026-09-21/merz-says-he-has-party-backing-to-stay-on-as-german-chancellor",
+        "timestamp": "2026-09-21T12:10:58.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "financial-times:8949b641a4a66698",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/e40691e8-e96e-444a-baf7-ae3dfef99bce?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T14:41:00.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "wsj-news:8929bccb32463300",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/europe/germanys-merz-pledges-to-stay-on-despite-disastrous-election-result-1a312f0b?mod=rss_worldnews",
+        "timestamp": "2026-09-21T15:28:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-52113181",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "bloomberg:789ff2f2d7e5af4d",
+        "sourceCategory": "outlet",
+        "sourceId": "bloomberg",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bloomberg.com/news/videos/2026-09-21/merz-fights-for-survival-after-worst-state-election-loss-video",
+        "timestamp": "2026-09-21T16:20:50.000Z",
+        "outlet": "Bloomberg",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "bbc:0332fcb6864a3111",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cqm27p8enwmko?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-21T16:54:56.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "financial-times:eb4e12ff3638b79a",
+        "sourceCategory": "outlet",
+        "sourceId": "financial-times",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.ft.com/content/f0b37ddf-3a4f-4631-b664-887b0cdd281c?syn-25a6b1a6=1",
+        "timestamp": "2026-09-21T17:33:51.000Z",
+        "outlet": "Financial Times",
+        "leaning": "center",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "pbs-newshour:8cc1f6b7242437e4",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/germanys-merz-faces-election-defeats-but-no-sign-of-leadership-challenge",
+        "timestamp": "2026-09-21T17:53:21.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "deutsche-welle:ee9cd26bfad55cd8",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/how-will-germany-s-merz-respond-after-crushing-state-election-results-and-losses-to-the-far-right/a-79365325?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-22T07:28:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-3b84b63d424e2014",
+    "title": "Police arrest Pakistan ex-PM Imran Khan's sister ahead of march",
+    "eventTimestamp": "2026-09-20T16:36:00.000Z",
+    "linkedEntityIds": [
+      "586"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "sky-news-uk:3b84b63d424e2014",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/police-arrest-pakistan-ex-pm-imran-khans-sister-in-lahore-ahead-of-march-13590135",
+        "timestamp": "2026-09-20T16:36:00.000Z",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "bbc:fefd3969bb9fafbe",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cm36l2pye2kwo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-20T19:04:11.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "scmp-asia:402b7b0e0ed1f3cd",
+        "sourceCategory": "outlet",
+        "sourceId": "scmp-asia",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.scmp.com/news/asia/south-asia/article/3368301/sisters-pakistans-imran-khan-arrested-lahore-jailed-ex-pms-party-says?utm_source=rss_feed",
+        "timestamp": "2026-09-21T16:59:24.000Z",
+        "outlet": "South China Morning Post (Asia Desk)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8b9bd9606051dcc7",
+    "title": "Under-pressure German leader says state election result a 'disaster'",
+    "eventTimestamp": "2026-09-20T16:26:00.000Z",
+    "linkedEntityIds": [
+      "276"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "sky-news-uk:8b9bd9606051dcc7",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/german-chancellor-friedrich-merz-says-state-election-result-a-disaster-but-vows-to-stay-in-office-13590184",
+        "timestamp": "2026-09-20T16:26:00.000Z",
+        "imageUrl": "https://e3.365dm.com/26/09/1920x1080/skynews-merz-friedrich-merz_7357273.jpg?20260920174842",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "npr:38058f61d7efa6ee",
+        "sourceCategory": "outlet",
+        "sourceId": "npr",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.npr.org/2026/09/21/g-s1-144231/germany-state-elections-merz",
+        "timestamp": "2026-09-21T09:00:00.000Z",
+        "outlet": "NPR",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8c95da59e0402a9a",
+    "title": "Russia: Ukrainian drone strike on Moscow kills 2",
+    "eventTimestamp": "2026-09-20T08:37:00.000Z",
+    "linkedEntityIds": [
+      "643",
+      "804"
+    ],
+    "topicTags": [
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:8c95da59e0402a9a",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/russia-ukrainian-drone-strike-on-moscow-kills-2/a-79341964?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-20T08:37:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "nbc-news:e16495bd67aa4e20",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/world/russia/two-dead-moscow-region-drones-hit-oil-refinery-russian-capital-rcna598767",
+        "timestamp": "2026-09-20T09:28:37.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/rockcms/2026-09/260920-moscow-nd-be3820.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "bbc:b8d9b6f79e589b18",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/c34gdjk1ne8yo?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-20T10:45:39.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "pbs-newshour:1e3da4e0f3ead07b",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/ukraine-fires-over-1000-drones-at-russia-including-largest-ever-attack-on-moscow",
+        "timestamp": "2026-09-20T15:54:32.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "semafor:ff47cb6edb787549",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/20/2026/kyiv-strikes-moscow-as-russians-vote",
+        "timestamp": "2026-09-20T22:28:42.000Z",
+        "imageUrl": "https://img.semafor.com/ddd497369fa38e29d3c7593f178af1acf12fe372-7923x5232.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "france-24:bc10a9c0c6d489db",
+        "sourceCategory": "outlet",
+        "sourceId": "france-24",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.france24.com/en/video/20260921-moscow-ukraine-launches-huge-drone-attack-as-election-wraps-up",
+        "timestamp": "2026-09-21T11:04:47.000Z",
+        "outlet": "France 24"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-718a20fa39a95abb",
+    "title": "North Korea launches 'suspected ballistic missile' into East Sea",
+    "eventTimestamp": "2026-09-20T08:07:39.000Z",
+    "linkedEntityIds": [
+      "408",
+      "840",
+      "410"
+    ],
+    "topicTags": [
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:718a20fa39a95abb",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/20/north-korea-launches-suspected-ballistic-missile-into-east-sea",
+        "timestamp": "2026-09-20T08:07:39.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "pbs-newshour:e93aff2f832d36b2",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/north-korea-launches-2-ballistic-missiles-toward-the-sea-and-dials-up-pressure-on-the-u-s",
+        "timestamp": "2026-09-20T15:39:58.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "the-diplomat:2a50465c80dc2a6d",
+        "sourceCategory": "outlet",
+        "sourceId": "the-diplomat",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://thediplomat.com/2026/09/ahead-of-trump-xi-summit-north-korea-launches-more-missiles/",
+        "timestamp": "2026-09-21T14:09:00.000Z",
+        "imageUrl": "https://images.thediplomat.com/v1/td-list-l-2/2016/09/thediplomat_2016-09-06_22-58-17.jpg",
+        "outlet": "The Diplomat",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-178f7e37bdfb8522",
+    "title": "Saudi Arabia confirms Yemen's Houthi rebels tried to attack its capital with a ballistic missile",
+    "eventTimestamp": "2026-09-19T20:45:21.000Z",
+    "linkedEntityIds": [
+      "682",
+      "887",
+      "364",
+      "840"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "pbs-newshour:178f7e37bdfb8522",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/saudi-arabia-confirms-yemens-houthi-rebels-tried-to-attack-its-capital-with-a-ballistic-missile",
+        "timestamp": "2026-09-19T20:45:21.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "bbc:c8ee23b7efb9c394",
+        "sourceCategory": "outlet",
+        "sourceId": "bbc",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.bbc.co.uk/news/articles/cwly5d9v7r43o?at_medium=RSS&at_campaign=rss",
+        "timestamp": "2026-09-19T23:49:26.000Z",
+        "outlet": "BBC",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "contested": true
+      },
+      {
+        "id": "semafor:8a5f9edc22d4c4ff",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/20/2026/middle-east-tensions-threaten-escalation",
+        "timestamp": "2026-09-20T22:27:58.000Z",
+        "imageUrl": "https://img.semafor.com/8379a3f47dca7a1894a598587ea86ed8ae14ed59-3446x1939.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ded85399f065e366",
+    "title": "Police clash with far-right protesters at anti-immigration rally in The Hague",
+    "eventTimestamp": "2026-09-19T17:13:04.000Z",
+    "linkedEntityIds": [
+      "528"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:ded85399f065e366",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/video/2026/09/19/police-clash-with-far-right-protesters-at-anti-immigration-rally-in-the-hague",
+        "timestamp": "2026-09-19T17:13:04.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "sky-news-uk:ae6d00c1317dec3e",
+        "sourceCategory": "outlet",
+        "sourceId": "sky-news-uk",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://news.sky.com/story/police-clash-with-hundreds-of-far-right-protesters-in-the-hague-13589982",
+        "timestamp": "2026-09-20T03:59:00.000Z",
+        "outlet": "Sky News (UK)",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-88d5877de41bc5ec",
+    "title": "Yemen’s Houthis claim strikes on Riyadh and the port of Yanbu",
+    "eventTimestamp": "2026-09-19T13:53:09.000Z",
+    "linkedEntityIds": [
+      "887",
+      "682",
+      "368",
+      "364"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "terrorism-non-state-actors"
+    ],
+    "systemicThemes": [],
+    "severity": "critical",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:88d5877de41bc5ec",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/19/flames-and-smoke-spotted-at-riyadhs-king-khalid-airport-after-overnight-air-raid-alert",
+        "timestamp": "2026-09-19T13:53:09.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "wsj-news:869973d105c938ac",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/middle-east/air-attack-sets-fuel-depot-ablaze-at-airport-in-saudi-capital-8bcc439c?mod=rss_worldnews",
+        "timestamp": "2026-09-19T20:38:00.000Z",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "guardian:54a0a48e5872449d",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/world/2026/sep/19/saudi-arabia-riyadh-airport",
+        "timestamp": "2026-09-20T00:21:04.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-5ba2b21c8360bdf5",
+    "title": "Trump announces deal with Denmark for 'permanent control' over Greenland's security",
+    "eventTimestamp": "2026-09-18T21:50:55.000Z",
+    "linkedEntityIds": [
+      "208",
+      "840"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "nbc-news:5ba2b21c8360bdf5",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/video/trump-announces-deal-with-denmark-for-permanent-control-over-greenland-s-security-270132805853",
+        "timestamp": "2026-09-18T21:50:55.000Z",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "pbs-newshour:18000f68f85b0f49",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/show/whats-in-the-greenland-agreement-between-u-s-and-denmark",
+        "timestamp": "2026-09-18T22:57:29.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "euronews:a469bbe151422670",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/19/us-and-denmark-reach-deal-over-greenlands-security",
+        "timestamp": "2026-09-19T05:42:22.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "pbs-newshour:692bec84e679df4f",
+        "sourceCategory": "outlet",
+        "sourceId": "pbs-newshour",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.pbs.org/newshour/world/denmarks-leaders-are-cautiously-optimistic-about-trumps-announcement-of-a-greenland-deal",
+        "timestamp": "2026-09-19T18:20:13.000Z",
+        "outlet": "PBS NewsHour",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-d42b4c0e35aaab0d",
+    "title": "Three dead and eight injured in Philippines school shooting",
+    "eventTimestamp": "2026-09-18T15:57:33.000Z",
+    "linkedEntityIds": [
+      "608"
+    ],
+    "topicTags": [
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "euronews:d42b4c0e35aaab0d",
+        "sourceCategory": "outlet",
+        "sourceId": "euronews",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.euronews.com/2026/09/18/three-dead-and-eight-injured-in-philippines-school-shooting",
+        "timestamp": "2026-09-18T15:57:33.000Z",
+        "outlet": "Euronews"
+      },
+      {
+        "id": "nbc-news:4afe238f8e9f50e8",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/video/multiple-dead-including-gunman-in-school-shooting-in-the-philippines-270142021993",
+        "timestamp": "2026-09-19T01:18:22.000Z",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-26935caf5f5c190a",
+    "title": "Japan raises interest rates to 31-year high to curb impact of rising prices",
+    "eventTimestamp": "2026-09-18T07:14:13.000Z",
+    "linkedEntityIds": [
+      "392",
+      "840",
+      "364"
+    ],
+    "topicTags": [
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "guardian:26935caf5f5c190a",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/business/2026/sep/18/japan-raises-interest-rates-to-31-year-high-rising-prices",
+        "timestamp": "2026-09-18T07:14:13.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "wsj-news:a4ef0abcec7c60a9",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/economy/central-banking/bank-of-japan-raises-benchmark-interest-rate-to-1-25-highest-level-since-1995-2b28cbe9?mod=rss_worldnews",
+        "timestamp": "2026-09-18T08:56:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-37097222",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-7202250137475074",
+    "title": "F-35 Sale To Saudi Arabia Approved By State Department",
+    "eventTimestamp": "2026-09-17T19:14:25.000Z",
+    "linkedEntityIds": [
+      "682",
+      "840",
+      "156"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "economic-trade"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "the-war-zone:7202250137475074",
+        "sourceCategory": "outlet",
+        "sourceId": "the-war-zone",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.twz.com/air/f-35-sale-to-saudi-arabia-approved-by-state-department",
+        "timestamp": "2026-09-17T19:14:25.000Z",
+        "imageUrl": "https://www.twz.com/wp-content/uploads/2026/06/f-35-epic-fury.jpg?quality=85",
+        "outlet": "The War Zone"
+      },
+      {
+        "id": "breaking-defense:64d8eb35ff44361e",
+        "sourceCategory": "outlet",
+        "sourceId": "breaking-defense",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://breakingdefense.com/2026/09/us-clears-24b-f-35-sale-for-saudi-arabia/",
+        "timestamp": "2026-09-17T19:39:26.000Z",
+        "outlet": "Breaking Defense"
+      },
+      {
+        "id": "semafor:0f7ed7eb15599b44",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/18/2026/saudi-notches-win-with-f-35-sale",
+        "timestamp": "2026-09-18T08:53:38.000Z",
+        "imageUrl": "https://img.semafor.com/bcbe95a4cfc69cb471d6c715cf5034dfcc4d8401-7311x4954.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "nbc-news:2c1e7c91185ef504",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/politics/national-security/state-department-approves-243b-f-35-fighter-jet-sale-saudi-arabia-chin-rcna598487",
+        "timestamp": "2026-09-18T16:32:29.000Z",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "defense-news:f5a11620e898e06f",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/industry/techwatch/2026/09/18/us-clears-way-for-243-billion-fighter-jet-sale-to-saudi-arabia/",
+        "timestamp": "2026-09-18T17:44:31.000Z",
+        "imageUrl": "https://cloudfront-us-east-1.images.arcpublishing.com/archetype/V6IUKIMI3FBYZCB2HDTR2T43KI.jpg",
+        "outlet": "Defense News"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-2862333610454ffb",
+    "title": "Serbian President Vucic criticizes Kosovo war crimes verdict",
+    "eventTimestamp": "2026-09-17T11:24:00.000Z",
+    "linkedEntityIds": [
+      "688"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:2862333610454ffb",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/serbian-president-vucic-criticizes-kosovo-war-crimes-verdict/a-79307654?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-17T11:24:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "balkan-insight:eaed626d84a76df6",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/17/kosovo-verdict-reflects-wests-strategic-priorities-not-pursuit-of-justice/btj/",
+        "timestamp": "2026-09-17T12:27:14.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2026/09/14296267-scaled-e1789646209921-640x361.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-ad8a45980ac2f529",
+    "title": "Climate crisis probably weakened glacier that caused devastating Nepal-Tibet floods, first study finds",
+    "eventTimestamp": "2026-09-16T23:01:32.000Z",
+    "linkedEntityIds": [
+      "524"
+    ],
+    "topicTags": [
+      "humanitarian-displacement"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "guardian:ad8a45980ac2f529",
+        "sourceCategory": "outlet",
+        "sourceId": "guardian",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.theguardian.com/science/2026/sep/17/climate-crisis-likely-behind-deadly-nepal-tibet-floods",
+        "timestamp": "2026-09-16T23:01:32.000Z",
+        "outlet": "The Guardian",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "deutsche-welle:5794d0b22d9405db",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/how-climate-change-worsened-nepal-s-deadly-mountain-collapse/a-79293578?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-16T23:03:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-f61808591be7462c",
+    "title": "Can Canada and the EU deepen ties to counter Trump?",
+    "eventTimestamp": "2026-09-16T16:50:00.000Z",
+    "linkedEntityIds": [
+      "124",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:f61808591be7462c",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/can-canada-and-the-eu-deepen-ties-to-counter-trump/a-79295388?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-16T16:50:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "nbc-news:ef43207390d3d630",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/world/europe/mark-carney-eu-plot-middle-power-alliance-counter-trump-threats-rcna598284",
+        "timestamp": "2026-09-17T15:41:39.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/rockcms/2026-09/260917-carney-rs-bd5580.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-915ef17f2b417f3c",
+    "title": "Israel Is Bringing SPICE 1000 Standoff Weapon To The F-35",
+    "eventTimestamp": "2026-09-16T16:29:46.000Z",
+    "linkedEntityIds": [
+      "376"
+    ],
+    "topicTags": [
+      "conflict-security"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "the-war-zone:915ef17f2b417f3c",
+        "sourceCategory": "outlet",
+        "sourceId": "the-war-zone",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.twz.com/air/israel-is-bringing-spice-1000-standoff-weapon-to-the-f-35",
+        "timestamp": "2026-09-16T16:29:46.000Z",
+        "imageUrl": "https://www.twz.com/wp-content/uploads/2026/09/SPICE-1000.jpg?quality=85",
+        "outlet": "The War Zone"
+      },
+      {
+        "id": "defense-news:27606f48c02c2513",
+        "sourceCategory": "outlet",
+        "sourceId": "defense-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.defensenews.com/global/mideast-africa/2026/09/16/israels-spice-1000-bombs-can-soon-drop-from-f-35-fighters/",
+        "timestamp": "2026-09-16T17:15:01.000Z",
+        "outlet": "Defense News"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-c1f375c33922a6c4",
+    "title": "U.S. accuses Russia of plot to kill a prominent dissident in Washington",
+    "eventTimestamp": "2026-09-16T11:30:05.000Z",
+    "linkedEntityIds": [
+      "840",
+      "643",
+      "804"
+    ],
+    "topicTags": [
+      "conflict-security",
+      "diplomacy-politics",
+      "crime-trafficking"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "nbc-news:c1f375c33922a6c4",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/world/russia/russia-plot-kill-dissident-washington-doj-kremlin-rcna598079",
+        "timestamp": "2026-09-16T11:30:05.000Z",
+        "imageUrl": "https://media-cldnry.s-nbcnews.com/image/upload/t_fit_1500w/rockcms/2026-09/260916-fbi-rs-e8ca74.jpg",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      },
+      {
+        "id": "semafor:f838ff382414c3eb",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/16/2026/us-prosecutors-charge-five-with-plot-to-kill-russian-dissident-in-dc",
+        "timestamp": "2026-09-16T22:36:08.000Z",
+        "imageUrl": "https://img.semafor.com/b198090117efd636cfd3a24488ae415da1cffd05-7442x4996.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-8e69fa04111db20b",
+    "title": "The EU invites Canada to become 'associate member'",
+    "eventTimestamp": "2026-09-16T10:52:04.000Z",
+    "linkedEntityIds": [
+      "124"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:8e69fa04111db20b",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/16/2026/the-eu-invites-canada-to-become-associate-member",
+        "timestamp": "2026-09-16T10:52:04.000Z",
+        "imageUrl": "https://img.semafor.com/e43c804e6ac417c56e773431e89c27ca20b32249-5500x3667.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "wsj-news:48c4248bf81d8bda",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/europe/eu-chief-floats-plan-to-make-canada-first-associate-member-da300f13?mod=rss_worldnews",
+        "timestamp": "2026-09-16T15:16:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-95944757",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-b4532ed0a7be8229",
+    "title": "This English Village Is Threatening to Quit the U.K. Over Planned Asylum Camp",
+    "eventTimestamp": "2026-09-16T08:04:00.000Z",
+    "linkedEntityIds": [
+      "826"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "humanitarian-displacement"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "wsj-news:b4532ed0a7be8229",
+        "sourceCategory": "outlet",
+        "sourceId": "wsj-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.wsj.com/world/uk/this-english-village-is-threatening-to-quit-the-u-k-over-planned-asylum-camp-cd0d7610?mod=rss_worldnews",
+        "timestamp": "2026-09-16T08:04:00.000Z",
+        "imageUrl": "https://images.wsj.net/im-14243208",
+        "outlet": "Wall Street Journal (News)",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "high",
+        "caveat": "Rating applies to the news section only; Opinion is rated separately, is contested, and is not used."
+      },
+      {
+        "id": "deutsche-welle:34357e6787449aa6",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/uk-village-votes-to-secede-in-asylum-center-plan-protest/a-79295826?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-16T17:41:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-7aa28ff43a6e4293",
+    "title": "Live Blog: Kosovo Liberation Army Leaders’ War Crimes Trial Verdict",
+    "eventTimestamp": "2026-09-16T06:28:39.000Z",
+    "linkedEntityIds": [
+      "688"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "major",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "balkan-insight:7aa28ff43a6e4293",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/16/live-blog-kosovo-liberation-army-leaders-war-crimes-trial-verdict/btj/",
+        "timestamp": "2026-09-16T06:28:39.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2026/09/13578579-640x360.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "deutsche-welle:3d4a4c6b1f1f41fe",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/kosovo-ex-president-thaci-sentenced-to-25-years-for-war-crimes/a-79286344?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-16T09:58:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "balkan-insight:6fb4f554f0b4e4e3",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/16/hague-court-convicts-kosovo-liberation-army-leaders-of-war-crimes/btj/",
+        "timestamp": "2026-09-16T11:35:42.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2026/09/viber_image_2026-09-16_10-48-38-560-640x324.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      },
+      {
+        "id": "deutsche-welle:1c96679cf5c778e5",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/shock-in-kosovo-as-hague-convicts-former-president-thaci/a-79294916?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-16T15:59:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "balkan-insight:70d1e7acfc56a76d",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/16/kosovo-slams-unjust-conviction-of-hashim-thaci-serbian-minister-applauds/btj/",
+        "timestamp": "2026-09-16T17:43:39.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2026/09/14296221-640x427.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-a0038711c2ac1fa2",
+    "title": "Why do authoritarian regimes target the LGBTQ+ community?",
+    "eventTimestamp": "2026-09-15T16:14:00.000Z",
+    "linkedEntityIds": [
+      "792"
+    ],
+    "topicTags": [
+      "diplomacy-politics"
+    ],
+    "systemicThemes": [],
+    "severity": "routine",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "deutsche-welle:a0038711c2ac1fa2",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/why-do-authoritarian-regimes-target-the-lgbtq-community/a-79276831?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-15T16:14:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "deutsche-welle:cca99415366fb3c4",
+        "sourceCategory": "outlet",
+        "sourceId": "deutsche-welle",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.dw.com/en/turkey-s-rights-groups-eu-call-out-lgbtq-crackdown/a-79284021?maca=en-rss-en-all-1573-xml-mrss",
+        "timestamp": "2026-09-15T19:32:00.000Z",
+        "outlet": "Deutsche Welle",
+        "leaning": "center",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "low/initial"
+      },
+      {
+        "id": "balkan-insight:568cc1538e02948a",
+        "sourceCategory": "outlet",
+        "sourceId": "balkan-insight",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://balkaninsight.com/2026/09/16/turkey-stages-wide-ranging-lgbt-crackdown-for-family-safety/bi/",
+        "timestamp": "2026-09-16T13:06:45.000Z",
+        "imageUrl": "https://balkaninsight.com/wp-content/uploads/2026/09/11558632-scaled-e1789560607277-640x360.jpg",
+        "outlet": "Balkan Insight (BIRN)",
+        "tier": "regional-specialist"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  },
+  {
+    "id": "evt-d4853744c9c4444d",
+    "title": "Beijing issues AI warnings but rejects US calls to slow development",
+    "eventTimestamp": "2026-09-14T10:49:55.000Z",
+    "linkedEntityIds": [
+      "156",
+      "840"
+    ],
+    "topicTags": [
+      "diplomacy-politics",
+      "science-technology"
+    ],
+    "systemicThemes": [],
+    "severity": "significant",
+    "reviewStatus": "auto-published",
+    "sources": [
+      {
+        "id": "semafor:d4853744c9c4444d",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/14/2026/beijing-issues-ai-warnings-but-rejects-us-calls-to-slow-development",
+        "timestamp": "2026-09-14T10:49:55.000Z",
+        "imageUrl": "https://img.semafor.com/cbc2bcc0132483897eb5534eb4f0b0c1bdc5d243-2048x1365.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "semafor:37320aa88643e413",
+        "sourceCategory": "outlet",
+        "sourceId": "semafor",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.semafor.com/article/09/15/2026/the-us-and-china-are-hurtling-toward-kissingers-worst-ai-nightmare",
+        "timestamp": "2026-09-15T10:11:58.000Z",
+        "imageUrl": "https://img.semafor.com/6a129be71caafebedc2a2902d4232dc709b61086-2048x1419.jpg",
+        "outlet": "Semafor",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides"
+      },
+      {
+        "id": "nbc-news:6bd63a63f44f3838",
+        "sourceCategory": "outlet",
+        "sourceId": "nbc-news",
+        "countsTowardCorroboration": true,
+        "refUrl": "https://www.nbcnews.com/world/asia/china-ai-risks-agree-slowdown-us-tech-rcna597859",
+        "timestamp": "2026-09-15T16:00:34.000Z",
+        "outlet": "NBC News",
+        "leaning": "lean-left",
+        "leaningSource": "AllSides",
+        "leaningConfidence": "medium"
+      }
+    ],
+    "snapshotDate": "2026-09-23T08:18:50.116Z"
+  }
+]

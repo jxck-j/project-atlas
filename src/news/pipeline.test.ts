@@ -236,6 +236,27 @@ describe('classifyText', () => {
     expect(resolveTopicTags('Militant attack kills 12 at a market')).toEqual(['terrorism-non-state-actors'])
   })
 
+  it('"for the first time" is only an escalation next to a fighting word (Phase 4 live report)', () => {
+    // The reported bug: a first diplomatic MEETING tiered Major, because the text also mentioned military support
+    // somewhere else, and conflictish + escalation is Major on its own.
+    const text =
+      "Britain's Burnham to meet Trump and make UN debut after offering UK military support for Saudis. Burnham is set to meet U.S. President Donald Trump for the first time."
+    expect(resolveTopicTags(text)).toContain('conflict-security')
+    expect(extractSeverityFacts(text).escalation).toBe(false)
+    expect(classifyText(text).severity).toBe('significant')
+    // Same clause as a fighting word: still an escalation (both of these are labeled Major in the fixture).
+    expect(extractSeverityFacts('This is the first time since the May 2025 military clashes that tension has erupted').escalation).toBe(true)
+    expect(extractSeverityFacts('USMC Used Its Playbook In Combat For First Time During Epic Fury').escalation).toBe(true)
+    // Bare "war" is not a fighting word here — it is background in economic coverage.
+    expect(extractSeverityFacts('US diesel topped $6.50 a gallon for the first time, extending a war-driven rally').escalation).toBe(false)
+  })
+
+  it('an explicit escalation word still stands alone, but de-escalation is not escalation', () => {
+    expect(extractSeverityFacts('Houthis hit Saudi Arabia, threatening further escalation').escalation).toBe(true)
+    expect(extractSeverityFacts('Mediators urge de-escalation after border clashes').escalation).toBe(false)
+    expect(extractSeverityFacts('Both sides agree to deescalate tensions along the frontier').escalation).toBe(false)
+  })
+
   it('severing diplomatic relations is Major; expelling an ambassador stays Significant (settled call 6)', () => {
     expect(classifyText('Algiers cuts diplomatic relations with Abu Dhabi').severity).toBe('major')
     const expelled = classifyText('Algeria expels Emirati ambassador over remarks')

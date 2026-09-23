@@ -5,6 +5,12 @@
 // tier's corroboration floor. All the logic lives in src/news/ (pure, tested);
 // this file is the fetch/write shell around it.
 //
+// Since the Phase 4 cutover the pull is not what gets built: every fetched
+// article is appended to the archive first, and the build then runs over the
+// archive's last FEED_RETENTION_DAYS (src/news/feedWindow.ts). One run
+// therefore publishes a rolling two-week feed, not just what broke since the
+// previous run.
+//
 // Runs via `tsx`, not `node` (unlike v1's buildNews.mjs): it imports the .ts
 // modules in src/news/ directly so the build and the client can never
 // disagree about corroboration, gating, or ranking. Same precedent as
@@ -41,8 +47,11 @@
 //   URL+text+prompt version+model in debug/news-classification-cache.json, so the twice-daily
 //   cadence only pays for articles it hasn't seen.
 //
-// v1's scripts/buildNews.mjs and public/data/news.json are untouched: the
-// shipped NEWS tab keeps reading v1 until the Phase 4 UI cutover.
+// Since the Phase 4 cutover (2026-09-23) this file's output IS the shipped
+// NEWS tab: hud/NewsPanel.tsx and IntelligencePanel.tsx both read
+// public/data/news-events.json. v1's scripts/buildNews.mjs and
+// public/data/news.json are dormant, not deleted — they come out once the
+// cutover is confirmed in the browser.
 //
 // WHY THE PENDING QUEUE IS A SEPARATE, UNSHIPPED FILE: an Event in
 // `pending-confirmation` is, by definition, an unconfirmed claim that a head
@@ -62,7 +71,8 @@
 import fs from 'node:fs'
 import { feature } from 'topojson-client'
 import { fetchFeedArticles } from './lib/fetchFeeds.mjs'
-import { archiveArticles } from './lib/newsArchive.mjs'
+import { archiveArticles, readArchive } from './lib/newsArchive.mjs'
+import { applyPullMetadata, FEED_RETENTION_DAYS, selectFeedWindow } from '../src/news/feedWindow.ts'
 import { buildCountryMatchers, TAIWAN_REF } from '../src/news/countryResolution.ts'
 import { buildEvents, buildEventsWithEmbeddings, buildEventsWithLlm } from '../src/news/eventBuilder.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
@@ -105,16 +115,30 @@ const countryMatchers = buildCountryMatchers([...countries, TAIWAN_REF])
 const profiles = JSON.parse(fs.readFileSync(SOURCES, 'utf8'))
 const feeds = JSON.parse(fs.readFileSync(FEEDS, 'utf8'))
 
-const { articles, feedFailures } = await fetchFeedArticles(feeds)
+const { articles: pulled, feedFailures } = await fetchFeedArticles(feeds)
 
 // Raw pull, kept (gitignored) so clustering/classification can be tuned against real headlines offline.
 fs.mkdirSync('debug', { recursive: true })
-fs.writeFileSync('debug/news-articles.json', JSON.stringify(articles, null, 1))
+fs.writeFileSync('debug/news-articles.json', JSON.stringify(pulled, null, 1))
 
 // Append-only archive of everything any run has seen (see scripts/lib/newsArchive.mjs). Done before anything that can fail or exit
 // early (model load, LLM dry run), so a run that publishes nothing still keeps its feed window.
-const archived = archiveArticles(articles, new Date().toISOString())
+const archived = archiveArticles(pulled, new Date().toISOString())
 console.log(`Archive: +${archived.added} new, ${archived.total} total.`)
+
+// THE BUILD READS THE ARCHIVE, NOT THE PULL (Phase 4, J's call). RSS only exposes the last day or two, so building from
+// one pull publishes only what happened since the last run — v1 worked around that by carrying its own previous output
+// forward and re-ingesting it. Here the archive (just updated with this pull, above) already holds every article any run
+// has seen, so the feed window is a filter over it: see src/news/feedWindow.ts. Fresh clone with no archive yet: fall
+// back to the pull, so the build still works rather than publishing nothing.
+const stored = readArchive()
+const articles = stored.length > 0 ? applyPullMetadata(selectFeedWindow(stored, new Date().toISOString()), pulled) : pulled
+const windowStart = articles[0]?.publishedAt
+console.log(
+  `Feed window: ${articles.length} article(s) within ${FEED_RETENTION_DAYS} days` +
+    (windowStart ? ` (oldest ${windowStart.slice(0, 10)})` : '') +
+    (stored.length > 0 ? ` of ${stored.length} archived.` : ' — no archive yet, using this pull only.'),
+)
 
 // ---------------------------------------------------------------------------
 // LLM mode
@@ -237,7 +261,7 @@ fs.mkdirSync('debug', { recursive: true })
 fs.writeFileSync(PENDING_OUTPUT, JSON.stringify(result.pending, null, 2))
 
 const bySeverity = (s) => result.published.filter((e) => e.severity === s).length
-console.log(`Fetched ${articles.length} articles from ${feeds.length - feedFailures.length}/${feeds.length} feeds.`)
+console.log(`Fetched ${pulled.length} articles from ${feeds.length - feedFailures.length}/${feeds.length} feeds; built from ${articles.length} in the feed window.`)
 for (const failure of feedFailures) console.warn(`  feed failed: ${failure}`)
 console.log(`Wrote ${OUTPUT}: ${result.published.length} Events (${result.clusters} clusters from ${result.articlesIn} articles).`)
 console.log(`  severity — critical=${bySeverity('critical')}, major=${bySeverity('major')}, significant=${bySeverity('significant')}, routine=${bySeverity('routine')}`)

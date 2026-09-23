@@ -23,9 +23,11 @@ import { ICONS } from './iconPaths'
 import { PANEL_SECTION_LABEL } from './panelStyles'
 import { INTEL_METRICS, type IntelMetricId } from './intelMetrics'
 import { SegmentedBar } from './SegmentedBar'
-import { usePublishedNewsItems } from '../data/useNewsFeatures'
-import type { NewsItem } from '../data'
-import { NEWS_SEVERITY_STYLE, isNewsItemBreaking } from './newsSeverityStyles'
+import { useNewsEvents } from '../data/useNewsEvents'
+import { buildFeed } from '../news/feed'
+import { deriveCorroboration } from '../news/corroboration'
+import { distinctSources, sourceDisplayName } from '../news/eventPresentation'
+import { CORROBORATION_STYLE, NEWS_SEVERITY_STYLE, isEventBreaking } from './newsEventStyles'
 import { setPendingNewsCountryId } from './newsFilterStore'
 import { setTopNavTab } from './navStore'
 
@@ -1093,19 +1095,16 @@ export function IntelligencePanel() {
 
   // Recent News section (below) — same `selected.id`-keyed, kind-agnostic
   // lookup Military/Economy/Current Status already use, so it "just works"
-  // for any future entity kind buildNews.mjs's country resolution reaches.
-  // Top 3, severity then recency — same rule NewsPanel.tsx's country-scoped
-  // ranking uses, just STACKED here instead of side-by-side (see
-  // news-engine-design.md's "Two ranking logics" section).
-  const newsSeverityRank: Record<NewsItem['severity'], number> = { routine: 0, significant: 1, 'high-stakes': 2 }
-  const recentNews = usePublishedNewsItems()
-    .filter((item) => currentStatusCountryId != null && item.linkedEntityIds.includes(currentStatusCountryId))
-    .sort(
-      (a, b) =>
-        newsSeverityRank[b.severity] - newsSeverityRank[a.severity] ||
-        new Date(b.snapshotDate).getTime() - new Date(a.snapshotDate).getTime()
-    )
-    .slice(0, 3)
+  // for any entity the news build's country resolution reaches (Taiwan
+  // included). Top 3 for this country, severity then recency, STACKED here
+  // instead of side-by-side (news-sourcing-design.md §10). Ranking is
+  // `buildFeed` with no tab — the same function the News tab itself uses, so
+  // "top 3 here" and "top 3 there" can't drift apart.
+  const allNewsEvents = useNewsEvents()
+  const recentNews =
+    currentStatusCountryId == null
+      ? []
+      : buildFeed(allNewsEvents, { countryIds: [currentStatusCountryId] }).featured
 
   // v6.3.2: citation drill-down (design doc §7) — clicking a wired bar
   // (MILITARY, ECONOMY, TECHNOLOGY) collapses the other rows and drops down
@@ -1339,31 +1338,44 @@ export function IntelligencePanel() {
                   </button>
                 </div>
                 <div className="space-y-2">
-                  {recentNews.map((item) => (
-                    <a
-                      key={item.id}
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block rounded border border-[#16233c] bg-[rgba(10,16,28,0.4)] p-2 transition-colors hover:border-[#3f8bff]"
-                    >
-                      <div className="mb-1 flex items-center gap-1.5">
-                        {isNewsItemBreaking(item) && (
-                          <span className="animate-pulse rounded-full border border-[#ff4a42] px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em] text-[#ff4a42]">
-                            JUST IN
+                  {recentNews.map((event) => {
+                    const sources = distinctSources(event)
+                    return (
+                      <a
+                        key={event.id}
+                        href={event.sources[0]?.refUrl ?? '#'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded border border-[#16233c] bg-[rgba(10,16,28,0.4)] p-2 transition-colors hover:border-[#3f8bff]"
+                      >
+                        <div className="mb-1 flex items-center gap-1.5">
+                          {isEventBreaking(event) && (
+                            <span className="animate-pulse rounded-full border border-[#ff4a42] px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em] text-[#ff4a42]">
+                              JUST IN
+                            </span>
+                          )}
+                          <span
+                            className="rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em]"
+                            style={{ color: NEWS_SEVERITY_STYLE[event.severity].color }}
+                          >
+                            {NEWS_SEVERITY_STYLE[event.severity].label.toUpperCase()}
                           </span>
-                        )}
-                        <span
-                          className="rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em]"
-                          style={{ color: NEWS_SEVERITY_STYLE[item.severity].color }}
-                        >
-                          {NEWS_SEVERITY_STYLE[item.severity].label.toUpperCase()}
-                        </span>
-                        <span className="text-[8.5px] text-[#51648a]">{item.source.outlet}</span>
-                      </div>
-                      <div className="text-[11px] leading-snug text-[#e6efff]">{item.headline}</div>
-                    </a>
-                  ))}
+                          {/* The dossier's standing, derived the same way the publish gate derived it — never a stored field. */}
+                          <span
+                            className="rounded-full px-1.5 py-0.5 text-[8px] font-bold tracking-[0.06em]"
+                            style={{ color: CORROBORATION_STYLE[deriveCorroboration(event.sources)].color }}
+                          >
+                            {CORROBORATION_STYLE[deriveCorroboration(event.sources)].label}
+                          </span>
+                        </div>
+                        <div className="mb-1 text-[11px] leading-snug text-[#e6efff]">{event.title}</div>
+                        <div className="text-[8.5px] text-[#51648a]">
+                          {sources.slice(0, 3).map(sourceDisplayName).join(', ')}
+                          {sources.length > 3 && ` +${sources.length - 3}`}
+                        </div>
+                      </a>
+                    )
+                  })}
                 </div>
               </div>
             )}

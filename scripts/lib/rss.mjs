@@ -28,14 +28,36 @@ function extractAttr(itemXml, tag, attr) {
   return match ? decodeEntities(match[1]) : undefined
 }
 
+// Named AND numeric character references. The original handled six named forms plus
+// the single numeric `&#39;`, which missed most of what real feeds actually send —
+// a count over the article archive found `&#039;` ×256, `&#x2019;` ×83, `&#8217;`
+// ×49, plus dashes, curly quotes and accented letters, all of which reached the UI
+// as raw "&#x2019;" text (reported 2026-09-23).
+//
+// The canonical decoder is src/news/htmlEntities.ts, which the BUILD applies to
+// every article — including the ones already archived with raw entities, which
+// this fix can't reach because the archive is append-only. This copy stays a
+// small, dependency-free duplicate on purpose: v1's scripts/buildNews.mjs imports
+// this file under plain `node`, which cannot import a .ts module. Keep the two in
+// step; decoding twice is harmless.
+const NAMED_ENTITIES = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+  hellip: '…', mdash: '—', ndash: '–', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”',
+}
+
 function decodeEntities(text) {
   return text
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
+    .replace(/&(#[Xx][0-9A-Fa-f]+|#\d+|[A-Za-z][A-Za-z0-9]*);/g, (match, body) => {
+      if (body[0] !== '#') return NAMED_ENTITIES[body.toLowerCase()] ?? match
+      const code = body[1] === 'x' || body[1] === 'X' ? Number.parseInt(body.slice(2), 16) : Number.parseInt(body.slice(1), 10)
+      if (!Number.isFinite(code) || code <= 0 || code > 0x10ffff) return match
+      try {
+        return String.fromCodePoint(code)
+      } catch {
+        return match
+      }
+    })
+    .replace(/ /g, ' ')
 }
 
 /**
@@ -45,7 +67,10 @@ function decodeEntities(text) {
  * error. `imageUrl` is read from `<media:thumbnail url="...">` (the only of
  * the three v1 outlets that actually populates it is BBC — see
  * buildNews.mjs's own header comment) with `<enclosure url="..." type="image/...">`
- * as a fallback for a feed that uses that convention instead.
+ * and then `<media:content url="...">` as fallbacks for feeds using those
+ * conventions instead — added 2026-09-23 for the Phase 4 cutover, when the
+ * v2 roster's feeds (not just v1's three outlets) started being read for
+ * card thumbnails.
  */
 export function parseRssItems(xmlText) {
   const itemBlocks = xmlText.match(/<item\b[^>]*>[\s\S]*?<\/item>/gi) ?? []
@@ -55,6 +80,9 @@ export function parseRssItems(xmlText) {
     link: extractTag(block, 'link'),
     pubDate: extractTag(block, 'pubDate'),
     guid: extractTag(block, 'guid'),
-    imageUrl: extractAttr(block, 'media:thumbnail', 'url') ?? extractAttr(block, 'enclosure', 'url'),
+    imageUrl:
+      extractAttr(block, 'media:thumbnail', 'url') ??
+      extractAttr(block, 'enclosure', 'url') ??
+      extractAttr(block, 'media:content', 'url'),
   }))
 }

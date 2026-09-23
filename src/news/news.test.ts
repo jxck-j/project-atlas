@@ -3,6 +3,7 @@ import { deriveCorroboration, meetsCorroborationFloor } from './corroboration'
 import { buildFeed, filterEvents } from './feed'
 import { isReaderVisible, resolvePublishDecision } from './publishGate'
 import { compareByRecency, compareBySeverityThenRecency, compareWorld, splitFeatured } from './ranking'
+import { assignEventImages } from './eventPresentation'
 import {
   applySeverityCaps,
   capSeverity,
@@ -435,30 +436,34 @@ describe('ranking', () => {
     expect([newRoutine, oldCritical].sort(compareBySeverityThenRecency).map((e) => e.id)).toEqual(['c', 'r'])
   })
 
-  it('World ranks by number of linked countries before severity', () => {
+  it('World ranks by severity before breadth (§10 amended 2026-09-23 — a broad Routine story must not outrank a Critical one)', () => {
     const broadRoutine = event({ id: 'broad', severity: 'routine', linkedEntityIds: ['1', '2', '3'] })
     const narrowCritical = event({ id: 'narrow', severity: 'critical', linkedEntityIds: ['1'] })
-    expect([narrowCritical, broadRoutine].sort(compareWorld).map((e) => e.id)).toEqual(['broad', 'narrow'])
+    expect([broadRoutine, narrowCritical].sort(compareWorld).map((e) => e.id)).toEqual(['narrow', 'broad'])
   })
 
-  it('World falls back to severity, then recency, at equal breadth', () => {
-    const a = event({ id: 'a', severity: 'major', linkedEntityIds: ['1', '2'] })
-    const b = event({ id: 'b', severity: 'critical', linkedEntityIds: ['3', '4'] })
-    expect([a, b].sort(compareWorld).map((e) => e.id)).toEqual(['b', 'a'])
+  it('World uses breadth as the tie-break WITHIN a severity tier, then recency', () => {
+    const broad = event({ id: 'broad', severity: 'major', linkedEntityIds: ['1', '2', '3'] })
+    const narrowNewer = event({ id: 'narrow', severity: 'major', linkedEntityIds: ['1'], eventTimestamp: '2026-09-22T00:00:00Z' })
+    expect([narrowNewer, broad].sort(compareWorld).map((e) => e.id)).toEqual(['broad', 'narrow'])
+    const olderBroad = event({ id: 'old', severity: 'major', linkedEntityIds: ['1'], eventTimestamp: '2026-09-19T00:00:00Z' })
+    expect([olderBroad, narrowNewer].sort(compareWorld).map((e) => e.id)).toEqual(['narrow', 'old'])
   })
 
-  it('splitFeatured takes the top 3 by the given rank and orders the rest by pure recency', () => {
+  it('splitFeatured takes the top 3 by the given rank and orders the rest by severity, then recency', () => {
     const events = [
       event({ id: 'crit', severity: 'critical', eventTimestamp: '2026-09-20T01:00:00Z' }),
       event({ id: 'maj', severity: 'major', eventTimestamp: '2026-09-20T02:00:00Z' }),
       event({ id: 'sig', severity: 'significant', eventTimestamp: '2026-09-20T03:00:00Z' }),
-      // Below the featured 3: a routine-but-newer item must lead a significant-but-older one (no severity weighting).
+      // Below the featured 3: §10 as written puts the newer Routine item first. J's standing call (from v1,
+      // carried into v2 on 2026-09-23) is that severity still leads here — a just-in Routine item above an
+      // older Significant one reads as a broken feed.
       event({ id: 'sigOld', severity: 'significant', eventTimestamp: '2026-09-20T04:00:00Z' }),
       event({ id: 'routNew', severity: 'routine', eventTimestamp: '2026-09-20T08:00:00Z' }),
     ]
     const { featured, rest } = splitFeatured(events, compareBySeverityThenRecency)
     expect(featured.map((e) => e.id)).toEqual(['crit', 'maj', 'sigOld'])
-    expect(rest.map((e) => e.id)).toEqual(['routNew', 'sig'])
+    expect(rest.map((e) => e.id)).toEqual(['sig', 'routNew'])
   })
 
   it('splitFeatured with fewer than 3 events leaves rest empty', () => {
@@ -515,11 +520,16 @@ describe('filterEvents / buildFeed', () => {
     expect(ids(filterEvents(all, { tab: 'conflict', themeId: 'energy-security-crisis' }))).toEqual([])
   })
 
-  it('buildFeed ranks World by breadth, but a topic tab by severity', () => {
+  it('buildFeed leads with severity on every tab, World included; breadth only breaks a tie within a tier', () => {
     const broad = event({ id: 'broad', severity: 'routine', topicTags: ['conflict-security'], linkedEntityIds: ['1', '2', '3'] })
     const sharp = event({ id: 'sharp', severity: 'critical', topicTags: ['conflict-security'], linkedEntityIds: ['1'] })
-    expect(buildFeed([sharp, broad], { tab: 'world' }).featured.map((e) => e.id)).toEqual(['broad', 'sharp'])
+    expect(buildFeed([broad, sharp], { tab: 'world' }).featured.map((e) => e.id)).toEqual(['sharp', 'broad'])
     expect(buildFeed([broad, sharp], { tab: 'conflict' }).featured.map((e) => e.id)).toEqual(['sharp', 'broad'])
+    // The one thing World still does differently: at equal severity, the story touching more countries leads.
+    const sameTierBroad = event({ id: 'wide', severity: 'major', topicTags: ['conflict-security'], linkedEntityIds: ['1', '2', '3'] })
+    const sameTierNarrow = event({ id: 'thin', severity: 'major', topicTags: ['conflict-security'], linkedEntityIds: ['9'], eventTimestamp: '2026-09-22T00:00:00Z' })
+    expect(buildFeed([sameTierNarrow, sameTierBroad], { tab: 'world' }).featured.map((e) => e.id)).toEqual(['wide', 'thin'])
+    expect(buildFeed([sameTierNarrow, sameTierBroad], { tab: 'conflict' }).featured.map((e) => e.id)).toEqual(['thin', 'wide'])
   })
 })
 
@@ -539,5 +549,44 @@ describe('systemic themes', () => {
 
   it('falls back to the raw id for an unknown theme', () => {
     expect(themeLabel(themes, 'nope')).toBe('nope')
+  })
+})
+
+describe('assignEventImages', () => {
+  it('gives two Events different pictures when one outlet reuses a file photo across a storyline', () => {
+    // The reported pair: both led with a Semafor photo of the same scene under two different asset URLs, so
+    // comparing URLs alone can't separate them. The second Event has a BBC image available and takes it.
+    const riyadh = event({
+      id: 'riyadh',
+      sources: [outlet('euronews'), outlet('wsj-news'), outlet('semafor', { imageUrl: 'https://img.semafor.com/8379a3f.jpg' })],
+    })
+    const warnings = event({
+      id: 'warnings',
+      sources: [outlet('semafor', { imageUrl: 'https://img.semafor.com/2bb8170.jpg' }), outlet('bbc', { imageUrl: 'https://ichef.bbci.co.uk/a.jpg' })],
+    })
+    const images = assignEventImages([riyadh, warnings])
+    expect(images.get('riyadh')).toBe('https://img.semafor.com/8379a3f.jpg')
+    expect(images.get('warnings')).toBe('https://ichef.bbci.co.uk/a.jpg')
+  })
+
+  it('never repeats an exact URL, falling back to no image rather than a duplicate', () => {
+    const shared = 'https://wire.test/pool-photo.jpg'
+    const a = event({ id: 'a', sources: [outlet('bbc', { imageUrl: shared })] })
+    const b = event({ id: 'b', sources: [outlet('guardian', { imageUrl: shared })] })
+    const images = assignEventImages([a, b])
+    expect(images.get('a')).toBe(shared)
+    expect(images.has('b')).toBe(false)
+  })
+
+  it('is stable in feed order, so loading more tiles cannot change a card above them', () => {
+    const a = event({ id: 'a', sources: [outlet('bbc', { imageUrl: 'https://x.test/1.jpg' })] })
+    const b = event({ id: 'b', sources: [outlet('bbc', { imageUrl: 'https://x.test/2.jpg' })] })
+    const c = event({ id: 'c', sources: [outlet('guardian', { imageUrl: 'https://x.test/3.jpg' })] })
+    expect(assignEventImages([a, b]).get('a')).toBe(assignEventImages([a, b, c]).get('a'))
+    expect(assignEventImages([a, b]).get('b')).toBe(assignEventImages([a, b, c]).get('b'))
+  })
+
+  it('leaves an Event with no images at all unassigned', () => {
+    expect(assignEventImages([event({ id: 'bare', sources: [outlet('bbc')] })].map((e) => e)).has('bare')).toBe(false)
   })
 })

@@ -41,6 +41,9 @@ export async function fetchFeedArticles(feeds) {
           description: stripHtml(item.description),
           url: item.link,
           ...(Number.isNaN(parsed) ? {} : { publishedAt: new Date(parsed).toISOString() }),
+          // Carried through to the Event's source entry so a card can render a real thumbnail
+          // (Phase 4). Coverage is partial by nature — many feeds ship no image at all.
+          ...(item.imageUrl ? { imageUrl: item.imageUrl } : {}),
         })
       }
     }),

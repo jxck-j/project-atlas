@@ -5,6 +5,161 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Raw HTML entities in headlines ("Saudi Arabia&#x2019;s")
+
+Reported off the live tab. `scripts/lib/rss.mjs`'s `decodeEntities` handled six named entities plus the single
+numeric `&#39;` — but feeds send the full range of character references. Counted over the archive:
+`&#039;` ×256, `&#x2019;` ×83, `&#8217;` ×49, plus em/en dashes, curly quotes, accented letters and an
+`&#xa0;`. Decimal, hex and named forms all appear, sometimes in one feed. 256 archived articles carry at
+least one.
+
+**The fix had to go in two places, because the archive is append-only.** Fixing the parser only cleans text
+fetched from now on; the ~256 records already stored keep their raw entities forever, and the build reads
+those records. So:
+
+- `src/news/htmlEntities.ts` (pure, tested) is the canonical decoder, applied in `eventBuilder`'s `prepare` —
+  the one stage every build path shares. That covers already-archived text, and means the Event title, the
+  clusterer's input and the keyword rules all see the same decoded string.
+- `scripts/lib/rss.mjs` gets the same logic so text entering the archive from here on is clean. It stays a
+  duplicate rather than an import because v1's `buildNews.mjs` loads it under plain `node`, which can't import
+  a `.ts` module — the same constraint `newsRecency.ts` already documents. Decoding twice is harmless.
+
+**Two deliberate limits, both with a test:** it decodes exactly ONE pass, so literal text that means to show
+an entity ("write `&amp;#39;` to escape an apostrophe") isn't silently turned into an apostrophe — and no
+double-encoded text was found in the archive to weigh against that. And an unrecognized or malformed
+reference is left exactly as found rather than dropped: a visible `&#xZZ;` is a bug someone reports, while a
+silently deleted one is a wrong headline nobody can see. A decoded `&nbsp;`/`&#xa0;` is normalized to a real
+space, since a non-breaking space reaches every whitespace-sensitive regex in `classify.ts` too.
+
+After the rebuild: 0 of 90 Event titles contain an entity, and the eval is unchanged (keyword exact 0.535).
+
+## 2026-09-23 — Two Events, one photo: distinct thumbnails, and why the Events stay separate
+
+J spotted two adjacent Events on the World tab leading with the same picture, and asked the right question
+first: **if they share a photo, are they the same event?**
+
+**No, and the shared photo is not evidence that they are.** The two are Semafor's 09/20 "Middle East tensions
+threaten escalation" (in the Critical Event for the 09/19 Houthi strikes on Riyadh's airport and Yanbu port,
+6 distinct outlets) and its 09/22 "Saudi issues new warnings, as Houthi attacks intensify" (a 2-source Major).
+Those are two occurrences 70 hours apart — an attack, and a government's response three days later — and the
+clusterer separated them for a principled reason, not by luck: the gap between the last report of the first
+and the first report of the second is ~38h, past `LINK_WINDOW_MS` (36h), and the pair would also have blown
+`MAX_CLUSTER_SPAN_MS` (72h). Merging them would be exactly the over-merge this clusterer is deliberately
+biased against, and it would pull a second Event's reports into the corroboration count of a **Critical**
+one. What connects them is a storyline, which is what §4b systemic themes (and the planned per-conflict
+dossiers) are for — not one Event.
+
+**An outlet reusing a file photo across a storyline is, if anything, the opposite signal.** It says the
+outlet considers the stories related enough to illustrate the same way; it says nothing about whether the
+underlying occurrences are one.
+
+**Fix: `assignEventImages`, a feed-level assignment instead of a per-card lookup.** J's call — Events should
+have different thumbnails. Greedy in feed order (so a card's picture can't change as more tiles load below
+it), each Event takes the first report in its dossier whose image is (1) an unused URL from an outlet that
+hasn't supplied an image yet, else (2) any unused URL, else (3) nothing, falling back to the gradient rather
+than repeating a picture already on the page.
+
+Rule 1 is what actually fixes the reported pair, and it's worth being clear why URL comparison alone could
+not have: the two Semafor photos are the same scene under **different asset URLs**
+(`8379a3f…` vs `2bb8170…`). Nothing short of fetching and comparing the images can see that, which a static
+build doesn't do. Preferring an outlet that hasn't been used yet sidesteps it — the second Event has a BBC
+image in its dossier and now takes that. On the live 87-Event feed: 50 images, 50 distinct URLs, one Event
+dropped to its gradient because its only picture was already on the page. The honest limit, documented at the
+function: rule 1 only bites while some image-bearing outlet is still unused, i.e. near the top of the feed —
+which is where a repeat is most visible anyway.
+
+## 2026-09-23 — Two Phase 4 bugs found by reading the actual tab
+
+Both reported by J within minutes of the tab rendering, and neither was findable any other way — the first is
+invisible to the eval, the second doesn't exist until there's a page to look at.
+
+**1. "For the first time" was being read as a military escalation.** A first diplomatic MEETING was tiering
+Major: "Britain's Burnham to meet Trump and make UN debut after offering UK military support for Saudis…
+set to meet Donald Trump for the first time." `ESCALATION_RE` has matched a bare `first time` since it was
+written (as a war-novelty marker: "struck X for the first time"), the mention of military support made the
+text `conflictish`, and conflictish + escalation is Major on its own with no casualty figure needed. Three
+fixes in one:
+
+- **Split the regex.** `MILITARY_ESCALATION_RE` keeps the phrases that are inherently about fighting
+  (`escalat*`, cross-border strike, new weapon/missile, previously untouched) and stays unscoped — the Houthi
+  case it was written for ("threatening further escalation", no casualties, no fighting word) still matches.
+- **`first time`/`first-ever` now needs a fighting word within the same clause** (`[^.]{0,60}`). Requiring the
+  word merely to be present *somewhere* was the first attempt and is too loose — this very article says
+  "military support" in its title. The `.`-excluding window also does a second job: "meet U.S. President Trump
+  for the first time" can't reach back past "U.S.".
+- **Bare `war` is not one of the fighting words.** With it in, two labeled-Significant articles ("US diesel
+  topped $6.50 a gallon **for the first time**, extending a **war**-driven rally") tiered Major. The words kept
+  name a fighting *event*: strike/attack/bomb/shell/missile/drone/raid/assault/combat/clash/fighting/offensive/
+  invasion/troops.
+- Also fixed in passing: `\bescalat\w+` matched **de-escalation** (the `\b` falls after the hyphen), so a call
+  for the opposite of escalation counted as one. Lookbehinds for `de-`/`de` now exclude it.
+
+**This one did move the eval, in the right direction**: keyword exact 0.533 → **0.535**, event-level 0.563 →
+**0.567**, Major-or-above precision 0.796 → **0.824** (FP 11 → 9) for one extra FN (30 → 31), Critical
+untouched at P 0.80 / R 0.27. Across the archive, 9 of 1,853 articles changed tier, every one downward from a
+false Major ("Gaza children return to school **for the first time** in 3 years" → Routine). The one real loss
+is worth recording: "US 10-year Treasury yields top 5% **for the first time** since 2023 as the widening
+Middle East conflict pushed oil prices up" is labeled Major and now lands Routine — but it was only ever
+reaching Major by accident, through a conflict-escalation trigger, when what makes it Major is the yield
+spike. `MARKET_SHOCK_RE` doesn't cover a bond-yield move; that's in BACKLOG rather than bolted on here.
+
+**2. World's breadth-first ranking put Significant stories above Critical ones.** §10 ranked the World landing
+tab by `linkedEntityIds.length` first, deliberately, so the default view wouldn't be whatever is most volatile
+that day. Built and looked at, it reads as a broken feed: the featured row carried three Significant stories
+while the Critical and Major ones sat in the grid underneath. J's call: severity leads everywhere, including
+World. **Breadth demoted to a tie-break within a tier** rather than deleted — between two equally severe
+stories, the one touching more countries still leads, it just can't outrank a more serious one. §10 carries
+the amendment; this is the second §10 amendment of the day (the other moved the below-the-fold remainder off
+pure recency), and both came from the same cause: the ranking rules were written before anything rendered
+them.
+
+## 2026-09-23 — News Engine v2, Phase 4: the NEWS tab reads Events
+
+Phase 4 of 8. `hud/NewsPanel.tsx` and `IntelligencePanel.tsx`'s RECENT NEWS section now read
+`public/data/news-events.json` through `data/useNewsEvents.ts`. v1 (`buildNews.mjs`, `news.json`,
+`newsTypes.ts`, `NewsRegistry.ts`, `useNewsFeatures.ts`, `newsSeverityStyles.ts`) is dormant, not deleted —
+it comes out once the cutover is confirmed in a browser, so a problem found there is fixed against a working
+reference rather than a reverted one.
+
+**The UI decides nothing the build already decided.** Ranking is `buildFeed`, filtering is `filterEvents`,
+the tab set is `NEWS_TABS`, and the corroboration badge is `deriveCorroboration(event.sources)` called at
+render time. That last one matters most: corroboration is derived, never stored (§17a), so the badge a reader
+sees is computed by the same function the publish gate used. What the panel owns is only what a *reader*
+chooses — the recency window and the text search — plus layout.
+
+**Three decisions, all J's, each changing more than the UI:**
+
+1. **The build reads the archive, not the pull.** RSS exposes a day or two, so a stateless build over one pull
+   publishes only what broke since the last run — v1 avoided that by carrying its own previous output forward
+   and re-ingesting it, which v2 can't do (it would also re-ingest v1's classification). The archive already
+   holds every article any run has seen, so the pull is archived first and the build then runs over the
+   archive's last `FEED_RETENTION_DAYS` (`src/news/feedWindow.ts`). Measured: 39 Events from one pull → **85
+   Events from the 14-day window** (1,719 articles, 1,176 clusters, 639 articles sitting in Events below their
+   corroboration floor). A fresh clone with no archive falls back to the pull.
+2. **Cards are thumbnail-forward, so the Event model needed an image it didn't have.** `imageUrl` sits on
+   `SourceEntryBase`, not on `NewsEvent`: the picture belongs to one publisher's story, and a dossier mixes
+   outlets that do and don't ship one. `eventImageUrl` takes the first entry that has one. `scripts/lib/rss.mjs`
+   already parsed `media:thumbnail`/`enclosure`; `fetchFeeds.mjs` was simply dropping it. Adding
+   `media:content` as a third fallback took coverage to **14 of 24 feeds (883/1,211 articles)** — a number
+   worth having checked, since only v1's three outlets had ever been looked at and BBC was the only one of
+   *those* that shipped images.
+3. **Below the featured 3 is severity-then-recency**, amending §10's pure recency. This is v1's own
+   correction carried forward, from a direct report that a just-in Routine item above an older Significant one
+   reads as broken. It also makes §10's opening sentence ("same underlying rule everywhere") literally true —
+   the featured row still differs only in *scope* (World ranks by breadth first), not in rule.
+
+**The archive is append-only, which bit immediately.** Every article archived before today has no `imageUrl`
+and, by design, never will: first sighting wins and a record is never rewritten. So the first archive-backed
+build rendered 5 of 85 Events with an image. `applyPullMetadata` fixes it without touching that rule — it
+fills gaps in the BUILD's copy from this run's pull, matching on `archiveKey`, and never overwrites a stored
+value. That took it to **49 of 85**, and it climbs as runs accumulate.
+
+**Also worth recording: an Event card is not one link.** v1's card was a single `<a>` because a `NewsItem` had
+exactly one URL. An Event has a dossier, so the headline opens the earliest report and a collapsed
+"N SOURCES · Reuters, BBC, …" row expands to each publisher's own link with its wire/state-controlled/leaning
+label. Distinctness there is by `sourceId`, matching `deriveCorroboration` — a card must never imply more
+independent sources than the gate counted.
+
 ## 2026-09-23 — Bare "attack" tags by CO-OCCURRENCE, not as a keyword (J)
 
 **Closes the last member of the untagged-violence family** (bare `bomb`/`blast`, 2026-09-21; bare `terror`, earlier

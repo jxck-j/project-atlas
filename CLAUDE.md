@@ -64,7 +64,7 @@ npm run build:economy        # regenerate src/data/economyScores.ts (Intelligenc
 npm run build:technology     # regenerate src/data/technologyScores.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run archive:news        # Fetch-only capture of the vetted feeds into the append-only article archive (archive/news/articles.jsonl, gitignored, NOT regenerable). No model. See News & sourcing below.
-npm run build:news:events   # News Engine v2: fetch feeds -> Events -> public/data/news-events.json (runs via tsx; see News & sourcing below). DEFAULT = local-embedding grouping + a relevance/tag classifier. Free, keyless; one-time ~33 MB model download into debug/hf-cache. Fails loudly if the model can't load. Flags: `-- --no-classifier`.
+npm run build:news:events   # News Engine v2: fetch feeds -> archive -> Events over the archive's last 14 days -> public/data/news-events.json (runs via tsx; see News & sourcing below). DEFAULT = local-embedding grouping + a relevance/tag classifier. Free, keyless; one-time ~33 MB model download into debug/hf-cache. Fails loudly if the model can't load. Flags: `-- --no-classifier`.
 npm run build:news:events:heuristic # Phase 2's keyword classification + word-overlap clustering. No model. Much weaker grouping; the offline fallback.
 npm run eval:news-clustering # Scores the heuristic and the embedding clusterer against the hand-labeled fixture (scripts/fixtures/newsClusteringEval.json). Re-run after changing the model, threshold or clustering constants.
 npm run eval:news-classifier # Grouped cross-validation of the relevance/tag/severity classifier vs the keyword rules, plus a product-level "which Events would publish" test.
@@ -1655,13 +1655,38 @@ Nothing about ranking, the dropdown UI, camera flight, or highlighting
 needs to change — they're already generic over `SearchEntry`/
 `ResolvedEntity` and don't know or care how many kinds exist.
 
-### News & sourcing (v1 shipped; v2 Phases 1-2 built, no UI yet)
+### News & sourcing (v2 shipped as of Phase 4; v1 dormant)
 
-**v1's feed is a rolling 14-day window (2026-09-21):** `buildNews.mjs` carries the previous `news.json` forward (re-ingested through the same path as fresh items, so it dedups and re-classifies), dropping anything older than `RETENTION_DAYS` = 14; `NewsPanel.tsx` has a 24 hrs / 3 / 7 / 14 days recency control (`src/data/newsRecency.ts`, default 14 days) applied before every other filter. Keep the 14 in both places in step. See `LOGBOOK.md`'s 2026-09-21 14-day feed entry.
+**Phase 4 cut the NEWS tab over to v2 Events (2026-09-23).** `hud/NewsPanel.tsx` and
+`hud/IntelligencePanel.tsx`'s RECENT NEWS section now read `public/data/news-events.json` via
+`data/useNewsEvents.ts`; every ranking/filter/gate decision they render is delegated to `src/news/`
+(`buildFeed`/`filterEvents`/`NEWS_TABS`/`deriveCorroboration`) rather than re-decided in the UI, so the
+tab can't show a standing the build didn't gate on. Three decisions made at cutover, all J's:
 
-v1 exists on this branch: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
-`public/data/news.json`, read by `hud/NewsPanel.tsx` (the wired NEWS tab) and `IntelligencePanel.tsx` via
-`data/useNewsFeatures.ts`, built around the standalone `NewsItem` model. **`news-sourcing-design.md` (repo
+- **The build reads the ARCHIVE, not the pull.** `buildNewsEvents.mjs` appends the fetched articles to
+  `archive/news/articles.jsonl` first, then builds over that archive's last `FEED_RETENTION_DAYS` (14,
+  `src/news/feedWindow.ts`). One run therefore publishes a rolling two-week feed instead of only what broke
+  since the last run — v1 got the same effect by re-ingesting its own previous output. A fresh clone with no
+  archive falls back to the pull. `applyPullMetadata` fills fields the archived copy predates (currently only
+  `imageUrl`) from this run's pull, for the BUILD's copy only — the archive itself is still never rewritten.
+- **Cards are thumbnail-forward**, so `RawArticle`/`SourceEntryBase` carry an optional `imageUrl` scraped from
+  the feed item (`media:thumbnail` → `enclosure` → `media:content`). It is per SOURCE ENTRY, not per Event: the
+  picture belongs to one publisher's story. `eventImageUrl` picks the first entry that has one; ~14 of 24 feeds
+  ship images, so an Event without one gets a severity-tinted gradient, never a stock photo.
+- **Below the featured 3 is severity-then-recency, not §10's pure recency** — a v1 report carried forward
+  (a just-in Routine item above an older Significant one reads as a broken feed). `splitFeatured` sorts the
+  remainder that way and §10 carries the amendment note.
+
+v1 (`scripts/buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts`, `data/registry/NewsRegistry.ts`,
+`data/useNewsFeatures.ts`, `hud/newsSeverityStyles.ts`) is dormant — nothing in the UI imports it — and is
+scheduled for deletion once the cutover is confirmed in the browser. The sections below describe v1 and v2's
+build phases; read them with that in mind.
+
+**The feed is a rolling 14-day window (v1, 2026-09-21; v2 since Phase 4):** v1's `buildNews.mjs` carried the previous `news.json` forward (re-ingested through the same path as fresh items, so it dedups and re-classifies), dropping anything older than `RETENTION_DAYS` = 14; v2 gets the same window from the archive instead (`FEED_RETENTION_DAYS` in `src/news/feedWindow.ts`). `NewsPanel.tsx`'s 24 hrs / 3 / 7 / 14 days recency control (`src/data/newsRecency.ts`, default 14 days, applied before every other filter) is shared by both generations. **Keep the 14 in all three places in step.** See `LOGBOOK.md`'s 2026-09-21 14-day feed entry.
+
+v1 still exists on this branch, dormant: `scripts/buildNews.mjs` (`npm run build:news`, RSS-only) writes
+`public/data/news.json`, which nothing has read since the Phase 4 cutover; it was built around the standalone
+`NewsItem` model. **`news-sourcing-design.md` (repo
 root) is the v2 design and is the source of truth where it disagrees with v1 or `news-engine-design.md`;**
 `LOGBOOK.md`'s 2026-09-20 entry has the decision history and rejected alternatives. Don't re-litigate them
 here. What a session building v2 must respect:
@@ -1677,9 +1702,10 @@ here. What a session building v2 must respect:
 
 **v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
 build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
-surfaces). **Phase 1 is done: `src/news/`**, a pure (no DOM/network/React) directory that v1's
-`data/newsTypes.ts`/`buildNews.mjs`/`NewsPanel.tsx` don't touch — v1 keeps running until the Phase 4 cutover.
-Its v2 types are named distinctly from v1's (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`).
+surfaces; **Phases 1, 2 and 4 are done, 3 is built but unrun — the next one is Phase 5, the Admin Console**).
+**Phase 1 is `src/news/`**, a pure (no DOM/network/React) directory; its types are named distinctly from v1's
+(`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`) so an import can't silently pick up the wrong
+generation — which is what made the Phase 4 cutover a matter of swapping two components' imports.
 
 - `types.ts` — `NewsEvent`, the `SourceEntry` union (six categories), `SourceProfile` (`OutletProfile`/
   `AnalysisProfile`), `SystemicThemeConfig`. **`NewsEvent` has no `corroboration` field** — it's derived.
@@ -1724,8 +1750,8 @@ tested modules: `feeds.json` (feed URL → `sources.json` id; only vetted-roster
 `classify.ts`, `clustering.ts`, `eventBuilder.ts` (`buildEvents()`: unknown source → commentary URL → country → topic →
 cluster → dossier → `resolvePublishDecision`). It writes `public/data/news-events.json` (reader-visible Events **only**) and
 gitignored `debug/news-pending-confirmation.json` — the head-of-state-death queue is deliberately NOT under `public/`, since a
-served file publishes the rumor whatever the client filters. v1's `news.json` and the shipped NEWS tab are untouched until
-the Phase 4 cutover; nothing reads `news-events.json` yet. Things a session touching this must know:
+served file publishes the rumor whatever the client filters. Since Phase 4, `news-events.json` is what the NEWS tab renders.
+Things a session touching this must know:
 - **`classify.ts` is the keyword stand-in and the no-key fallback** behind the `Classification` interface — don't tune it; Phase 3's
   `--llm` path (below) is the real classifier. On the default path `systemicThemes` is `[]` and `title` is an outlet's own headline.
 - **Clustering leans toward splitting, deliberately.** Over-merging inflates corroboration (unsafe); over-splitting only

@@ -23,20 +23,32 @@ export function compareBySeverityThenRecency(a: NewsEvent, b: NewsEvent): number
 }
 
 /**
- * World tab's default landing rank: trending across the MOST countries
- * simultaneously first, then severity/recency within that. Chosen over "most
- * severe worldwide" so the default view isn't dominated by whatever is most
- * volatile that day regardless of breadth.
+ * World tab's landing rank. §10 put BREADTH first here — trending across the
+ * most countries at once — to keep the default view from being dominated by
+ * whatever is most volatile that day. Seeing it built (Phase 4), J reversed
+ * that: it put Significant stories in the featured row while Critical and
+ * Major ones sat in the grid below, which reads as a broken feed. Severity
+ * leads here exactly as everywhere else, and breadth is only a tie-break
+ * WITHIN a tier — so "trending everywhere" still wins between two equally
+ * severe stories, it just can't outrank a more serious one.
  */
 export function compareWorld(a: NewsEvent, b: NewsEvent): number {
-  return b.linkedEntityIds.length - a.linkedEntityIds.length || compareBySeverityThenRecency(a, b)
+  return compareSeverity(a.severity, b.severity) || b.linkedEntityIds.length - a.linkedEntityIds.length || compareByRecency(a, b)
 }
 
 export const FEATURED_COUNT = 3
 
 export interface FeaturedSplit {
   featured: NewsEvent[]
-  /** Everything below the featured set: pure recency, no severity weighting — everywhere. */
+  /**
+   * Everything below the featured set. §10 says pure recency here, but v1
+   * shipped that and it was reported directly: a just-in Routine item
+   * outranking an older Significant one reads as a broken feed. So the
+   * remainder is severity, then recency — the same rule as everywhere else,
+   * which also makes §10's "same underlying rule everywhere" literally true.
+   * Carried forward into v2 at J's direction (2026-09-23); the design doc's
+   * §10 carries the amendment note.
+   */
   rest: NewsEvent[]
 }
 
@@ -48,6 +60,6 @@ export function splitFeatured(
   const ranked = [...events].sort(featuredCompare)
   return {
     featured: ranked.slice(0, featuredCount),
-    rest: ranked.slice(featuredCount).sort(compareByRecency),
+    rest: ranked.slice(featuredCount).sort(compareBySeverityThenRecency),
   }
 }

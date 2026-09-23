@@ -17,6 +17,44 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.12.0 — News Engine v2 Phase 4: the NEWS tab reads Events
+
+**News Engine, second generation.** The NEWS tab and `IntelligencePanel.tsx`'s RECENT NEWS section now render
+`public/data/news-events.json` — Events with a source dossier — instead of v1's standalone `NewsItem`s.
+Everything the tab shows about ranking, filtering and standing is delegated to `src/news/` (`buildFeed`,
+`filterEvents`, `NEWS_TABS`, `deriveCorroboration`), the same pure modules the build gates with, so the UI
+can't show a corroboration standing the publish gate didn't count. World plus eight topic tabs (§9a), each
+with a live count; an Event carrying several tags appears in every matching tab. A card is no longer one link:
+the headline opens the earliest report and a collapsed "N SOURCES" row expands to each publisher's own link
+with its wire / state-controlled / leaning label.
+
+**The build now reads the archive, not just the pull.** RSS exposes a day or two, so a stateless build over
+one fetch publishes only what broke since the last run. `buildNewsEvents.mjs` archives the pull first, then
+builds over the archive's last 14 days (`FEED_RETENTION_DAYS`, `src/news/feedWindow.ts`): 39 Events from one
+pull became 85+ from the window. Cards are thumbnail-forward again — `imageUrl` is carried from the feed item
+(`media:thumbnail` / `enclosure` / `media:content`) onto the source ENTRY, not the Event, since a picture
+belongs to one publisher's story; `assignEventImages` then guarantees no two Events on a page show the same
+picture, falling back to a severity-tinted gradient rather than repeating one.
+
+**Ranking, amended twice against the built page** (both logged in `news-sourcing-design.md` §10): the
+remainder below the featured 3 is severity-then-recency rather than pure recency, and World leads with
+severity like every other tab, with breadth (`linkedEntityIds.length`) demoted to a tie-break within a tier —
+breadth-first had put Significant stories above Critical ones.
+
+**Classification fixes found by reading the live feed.** A bare "for the first time" counted as a military
+escalation, so a first diplomatic meeting tiered Major; it now needs a fighting word in the same clause, and
+bare "war" isn't one of them (it's background in economic coverage). `\bescalat\w+` was also matching
+*de-escalation*. Keyword severity improved: exact 0.533 → 0.535, Major-or-above precision 0.796 → 0.824.
+Feed text is now HTML-entity-decoded in the build (`src/news/htmlEntities.ts`) as well as at parse time, since
+the append-only archive holds ~256 articles stored before the parser understood numeric character references
+("Saudi Arabia&#x2019;s" was reaching the page).
+
+**v1 is dormant, not deleted** — `scripts/buildNews.mjs`, `public/data/news.json`, `data/newsTypes.ts`,
+`data/registry/NewsRegistry.ts`, `data/useNewsFeatures.ts` and `hud/newsSeverityStyles.ts` still exist but
+nothing imports them. **Still missing from the design:** Community Pulse (§9b) and the per-tab first-hand
+ticker (§15b), systemic-theme filters (§11 — the default build leaves `systemicThemes` empty), and neutral
+Event titles (§17b — a title is still an outlet's own headline outside the `--llm` path). See `BACKLOG.md`.
+
 ## v6.11.0 — News Engine v1: the NEWS tab and per-country Recent News
 
 **New major version, News Engine.** Wires up `hud/TopNav.tsx`'s previously-inert NEWS tab (`wired: true`) and

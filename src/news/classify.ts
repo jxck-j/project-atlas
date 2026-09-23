@@ -228,7 +228,32 @@ const PERSON_CAPTURE_RE =
 // incident, or a notable escalation regardless of count — not any casualty count, which §5's literal wording would make
 // Major (every routine Gaza/Ukraine strike headline). Escalation markers are approximate on purpose.
 export const CONTAINED_STRIKE_MAJOR_DEATHS = 5
-const ESCALATION_RE = /\b(first time|first[- ]ever|previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|escalat\w+)\b/i
+// Split in two 2026-09-23, from a live Phase 4 report: "Burnham to meet Trump FOR THE FIRST TIME at the UN" was
+// tiering Major. A first diplomatic meeting is not an escalation — but the text also said "after offering UK
+// military support for Saudis", which made it `conflictish`, and conflictish + escalation is Major on its own.
+//  - MILITARY_ESCALATION_RE: phrases that are inherently about fighting. Safe unscoped.
+//    `de-escalation`/`de-escalate` are excluded: \b matches after the hyphen, so the bare `escalat\w+` alternative
+//    used to fire on a call for the OPPOSITE of escalation.
+//  - NOVELTY_ESCALATION_RE: "first time"/"first-ever" counts only when a FIGHTING word sits within the same
+//    sentence clause. Alone it is a perfectly ordinary way to describe a first visit, meeting or election.
+//    Requiring the fighting word merely to be present somewhere in the text was tried first and is too loose —
+//    the Burnham article says "military support for Saudis" in its title. `[^.]{0,60}` is doing two jobs: real
+//    proximity, and a sentence boundary (which is also why "meet U.S. President Trump for the first time"
+//    can't reach back past "U.S."). Checked against the labeled set: it keeps "first time since the May 2025
+//    military clashes" and "In Combat For First Time" (both labeled Major) while dropping the diplomatic ones.
+// The original Houthi case that motivated an unscoped escalation trigger ("threatening further escalation", no
+// casualty figure, no fighting word at all) still matches via MILITARY_ESCALATION_RE — asserted in a test.
+const MILITARY_ESCALATION_RE =
+  /\b(previously untouched|new (?:\w+\s+)?(?:weapon|missile)|cross-border strike|crosses? (?:the )?border|(?<!de-)(?<!de)escalat\w+)\b/i
+const NOVELTY = String.raw`(?:first[ -]time|first[- ]ever)`
+// Bare "war" is deliberately NOT here: it is background context in a great deal of economic coverage ("diesel
+// topped $6.50 for the FIRST TIME, extending a WAR-driven rally" — two real labeled articles, both Significant,
+// both tiered Major while it was in the list). The words kept are ones that name a fighting EVENT.
+const FIGHTING = String.raw`(?:(?:air ?)?strikes?|struck|attacks?|attacked|bomb\w*|shell\w*|missiles?|drones?|raids?|assault\w*|combat|clash\w*|fighting|offensive|invasion|troops)`
+const NOVELTY_ESCALATION_RE = new RegExp(
+  String.raw`\b${NOVELTY}\b[^.]{0,60}\b${FIGHTING}\b|\b${FIGHTING}\b[^.]{0,60}\b${NOVELTY}\b`,
+  'i',
+)
 // Settled call — "sanctions? on" also matches LIFTING sanctions ("US lifts sanctions on Eritrean officials"), a
 // de-escalation, not the new-sanctions-package action §5 means (found in the severity relabel, phase 2). Guarded
 // below, not folded into the regex itself, since it's the one alternative in this list that needs the guard.
@@ -383,7 +408,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     chokepointClosure: CHOKEPOINT_CLOSURE_RE.test(text),
     territorial: TERRITORIAL_RE.test(text) && !PERSON_CAPTURE_RE.test(text),
     strikeWithCasualty: STRIKE_RE.test(text) && CASUALTY_RE.test(text),
-    escalation: ESCALATION_RE.test(text),
+    escalation: MILITARY_ESCALATION_RE.test(text) || NOVELTY_ESCALATION_RE.test(text),
     majorPolicy: MAJOR_POLICY_RE.test(text),
     sanctionsLifted: SANCTIONS_LIFTED_RE.test(text),
     diplomaticSever: DIPLOMATIC_SEVER_RE.test(text),

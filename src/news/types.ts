@@ -136,6 +136,14 @@ interface SourceEntryBase {
   refUrl: string
   /** ISO 8601. The publisher's own publish time — distinct from the Event's `eventTimestamp`. */
   timestamp: string
+  /**
+   * This report's own thumbnail, from the feed item (Phase 4). Deliberately per
+   * ENTRY, not per Event: the picture belongs to one publisher's story, and an
+   * Event's dossier can mix outlets that do and don't ship one. A card picks
+   * the first entry that has one (`eventImageUrl`), so nothing is invented and
+   * no Event has to claim an image as its own.
+   */
+  imageUrl?: string
 }
 
 export interface OutletSourceEntry extends SourceEntryBase {

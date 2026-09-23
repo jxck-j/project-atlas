@@ -17,6 +17,7 @@ import {
   type LlmUsage,
   emptyUsage,
 } from './llmPipeline'
+import { decodeHtmlEntities } from './htmlEntities'
 import { resolvePublishDecision } from './publishGate'
 import { applySeverityCaps, maxSeverity } from './severity'
 import type { NewsEvent, OutletProfile, OutletSourceEntry, Severity, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
@@ -40,6 +41,8 @@ export interface RawArticle {
   url: string
   /** ISO 8601, or undefined when the feed item had no usable date. */
   publishedAt?: string
+  /** The feed item's own thumbnail (media:thumbnail / enclosure / media:content), when it has one. Partial coverage by nature. */
+  imageUrl?: string
 }
 
 export interface BuildContext {
@@ -114,6 +117,7 @@ function outletEntry(candidate: Candidate): OutletSourceEntry {
     countsTowardCorroboration: true,
     refUrl: article.url,
     timestamp: new Date(time).toISOString(),
+    ...(article.imageUrl ? { imageUrl: article.imageUrl } : {}),
     outlet: profile.name,
     ...(profile.leaning ? { leaning: profile.leaning } : {}),
     ...(profile.leaningSource ? { leaningSource: profile.leaningSource } : {}),
@@ -142,14 +146,24 @@ interface Prepared {
   duplicateUrls: number
 }
 
-/** Shared by both paths: dedupe URLs, require a vetted outlet profile, drop commentary URLs. */
+/** Shared by both paths: dedupe URLs, require a vetted outlet profile, drop commentary URLs, decode feed text. */
 function prepare(articles: RawArticle[], profiles: SourceProfile[], now: string, drop: (r: DropReason, a: RawArticle) => void): Prepared {
   const outletProfiles = new Map(profiles.filter((p): p is OutletProfile => p.sourceType === 'outlet').map((p) => [p.id, p]))
   // The same URL can arrive through two feeds (Bloomberg markets + politics).
   const seenUrls = new Set<string>()
   const unique = articles.filter((a) => (seenUrls.has(a.url) ? false : (seenUrls.add(a.url), true)))
   const eligible: Prepared['eligible'] = []
-  for (const article of unique) {
+  for (const raw of unique) {
+    // Decode here, at the ONE point every path passes through, rather than at
+    // fetch: the archive is append-only, so records stored before the parser
+    // learned about numeric character references still carry them, and the
+    // Event title, the clusterer's text and the keyword rules should all see
+    // the same decoded string (see htmlEntities.ts).
+    const article: RawArticle = {
+      ...raw,
+      title: decodeHtmlEntities(raw.title),
+      ...(raw.description ? { description: decodeHtmlEntities(raw.description) } : {}),
+    }
     const profile = outletProfiles.get(article.sourceId)
     if (!profile) {
       drop('unknown-source', article)
