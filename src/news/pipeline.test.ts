@@ -173,6 +173,36 @@ describe('classifyText', () => {
     expect(classifyText('Kosovo ex-president Thaci sentenced to 25 years for war crimes').severity).toBe('major')
   })
 
+  it('a judicial follow-up does not inherit the PAST attack death toll quoted in its own coverage (settled call 4, generalized 2026-09-23)', () => {
+    // The live bug: the headline alone was Significant, but the description carrying the 2019 attack's 270 deaths
+    // pushed the verdict to Critical. Both halves are asserted so a regression can't hide in either one.
+    expect(classifyText('Sri Lanka court convicts 15 over 2019 Easter bombings, 9 acquitted').severity).toBe('significant')
+    expect(
+      classifyText(
+        'Sri Lanka court convicts 15 over 2019 Easter bombings, 9 acquitted. The 2019 attacks on churches and hotels killed 270 people and wounded hundreds more.',
+      ).severity,
+    ).toBe('significant')
+  })
+
+  it('same-day arrests at a FRESH mass-casualty attack do not downgrade it — only judicial language implies a past event', () => {
+    expect(classifyText('Suicide bombing kills 150 at shrine in the capital').severity).toBe('critical')
+    expect(classifyText('Suicide bombing kills 150 at shrine today; police arrested two suspects at the scene').severity).toBe('critical')
+  })
+
+  it('a judicial follow-up floors at Significant even when its coverage reads as rhetoric ("8 accused")', () => {
+    // Without the floor this lands Routine: "accused" trips rhetoricOnly, and the casualty guard above has already
+    // closed the Critical route. Note the phrasing needs a topic tag to reach this branch at all — the same sentence
+    // written "2015 Paris attacks" (no "terror") tags nothing and falls to the untagged fallback instead.
+    expect(classifyText('Court opens trial of 8 accused over 2015 Paris terror attacks that killed 130 people').severity).toBe('significant')
+  })
+
+  it('bare "terror" carries the terrorism tag, so its death count reaches the tag-scoped mass-casualty check', () => {
+    expect(resolveTopicTags('Terror attack on commuter train kills 130 people and wounds 200')).toContain('terrorism-non-state-actors')
+    expect(classifyText('Terror attack on commuter train kills 130 people and wounds 200').severity).toBe('critical')
+    // Whole-word + optional plural: "terrified" must not tag.
+    expect(resolveTopicTags('Residents terrified as storm approaches coast')).not.toContain('terrorism-non-state-actors')
+  })
+
   it('severing diplomatic relations is Major; expelling an ambassador stays Significant (settled call 6)', () => {
     expect(classifyText('Algiers cuts diplomatic relations with Abu Dhabi').severity).toBe('major')
     const expelled = classifyText('Algeria expels Emirati ambassador over remarks')

@@ -66,6 +66,11 @@ const TAG_KEYWORDS: Record<TopicTag, RegExp> = {
     // 31 deaths never reached the mass-casualty Critical check. Wide per this list's own design (see the
     // conflict-security list's 'strike'/'drone' comment for the same reasoning).
     'bomb', 'blast',
+    // Added 2026-09-23 (J) — the identical gap one word over: 'terrorist'/'terrorism' were here but bare 'terror'
+    // wasn't, so the very common "terror attack"/"terror plot" phrasing tagged nothing and its deaths never reached
+    // the tag-scoped mass-casualty check ("2015 Paris terror attacks that killed 130 people" -> no tag at all).
+    // `words()` is whole-word + optional plural, so this matches "terror"/"terrors" but never "terrified".
+    'terror',
   ]),
   'diplomacy-politics': words([
     'summit', 'treaty', 'election', 'president', 'prime minister', 'resign', 'coup', 'parliament',
@@ -219,6 +224,12 @@ const INDEPENDENT_CONFIRMATION_RE = /\b(independently (?:confirmed|verified)|con
 // Legal follow-ups (a trial, sentence, extradition, arrest over a PAST killing) must not read as a fresh head-of-state
 // death claim — see the Haiti/Kosovo cases in LOGBOOK.md's severity-review entry.
 const LEGAL_FOLLOWUP_RE = /\b(extradit\w+|sentenc\w+|convict\w+|verdict|trial|indict\w+|charged (?:with|over)|arrested (?:over|in connection with)|suspects?|anniversary|years? (?:after|since|on))\b/i
+// The JUDICIAL subset of the above, used only for the casualty-inheritance guard (2026-09-23, J). A court reaching a
+// verdict takes months or years, so these words imply the underlying attack is PAST. Arrests and "suspects" do NOT —
+// police detain people at the scene of a fresh attack the same day, so LEGAL_FOLLOWUP_RE as a whole is too broad to
+// gate severity on: it downgraded "Suicide bombing kills 150 at shrine; police arrested two suspects" to Significant.
+// headOfStateDeathClaim deliberately keeps using the WIDER regex above — settled call 4's established behavior.
+const JUDICIAL_FOLLOWUP_RE = /\b(extradit\w+|sentenc\w+|convict\w+|acquit\w+|verdict|trial|indict\w+|charged (?:with|over)|anniversary|years? (?:after|since|on))\b/i
 
 // Settled call (2026-09-21, J): a death toll accumulated across a recurring campaign is capped at Major via
 // this gate, not Critical via the single-incident mass-casualty rule — found via a real headline, "US
@@ -261,6 +272,7 @@ export interface SeverityFacts {
   displaced: number
   evacuationOrdered: number
   headOfStateDeathClaim: boolean
+  legalFollowUp: boolean
   unconfirmedSelfClaim: boolean
   cumulativeToll: boolean
   wmd: boolean
@@ -293,9 +305,15 @@ export function extractSeverityFacts(text: string): SeverityFacts {
   const topicTags = resolveTopicTags(text)
   const has = (t: TopicTag) => topicTags.includes(t)
   const conflictish = has('conflict-security') || has('terrorism-non-state-actors')
-  // A legal follow-up (trial/sentence/extradition/arrest) over a PAST head-of-state killing is not a fresh death claim —
-  // settled call 4 (LOGBOOK.md 2026-09-21). Without this, "18 suspects extradited over the 2021 killing of Haiti's
-  // president" read as a live assassination and forced Critical.
+  // A legal follow-up (trial/sentence/extradition/arrest) over a PAST attack is not a fresh event, and must not inherit
+  // that attack's casualty figures — settled call 4 (LOGBOOK.md 2026-09-21), generalized 2026-09-23 (J) from
+  // head-of-state killings to any attack. Originally this only suppressed headOfStateDeathClaim, so "18 suspects
+  // extradited over the 2021 killing of Haiti's president" stopped reading as a live assassination — but a mass-casualty
+  // toll quoted in verdict coverage still forced Critical ("Sri Lanka court convicts 15 over 2019 Easter bombings",
+  // whose description carries the original attack's 270 deaths). The death-driven Critical and Major triggers below now
+  // consult legalFollowUp too. A verdict against an ex-head-of-state stays Major via exLeaderVerdict — that ceiling is
+  // the point, not a side effect.
+  const legalFollowUp = JUDICIAL_FOLLOWUP_RE.test(text)
   const headOfStateDeathClaim = HEAD_OF_STATE_DEATH_RE.test(text) && !LEGAL_FOLLOWUP_RE.test(text)
   const deaths = figure(DEATHS_RES, text)
   // Settled call 1: the striking party's own unconfirmed toll claim stays Significant regardless of count. Scoped to
@@ -309,6 +327,7 @@ export function extractSeverityFacts(text: string): SeverityFacts {
     displaced: figure(DISPLACED_RES, text),
     evacuationOrdered: Math.max(figure(EVACUATION_ORDER_RES, text), MILLIONS_EVACUATE_RE.test(text) ? 1_000_000 : 0),
     headOfStateDeathClaim,
+    legalFollowUp,
     unconfirmedSelfClaim,
     cumulativeToll: CUMULATIVE_TOLL_RE.test(text),
     wmd: WMD_RE.test(text),
@@ -349,7 +368,7 @@ export function classifyText(text: string): Classification {
   // conflict/terrorism-only: v1 applied it in its tag-independent override,
   // which would tier a 12-death bus crash Critical.
   const critical =
-    (conflictish && !unconfirmedSelfClaim && ((!f.cumulativeToll && massCasualtySeverity(deaths) === 'critical') || f.wmd)) ||
+    (conflictish && !unconfirmedSelfClaim && ((!f.cumulativeToll && !f.legalFollowUp && massCasualtySeverity(deaths) === 'critical') || f.wmd)) ||
     (conflictish && f.embassyAttack) ||
     (conflictish && f.capitalAttack && f.capitalAttackRare) ||
     (has('diplomacy-politics') && (f.regimeChange || f.warDeclaration || f.pactWithdrawal)) ||
@@ -373,7 +392,7 @@ export function classifyText(text: string): Classification {
     (conflictish && !unconfirmedSelfClaim && f.capitalAttack) ||
     (conflictish &&
       !unconfirmedSelfClaim &&
-      ((f.strikeWithCasualty && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
+      ((f.strikeWithCasualty && !f.legalFollowUp && deaths >= CONTAINED_STRIKE_MAJOR_DEATHS) ||
         // An explicit escalation phrase is Major on its own — doesn't need a co-occurring casualty figure (found in
         // the severity relabel, phase 2: "Houthis hit Saudi Arabia, threatening further escalation" names no death
         // toll, but "further escalation"/"another round of regional escalation" is unambiguous on its own).
@@ -393,7 +412,10 @@ export function classifyText(text: string): Classification {
     // which needs a named leader/government/military actor — a real capability
     // shift (a domestic chip-lithography prototype, a reusable-rocket program) is
     // geopolitically significant on its own, with or without a named official.
-    severity = f.rhetoricOnly ? 'routine' : 'significant'
+    // A judicial follow-up is never Routine: settled call 4 puts a trial over a past killing at Significant, but trial
+    // coverage is full of rhetoric words ("8 accused over the 2015 attacks"), which would otherwise drop it to Routine
+    // now that the casualty guard above stops it reaching Critical (2026-09-23).
+    severity = f.rhetoricOnly && !f.legalFollowUp ? 'routine' : 'significant'
   } else {
     severity = fallbackSeverity(f.leaderOrMilitaryAction)
   }

@@ -5,6 +5,65 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — Settled call 4 generalized: a legal follow-up no longer inherits a past attack's death toll
+
+**Found by running a fresh build and actually reading the output, not by a test.** The 2026-09-23 build published
+41 Events, and its single Critical was "Sri Lanka court convicts 15 over 2019 Easter bombings, 9 acquitted" — a
+present-day court verdict tiered off the *2019* attack's 270 deaths, quoted in the article description. It
+reproduces cleanly: `classifyText` on the headline alone returns `significant`; add a description sentence
+carrying the original toll and it returns `critical`.
+
+**The concept already existed; only its scope was wrong.** `LEGAL_FOLLOWUP_RE` has matched
+`convict`/`verdict`/`trial` since settled call 4 (2026-09-21), but it was wired into exactly one place —
+suppressing `headOfStateDeathClaim`. The mass-casualty path never consulted it, so the rule worked for the Haiti
+case it was written against and silently failed for every other kind of past attack. Now a `legalFollowUp` fact
+gates both the death-driven Critical and the contained-strike Major. An ex-head-of-state verdict still caps at
+Major via `exLeaderVerdict` — J's instruction was that Major is the *ceiling* for that shape, and the live rebuild
+confirms it firing on a real story (the Kosovo/Thaci war-crimes verdict, 5 sources, Major).
+
+**Two things testing caught that the obvious implementation got wrong**, both worth keeping in mind for any future
+guard of this shape:
+
+1. **The full `LEGAL_FOLLOWUP_RE` is too wide to gate severity on.** It includes `arrested`/`suspects`, which
+   happen the *same day* as a fresh attack — police detain people at the scene. Using it wholesale downgraded
+   "Suicide bombing kills 150 at shrine today; police arrested two suspects" from Critical to Significant, which is
+   a worse failure than the bug being fixed: it suppresses real events rather than over-tiering a stale one. The
+   guard now uses a narrower `JUDICIAL_FOLLOWUP_RE` (verdict/convict/acquit/sentence/trial/indict/extradite —
+   things that take months, so the underlying attack must be past). `headOfStateDeathClaim` deliberately keeps the
+   wider regex: that is established, separately-tested behavior and this change had no reason to touch it.
+2. **Blocking Critical exposed a floor problem.** Trial coverage is saturated with rhetoric words ("8 accused over
+   the 2015 attacks"), and with the casualty route closed those stories fell through `rhetoricOnly` all the way to
+   **Routine** — below the Significant that settled call 4 itself specifies. A judicial follow-up is now floored at
+   Significant. Pure rhetoric with no judicial marker still lands Routine, as before.
+
+**The eval is unchanged by all of this** — keyword Critical stays at P 0.80 / R 0.27 per article and P 0.80 / R 0.80
+event-level. That is the point worth recording: the labeled fixture contains no case of this shape, so the eval
+could not have caught it and did not notice it being fixed. This was only findable by building and reading the
+feed. A caught-in-passing corollary, logged to BACKLOG and deliberately *not* fixed here: bare `terror` isn't a
+`terrorism-non-state-actors` keyword (only `terrorist`/`terrorism`), so "2015 Paris terror attacks that killed 130
+people" gets no topic tag at all and its deaths never reach the tag-scoped mass-casualty check — the same shape as
+the bare-`bomb`/`blast` gap fixed on 2026-09-21, but it widens a tuned list and deserves its own eval run.
+
+Also removed an orphaned, malformed duplicate line in `news-sourcing-design.md` §5 (a mangled paste repeating calls
+6 and 4 after call 7) — it restated the exact sentence this change rewrites, so leaving it would have put two
+contradictory versions of call 4 in the source-of-truth doc.
+
+**Follow-up the same day (J): `terror` added as a keyword, and the shrine case locked in.** J's call on both of the
+loose ends above. Bare `terror` joins `terrorist`/`terrorism` in the terrorism list — the identical gap to
+bare-`bomb`, one word over, and common enough phrasing ("terror attack", "terror plot") to matter. It ran on its own
+eval as the BACKLOG item asked: keyword exact 0.531 -> 0.533, event-level 0.560 -> 0.563, Critical P/R unchanged.
+Low false-positive risk because `words()` is whole-word + optional plural, so "terrified" doesn't match — asserted
+rather than assumed.
+
+**Six regression tests now cover this whole area** (`pipeline.test.ts`), which is the real remedy for the gap this
+entry opens with: the eval fixture had no case of any of these shapes, so nothing but a live build would have caught
+them, and nothing would have caught a re-regression. Locked in: the Sri Lanka verdict at Significant both with and
+without its death-toll description; the fresh shrine bombing at Critical both with and without same-day arrests in
+the text; the judicial Significant floor; and `terror` tagging while "terrified" does not. Writing them surfaced one
+more instance of the tagging family, left open in BACKLOG: bare `attack` tags nothing either, so the same Paris
+sentence written without "terror" still lands Routine. That one can't be fixed with a bare keyword the way `terror`
+could — "attacks critics" — it needs a co-occurrence or phrase rule.
+
 ## 2026-09-22 — Clustering false-merge: the China/AI-vs-China/space report is now on the labeled fixture
 
 **Follow-up on the open BACKLOG item from the 2026-09-20 embeddings entry** ("~10% of two-outlet Events
