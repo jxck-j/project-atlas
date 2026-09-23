@@ -17,6 +17,22 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.14.0 — News Engine Phase 6: cadence (scheduled builds plus an event trigger)
+
+**Engine expanded: the News Engine's build pipeline.** It now runs unattended instead of only when someone types the command, which is
+what lets the NEWS tab stay current without a person in the loop.
+
+- **`npm run news:build`** - the scheduled build (10AM/10PM): the default local-embedding build under a lock, logged, with a state file.
+- **`npm run news:watch`** - every 3 hours: fetch and archive, then pull a build forward when something Critical-looking has arrived
+  since the last good build. It only decides *when* to build; the corroboration gate is untouched. 60-minute cooldown, 12 per 24h.
+- **`npm run news:status`** - last good build, feed-failure streaks, staleness (exit 1 past 26h).
+- **`scripts/schedule/newsTasks.ps1`** - installs/removes the two Windows Task Scheduler tasks. Not installed by this change.
+- Unattended builds skip the `BACKLOG.md` rewrite (`--no-backlog-report`) and write `news-events.json` via write-then-rename.
+- The LLM path (Phase 3) is not part of this, and is not used by anything here: the local-embedding build does the same job with no
+  API key. `CLAUDE.md`, the design doc and `BACKLOG.md` say so.
+
+Pure logic and its tests: `src/news/cadence.ts`, `cadence.test.ts`. Reasoning and rejected alternatives: `LOGBOOK.md`.
+
 ## v6.13.2 — News: severity fixes for named capitals and false "escalation"
 
 A deadly drone strike on Kyiv was publishing as Significant while a UN speech, a UK space-squadron announcement and a

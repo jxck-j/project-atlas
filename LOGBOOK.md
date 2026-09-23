@@ -5,6 +5,74 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-23 — News Engine Phase 6: cadence, and the LLM path is formally not part of it
+
+**J's framing before starting:** note that the LLM is not used — a different method was found, and it's the one the engine
+runs on today. Recording that here because the design doc, `BACKLOG.md` and `CLAUDE.md` all still described an LLM classification
+pass as the plan, and Phase 6 was written against that: the design's open cost question ("estimated daily article volume, needed to
+sanity-check LLM classification-pass cost under this cadence") is moot, and so are three BACKLOG items that only existed to make an
+unattended LLM run affordable (Batch API, a persistent classification cache, the prompt-injection surface). What replaced it
+(2026-09-21): local sentence embeddings for same-event grouping, a small trained classifier for relevance and topic tags, keyword rules for
+severity. Free and keyless, so a scheduler needs no secret. The Phase 3 code stays in the tree, unrun and unmaintained toward any goal;
+it is not the fallback (`--heuristic` is). Annotated rather than deleted, because J may revive it and the reasoning in it is still useful.
+
+**Where it runs: this machine, under Windows Task Scheduler.** The article archive is gitignored, not regenerable and exists only
+here; a CI runner would start with none of it and would have nowhere to hand a result back. The other options considered:
+- *GitHub Actions on the remote.* Rejected: no archive (each run would rebuild a 14-day window from RSS's last day or two, which is
+  exactly the problem the archive was built to solve), and the embedding model would need caching in CI.
+- *A long-lived watcher process.* Rejected: something else to keep alive and restart; Task Scheduler already does that, and
+  `StartWhenAvailable` covers a machine that was asleep at 10PM.
+- *A commit-and-push step after each build.* Not done, deliberately. `public/data/news-events.json` is a tracked file, so a scheduled
+  run leaves the tree dirty and nothing publishes it. There is no deploy target in the repo to justify pushing twice a day to the
+  remote, and that is outward-facing. Logged as an open decision in `BACKLOG.md`.
+
+**The event trigger decides WHEN to build, never WHETHER to publish.** Design §2 says a qualifying event, "e.g. a Critical-tier trigger",
+can start an out-of-schedule build. The trouble is that Critical is the tier whose floor a single article can never meet (a wire
+report or three distinct outlets), so "a Critical Event exists" can only be known after a build. The watcher therefore uses the
+cheapest thing that predicts one: any article first seen since the last good build that the keyword rules tier Critical (or flag as a
+head-of-state death), from a vetted English source, non-commentary URL, and published within 6 hours. It fetches and archives (no model),
+so it is cheap enough for a 30-minute tick. The build it starts is the scheduled build unchanged, so the gate is untouched and a
+false alarm costs one early build.
+- *Candidates count from the last GOOD build, not from this tick.* Otherwise a Critical-looking article that arrived during the cooldown
+  is forgotten, and the second and third outlets that actually make it publishable would never wake the build.
+- *The 6-hour freshness window is load-bearing.* Adding a feed backfills its whole window into the archive as "new"; without it the
+  first watch tick after adding sources would treat two weeks of old headlines as breaking. (The full-roster ingestion earlier today added
+  ~4,700 articles at once.)
+- *Cooldown (60 min) and a 24h cap (12) exist because the trigger is keyword-based and noisy in one direction.* A failed attempt counts
+  toward both, so a broken build can't retry every 30 minutes.
+
+**Measured, not assumed:** replaying the trigger over the real archive (30-minute ticks, cooldown, consumed candidates) gives 24 fires in
+14 days, 11 of them on 09-23 — the first day of the 106-feed roster. So the older days undercount, and the honest expectation is a few
+early builds a day. Real false alarms seen: "El Nino could cause 451,000 extra heat deaths" and a Pakistani ISPR "19 terrorists killed"
+operations report, both keyword-Critical, neither a corroborated Critical Event. Not tightened yet; a build takes ~2 minutes and the cap
+bounds the cost. A stricter candidate rule (2+ distinct sources) is in `BACKLOG.md` for after real logs exist.
+
+**Verified end to end by hand, not just unit-tested:** a full scheduled build (103-123s, 256-259 Events, 106/106 feeds); a watch tick
+with nothing to do; and a watch tick against an isolated temp archive holding a synthetic fresh Critical headline, which found three
+candidates, ran the build, recorded the attempt and exited 0. That test overwrote the tracked feed file with a smaller build from the temp
+archive, which I noticed and rebuilt from the real archive. One tick also reported 106/106 feeds failed seconds after a success; the
+runner logged it as an outage, exited 1, and touched neither the archive nor the failure streaks, and the next build fetched all 106,
+so it was a transient network fault, not a fault in the handling.
+
+**Follow-up, same day: the watch interval is 3 hours, not 30 minutes (J).** The 30 minutes was my pick, not the design's: §2 says
+twice daily plus event-triggered for the main feed, and hourly only for first-hand. I chose it for responsiveness without asking, and
+J questioned where it came from. Effects of 3 hours: an early build can start up to 3h after something breaks (the price), 15 fires in the
+14-day replay instead of 24 (6 of them on 09-23), the 60-minute cooldown and 12/day cap can no longer bind (at most 8 ticks a day) but stay as
+cheap protection if the interval is shortened, and the 6-hour freshness window still covers two ticks, so a headline first seen just after
+one tick is still fresh at the next. Not affected: archive capture (RSS windows are a day or more; 3h loses nothing) and the scheduled
+10AM/10PM builds. It is `-WatchIntervalMinutes` on `scripts/schedule/newsTasks.ps1`, so changing it again is one install command.
+The first live tick (before this change) fired on an SCMP piece about Paraguay and Taiwan whose headline alone classifies Routine, so it
+was the description text that tripped the Critical rules; the build published nothing new from it (259 Events before and after).
+
+**Two smaller decisions:** unattended runs pass `--no-backlog-report`, because `BACKLOG.md` is tracked and hand-edited and rewriting it
+twice a day would leave it permanently dirty (the same file whose `git checkout` revert has already lost work once). Its facts go to
+`debug/news-last-run.json`. And `news-events.json` is now written by write-then-rename, since the dev server or a browser can be reading
+it when a run finishes.
+
+**Not built, on purpose:** the hourly first-hand refresh (design §2; that pipeline is Phase 7, there is nothing to refresh yet),
+alerting beyond `news:status`'s exit code, and a build timestamp inside `news-events.json` so the client could say "updated 3h ago" (it
+is a bare array today, and changing its shape touches the NEWS tab, which this phase didn't).
+
 ## 2026-09-23 — Severity inverted: a deadly Kyiv strike at Significant, three speeches/announcements at Major
 
 **J's report:** "Waves of Russian drones hammer Kyiv, 2 dead, 43 injured" published Significant, while a Trump-Zelensky

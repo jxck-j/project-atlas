@@ -32,6 +32,9 @@
 //                            F1 0.86 (keyword rule: 0.73), tag macro-F1 0.74 (keywords: 0.60). See
 //                            LOGBOOK.md, scripts/evalNewsClustering.mjs, scripts/evalNewsClassifier.mjs.
 //     --no-classifier        keyword tags and no relevance gate (embedding grouping only).
+//   --no-backlog-report      skip the BACKLOG.md gap report. Unattended runs (scripts/newsCycle.mjs) pass this: BACKLOG.md is
+//                            tracked and hand-edited, and a scheduler rewriting it twice a day would dirty the tree forever.
+//                            The same facts go to debug/news-last-run.json instead.
 //   --heuristic              Phase 2's keyword classification + word-overlap clustering. No model, no network
 //                            beyond the feeds; much weaker grouping (16/47 stories vs 40/47 on the eval).
 //   --llm                    Phase 3: LLM classification + same-event grouping (Sonnet 5, J's
@@ -92,6 +95,7 @@ const PENDING_OUTPUT = 'debug/news-pending-confirmation.json'
 const BACKLOG = 'BACKLOG.md'
 const CACHE_FILE = 'debug/news-classification-cache.json'
 const AUDIT_FILE = 'debug/news-llm-audit.json'
+const LAST_RUN_FILE = 'debug/news-last-run.json'
 
 const argv = process.argv.slice(2)
 const flag = (name) => argv.includes(name)
@@ -105,6 +109,7 @@ const numArg = (name, fallback) => {
 const USE_LLM = flag('--llm')
 const USE_HEURISTIC = flag('--heuristic')
 const NO_CLASSIFIER = flag('--no-classifier')
+const NO_BACKLOG_REPORT = flag('--no-backlog-report')
 if (USE_LLM && USE_HEURISTIC) throw new Error('--llm and --heuristic are alternatives; pick one')
 const SPEND = flag('--yes')
 const LIMIT = numArg('--limit', undefined)
@@ -120,7 +125,7 @@ const countryMatchers = buildCountryMatchers([...countries, TAIWAN_REF])
 const profiles = JSON.parse(fs.readFileSync(SOURCES, 'utf8'))
 const feeds = JSON.parse(fs.readFileSync(FEEDS, 'utf8'))
 
-const { articles: pulled, feedFailures } = await fetchFeedArticles(feeds)
+const { articles: pulled, feedFailures, failedFeeds } = await fetchFeedArticles(feeds)
 
 // Raw pull, kept (gitignored) so clustering/classification can be tuned against real headlines offline.
 fs.mkdirSync('debug', { recursive: true })
@@ -264,8 +269,22 @@ async function runEmbed() {
 const result = USE_LLM ? await runLlm() : USE_HEURISTIC ? buildEvents(articles, buildCtx) : await runEmbed()
 if (!result) process.exit(0) // LLM dry run: nothing to write
 
+// Write-then-rename: an unattended run can finish while the dev server or a browser is reading this file, and a reader must
+// see the old file or the new one, never half of either. Renaming over a file another process holds open can fail on
+// Windows, so fall back to a plain overwrite rather than losing the build.
+function writeFileAtomic(file, text) {
+  const tmp = file + '.tmp'
+  fs.writeFileSync(tmp, text)
+  try {
+    fs.renameSync(tmp, file)
+  } catch {
+    fs.writeFileSync(file, text)
+    fs.rmSync(tmp, { force: true })
+  }
+}
+
 fs.mkdirSync('public/data', { recursive: true })
-fs.writeFileSync(OUTPUT, JSON.stringify(result.published, null, 2))
+writeFileAtomic(OUTPUT, JSON.stringify(result.published, null, 2))
 fs.mkdirSync('debug', { recursive: true })
 fs.writeFileSync(PENDING_OUTPUT, JSON.stringify(result.pending, null, 2))
 
@@ -321,4 +340,26 @@ function writeBacklogReport() {
   console.log(`Updated ${BACKLOG}.`)
 }
 
-writeBacklogReport()
+// What an unattended run needs to know afterwards (scripts/newsCycle.mjs reads this for its feed-failure streaks and status
+// line). Regenerable, so it lives in debug/ with the rest of a run's diagnostics.
+fs.writeFileSync(
+  LAST_RUN_FILE,
+  JSON.stringify(
+    {
+      at: now,
+      feedsTotal: feeds.length,
+      failedFeeds,
+      articlesFetched: pulled.length,
+      articlesInWindow: articles.length,
+      published: result.published.length,
+      pending: result.pending.length,
+      severity: Object.fromEntries(['critical', 'major', 'significant', 'routine'].map((s) => [s, bySeverity(s)])),
+      dropped: Object.fromEntries(Object.entries(result.dropped).map(([reason, list]) => [reason, list.length])),
+    },
+    null,
+    1,
+  ),
+)
+
+if (NO_BACKLOG_REPORT) console.log('Skipped the BACKLOG.md gap report (--no-backlog-report); summary -> ' + LAST_RUN_FILE)
+else writeBacklogReport()

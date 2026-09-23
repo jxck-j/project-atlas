@@ -35,6 +35,8 @@ const stripHtml = (s) => s?.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').rep
 /** @param {{ sourceId: string, url: string, language?: string }[]} feeds */
 export async function fetchFeedArticles(feeds) {
   const feedFailures = []
+  // Same failures, structured: the cadence runner (scripts/newsCycle.mjs) tracks consecutive failures per feed URL.
+  const failedFeeds = []
   const articles = []
   await Promise.all(
     feeds.map(async ({ sourceId, url, language }) => {
@@ -43,6 +45,7 @@ export async function fetchFeedArticles(feeds) {
         xml = await fetchTextRetry(url)
       } catch (err) {
         feedFailures.push(`${sourceId} (${url}): ${err.message}`)
+        failedFeeds.push({ sourceId, url, error: err.message })
         return
       }
       for (const item of parseRssItems(xml)) {
@@ -64,5 +67,5 @@ export async function fetchFeedArticles(feeds) {
       }
     }),
   )
-  return { articles, feedFailures }
+  return { articles, feedFailures, failedFeeds }
 }

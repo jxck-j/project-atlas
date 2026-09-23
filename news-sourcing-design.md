@@ -137,6 +137,7 @@ Should each systemic theme also carry its own **standing likelihood/trend indica
 
 1.  **Cheap keyword pre-filter** — narrows raw pull from outlets/feeds to plausible candidates. Deliberately crude/wide — only needs to avoid discarding real candidates, not be precise.
 2.  **LLM classification pass, title + subheadline/dek first** — a build-time API call (not runtime — same category as other `buildX.mjs` scripts hitting external sources) asks: does this substantively belong to a topic/systemic-theme tag, and what tier does the actual content warrant? Most candidates resolve confidently here.
+    > **Amendment (J, 2026-09-23): the LLM pass is not used.** The build groups and classifies with local sentence embeddings plus a small trained classifier and keyword severity rules instead (`CLAUDE.md`'s "Local-embedding grouping + classifier is the DEFAULT build"; `LOGBOOK.md`, 2026-09-21). Step 3's full-article read is deferred with it. Read "LLM classification" in this doc as "the classifier".
 3.  **Full-article read, only for low-confidence cases** — a small minority of the pool, not the default.
 4.  **Three-way routing based on confidence:**
     - Confident-relevant → proceed to tagging/tiering

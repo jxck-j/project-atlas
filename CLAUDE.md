@@ -74,6 +74,10 @@ npm run eval:news-classifier # Grouped cross-validation of the relevance/tag/sev
 npm run train:news-classifier # Retrains the classifier heads on the labeled fixtures and rewrites src/news/embeddingClassifierWeights.json. Re-run after changing EMBEDDING_MODEL, the embedded text, or the labels.
 npm run mine:news-candidates # Read-only: mines archive/news/articles.jsonl for new label-fixture candidates not already in the two existing fixtures (rare severity-trigger articles, plus relevance disagreement between the shipped classifier and the keyword pre-filter). Prints candidates; a human (or Claude, spot-checked) hand-labels and adds them. See News & sourcing below.
 npm run build:news:events:llm # Phase 3: same, but LLM classification + grouping (Sonnet 5). Needs ANTHROPIC_API_KEY. Dry run by default (free count_tokens + projected cost); add `-- --yes` to spend, `-- --limit N` for a small first run.
+npm run news:build           # Phase 6: the SCHEDULED build (what Task Scheduler runs at 10AM/10PM) - the default build above, under a lock, logged to archive/news/cycle.log, without the BACKLOG.md rewrite. See "Cadence" under News & sourcing.
+npm run news:watch           # Phase 6: every 3 hours - fetch + archive only, then pulls a build forward if something Critical-looking arrived (cooldown + daily cap apply).
+npm run news:status          # Phase 6: last good build, failure streaks, chronically failing feeds, whether public/data/news-events.json is stale. Exits 1 if stale.
+powershell -ExecutionPolicy Bypass -File scripts/schedule/newsTasks.ps1 -Action install|uninstall|status [-DryRun]   # registers/removes the two Task Scheduler tasks
 npm test                     # Vitest — pure-function coverage (geo.ts, lodLevels.ts, labelDeclutter.ts, countryGeometry.ts, countryAbbreviation.ts, news/)
 ```
 
@@ -1715,12 +1719,12 @@ here. What a session building v2 must respect:
   recency (World tab: breadth of `linkedEntityIds` first).
 - **Event is the primary object**, not `NewsItem`: an Event holds a `SourceEntry` dossier, and corroboration is
   *derived* from that dossier, not stored as its own field. Tabs, ranking, and presets operate on Events.
-- Community discussion never counts toward corroboration or severity. Cron plus event-triggered builds would be
-  a new pattern for Atlas; document it here once it exists.
+- Community discussion never counts toward corroboration or severity. Cron plus event-triggered builds is the
+  cadence pattern Phase 6 introduced - see "Cadence" below.
 
 **v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
 build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
-surfaces; **Phases 1, 2, 4 and 5 are done, 3 is built but unrun — the next one is Phase 6, cadence**).
+surfaces; **Phases 1, 2, 4, 5 and 6 are built; 3 (the LLM path) is built but deliberately NOT USED - see below. The next one is Phase 7, the first-hand pipeline**).
 **Phase 1 is `src/news/`**, a pure (no DOM/network/React) directory; its types are named distinctly from v1's
 (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`) so an import can't silently pick up the wrong
 generation — which is what made the Phase 4 cutover a matter of swapping two components' imports.
@@ -1796,6 +1800,11 @@ Things a session touching this must know:
   `manuallyConfirmed` specifically — see the Admin Console section below — but nothing ELSE survives a run, so don't assume
   any other per-Event state does.
 
+**NOT IN USE (J, 2026-09-23): the LLM path is not how this engine is built, and nothing should be planned on the assumption it will be.** The local-embedding
+build below does the grouping and classification instead - free, keyless, and evaluated on hand labels. The code below stays in the tree, unrun and unmaintained
+toward any goal; it is not a fallback (`--heuristic` is), and its cost/cache/prompt-injection concerns in `BACKLOG.md` are moot until someone chooses to revive
+it. Don't add an `ANTHROPIC_API_KEY` requirement to any scheduled or default path.
+
 **Phase 3 is done too, but UNVERIFIED against the real API** (no key was available; the request/response path is type-checked and
 tested on a fake, never exercised live): `npm run build:news:events:llm` (`--llm`). Two Sonnet 5 calls (J's decision, logged in
 `LOGBOOK.md`): per-article classification (`llmSchemas.ts`/`llmPrompts.ts`/`llmPipeline.ts`; batches of 25, cached in gitignored
@@ -1843,6 +1852,35 @@ loosening the pair threshold. Things a session touching this must know:
   keyword disagreement, not a random pull), so `scripts/lib/classifierData.mjs` wires it into the "main" training side only, never
   the pristine held-out side — `loadClassifierData`'s `holdStart` (not `nMain`) is what marks where the real held-out set begins.
 - `--heuristic` is the Phase 2 path (no model); `--llm` (Phase 3) is unchanged and still unrun.
+
+### Cadence (`scripts/newsCycle.mjs`, `src/news/cadence.ts`, Phase 6, v6.14.0)
+
+The first recurring build in this repo, and its first event-triggered one. Still build-time and static from the client's side - the
+app only ever fetches `news-events.json`. **It runs locally under Windows Task Scheduler, not on a CI runner**: the article archive
+(`archive/news/`, gitignored, not regenerable) exists only on this machine, and a fresh CI checkout would start without it.
+`public/data/news-events.json` is a TRACKED file, and **nothing here commits or pushes it** - publishing a scheduled run's output is
+a separate, still-open decision (`BACKLOG.md`).
+
+- **Two tasks** (`scripts/schedule/newsTasks.ps1`): *Atlas News Build* at 10:00 and 22:00 local (`npm run news:build`) and *Atlas News
+  Watch* every 3 hours (`npm run news:watch`; `-WatchIntervalMinutes` on the install script changes it). Interactive logon only (no stored password), so nothing runs while logged off;
+  `StartWhenAvailable` runs a missed slot on next wake. The tasks pin this checkout's path - reinstall if it moves.
+- **The event trigger decides WHEN, never WHETHER.** `news:watch` archives, then looks at articles first seen since the last good
+  build: any that the keyword rules tier Critical (or flag as a head-of-state death), from a vetted English source, non-commentary URL,
+  published in the last 6h, pulls the SAME default build forward. The corroboration gate is unchanged, so a Critical-looking
+  single-outlet headline still publishes nothing - a false alarm costs one early build. Bounds: 60 min cooldown between event-triggered
+  attempts (a failed attempt counts), 12 per rolling 24h. Constants and the decision logic are pure and tested in `cadence.ts`.
+  The trigger is deliberately noisy in one direction: keyword Critical fires on things the build later demotes ("El Nino could cause
+  451,000 extra heat deaths").
+- **`--no-backlog-report`**: unattended runs never rewrite `BACKLOG.md` (tracked and hand-edited). The same facts go to gitignored
+  `debug/news-last-run.json`, which the runner reads for feed-failure streaks.
+- **Failure behavior**: a failed build leaves `news-events.json` untouched (the build only writes at the end, via write-then-rename)
+  and does NOT advance `lastBuildAt`, so its candidates stay pending. Every feed failing in a watch tick is logged as an outage and
+  exits 1, without touching the archive or the per-feed streaks. A feed failing 3 runs in a row is logged as chronic.
+  State: `archive/news/cycle-state.json`; log: `archive/news/cycle.log` (trimmed to a ~256 KB tail); lock: `archive/news/cycle.lock`.
+- **The lock only covers the runner against itself.** A manual `npm run build:news:events` doesn't take it - don't start one while a
+  tick is running, or two processes may append the same articles to the archive.
+- **Not built**: the hourly first-hand refresh (Phase 7's pipeline, per the design), any alerting beyond `news:status`'s exit code, and
+  a freshness stamp in `news-events.json` for the client to show ("updated 3h ago") - the file is a bare array today.
 
 ### Admin Console (`admin/`, Phase 5, v6.13.0)
 

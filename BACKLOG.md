@@ -65,8 +65,31 @@ Grouped by theme, not priority. Each item says *why* it's here, not just
 
 Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md`, not repeated here. Phase 1
 (`src/news/` schema, pure logic, `sources.json`/`systemicThemes.json`), Phase 2 (the Event build pipeline,
-`scripts/buildNewsEvents.mjs`), Phase 3 (LLM classification/grouping, `--llm`, not yet run live) and Phase 4
-(the NEWS tab reads Events; the build reads the 14-day archive window) are built; everything below is still open.
+`scripts/buildNewsEvents.mjs`), Phase 3 (LLM classification/grouping, `--llm`, never run live and NOT USED - J, 2026-09-23), Phase 4
+(the NEWS tab reads Events; the build reads the 14-day archive window), Phase 5 (Admin Console) and Phase 6 (cadence) are built; everything below is still open.
+
+- **Phase 6 (cadence) follow-ups, opened 2026-09-23:**
+  - **DONE (2026-09-23): the two Task Scheduler tasks are installed** (`Atlas News Build` 10:00/22:00, `Atlas News Watch` every 3 hours, changed from 30 min the same day).
+    Check them with `newsTasks.ps1 -Action status` and `npm run news:status`.
+  - **KEY PHRASE — "news publish decision".** Deferred by J on 2026-09-23: scheduled runs do NOT commit or push
+    `public/data/news-events.json`, and that stays true until J says the phrase. `public/data/news-events.json` is tracked, so every run
+    dirties the tree; that is accepted for now. There is no deploy target in the repo. When J raises it, the options are: a commit-and-push
+    step after a good build (needs a dedicated data branch, a sanity check such as refusing a sharp drop in Event count, and commit-only-that-file),
+    or serving the file from wherever the app is hosted. The pros/cons already argued are in that conversation's summary: repo bloat
+    (~3,000 changed lines per build), unreviewed publishing, outward-facing and hard to undo, nothing deploys from it yet. Don't auto-push
+    without deciding this on purpose.
+  - **The event trigger is noisy, unmeasured against reality.** Replayed over the 14-day archive (3-hour ticks; at the first-chosen 30-min ticks it was 24) it
+    would have fired 15 times, 6 of them on 09-23 - the day the roster went from 24 feeds to 106, so the older days undercount what
+    106 feeds will produce. Expect a few builds a day and the 12/day cap to matter on a busy news day. False-alarm examples seen: "El Nino
+    could cause 451,000 extra heat deaths", an ISPR "19 terrorists killed" operations report. Tighten only after watching real logs
+    (`archive/news/cycle.log`); a cheap tightening is requiring 2+ distinct sources among the candidates before pulling a build forward.
+  - **A single trigger candidate can't corroborate itself**, so the early build often publishes nothing new; the value is the SECOND and
+    THIRD outlet landing in a later tick. A watcher tick after the cooldown catches those (candidates count from the last good build).
+  - **No client freshness stamp.** `news-events.json` is a bare array, so the NEWS tab can't say "updated 3h ago" or warn that the feed is
+    stale. `news:status` exits 1 past 26h; the UI doesn't know.
+  - **No alerting.** A failing schedule is only visible via `news:status`, `archive/news/cycle.log` or Task Scheduler's Last Result.
+  - **Runs only while logged on**, and only when the machine is awake; a laptop asleep at 10PM runs the slot on wake.
+  - **Manual builds don't take the lock** (see CLAUDE.md "Cadence").
 
 - **Full-roster ingestion follow-ups (opened 2026-09-23, when feeds went from 24 to 106 — see LOGBOOK):**
   - **37 roster profiles have no buildable feed**, each recorded with a reason in `src/news/feedGaps.json` (the
@@ -375,11 +398,11 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   capital only in object position after a strike word ("drones hammer Kyiv", not "Russia attacks Kyiv overnight" — bare
   verb forms like "attacks Washington" are too often figurative). Both are recall losses, in the safe direction. Revisit if a
   real strike on one of those capitals, or a "Russia attacks Kyiv"-shaped headline, tiers too low.
-- **Batch API for scheduled runs.** Twice-daily builds tolerate the Batch API's async latency and its 50% discount, which would roughly
+- **Moot while the LLM path is unused (J, 2026-09-23) - this and the next two items.** **Batch API for scheduled runs.** Twice-daily builds tolerate the Batch API's async latency and its 50% discount, which would roughly
   halve the classification cost. Not done: it changes the run from one process to submit-then-poll.
-- **The classification cache lives in gitignored `debug/`.** A cron or CI runner (Phase 6) needs a persistent location for it, or every
+- **(Moot - LLM path unused.)** **The classification cache lives in gitignored `debug/`.** A cron or CI runner (Phase 6) needs a persistent location for it, or every
   run pays the cold price.
-- **Residual prompt-injection surface.** The model reads third-party headline/summary text, so a hostile item could bias its OWN
+- **(Moot - LLM path unused.)** **Residual prompt-injection surface.** The model reads third-party headline/summary text, so a hostile item could bias its OWN
   classification or a grouping (tags, tier, merging). The gate bounds the damage (nothing publishes without distinct-source
   corroboration, and the source roster is vetted), but a coordinated set of items could still skew tiers within that bound. Worth an
   adversarial pass on the prompts once the first live audit exists.
