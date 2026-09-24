@@ -12,7 +12,9 @@ import {
 } from '../data/newsRecency'
 import type { CountryRegion } from '../data/countryRegions'
 import { buildFeed, filterEvents } from '../news/feed'
-import { NEWS_TABS } from '../news/tabs'
+import { NEWS_TABS, getNewsTab } from '../news/tabs'
+import { refreshFirstHandTicker } from '../data/useFirstHandTicker'
+import { FirstHandTicker } from './FirstHandTicker'
 import { deriveCorroboration } from '../news/corroboration'
 import { assignEventImages, distinctSources, firstHandSources, sourceDisplayName } from '../news/eventPresentation'
 import type { NewsEvent, NewsTabId } from '../news/types'
@@ -317,6 +319,8 @@ export function NewsPanel() {
   useEffect(() => {
     if (isOpen) {
       setNow(Date.now())
+      // The ticker file is rebuilt far more often than the events file (hourly), so it is re-read on every open, not once per session.
+      refreshFirstHandTicker()
       const pendingId = consumePendingNewsCountryId()
       if (pendingId) {
         const name = getCountry(pendingId)?.name
@@ -327,6 +331,9 @@ export function NewsPanel() {
 
   const allEvents = useNewsEvents()
   const loaded = useNewsEventsLoaded()
+  // §15b: each topic tab carries a first-hand ticker scoped to its own tag; World (topicTag null) stays a pure news landing view.
+  const tabDef = getNewsTab(tab)
+  const tickerTag = tabDef.firstHandTicker ? tabDef.topicTag : null
 
   // Plain per-render derivations, not memoized — the same "cheap enough to
   // redo every render" call AnalyticsPanel and v1's NewsPanel both make at a
@@ -499,6 +506,9 @@ export function NewsPanel() {
             )
           })}
         </div>
+
+        {/* The first-hand ticker (§15b): a one-line strip above the feed, keyed on the tag so each tab starts at its newest post. */}
+        {tickerTag && <FirstHandTicker key={tickerTag} topicTag={tickerTag} now={now} />}
 
         {total === 0 ? (
           <div className="text-[12px] text-[#51648a]">

@@ -68,6 +68,7 @@ npm run build:technology     # regenerate src/data/technologyScores.ts (Intellig
 npm run build:current-status # regenerate src/data/currentStatus.ts (Intelligence Engine — see Geopolitical data architecture below)
 npm run archive:news        # Fetch-only capture of the vetted feeds into the append-only article archive (archive/news/articles.jsonl, gitignored, NOT regenerable). No model. See News & sourcing below.
 npm run build:news:events   # News Engine v2: fetch feeds -> archive -> Events over the archive's last 14 days -> public/data/news-events.json (runs via tsx; see News & sourcing below). DEFAULT = local-embedding grouping + a relevance/tag classifier. Free, keyless; one-time ~33 MB model download into debug/hf-cache. Fails loudly if the model can't load. Flags: `-- --no-classifier`.
+npm run build:news:ticker   # Phase 7 step 4: archive -> public/data/news-firsthand.json (gitignored), the per-tab first-hand ticker's file. Reads the archive, does not fetch. Same local model as the Event build (`-- --no-classifier` = keyword topics). See News & sourcing below.
 npm run build:news:events:heuristic # Phase 2's keyword classification + word-overlap clustering. No model. Much weaker grouping; the offline fallback.
 npm run eval:news-clustering # Scores the heuristic and the embedding clusterer against the hand-labeled fixture (scripts/fixtures/newsClusteringEval.json). Re-run after changing the model, threshold or clustering constants.
 npm run eval:news-classifier # Grouped cross-validation of the relevance/tag/severity classifier vs the keyword rules, plus a product-level "which Events would publish" test.
@@ -75,6 +76,7 @@ npm run train:news-classifier # Retrains the classifier heads on the labeled fix
 npm run mine:news-candidates # Read-only: mines archive/news/articles.jsonl for new label-fixture candidates not already in the two existing fixtures (rare severity-trigger articles, plus relevance disagreement between the shipped classifier and the keyword pre-filter). Prints candidates; a human (or Claude, spot-checked) hand-labels and adds them. See News & sourcing below.
 npm run build:news:events:llm # Phase 3: same, but LLM classification + grouping (Sonnet 5). Needs ANTHROPIC_API_KEY. Dry run by default (free count_tokens + projected cost); add `-- --yes` to spend, `-- --limit N` for a small first run.
 npm run news:build           # Phase 6: the SCHEDULED build (what Task Scheduler runs at 10AM/10PM) - the default build above, under a lock, logged to archive/news/cycle.log, without the BACKLOG.md rewrite. See "Cadence" under News & sourcing.
+npm run news:ticker          # Phase 7 step 5: every hour - fetch ONLY the first-hand channels, archive, rebuild public/data/news-firsthand.json (the ticker). Skips the rebuild if every channel failed, so the ticker's UPDATED/STALE stamp can't lie.
 npm run news:watch           # Phase 6: every 3 hours - fetch + archive only, then pulls a build forward if something Critical-looking arrived (cooldown + daily cap apply).
 npm run news:status          # Phase 6: last good build, failure streaks, chronically failing feeds, whether public/data/news-events.json is stale. Exits 1 if stale.
 powershell -ExecutionPolicy Bypass -File scripts/schedule/newsTasks.ps1 -Action install|uninstall|status [-DryRun]   # registers/removes the two Task Scheduler tasks
@@ -1724,7 +1726,7 @@ here. What a session building v2 must respect:
 
 **v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
 build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
-surfaces; **Phases 1, 2, 4, 5 and 6 are built; 3 (the LLM path) is built but deliberately NOT USED - see below. Phase 7, the first-hand pipeline, is IN PROGRESS: steps 1 (roster), 2 (fetch + archive) and 3 (attach to Events) are done - see below**).
+surfaces; **Phases 1, 2, 4, 5 and 6 are built; 3 (the LLM path) is built but deliberately NOT USED - see below. Phase 7, the first-hand pipeline, is IN PROGRESS: steps 1 (roster), 2 (fetch + archive), 3 (attach to Events) and 4 (per-tab ticker) are done - see below**).
 **Phase 1 is `src/news/`**, a pure (no DOM/network/React) directory; its types are named distinctly from v1's
 (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`) so an import can't silently pick up the wrong
 generation — which is what made the Phase 4 cutover a matter of swapping two components' imports.
@@ -1784,6 +1786,22 @@ on batch composition, so mixing them would let a first-hand post flip an outlet 
 `DeepStateUA` posts in Ukrainian, so its TEXT is dropped by `BUILD_LANGUAGES` like any non-English feed. `eventBuilder.ts`'s `sourceEntry()`
 maps a first-hand profile to a `FirstHandSourceEntry` whose `countsTowardCorroboration` is `specialistVerified === true` (fails closed until
 step 3 decides the real rules). See `LOGBOOK.md`'s "Phase 7 step 1" entry and `BACKLOG.md`'s Phase 7 items before touching any of it.
+
+**The per-tab ticker (Phase 7 step 4, v6.16.0)** is a SECOND consumer of the archive, not part of the Event build: `firstHandTicker.ts`'s
+`buildFirstHandTicker()` (pure) takes the archive's first-hand posts and keeps English text from the last 24 h that passes Layer 1 of the
+content-safety filter and is on-topic (classifier tags and the Events' two-regime relevance rule, or keyword tags with `--no-classifier`);
+`scripts/buildFirstHandTicker.mjs` writes it to `public/data/news-firsthand.json` (`{generatedAt, posts}`, **gitignored** — raw third-party
+channel text). It needs no Event, which matters because most posts attach to none. **`contentSafety.ts` is Layer 1 of §15f** (caption tiers
+A/B/C); the file is served, so it is the gate, not the UI. The text ticker blocks tier A AND B (no Layer 2 exists for B to route to), the
+patterns are a blunt over-blocking first cut with no measured false-negative rate, and none of this makes pictures/video safe —
+`FIRST_HAND_MEDIA_ENABLED` stays off. The ticker carries no media, video flag or link preview, ever. Client: `data/useFirstHandTicker.ts`
+(re-fetched every time the NEWS tab opens, unlike `useNewsEvents`) and `hud/FirstHandTicker.tsx`, a one-line strip above the feed in
+`NewsPanel.tsx` that CRAWLS the newest 12 posts continuously right-to-left at a constant ~55 px/s (`ticker-marquee` in `index.css`; the
+component measures one set of items, tiles enough copies to cover the window, and slides by exactly one set per lap; hover/focus or an open
+list stops it; reduced motion gets a static swipeable set); paused on hover/focus and for reduced-motion; ‹ › and an ALL n button that opens the full list inline —
+**never a nested scrollbar**; an earlier right rail with its own inner scroll was rejected on sight), scoped by `NEWS_TABS[].topicTag`; World has none. It imports only `news/tickerTypes.ts` (types + two
+constants) so the build's rule modules stay out of the browser bundle. Nothing runs the build on a schedule yet (step 5); the UI shows its
+build time and calls itself STALE after 3 h. See `LOGBOOK.md`'s 2026-09-24 step-4 entry.
 
 **The article archive (2026-09-21)** — `archive/news/articles.jsonl`, append-only, one `RawArticle` + `firstSeenAt` per line, written by
 `npm run archive:news` (fetch-only) and by every `build:news:events` run. Logic is `src/news/articleArchive.ts` (pure, tested), file I/O is
@@ -1882,8 +1900,10 @@ app only ever fetches `news-events.json`. **It runs locally under Windows Task S
 `public/data/news-events.json` is a TRACKED file, and **nothing here commits or pushes it** - publishing a scheduled run's output is
 a separate, still-open decision (`BACKLOG.md`).
 
-- **Two tasks** (`scripts/schedule/newsTasks.ps1`): *Atlas News Build* at 10:00 and 22:00 local (`npm run news:build`) and *Atlas News
-  Watch* every 3 hours (`npm run news:watch`; `-WatchIntervalMinutes` on the install script changes it). Interactive logon only (no stored password), so nothing runs while logged off;
+- **Three tasks** (`scripts/schedule/newsTasks.ps1`): *Atlas News Build* at 10:00 and 22:00 local (`npm run news:build`), *Atlas News
+  Watch* every 3 hours (`npm run news:watch`; `-WatchIntervalMinutes` on the install script changes it) and, since Phase 7 step 5, *Atlas News
+  Ticker* every hour (`npm run news:ticker`; `-TickerIntervalMinutes`) — channels only, no Event build, and it does NOT touch the feed-failure
+  streaks (a channels-only run would reset every RSS feed's streak; `news:watch` owns them). Interactive logon only (no stored password), so nothing runs while logged off;
   `StartWhenAvailable` runs a missed slot on next wake. The tasks pin this checkout's path - reinstall if it moves.
 - **The event trigger decides WHEN, never WHETHER.** `news:watch` archives, then looks at articles first seen since the last good
   build: any that the keyword rules tier Critical (or flag as a head-of-state death), from a vetted English source, non-commentary URL,
@@ -1900,7 +1920,7 @@ a separate, still-open decision (`BACKLOG.md`).
   State: `archive/news/cycle-state.json`; log: `archive/news/cycle.log` (trimmed to a ~256 KB tail); lock: `archive/news/cycle.lock`.
 - **The lock only covers the runner against itself.** A manual `npm run build:news:events` doesn't take it - don't start one while a
   tick is running, or two processes may append the same articles to the archive.
-- **Not built**: the hourly first-hand refresh (Phase 7's pipeline, per the design), any alerting beyond `news:status`'s exit code, and
+- **Not built**: any alerting beyond `news:status`'s exit code, and
   a freshness stamp in `news-events.json` for the client to show ("updated 3h ago") - the file is a bare array today.
 
 ### Admin Console (`admin/`, Phase 5, v6.13.0)

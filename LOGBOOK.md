@@ -5,6 +5,80 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-24 — Phase 7 step 5: the hourly ticker refresh (`news:ticker`)
+
+**Built:** a third mode in `scripts/newsCycle.mjs` (`npm run news:ticker`) and an "Atlas News Ticker" task in `newsTasks.ps1` (hourly,
+`-TickerIntervalMinutes`). It takes the shared lock, fetches ONLY the first-hand channels (`fetchFirstHandArticles`, 3 h lookback), archives
+what is new, and runs `buildFirstHandTicker.mjs` as a child process (`runBuild` was generalized into `runScript`). A first real run: 5/5
+channels, 92 posts fetched, 8 new, ticker rebuilt in 9 s (99 posts).
+
+**Decisions, and why:**
+- **A total fetch failure does NOT rebuild.** The ticker's whole honesty mechanism is the UPDATED/STALE stamp from `generatedAt`. Rebuilding
+  over an outage would refresh that stamp on posts that are hours old, so the one thing telling a reader the feed stopped would say it hadn't.
+  A partial failure (some channels) still rebuilds and logs the failed ones.
+- **It does not update the per-feed failure streaks.** `updateFeedStreaks` is given the FULL target list; a channels-only run would count
+  all 106 RSS feeds as having succeeded and reset their streaks. `news:watch` fetches everything and keeps owning them, so a dead channel is
+  still noticed within 3 hours, just not by this task.
+- **3 hour lookback on an hourly task**: a whole missed tick of slack (a sleeping laptop; `StartWhenAvailable` catches up late). Duplicates cost
+  requests only, the archive dedupes by URL.
+- **Hourly is the design's own proposal (§15c);** the interval is a parameter. Cost is five small t.me pages a tick.
+- **If the lock is held (a build running) the tick skips** and exits 0, like the others; the next hour catches up.
+- **`news:status` prints the ticker file's age** (informational; the exit code stays the Event file's).
+
+**Not done:** the task is NOT installed by this change — `newsTasks.ps1 -Action install` re-registers all three (the existing two too), so J
+runs it. The post caps (40 per tab in the list, 300 in the file, 24 h window) are still the numbers I guessed; J chose to set them from real
+hourly volume rather than from the ~130 posts that existed, so revisit after a day or two of the task running.
+
+## 2026-09-24 — Phase 7 step 4: the per-tab first-hand ticker, gated by Layer 1 of the content-safety filter
+
+**Built:** `src/news/firstHandTicker.ts` (pure builder), `scripts/buildFirstHandTicker.mjs` (`npm run build:news:ticker`),
+`src/news/contentSafety.ts` (Layer 1), `src/news/tickerTypes.ts`, `src/data/useFirstHandTicker.ts`, `src/hud/FirstHandTicker.tsx`, and a right
+rail in `NewsPanel.tsx`. Output: `public/data/news-firsthand.json` (`{ generatedAt, posts }`), gitignored.
+
+**Decisions, and why (mine unless marked — J has not reviewed these):**
+- **The ticker reads the archive, not Events.** §15b wants posts "scoped to that tab's topic", and step 3's whole result was that most posts
+  attach to nothing (92 of 131 unattached in the real window). A ticker that only showed attached posts would be almost empty. So it is a
+  second consumer of the archive with its own build, which is also what §15c's "separate, faster cadence" needs: step 5 can rebuild it hourly
+  without loading the embedding model for clustering. A post can appear both in a card's FIRST-HAND list and in the ticker; that is fine, they
+  are different surfaces.
+- **The content-safety gate had to exist first, and the part of it that applies to text is buildable now.** The file is served, so a UI filter
+  is not a gate (the same reasoning that keeps `FIRST_HAND_MEDIA_ENABLED` off). §15f's Layer 1 is caption/metadata only — exactly what a
+  text ticker carries — so it is built here; Layer 2 (visual, sampled frames, the ~100-clip calibration pass) is untouched and is what stays
+  blocking pictures and video.
+- **Tier B blocks, not just tier A.** The design routes B "to Layer 2 with a lower threshold"; there is no visual to classify, and §15f states
+  the asymmetry (a false positive blocks a legitimate clip, a false negative shows someone a corpse). With no Layer 2, the conservative reading
+  is that B is a block. Revisit if Layer 2 is built: B could then pass to it instead.
+- **The patterns are a first cut and deliberately over-block** ("UN documents rape as a weapon of war" is blocked). Ordinary casualty reporting
+  ("12 killed in strike") passes, per the design's own example; "Al Gore" and "severed ties" had to be kept out of the gore list (both were
+  in my first draft). Run over the whole real archive (115 English first-hand posts) it flagged nothing, which says nothing about the
+  false-negative rate: that has not been measured and §15f says it needs "a real, tested answer" before video ships.
+- **Topic gating reuses the Event rule per post** (mild relevance gate where a keyword agrees, 0.60 where none does) rather than inventing a
+  ticker-specific threshold; tags come from the classifier. That was tuned on outlet headlines, not channel posts, so it is a reasonable guess,
+  not a measured one. On the real archive: 92 posts kept of ~115, spread mostly across conflict-security and diplomacy-politics.
+- **English only, and no translation.** Same rule as the build (`BUILD_LANGUAGES`); 20 Ukrainian posts were dropped in the first real run.
+- **Never carries a picture, video flag or link preview.** Text only is the design's own choice (§15b), and there is no visual filter.
+- **Labeling is part of the feature** (§15a): channel + kind on every line, combatant-affiliated channels' note in amber, an UNVERIFIED header,
+  "does not count toward any event's sourcing", and a build timestamp that turns to STALE after 3 hours so a stopped scheduler does not read as live.
+- **Types split into `tickerTypes.ts`** so the browser bundle imports two constants and some interfaces rather than the build's rule modules.
+
+**Layout, revised the same day (J):** the first version was a right rail with `max-h` + `overflow-y-auto`. Seen in a browser it read as a
+second scrollbar beside the page's own, and J found it ugly. Replaced by a one-line strip above the feed (option 2 of three offered: short
+rail with show-more, strip, collapsed bar). It cycles every 7 s, holds while hovered/focused or expanded and for `prefers-reduced-motion`,
+and ALL n expands the whole list inline in page scroll. Cost accepted: §15b puts the ticker on the RIGHT, and one line per post shows less
+than a rail did. The labeling (UNVERIFIED tag, channel kind, amber affiliation note) is on the strip itself, not only the expanded list.
+**Rolling was a misreading; J wanted a continuous crawl ("a left to right continuous moving feed").** The paragraph below describes the roll that was
+built and then REPLACED. Now: one line, items travel right to left (read left to right as they pass — the news-ticker convention, taken as
+what "left to right" meant; flipping it is one sign), constant ~55 px/s, faded ends, hover/focus/expanded stops it. Only the newest 12
+posts crawl, each cut to 160 characters, because a lap must stay a few minutes: 40 full-length posts would be a ~40-minute lap. The full
+text is in the ALL list and the hover title. The loop is seamless because the track holds enough copies of the item set to cover the window
+and shifts by exactly one measured set width per lap (ResizeObserver, since it depends on the font). The copies are `aria-hidden` and `inert`.
+Reduced motion: no animation, a plain swipeable set.
+
+**(superseded) Then made to roll (J: "cycle automatically, kind of like rolling").** It already advanced every 7 s but as a hard swap. Now the outgoing post
+slides up and fades while the next slides in from below (‹ reverses it), 450 ms. To stack both in one box the strip is a fixed `h-9` window,
+so the byline and text are each a single truncated line; affiliation is ordered BEFORE channel kind and age so a narrow window cuts those first.
+Reduced-motion is handled by the app-wide rule in `index.css`. **Not verified in a browser yet:** the roll itself and narrow-width truncation.
+
 ## 2026-09-24 — Phase 7 step 3 (attach): first-hand posts join Events, never create or lift them (J)
 
 **Decision (J, 2026-09-24):** "yes it should attach but not create. it could satisfy the thumbnail for events without one." Answering

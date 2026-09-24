@@ -5,9 +5,11 @@
 #   powershell -ExecutionPolicy Bypass -File scripts\schedule\newsTasks.ps1 -Action status
 #   powershell -ExecutionPolicy Bypass -File scripts\schedule\newsTasks.ps1 -Action uninstall
 #
-# Two tasks, both under the current user and ONLY while that user is logged on (no stored password):
+# Three tasks, all under the current user and ONLY while that user is logged on (no stored password):
 #   "Atlas News Build"  10:00 and 22:00 local time  -> npm run news:build
 #   "Atlas News Watch"  every 3 hours (-WatchIntervalMinutes to change; 180 default) -> npm run news:watch
+#   "Atlas News Ticker" every hour (-TickerIntervalMinutes to change; 60 default) -> npm run news:ticker  (Phase 7 step 5: first-hand channels
+#                        only, rebuilding public/data/news-firsthand.json — the per-tab ticker, design §15c's separate, faster cadence)
 #
 # The tasks point at THIS checkout's path. If the checkout moves (or this git worktree is removed), run uninstall, then
 # install again from the new location. The archive lives under this checkout too (archive/news/, not regenerable) unless
@@ -16,13 +18,16 @@ param(
   [Parameter(Mandatory = $true)][ValidateSet('install', 'uninstall', 'status')][string]$Action,
   [switch]$DryRun,
   # J, 2026-09-23: 3 hours. The first pick (30 min) was mine, not from the design; see LOGBOOK.md.
-  [ValidateRange(15, 1440)][int]$WatchIntervalMinutes = 180
+  [ValidateRange(15, 1440)][int]$WatchIntervalMinutes = 180,
+  # Design §15c proposes hourly for the first-hand ticker. The fetch is five small pages of t.me, so this is cheap.
+  [ValidateRange(15, 1440)][int]$TickerIntervalMinutes = 60
 )
 
 $ErrorActionPreference = 'Stop'
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $buildTask = 'Atlas News Build'
 $watchTask = 'Atlas News Watch'
+$tickerTask = 'Atlas News Ticker'
 
 function New-NewsAction([string]$npmScript) {
   $npm = (Get-Command npm.cmd).Source
@@ -61,7 +66,15 @@ switch ($Action) {
       Settings = New-NewsSettings
       Principal = $principal
     }
-    foreach ($t in @($build, $watch)) {
+    $ticker = @{
+      TaskName = $tickerTask
+      Description = 'News Engine: hourly first-hand channel fetch + rebuild of public/data/news-firsthand.json (the per-tab ticker). See scripts/newsCycle.mjs.'
+      Action = New-NewsAction 'news:ticker'
+      Trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(2) -RepetitionInterval (New-TimeSpan -Minutes $TickerIntervalMinutes)
+      Settings = New-NewsSettings
+      Principal = $principal
+    }
+    foreach ($t in @($build, $watch, $ticker)) {
       if ($DryRun) {
         Write-Host "[dry run] would register '$($t.TaskName)' as $user, working dir $repo"
         Write-Host "          action : $($t.Action.Execute) $($t.Action.Arguments)"
@@ -73,7 +86,7 @@ switch ($Action) {
     }
   }
   'uninstall' {
-    foreach ($name in @($buildTask, $watchTask)) {
+    foreach ($name in @($buildTask, $watchTask, $tickerTask)) {
       if (Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue) {
         Unregister-ScheduledTask -TaskName $name -Confirm:$false
         Write-Host "Removed '$name'."
@@ -83,7 +96,7 @@ switch ($Action) {
     }
   }
   'status' {
-    foreach ($name in @($buildTask, $watchTask)) {
+    foreach ($name in @($buildTask, $watchTask, $tickerTask)) {
       $task = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
       if (-not $task) { Write-Host "'$name': not registered"; continue }
       $info = Get-ScheduledTaskInfo -TaskName $name

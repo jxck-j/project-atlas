@@ -1,7 +1,7 @@
 {
   "name": "project-atlas",
   "private": true,
-  "version": "6.15.0",
+  "version": "6.16.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -22,8 +22,10 @@
     "build:current-status": "tsx scripts/buildCurrentStatus.mjs",
     "archive:news": "tsx scripts/archiveNews.mjs",
     "build:news:events": "tsx scripts/buildNewsEvents.mjs",
+    "build:news:ticker": "tsx scripts/buildFirstHandTicker.mjs",
     "news:build": "tsx scripts/newsCycle.mjs build",
     "news:watch": "tsx scripts/newsCycle.mjs watch",
+    "news:ticker": "tsx scripts/newsCycle.mjs ticker",
     "news:status": "tsx scripts/newsCycle.mjs status",
     "build:news:events:heuristic": "tsx scripts/buildNewsEvents.mjs --heuristic",
     "eval:news-clustering": "tsx scripts/evalNewsClustering.mjs",

@@ -26,7 +26,39 @@ canvas {
   touch-action: none;
 }
 
+/* The first-hand ticker's crawl (hud/FirstHandTicker.tsx). The component measures one set of items and passes its width and the lap
+   time (constant speed) as --marquee-shift / --marquee-duration; the track slides left by exactly one set per lap, so the copy behind
+   takes over seamlessly. */
+@keyframes ticker-marquee {
+  to {
+    transform: translateX(var(--marquee-shift, -50%));
+  }
+}
+
+.ticker-marquee {
+  animation: ticker-marquee var(--marquee-duration, 120s) linear infinite;
+}
+
+/* Fade the ends so items dissolve in and out of the window instead of being cut off mid-word. */
+.ticker-window {
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+/* Reduced motion: no crawl. The window becomes a plain, swipeable single set (the copies that exist only for the loop are hidden). */
 @media (prefers-reduced-motion: reduce) {
+  .ticker-marquee {
+    animation: none !important;
+  }
+
+  .ticker-window {
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+
+  .ticker-dup {
+    display: none;
+  }
+
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

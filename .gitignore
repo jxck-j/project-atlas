@@ -32,3 +32,8 @@ debug/
 # it is NOT regenerable — an RSS window that rolled off can't be re-fetched — so
 # it's ignored only because it's data, not source. It exists on this machine only.
 archive/
+
+# the per-tab first-hand ticker (scripts/buildFirstHandTicker.mjs): raw third-party channel text, rebuilt hourly. Publishing it is the same open
+# question as news-events.json (BACKLOG.md) and it should not accumulate in history in the meantime.
+public/data/news-firsthand.json
+public/data/news-firsthand.json.tmp

@@ -124,8 +124,8 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
   - **DONE (2026-09-23): checked in the browser**, which is where the escalation/ordering/entity bugs and the
     duplicate-thumbnail report came from — all fixed. §9a's open tab-count question is resolved with it: nine
     tabs fit on one evenly-spread sticky bar, no consolidation and no overflow menu.
-  - **Community Pulse (§9b) and the first-hand ticker (§15b) are absent**, though `NEWS_TABS` already carries
-    each tab's `communityPulse`/`firstHandTicker` flag — the tab bar reads neither yet.
+  - **Community Pulse (§9b) is absent**, though `NEWS_TABS` already carries each tab's `communityPulse` flag — nothing reads it.
+    (The first-hand ticker, §15b, shipped in v6.16.0 — see Phase 7 step 4 below.)
   - **Phase 7 (first-hand pipeline) — open items from scoping (2026-09-23, decisions in `LOGBOOK.md`):**
     - **Revisit the Telegram API (J wants to).** Phase 7 starts keyless via `t.me/s/<channel>`. The API (GramJS, so it stays
       TypeScript under `tsx`; free `api_id`/`api_hash` from my.telegram.org) is what unlocks: channels with web preview disabled
@@ -175,9 +175,29 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
         thresholds are tied to English similarity), show translated text as machine-translated with the original kept, and never
         rewrite the archive (translate at build time). Recovers DeepStateUA's text, `rybar`/`dva_majors`/`wargonzo`, and the 25
         non-English RSS feeds (14 of them Spanish) that are archived but dropped today.
-      - **Step 4** (per-tab ticker UI, §15b) and **step 5** (hourly task in `newsTasks.ps1`). Until 5, first-hand posts are only
-        fetched when `news:watch` (every 3 h) or a build runs; the fetcher looks back 6 h and pages up to 5 pages (~100 posts), which
-        covers ClashReport (~14 posts/h) at that cadence but would not cover a long gap.
+      - **Step 4 DONE (2026-09-24, v6.16.0): the per-tab ticker (§15b).** `npm run build:news:ticker` → `public/data/news-firsthand.json`
+        (gitignored), rail in `NewsPanel.tsx`. See `LOGBOOK.md`. Open from it:
+        - **The strip layout (one line above the feed, cycling) has not been looked at yet** — narrow-width wrapping and the empty/stale
+          states in particular. The first layout, a right rail, was rejected for its inner scrollbar.
+        - **Layer 1's patterns need J's eye, and nobody has measured its false-negative rate** (§15f asks for one before video ships). It
+          flagged 0 of 115 real English posts, which proves nothing either way. It over-blocks by design ("UN documents rape as a weapon of
+          war" is blocked). Consider mining the archive for a labeled sample the way `mine:news-candidates` does for the classifier.
+        - **Tier B is treated as a block for the text ticker** because no Layer 2 exists to route it to. If Layer 2 is built, B should pass to
+          it instead. Layer 1 is applied to the ticker only — the attached first-hand entries on Event cards are NOT run through it yet
+          (they carry the same text, and `news-events.json` is served). Decide whether they should be.
+        - **The on-topic gate reuses the Event thresholds** (0.30 with a keyword, 0.60 without), tuned on outlet headlines, not channel
+          posts. Untested on posts; the real run kept 92 of ~115 English posts.
+        - **The tab's per-tag scope is only as good as the tags.** `conflict-security` and `diplomacy-politics` hold 103 of the 120 tag
+          assignments; most other tabs will usually be empty.
+        - **Only the build exists, nothing runs it.** Until step 5 the file is rebuilt by hand and the UI calls itself STALE after 3 h.
+      - **Step 5 BUILT (2026-09-24): `npm run news:ticker` + an "Atlas News Ticker" task (hourly) in `newsTasks.ps1`; NOT INSTALLED yet** — run
+        `powershell -ExecutionPolicy Bypass -File scriptsschedule
+ewsTasks.ps1 -Action install` (it re-registers Build and Watch too). See
+        `LOGBOOK.md`. Open from it:
+        - **Revisit the ticker's caps once it has run a day or two:** 40 per tab in the ALL list (`MAX_LINES`), 300 in the file
+          (`MAX_TICKER_POSTS`), 24 h window (`TICKER_WINDOW_HOURS`), 12 posts in the crawl. All were guesses made when only ~130 posts existed.
+        - **A dead channel is noticed by `news:watch` (3 h), not by the ticker task** — it deliberately leaves the failure streaks alone.
+        - **The Event build (10AM/10PM) still re-fetches channels and archives them too;** harmless (deduped), just redundant now.
     - **The preview is an undocumented page, not an API.** If Telegram changes its markup `parseTelegramPreview` returns [] and the
       channel shows up as failed ("no posts in the web preview") — that failure is the alarm. Also unhandled: polls, link-preview
       cards (ignored), a channel's edited posts (first sighting wins), and posts deleted after archiving (they stay).

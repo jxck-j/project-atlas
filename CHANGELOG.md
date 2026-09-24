@@ -17,6 +17,33 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.16.0 — News Engine Phase 7 (step 4): the per-tab first-hand ticker, and the first half of the content-safety filter
+
+**Engine expanded: the News Engine's presentation of first-hand posts.** Posts that matched no Event used to sit in the archive unseen;
+each topic tab now shows the recent ones on the right as "Unverified Field Reports" (design §15b).
+
+- **Text only, English only, last 24 hours, on-topic.** `npm run build:news:ticker` reads the article archive (no fetching) and writes
+  `public/data/news-firsthand.json`, independent of the Event build so it can run far more often. Topic tags and an on-topic gate come from
+  the same trained classifier the Events use (`--no-classifier` falls back to keyword rules). A repost keeps its original copy.
+- **Layer 1 of the graphic-content filter now exists** (`src/news/contentSafety.ts`, §15f): caption tiers A (minors, sexual violence,
+  terrorist propaganda — hard block) and B (self-flagged graphic, describes-the-visual, gore terms). The text ticker blocks both, because
+  with no visual layer there is nothing for tier B to route to. It is a blunt first cut that over-blocks by design, and its false-negative
+  rate has not been measured — it does NOT make pictures or video safe, so `FIRST_HAND_MEDIA_ENABLED` stays off.
+- **Labeled, not decorated:** every line names its channel and kind (verification specialist / OSINT aggregator / regional curator /
+  combatant-affiliated), a combatant channel's affiliation is printed in amber beside it, and the header says the posts are unverified and
+  count toward no event's sourcing. The ticker shows when it was built and calls itself stale after 3 hours.
+- **Layout:** a continuously crawling one-line strip above the feed (newest 12 posts, right to left, hover stops it), with ‹ › and an ALL button that
+  opens the full list inline. It began as a right rail with its own inner scroll, which read as a second scrollbar and was replaced
+  after a first look. It moves the ticker off §15b's "right side", a deliberate departure. World has none (§9a).
+- The output file is **gitignored** — raw third-party channel text, same undecided publishing question as `news-events.json`.
+
+- **Step 5, the hourly refresh:** `npm run news:ticker` (a third mode in `newsCycle.mjs`) fetches only the first-hand channels, archives, and
+  rebuilds the ticker file, under the same lock as the other runs. `newsTasks.ps1` gains an "Atlas News Ticker" task (60 min by default).
+  If every channel fails it leaves the file alone, so the strip's UPDATED/STALE stamp tells the truth. `news:status` reports the file's age.
+
+Reasoning and the tradeoffs: `LOGBOOK.md`'s 2026-09-24 step-4 and step-5 entries. Still to do in the phase: translation, the Frontlines
+video surface and Layer 2.
+
 ## v6.15.0 — News Engine Phase 7 (steps 1-3): first-hand Telegram channels attach to Events
 
 **Engine expanded: the News Engine's ingestion.** It now reads first-hand Telegram channels alongside the RSS feeds, without letting an
