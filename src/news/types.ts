@@ -171,6 +171,8 @@ interface SourceEntryBase {
    * no Event has to claim an image as its own.
    */
   imageUrl?: string
+  /** The report's headline was machine-translated from this feed language (translation.ts). Absent for an English report. */
+  translatedFrom?: string
 }
 
 export interface OutletSourceEntry extends SourceEntryBase {
@@ -245,6 +247,12 @@ export interface NewsEvent {
   id: string
   /** Short, neutral, factual — "Explosion reported in Kyiv," never editorializing. */
   title: string
+  /**
+   * Set when `title` is a MACHINE TRANSLATION of a non-English headline (translation.ts): the feed language it came from and the
+   * original text. The card labels it, because a reader cannot verify a translation the way they can an English headline.
+   */
+  titleTranslatedFrom?: string
+  titleOriginal?: string
   /** Canonical UTC time of the occurrence itself, ISO 8601 — distinct from any source's publish time. Recency ranking keys off this. */
   eventTimestamp: string
   /** Country ids — the same numeric ISO topology ids every Intelligence Engine category uses (plus the literal 'taiwan'). */

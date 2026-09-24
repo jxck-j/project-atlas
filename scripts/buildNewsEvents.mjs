@@ -111,6 +111,15 @@ const USE_HEURISTIC = flag('--heuristic')
 const NO_CLASSIFIER = flag('--no-classifier')
 const NO_BACKLOG_REPORT = flag('--no-backlog-report')
 if (USE_LLM && USE_HEURISTIC) throw new Error('--llm and --heuristic are alternatives; pick one')
+// Title-only machine translation of non-English feeds (src/news/translation.ts). Off unless asked for: `--translate es,ru,uk` applies what `npm run translate:news` has cached.
+const strArg = (name) => {
+  const i = argv.indexOf(name)
+  if (i === -1) return undefined
+  const v = argv[i + 1]
+  if (!v || v.startsWith('--')) throw new Error(name + ' needs a value')
+  return v
+}
+const TRANSLATE_LANGUAGES = new Set((strArg('--translate') ?? '').split(',').map((s) => s.trim()).filter(Boolean))
 const SPEND = flag('--yes')
 const LIMIT = numArg('--limit', undefined)
 const MAX_COST = numArg('--max-cost', 5)
@@ -145,7 +154,23 @@ console.log(`Archive: +${archived.added} new, ${archived.total} total.`)
 const stored = readArchive()
 // First-hand Telegram posts are in this window too. They ATTACH to Events the outlets established and never create or lift one
 // (eventBuilder.ts, embedding path; J, 2026-09-24) — the heuristic and LLM paths drop them as not-attached.
-const articles = stored.length > 0 ? applyPullMetadata(selectFeedWindow(stored, new Date().toISOString()), pulled) : pulled
+const windowed = stored.length > 0 ? applyPullMetadata(selectFeedWindow(stored, new Date().toISOString()), pulled) : pulled
+
+// Apply CACHED headline translations for the languages asked for, on a BUILD-TIME COPY (the archive is never rewritten). This
+// build never loads a translation model: `npm run translate:news` (a separate process) fills the cache. Loaded in one process the
+// translator and the embedder together ran the machine out of memory. Everything after this sees an English article; one with no
+// cached translation is left as it was and drops as unsupported-language, as before.
+let articles = windowed
+if (TRANSLATE_LANGUAGES.size > 0) {
+  const { TRANSLATION_MODELS, translateArticles } = await import('../src/news/translation.ts')
+  const unknown = [...TRANSLATE_LANGUAGES].filter((l) => !TRANSLATION_MODELS[l])
+  if (unknown.length > 0) throw new Error('--translate: no model configured for ' + unknown.join(', ') + ' (configured: ' + Object.keys(TRANSLATION_MODELS).join(', ') + ')')
+  const { openTranslationCache } = await import('./lib/newsTranslationCache.mjs')
+  const t = await translateArticles(windowed, { languages: TRANSLATE_LANGUAGES, cache: openTranslationCache() })
+  articles = t.articles
+  const s = t.stats
+  console.log(`Translation (${[...TRANSLATE_LANGUAGES].join(',')}, cache only): ${s.cached} applied, ${s.rejected} rejected, ${s.deferred} not yet translated — run npm run translate:news to fill the cache.`)
+}
 const windowStart = articles[0]?.publishedAt
 console.log(
   `Feed window: ${articles.length} article(s) within ${FEED_RETENTION_DAYS} days` +

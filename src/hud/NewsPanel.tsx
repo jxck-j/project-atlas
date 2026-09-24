@@ -147,6 +147,7 @@ function SourceDossier({ event }: { event: NewsEvent }) {
                 className="text-[10px] text-[#8aa0c6] transition-colors hover:text-white"
               >
                 {sourceDisplayName(entry)}
+                {entry.translatedFrom && <span className="ml-1 text-[#8aa0c6]">· translated from {entry.translatedFrom.toUpperCase()}</span>}
                 {entry.sourceCategory === 'outlet' && entry.tier === 'wire' && <span className="ml-1 text-[#3f8bff]">· wire</span>}
                 {entry.sourceCategory === 'outlet' && entry.pressControl === 'state-controlled' && (
                   <span className="ml-1 text-[#ff9a3c]">· state-controlled</span>
@@ -212,6 +213,23 @@ function primaryUrl(event: NewsEvent): string {
   return event.sources[0]?.refUrl ?? '#'
 }
 
+// A headline the build translated (translation.ts). A reader can't check a machine translation the way they can an English
+// headline, so the card says so and keeps the original one hover away.
+const LANGUAGE_NAME: Record<string, string> = { es: 'Spanish', ru: 'Russian', uk: 'Ukrainian' }
+
+function TranslationTag({ event }: { event: NewsEvent }) {
+  if (!event.titleTranslatedFrom) return null
+  const from = LANGUAGE_NAME[event.titleTranslatedFrom] ?? event.titleTranslatedFrom.toUpperCase()
+  return (
+    <span
+      title={`Machine-translated from ${from}. Original: ${event.titleOriginal ?? ''}`}
+      className="cursor-help rounded border border-[#3a4a6b] px-1 py-px text-[8px] font-bold tracking-[0.06em] text-[#8aa0c6]"
+    >
+      MACHINE-TRANSLATED · {event.titleTranslatedFrom.toUpperCase()}
+    </span>
+  )
+}
+
 // The featured 3 — thumbnail-forward, side by side (§10's "YouTube-style"
 // layout for the featured row).
 function FeaturedCard({ event, imageUrl }: { event: NewsEvent; imageUrl?: string }) {
@@ -225,6 +243,7 @@ function FeaturedCard({ event, imageUrl }: { event: NewsEvent; imageUrl?: string
           {isEventBreaking(event) && <JustInBadge />}
           <SeverityBadge event={event} />
           <CorroborationBadge event={event} />
+          <TranslationTag event={event} />
         </div>
         <a
           href={primaryUrl(event)}
@@ -266,6 +285,7 @@ function TileCard({ event, imageUrl }: { event: NewsEvent; imageUrl?: string }) 
           {isEventBreaking(event) && <JustInBadge />}
           <SeverityBadge event={event} small />
           <CorroborationBadge event={event} small />
+          <TranslationTag event={event} />
         </div>
         <a
           href={primaryUrl(event)}

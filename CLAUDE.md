@@ -76,6 +76,7 @@ npm run train:news-classifier # Retrains the classifier heads on the labeled fix
 npm run mine:news-candidates # Read-only: mines archive/news/articles.jsonl for new label-fixture candidates not already in the two existing fixtures (rare severity-trigger articles, plus relevance disagreement between the shipped classifier and the keyword pre-filter). Prints candidates; a human (or Claude, spot-checked) hand-labels and adds them. See News & sourcing below.
 npm run build:news:events:llm # Phase 3: same, but LLM classification + grouping (Sonnet 5). Needs ANTHROPIC_API_KEY. Dry run by default (free count_tokens + projected cost); add `-- --yes` to spend, `-- --limit N` for a small first run.
 npm run news:build           # Phase 6: the SCHEDULED build (what Task Scheduler runs at 10AM/10PM) - the default build above, under a lock, logged to archive/news/cycle.log, without the BACKLOG.md rewrite. See "Cadence" under News & sourcing.
+npm run translate:news       # Phase 7 (first cut, OFF by default): fill debug/news-translation-cache.json with English headlines for archived es/ru/uk articles, then EXIT. Own process on purpose (NLLB is ~600 MB; with the embedder in one build it ran the machine out of memory). `-- --limit N`, `-- --languages ru`. The build applies it with `build:news:events -- --translate es,ru,uk` (cache only, never loads a translation model). See "Headline translation" under News & sourcing.
 npm run news:ticker          # Phase 7 step 5: every hour - fetch ONLY the first-hand channels, archive, rebuild public/data/news-firsthand.json (the ticker). Skips the rebuild if every channel failed, so the ticker's UPDATED/STALE stamp can't lie.
 npm run news:watch           # Phase 6: every 3 hours - fetch + archive only, then pulls a build forward if something Critical-looking arrived (cooldown + daily cap apply).
 npm run news:status          # Phase 6: last good build, failure streaks, chronically failing feeds, whether public/data/news-events.json is stale. Exits 1 if stale.
@@ -1813,6 +1814,24 @@ it does not fabricate corroboration; tuned on one real sample of 11 → 4 pins) 
 READER's clock, labeled "Pinned automatically because the wording matches ... Unverified" — the rules read words and verify nothing.
 **Head-of-state death claims are dropped from the ticker entirely** (`unconfirmedClaim`): the Events hold them for a human (`publishGate.ts`)
 and the ticker has no review queue, so it carries none.
+
+**Headline translation (2026-09-24, first cut — OFF by default, NOT yet evaluated).** `src/news/translation.ts` (pure, tested) turns a non-English
+feed's HEADLINE into English so it can reach the English-only rules (country matchers, severity regexes, MiniLM) as an ordinary article. The build swaps in an
+English COPY before `prepare()` (`title` translated, `description` dropped, `language: 'en'`, plus `originalTitle`/`translatedFrom`); the archive is never rewritten.
+Published Events carry `titleTranslatedFrom`/`titleOriginal` and source entries `translatedFrom`, and `NewsPanel.tsx` shows a "MACHINE-TRANSLATED · XX" tag. What a
+session touching it must know (decisions and evidence in `LOGBOOK.md`'s 2026-09-24 translation entry — read it before changing any of this):
+- **Titles only.** Marian/OPUS-MT is sentence-level; descriptions came back with dropped sentences and garbled names.
+- **Model per language** (`TRANSLATION_MODELS`): OPUS `opus-mt-es-en` for Spanish (fast, good); NLLB-200-distilled-600M for ru/uk. `opus-mt-uk-en` is unusable
+  (hallucinated "Debian Times" for the Financial Times). `localTranslator.ts` is the one file that loads a model.
+- **NLLB runs ONE text at a time, greedy.** Batched, transformers.js lets it run past the end of the sentence and appends other-language junk to every item, silently.
+- **Translation is a separate process** (`npm run translate:news`), and the build reads the cache only. Loading NLLB and the embedder together was killed by the low-memory guard.
+- **Acronyms are handled outside the model.** Cyrillic acronyms are masked as `ZQ<n>` placeholders before translation and restored after: `ACRONYM_GLOSSARY` gives a fixed English
+  expansion (ВСУ/ЗСУ -> "Ukrainian Armed Forces"; the model rendered them "Russian Air Force"/"The U.S.S."), `TRANSLATED_ACRONYMS` is a hand-verified list left to the model, and
+  everything else stays in Cyrillic (J: "keep military acronyms in their native language"). Add to either list only after checking a real headline; an entry needs a CERTAIN expansion.
+- **The cache key is the masked text plus the expansions**, so a glossary edit re-translates only the headlines it touches. `isPlausibleTranslation` rejects empty, mostly-non-Latin or
+  runaway output (rejections are cached as `null`; a thrown model error is not); `cleanTranslation` strips the Spanish model's hallucinated "· Global Voices" suffix.
+- **Not done:** the labeled clustering/classifier eval on translated text (thresholds are tied to English similarity), Spanish translation of the window, scheduling, and the ticker
+  (`firstHandTicker.ts` is still English-only). The scheduled tasks do not translate or pass `--translate`.
 
 **The article archive (2026-09-21)** — `archive/news/articles.jsonl`, append-only, one `RawArticle` + `firstSeenAt` per line, written by
 `npm run archive:news` (fetch-only) and by every `build:news:events` run. Logic is `src/news/articleArchive.ts` (pure, tested), file I/O is

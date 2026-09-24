@@ -168,6 +168,19 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
           already varies slightly with which unrelated articles share a batch. A real fix (batch of one, or length-sorted batches) changes
           every vector the threshold was tuned on — re-run `eval:news-clustering` and `eval:news-classifier` first. The first-hand work
           only sidesteps it (separate embed calls).
+      - **Translation: FIRST CUT BUILT (2026-09-24), OFF by default, NOT EVALUATED.** Title-only; NLLB-600M for ru/uk, OPUS for es; `npm run translate:news`
+        fills `debug/news-translation-cache.json`, then `build:news:events -- --translate es,ru,uk` applies it. See `LOGBOOK.md`. Open:
+        - **Acronyms: glossary first (`ACRONYM_GLOSSARY`), then the model for a hand-verified list (`TRANSLATED_ACRONYMS`), else left in Cyrillic.** ru+uk are done
+          (190 headlines, 6 with residual Cyrillic). Extend a list only after checking a real headline. Descriptions are not translated, so not checked.
+        - **ES is not translated yet (~1,600 headlines in the window).** OPUS is fast (~1-2 s each), so ~30-50 min in chunks: `npm run translate:news -- --languages es --limit 200`.
+        - **NLLB errors on ordinary words** (sturgeon caviar -> "ostrich", Bryansk -> "Bryan", Kuban -> "Cuban"). A place-name glossary would help; measure first.
+        - **Hand-label ~40 translated headlines and re-run `eval:news-clustering`/`eval:news-classifier` before enabling any language on a schedule.**
+        - **Only ~165 of ~1,770 windowed headlines are translated.** ~7 s each for ru/uk, so ~1,600 remaining is hours; run `translate:news` in chunks.
+        - **The ticker (`firstHandTicker.ts`) does not use translation yet** — DeepState/Rybar posts still drop there. It would read the same cache.
+        - **Nothing schedules `translate:news`, and the scheduled builds don't pass `--translate`.** Decide cadence (hourly next to the ticker?) once evaluated.
+        - **Descriptions are not translated, so a translated article carries title-only text into the classifier** (weaker relevance signal than an English one).
+        - **The tag is not checked in a browser.** A machine translation of a state outlet's headline is not an endorsement of it — the dossier's own state-controlled tag still shows.
+        - Batching NLLB is broken (see LOGBOOK); a faster route (ONNX fp16, a smaller distilled model, or CTranslate2) is the way to cut the ~7 s, not batching.
       - **Translation (its own step, after 2 — J: "yes do that").** A non-LLM route: OPUS-MT seq2seq models via transformers.js
         (`Xenova/opus-mt-{ru,uk,ar,es,fr,zh,tr,de}-en` exist; `fa`/`he` do not; `pt`/`ja`/`so` unchecked), in-process like
         `localEmbedder.ts`, keyless, cached under `debug/`. Sits between `prepare()` and classification; off by default, on per

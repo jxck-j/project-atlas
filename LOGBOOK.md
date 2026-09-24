@@ -5,6 +5,60 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-24 — Phase 7: headline translation, first cut (OFF by default; not yet evaluated)
+
+**What was built:** `src/news/translation.ts` (pure), `localTranslator.ts` (the one model loader), `scripts/translateNews.mjs` (`npm run translate:news`,
+fills a cache and EXITS), `scripts/lib/newsTranslationCache.mjs` (`debug/news-translation-cache.json`), and a `--translate es,ru,uk` flag on
+`buildNewsEvents.mjs` that applies the cache. The build swaps an English COPY of the article in before `prepare()`; the archive is never rewritten, so
+the country matchers, severity rules and MiniLM see an ordinary English article. Events carry `titleTranslatedFrom`/`titleOriginal`, source entries carry
+`translatedFrom`, and `NewsPanel` shows a "MACHINE-TRANSLATED · XX" tag (original on hover). Scheduled tasks are untouched: nothing translates unless asked.
+
+**Spike findings (8 headlines+descriptions per language, then NLLB on the same), which set every choice:**
+- **Titles only.** Marian models are sentence-level; whole descriptions dropped sentences and garbled names/numbers ("Bloomberg" -> "Bloom/2004/1").
+- **`opus-mt-uk-en` is unusable** ("Financial Times" -> "Debian Times", a stray "Microsoft"). **NLLB-200-distilled-600M reads Ukrainian and Russian well**
+  (one slip in 16: CSTO -> "OSCE"), so ru/uk use it. Spanish stays on OPUS: good quality and several times faster. `opus-mt-ru-en` was rejected on
+  proper nouns (dropped Lavrov; "MV Cape Dao" -> "MV2-07-19o").
+- **NLLB must run one text at a time, greedy.** Batched through transformers.js it does not stop at the end of the sentence and appends other-language
+  junk (Bashkir, Kazakh) to EVERY item, silently. Beam search cost 2x the time for nothing visible. Measured: ~7 s/headline on this machine.
+- **The Spanish model appends "· Global Voices"** (its training corpus's site suffix) to ~2.5% of outputs (4 of 160). `cleanTranslation` strips it, and
+  applies on cache READ so old entries are cleaned without retranslating.
+- `isPlausibleTranslation` rejects output that is empty, still mostly non-Latin script, or >3x the source's word count. A rejection is cached (null); a
+  thrown model error is not (transient).
+
+**Why translation is its own process:** the first end-to-end run (translator + embedder in one build) was killed by Claude Code's low-memory guard after the
+translation stage finished and before clustering wrote anything (`news-events.json` was untouched). NLLB is ~600 MB resident. Splitting it out means the model
+is freed on exit and the build never loads a translation model. Not proved to be the sole cause of the memory pressure, but the split ran clean: 165 applied,
+9,519-article window, 369 Events.
+
+**Result of that run:** 3 Events picked up translated reports, all attached to English stories that were the same story (La Nacion on the birth-tourism
+visa rule, El Comercio on Putin/G20, Confidencial on the US TV pool boycott). No Event was FOUNDED by a translated headline yet (only 165 of ~1,770 were
+translated). **Not measured:** whether translation changes clustering accuracy or severity/topic quality. That needs the labeled eval below.
+
+**Acronyms stay in the original script (J: "keep military acronyms in their native language").** ru/uk headlines are masked before translation:
+every all-caps Cyrillic acronym not in `TRANSLATED_ACRONYMS` becomes a `ZQ<n>` placeholder, is translated around, and is put back (`maskAcronyms`/
+`unmaskAcronyms`). Kept in Cyrillic, not transliterated, because the alternative was both ugly (ОШП -> "NKU", ЗРСП -> "ZRSP") and, worse, sometimes
+silently WRONG: ВСУ -> "Russian Air Force", ЗСУ -> "The U.S.S.", СВО -> "WDS", ОДКБ -> "OSCE", ППО -> "PPO forces fired rockets", ЧВК -> "VWK". A
+Cyrillic acronym left in an English headline is a visible gap; a swapped actor in a war headline is not. The translate list (РФ, США, МИД, ООН, ЦБ,
+БПЛА, ЕС, ЄС, НАТО, КНР, ЦРУ, ПВО, ...) holds only acronyms whose rendering I checked in a real headline, so it can be extended the same way and not
+by guessing. Placeholder style matters: `ZQ1` survived NLLB in 4/4 test sentences, `[1]` lost one, `<1>` lost two of four. A dropped placeholder just omits
+that acronym; an INVENTED one rejects the translation. The cache key gained `|keep1` for ru/uk, so entries made before masking stop matching (es is unaffected).
+Real result on the Ukrainian records: НГУ, ОШП, КНГУ, ББС kept; США translated. Cost: a headline like "Сили ППО збили ракети" now reads "ППО forces
+…", which is uglier than a correct translation would be — the price of not trusting the model on ППО.
+
+**Superseded in part (J, same day): a GLOSSARY of English expansions, not just keep-in-Cyrillic.** `ACRONYM_GLOSSARY` (translation.ts, ~40 entries) maps an
+acronym to the English we want; the same `ZQ<n>` placeholder is restored to that text, so the model is out of the decision (ВСУ/ЗСУ -> "Ukrainian Armed Forces",
+ОДКБ -> "CSTO", СВО -> "“special military operation”" quoted as Russia's own label, ППО -> "air defense", БПЛА -> "drone", plus economy/state terms such as ИИ, НДФЛ,
+ДКП, ЧС). Three tiers: glossary English > left to the model (`TRANSLATED_ACRONYMS`, each checked in a real headline) > original Cyrillic. An entry needs a
+CERTAIN expansion; unit designations (ОЗСП, ЗРСП, ББС) and ambiguous ones (СБ, ЧЕ, ГК) stay in Cyrillic rather than be guessed. The cache key is now the MASKED
+text plus the expansions, so a glossary edit re-translates only the headlines containing the changed acronym; a headline with nothing masked keeps its entry.
+**Result:** all 190 ru+uk headlines in the window translated, 0 rejected, 6 still containing any Cyrillic (ЧЕ x2, ГК, СБ, ББС, one stray word).
+**Not fixed by the glossary — NLLB's own errors on ordinary words:** "осетровая икра" (sturgeon caviar) -> "ostrich", "Брянская" -> "Bryan region", "Кубань" ->
+"Cuban authorities" in one headline. Only the labeled eval will say how often; a small place-name glossary is a cheap partial fix, not built.
+
+**Still owed before switching any language on for the scheduled builds:** hand-label ~40 translated headlines and re-run `eval:news-clustering` /
+`eval:news-classifier` (the thresholds are tied to English similarity); translate the rest of the window (~1,600 headlines, roughly hours for ru/uk);
+decide whether the ticker (`firstHandTicker.ts`, also gated by `BUILD_LANGUAGES`) should read the same cache; and a browser look at the tag.
+
 ## 2026-09-24 — Auto-pinning top first-hand headlines (J)
 
 **Decision (J):** "pin should be automatic based on our phrasing logic built for the news events." Answering the BACKLOG question of who decides

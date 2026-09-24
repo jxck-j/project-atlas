@@ -61,6 +61,12 @@ export interface RawArticle {
   mediaUrl?: string
   /** The channel this post was forwarded from, when it was a forward. A forward is one voice repeated, not a second source. */
   forwardedFrom?: string
+  /**
+   * Set by translation.ts on a BUILD-TIME COPY, never on an archive record: `title` is then the machine translation,
+   * `originalTitle` the feed's own text and `translatedFrom` its language. `language` is 'en' on such a copy.
+   */
+  originalTitle?: string
+  translatedFrom?: string
 }
 
 export interface BuildContext {
@@ -157,6 +163,7 @@ function sourceEntry(candidate: Candidate, firstHandMedia = FIRST_HAND_MEDIA_ENA
     refUrl: article.url,
     timestamp: new Date(time).toISOString(),
     ...(article.imageUrl ? { imageUrl: article.imageUrl } : {}),
+    ...(article.translatedFrom ? { translatedFrom: article.translatedFrom } : {}),
   }
   if (profile.sourceType === 'analysis') {
     const entry: AnalysisSourceEntry = {
@@ -338,6 +345,10 @@ function assemble(
       // Heuristic path: an outlet's own headline. LLM path: the grouping
       // pass's neutral rewrite (design §17b: "short, neutral, factual").
       title: title ?? first.title,
+      // The headline is the first outlet's own text, so it is machine-translated exactly when that outlet's article was.
+      ...(title === undefined && first.article.translatedFrom && first.article.originalTitle
+        ? { titleTranslatedFrom: first.article.translatedFrom, titleOriginal: first.article.originalTitle }
+        : {}),
       eventTimestamp: new Date(members[0].time).toISOString(),
       // Union, first-mention order: the earliest report's principal country leads.
       linkedEntityIds: [...new Set(members.flatMap((c) => c.linkedEntityIds))],
