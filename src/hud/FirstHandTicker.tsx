@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useFirstHandTickerGeneratedAt, useFirstHandTickerPosts } from '../data/useFirstHandTicker'
-import { TICKER_WINDOW_HOURS, type TickerPost } from '../news/tickerTypes'
+import { PIN_MIN_SEVERITY, selectPinnedPosts, TICKER_WINDOW_HOURS, type TickerPost } from '../news/tickerTypes'
 import type { FirstHandTier, TopicTag } from '../news/types'
 
 // The per-tab first-hand text ticker (design §15b) — "Unverified Field Reports". A continuous crawl above the feed: the newest posts
@@ -132,6 +132,42 @@ function Crawl({ posts, now, held }: { posts: TickerPost[]; now: number; held: b
   )
 }
 
+/**
+ * The auto-pinned posts (J, 2026-09-24): posts whose wording the news engine's own severity rules rate Major or Critical, kept for
+ * two weeks instead of one day. The label says exactly what that means — the rules read WORDS, they do not verify anything — and every
+ * pin keeps its channel, kind and amber affiliation note, so a pin can never read as an Event.
+ */
+function PinnedPosts({ pins, now }: { pins: TickerPost[]; now: number }) {
+  return (
+    <section aria-label="Pinned field reports" className="mt-2 rounded border border-[#ff9a3c]/30 bg-[rgba(255,154,60,0.05)] p-3">
+      <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className={UNVERIFIED_TAG}>PINNED</span>
+        <span className="text-[9.5px] leading-snug text-[#51648a]">
+          Pinned automatically because the wording matches the news engine&rsquo;s {PIN_MIN_SEVERITY}/critical rules. Unverified.
+        </span>
+      </div>
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {pins.map((post) => (
+          <li key={post.id} className="min-w-0 border-t border-[#16233c] pt-2 first:border-t-0 first:pt-0 md:border-t-0 md:pt-0">
+            <div className="flex flex-wrap items-baseline gap-x-2 text-[9px]">
+              <PostByline post={post} now={now} />
+            </div>
+            <a
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={post.text}
+              className="mt-1 line-clamp-3 text-[11.5px] leading-snug text-[#c4d3ee] transition-colors hover:text-white"
+            >
+              {post.text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
 export function FirstHandTicker({ topicTag, now }: { topicTag: TopicTag; now: number }) {
   const all = useFirstHandTickerPosts()
   const generatedAt = useFirstHandTickerGeneratedAt()
@@ -143,6 +179,9 @@ export function FirstHandTicker({ topicTag, now }: { topicTag: TopicTag; now: nu
   const builtAgo = generatedAt ? now - Date.parse(generatedAt) : null
   const stale = builtAgo != null && builtAgo > STALE_AFTER_MS
   const count = lines.length
+  // Pins outlive the 24 h window (a post past it is in the file ONLY because it is pinned), so they are selected separately.
+  const pins = selectPinnedPosts(all, topicTag, now)
+  const pinnedBlock = pins.length > 0 ? <PinnedPosts pins={pins} now={now} /> : null
 
   const status =
     builtAgo == null ? null : (
@@ -153,12 +192,15 @@ export function FirstHandTicker({ topicTag, now }: { topicTag: TopicTag; now: nu
 
   if (count === 0) {
     return (
-      <aside aria-label="Unverified field reports" className={`${STRIP} mb-4`}>
-        <span className={UNVERIFIED_TAG}>UNVERIFIED FIELD REPORTS</span>
-        <span className="min-w-0 flex-1 truncate text-[11px] text-[#51648a]">
-          {generatedAt == null ? 'Field-report feed unavailable.' : `No field reports on this topic in the last ${TICKER_WINDOW_HOURS} hours.`}
-        </span>
-        {status}
+      <aside aria-label="Unverified field reports" className="mb-4">
+        <div className={STRIP}>
+          <span className={UNVERIFIED_TAG}>UNVERIFIED FIELD REPORTS</span>
+          <span className="min-w-0 flex-1 truncate text-[11px] text-[#51648a]">
+            {generatedAt == null ? 'Field-report feed unavailable.' : `No field reports on this topic in the last ${TICKER_WINDOW_HOURS} hours.`}
+          </span>
+          {status}
+        </div>
+        {pinnedBlock}
       </aside>
     )
   }
@@ -173,6 +215,8 @@ export function FirstHandTicker({ topicTag, now }: { topicTag: TopicTag; now: nu
           {expanded ? 'HIDE' : `ALL ${count}`}
         </button>
       </div>
+
+      {pinnedBlock}
 
       {expanded && (
         <div className="mt-2 rounded border border-[#16233c] bg-[rgba(10,16,28,0.6)] p-3">

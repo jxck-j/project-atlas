@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { classifyCaptionSafety, isTickerSafe } from './contentSafety'
 import { buildFirstHandTicker, MAX_TICKER_POSTS, TICKER_WINDOW_HOURS } from './firstHandTicker'
 import type { EmbeddingClassifier } from './embeddingClassifier'
+import type { Embedder } from './embeddingClustering'
+import { FEED_RETENTION_DAYS } from './feedWindow'
+import { MAX_PINS_PER_TAB, PIN_RETENTION_DAYS, selectPinnedPosts, type TickerPost } from './tickerTypes'
 import type { RawArticle } from './eventBuilder'
 import type { FirstHandProfile, SourceProfile } from './types'
 
@@ -169,5 +172,115 @@ describe('buildFirstHandTicker', () => {
       expect(file.posts.every((p) => p.topicTags.join() === 'energy')).toBe(true)
       expect(dropped.offTopic).toBe(2)
     })
+  })
+})
+
+describe('auto-pinning (J, 2026-09-24): the Events severity wording rules decide, and a pin outlives the 24 h window', () => {
+  const DAY = 24 * 60
+  const MAJOR = 'Large-scale Russian ballistic missile attack on Kyiv.'
+  const CRITICAL = 'Russian ballistic missile attack on Kyiv kills 12 civilians as troops advance'
+  const ROUTINE = 'Ukraine army advances on the front'
+
+  it('pins a Major/Critical post, records each post severity, and keeps a pin for PIN_RETENTION_DAYS', async () => {
+    const { file } = await build([post('agg', MAJOR, 3 * DAY), post('agg', CRITICAL, 5 * DAY), post('agg', ROUTINE, 10)])
+    const byText = Object.fromEntries(file.posts.map((p) => [p.text, p]))
+    expect(byText[MAJOR]).toMatchObject({ severity: 'major', pinned: true })
+    expect(byText[CRITICAL]).toMatchObject({ severity: 'critical', pinned: true })
+    expect(byText[ROUTINE]).toMatchObject({ severity: 'significant' })
+    expect(byText[ROUTINE].pinned).toBeUndefined()
+  })
+
+  it('drops an old post that is not pin-worthy, and anything past the pin retention', async () => {
+    const { file, dropped } = await build([post('agg', ROUTINE, 3 * DAY), post('agg', MAJOR, (PIN_RETENTION_DAYS + 1) * DAY)])
+    expect(file.posts).toEqual([])
+    expect(dropped.outOfWindow).toBe(2)
+  })
+
+  it('a live post can be pinned too, and pins are not cut by the ordinary-post cap', async () => {
+    const many = Array.from({ length: MAX_TICKER_POSTS + 5 }, (_, i) => post('agg', `Ukraine army offensive number ${i} as troops advance`, i + 1))
+    const { file } = await build([...many, post('agg', MAJOR, 3 * DAY)])
+    expect(file.posts.filter((p) => !p.pinned)).toHaveLength(MAX_TICKER_POSTS)
+    expect(file.posts.filter((p) => p.pinned).map((p) => p.text)).toEqual([MAJOR])
+  })
+
+  it('never carries a head-of-state death claim — the Events hold those for a human and the ticker has no review', async () => {
+    const { file, dropped } = await build([post('agg', 'President of Iran killed in helicopter crash', 10), post('agg', ROUTINE, 20)])
+    expect(file.posts.map((p) => p.text)).toEqual([ROUTINE])
+    expect(dropped.unconfirmedClaim).toBe(1)
+  })
+
+  describe('with embeddings, one story is one pin', () => {
+    const embed: Embedder = async (texts) => texts.map((t) => (t.includes('Tehran') ? [0, 1] : [1, 0]))
+    const classifier: EmbeddingClassifier = { classify: () => ({ relevance: 1, tags: ['conflict-security'] }) }
+    const run = (articles: RawArticle[]) => buildFirstHandTicker(articles, { profiles, now: NOW }, { embed, classifier })
+
+    it('folds near-duplicates into the most severe (then latest) of them and drops the others once they are past 24 h', async () => {
+      const tehran = 'Large-scale Russian ballistic missile attack on Tehran.'
+      const { file } = await run([post('agg', MAJOR, 4 * DAY), post('slava', CRITICAL, 4 * DAY + 60), post('agg', tehran, 3 * DAY)])
+      expect(file.posts.map((p) => [p.text, p.pinned])).toEqual([
+        [tehran, true],
+        [CRITICAL, true],
+      ])
+    })
+
+    it('folds at the looser pin threshold: two takes on one attack at cosine 0.6 are one pin, though the Events would not link them', async () => {
+      const takes: Embedder = async (texts) => texts.map((t) => (t.includes('Tehran') ? [0.6, 0.8] : [1, 0]))
+      const { file } = await buildFirstHandTicker([post('agg', MAJOR, 4 * DAY), post('slava', 'Large-scale Russian ballistic missile attack on Tehran.', 4 * DAY + 60)], { profiles, now: NOW }, { embed: takes, classifier })
+      expect(file.posts).toHaveLength(1)
+      // Equal severity, so the latest wins.
+      expect(file.posts[0].text).toContain('Kyiv')
+    })
+
+    it('a folded duplicate that is still live stays in the ticker, unpinned', async () => {
+      const { file } = await run([post('agg', MAJOR, 60), post('slava', CRITICAL, 30)])
+      expect(file.posts.map((p) => [p.text, p.pinned ?? false])).toEqual([
+        [CRITICAL, true],
+        [MAJOR, false],
+      ])
+    })
+  })
+})
+
+describe('selectPinnedPosts (the tab pins, on the reader clock)', () => {
+  const nowMs = Date.parse(NOW)
+  const pin = (id: string, over: Partial<TickerPost> = {}): TickerPost => ({
+    id,
+    sourceId: 'agg',
+    channelName: 'AGG',
+    channel: 'agg_channel',
+    channelTier: 'osint-aggregator',
+    text: id,
+    url: `https://t.me/agg/${id}`,
+    publishedAt: new Date(nowMs - 60 * 60_000).toISOString(),
+    topicTags: ['conflict-security'],
+    severity: 'major',
+    pinned: true,
+    ...over,
+  })
+  const hoursAgo = (h: number) => new Date(nowMs - h * 3_600_000).toISOString()
+
+  it('scopes to the tab, needs the pinned flag, and orders by severity then recency', () => {
+    const posts = [
+      pin('old-major', { publishedAt: hoursAgo(5) }),
+      pin('new-major', { publishedAt: hoursAgo(1) }),
+      pin('critical', { severity: 'critical', publishedAt: hoursAgo(9) }),
+      pin('other-tab', { topicTags: ['energy'] }),
+      { ...pin('not-pinned'), pinned: undefined },
+    ]
+    expect(selectPinnedPosts(posts, 'conflict-security', nowMs).map((p) => p.id)).toEqual(['critical', 'new-major', 'old-major'])
+  })
+
+  it('expires a pin on the READER clock even if the file still carries it', () => {
+    const stale = pin('stale', { publishedAt: hoursAgo((PIN_RETENTION_DAYS + 1) * 24) })
+    expect(selectPinnedPosts([stale, pin('fresh')], 'conflict-security', nowMs).map((p) => p.id)).toEqual(['fresh'])
+  })
+
+  it('shows at most MAX_PINS_PER_TAB', () => {
+    const posts = Array.from({ length: MAX_PINS_PER_TAB + 4 }, (_, i) => pin(`p${i}`, { publishedAt: hoursAgo(i + 1) }))
+    expect(selectPinnedPosts(posts, 'conflict-security', nowMs)).toHaveLength(MAX_PINS_PER_TAB)
+  })
+
+  it('a pin lives as long as an Event does', () => {
+    expect(PIN_RETENTION_DAYS).toBe(FEED_RETENTION_DAYS)
   })
 })

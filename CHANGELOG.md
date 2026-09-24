@@ -17,6 +17,24 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.17.0 — News Engine Phase 7: the first-hand ticker auto-pins its top headlines
+
+**Engine expanded: the News Engine's presentation of first-hand posts** (J: "pin should be automatic based on our phrasing logic built for
+the news events").
+
+- **Auto-pin by the Events' own wording rules.** Each channel post goes through the same severity logic the Events use; Major or Critical
+  wording is pinned and kept 14 days (the Events feed's window) instead of 24 hours. A "PINNED" block sits under the crawl on each topic tab
+  (up to 3, most severe then newest), with the channel, kind and amber affiliation note, and says plainly that it is wording-based and
+  unverified.
+- **One story, one pin.** Near-duplicate pins are folded with the Events' clusterer at a looser threshold (0.55 vs 0.70); on the live
+  archive 11 pin candidates became 4. Without the model (`--no-classifier`) there is no folding.
+- **Fix: head-of-state death claims are no longer shown by the ticker.** The Events hold those for manual review because a false "leader
+  is dead" is the costliest thing this engine could publish; the ticker had no such gate and would have carried one as raw text.
+- Known weak spot: the rules read words, so a quote can pin as Critical (the live archive's one Critical was Zelenskyy's UN speech quoting
+  Putin's aims). `BACKLOG.md` has it.
+
+Reasoning: `LOGBOOK.md`'s 2026-09-24 auto-pin entry. **Not checked in a browser yet.**
+
 ## v6.16.0 — News Engine Phase 7 (step 4): the per-tab first-hand ticker, and the first half of the content-safety filter
 
 **Engine expanded: the News Engine's presentation of first-hand posts.** Posts that matched no Event used to sit in the archive unseen;

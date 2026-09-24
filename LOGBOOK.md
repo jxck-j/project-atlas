@@ -5,6 +5,35 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-24 — Auto-pinning top first-hand headlines (J)
+
+**Decision (J):** "pin should be automatic based on our phrasing logic built for the news events." Answering the BACKLOG question of who decides
+what is "top": not a person, and not a new ranking — the SAME keyword severity logic (`classify.ts`'s `classifyText` + `applySeverityCaps`)
+that tiers Events. I read "phrasing logic" as that; if J meant something else (e.g. the embedding classifier) it is a small change.
+
+**What I chose where J did not specify (all revisable):** pin at **Major or Critical** (`PIN_MIN_SEVERITY`); on the live archive that was 15 of
+123 English posts. Keep a pin **14 days**, to match the Events feed (`FEED_RETENTION_DAYS`; a test ties them). Show **3 per tab**, most severe
+then newest. Place them in a block **under the crawl** rather than as cards in the main grid — a card would put an unverified post in the feed
+as if it were an Event, against the step-3 rule that first-hand never creates or lifts one.
+
+**Dedup was needed, and the Events' threshold was wrong for it.** The first real run pinned 11 posts, four of them separate AMK Mapping posts about
+one overnight attack on Kyiv (pairwise similarity 0.50-0.65, so none folded at the Events' 0.70). `PIN_FOLD_THRESHOLD` = 0.55 folds them (11 → 4).
+Looser is right HERE because the costs are reversed: over-merging Events fabricates corroboration, over-merging pins hides a sibling
+headline. It is tuned on ONE sample, not an eval. The representative is the most severe, then latest — which chose "350 strikes in 3 months"
+over a sharper headline once, so "latest" is a weak tiebreak.
+
+**Found while doing it — a step-4 gap, fixed:** the Events route a head-of-state DEATH claim to a manual queue (`publishGate.ts`), because a false
+"leader is dead" is the costliest thing to publish. The ticker had no such gate, so it would have served one as raw text. It now drops them
+(`unconfirmedClaim`). None were in the real archive, so this was found by reading, not by seeing one.
+
+**Limits, stated plainly:** the rules read WORDS. They cannot tell a report from a claim or a quote — the archive's one Critical was Zelenskyy
+quoting Putin's aims at the UN (a war-declaration-shaped phrase) and it pins at the top of Politics. Channels are also noisier than outlets
+(a "mixtape" video caption and "Polish Foreign Minister Sikorski:" rated Major). The label says so; the fix, if wanted, is in the rules, which
+are shared with the Events and were not touched.
+
+**Cost:** posts past 24 h are only embedded if their keyword severity already reaches the pin line, so the hourly run does not embed two weeks
+of ordinary posts (keyword severity is a superset of the final one — tag caps only lower it).
+
 ## 2026-09-24 — Phase 7 step 5: the hourly ticker refresh (`news:ticker`)
 
 **Built:** a third mode in `scripts/newsCycle.mjs` (`npm run news:ticker`) and an "Atlas News Ticker" task in `newsTasks.ps1` (hourly,

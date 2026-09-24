@@ -1803,6 +1803,17 @@ list stops it; reduced motion gets a static swipeable set); paused on hover/focu
 constants) so the build's rule modules stay out of the browser bundle. Nothing runs the build on a schedule yet (step 5); the UI shows its
 build time and calls itself STALE after 3 h. See `LOGBOOK.md`'s 2026-09-24 step-4 entry.
 
+**Auto-pinning (v6.17.0, J: "pin should be automatic based on our phrasing logic built for the news events").** `firstHandTicker.ts` runs the
+Events' own `classifyText` severity rules (plus `applySeverityCaps` on the winning tags) over each post; Major or Critical wording is PINNED
+(`pinned: true`, `severity` on every post) and a pin stays `PIN_RETENTION_DAYS` = 14 (== `FEED_RETENTION_DAYS`, a test holds them together)
+instead of 24 h, so the file holds posts older than the ticker window ONLY as pins. One story = one pin: with embeddings, pin candidates are
+folded with `clusterByEmbedding` at `PIN_FOLD_THRESHOLD` = 0.55 (looser than the Events' 0.70 — over-merging here hides a sibling headline,
+it does not fabricate corroboration; tuned on one real sample of 11 → 4 pins) and the most severe, then latest, wins. The UI
+(`PinnedPosts` in `hud/FirstHandTicker.tsx`, `selectPinnedPosts` in `tickerTypes.ts`) shows at most 3 per tab under the crawl, expiring on the
+READER's clock, labeled "Pinned automatically because the wording matches ... Unverified" — the rules read words and verify nothing.
+**Head-of-state death claims are dropped from the ticker entirely** (`unconfirmedClaim`): the Events hold them for a human (`publishGate.ts`)
+and the ticker has no review queue, so it carries none.
+
 **The article archive (2026-09-21)** — `archive/news/articles.jsonl`, append-only, one `RawArticle` + `firstSeenAt` per line, written by
 `npm run archive:news` (fetch-only) and by every `build:news:events` run. Logic is `src/news/articleArchive.ts` (pure, tested), file I/O is
 `scripts/lib/newsArchive.mjs`. It exists because RSS windows roll off and the build is stateless; unlike `debug/` it is **not regenerable**, so

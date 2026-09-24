@@ -18,7 +18,7 @@
 // text has no business in the repo's history, and publishing it is the same undecided question as publishing news-events.json.
 import fs from 'node:fs'
 import { readArchive } from './lib/newsArchive.mjs'
-import { buildFirstHandTicker, TICKER_WINDOW_HOURS } from '../src/news/firstHandTicker.ts'
+import { buildFirstHandTicker, PIN_RETENTION_DAYS, TICKER_WINDOW_HOURS } from '../src/news/firstHandTicker.ts'
 import { createLocalEmbedder } from '../src/news/localEmbedder.ts'
 import { loadShippedClassifier } from '../src/news/shippedClassifier.ts'
 
@@ -61,11 +61,13 @@ try {
   fs.rmSync(tmp, { force: true })
 }
 
+const pins = file.posts.filter((p) => p.pinned)
 const byChannel = new Map()
 for (const p of file.posts) byChannel.set(p.channelName, (byChannel.get(p.channelName) ?? 0) + 1)
 console.log(`Wrote ${OUTPUT}: ${file.posts.length} post(s) from the last ${TICKER_WINDOW_HOURS} h (${NO_CLASSIFIER ? 'keyword topics' : 'classifier topics'}).`)
+console.log(`  pinned — ${pins.length} (severity rules, Major+; retained ${PIN_RETENTION_DAYS} days)`)
 console.log('  by channel — ' + ([...byChannel].map(([name, n]) => `${name}=${n}`).join(', ') || 'none'))
 console.log(
-  `  dropped — unsupported-language=${dropped.unsupportedLanguage}, no-text/duplicate=${dropped.noText}, out-of-window=${dropped.outOfWindow}, ` +
+  `  dropped — unsupported-language=${dropped.unsupportedLanguage}, no-text/duplicate=${dropped.noText}, out-of-window=${dropped.outOfWindow}, unconfirmed-claim=${dropped.unconfirmedClaim}, ` +
     `unsafe (Layer 1 tier A/B)=${dropped.unsafe}, off-topic=${dropped.offTopic}`,
 )

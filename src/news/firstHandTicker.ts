@@ -1,13 +1,23 @@
 import { isTickerSafe } from './contentSafety'
 import { classifyText } from './classify'
+import { clusterByEmbedding, embeddingText, type Embedder, type Vector } from './embeddingClustering'
 import { RESCUE_THRESHOLD, RELEVANCE_THRESHOLD, type EmbeddingClassifier } from './embeddingClassifier'
-import { embeddingText, type Embedder } from './embeddingClustering'
 import { BUILD_LANGUAGES, type RawArticle } from './eventBuilder'
 import { decodeHtmlEntities } from './htmlEntities'
-import { MAX_TICKER_POSTS, TICKER_WINDOW_HOURS, type TickerFile, type TickerPost } from './tickerTypes'
-import type { FirstHandProfile, SourceProfile, TopicTag } from './types'
+import { applySeverityCaps, SEVERITY_RANK } from './severity'
+import {
+  MAX_PINNED_POSTS,
+  MAX_TICKER_POSTS,
+  PIN_MIN_SEVERITY,
+  PIN_RETENTION_DAYS,
+  qualifiesForPin,
+  TICKER_WINDOW_HOURS,
+  type TickerFile,
+  type TickerPost,
+} from './tickerTypes'
+import type { FirstHandProfile, Severity, SourceProfile, TopicTag } from './types'
 
-export { MAX_TICKER_POSTS, TICKER_WINDOW_HOURS }
+export { MAX_TICKER_POSTS, TICKER_WINDOW_HOURS, PIN_RETENTION_DAYS, PIN_MIN_SEVERITY }
 export type { TickerFile, TickerPost }
 
 // The per-tab first-hand text ticker (design §15b, Phase 7 step 4) — "Unverified Field Reports". Pure, like the rest of src/news/.
@@ -20,20 +30,30 @@ export type { TickerFile, TickerPost }
 // What gets in, in order:
 //   1. the post's source is an enrolled first-hand channel, and its text is English (BUILD_LANGUAGES — same reason as the build:
 //      the topic rules and the classifier are English-only, and an untranslated Ukrainian ticker line helps no reader);
-//   2. it is recent (TICKER_WINDOW_HOURS) — a "live feed" that shows yesterday's posts is a stale one;
+//   2. it is recent — TICKER_WINDOW_HOURS, or PIN_RETENTION_DAYS if it earns a pin (below);
 //   3. it passes Layer 1 of the content-safety filter (contentSafety.ts), tier C only. The output file is served, so this is
 //      the gate, not a UI nicety;
-//   4. it is on-topic: some topic tag, from the trained classifier when one is supplied, else the keyword rules.
+//   4. it is NOT a head-of-state death claim. The Event pipeline holds those for a human (publishGate.ts) precisely because a
+//      rumor that a leader is dead is the costliest thing this engine could publish wrongly, and the ticker is served text with no
+//      review queue — so it does not carry them at all;
+//   5. it is on-topic: some topic tag, from the trained classifier when one is supplied, else the keyword rules.
 // A post's video and photo are never carried — the ticker is text-only by design, and there is no visual filter.
+//
+// AUTO-PINNING (J, 2026-09-24): a post whose WORDING the Events' keyword severity rules (classify.ts, with the same tag-based caps)
+// rate Major or Critical is pinned, and a pin stays for PIN_RETENTION_DAYS instead of 24 hours. That is a statement about the words
+// of an unverified post — the rules cannot tell a report from a claim — so the UI says "unverified" beside every pin. Near-duplicates
+// (one strike posted six times) are folded into ONE pin when embeddings are available, the same clusterer the Events use.
 
 export interface TickerDropCounts {
   unsupportedLanguage: number
-  /** No usable text (a video-only post), or a duplicate of an earlier post's text. */
+  /** No usable text (a video-only post), or a repost of earlier text. */
   noText: number
-  /** No timestamp, older than the window, or dated in the future. */
+  /** No timestamp, dated in the future, or too old for what it is: past 24 h and not pinned, or past the pin retention. */
   outOfWindow: number
   /** Failed Layer 1 (contentSafety.ts) at tier A or B. */
   unsafe: number
+  /** A head-of-state death claim: the Events hold these for a human, and the ticker has no such review, so it carries none. */
+  unconfirmedClaim: number
   /** No topic, or not relevant enough to one. */
   offTopic: number
 }
@@ -42,6 +62,15 @@ export interface TickerResult {
   file: TickerFile
   dropped: TickerDropCounts
 }
+
+/**
+ * Cosine at or above which two pin candidates count as one story. LOOSER than the Events' link threshold (EMBED_LINK_THRESHOLD, 0.70)
+ * on purpose. That one is strict because over-merging there FABRICATES corroboration; here the worst case is a sibling headline hidden
+ * behind the one shown, so the cost runs the other way. Chosen from ONE real sample, not a tuned eval: eleven pin candidates from the
+ * live archive held four separate AMK Mapping posts about the same overnight attack on Kyiv at 0.50-0.65 to each other, none of which
+ * folded at 0.70 and most of which do at 0.55. Same model, same scale — change EMBEDDING_MODEL and this needs re-checking too.
+ */
+export const PIN_FOLD_THRESHOLD = 0.55
 
 /** The most text a ticker line carries. A channel post can run to thousands of characters; the ticker is a headline strip. */
 const MAX_TEXT_CHARS = 400
@@ -63,25 +92,33 @@ interface Candidate {
   profile: FirstHandProfile
   text: string
   time: number
+  /** Within TICKER_WINDOW_HOURS (otherwise it is here only as a possible pin). */
+  live: boolean
   topicTags: TopicTag[]
   keywordTopic: boolean
+  /** The keyword rules' severity BEFORE tag caps; the final severity re-applies them to whichever tags win. */
+  keywordSeverity: Severity
+  /** Present only when an embedder ran. */
+  vector?: Vector
 }
 
 /**
- * Builds the ticker file from archive articles. `embed` + `classifier` are optional and go together: with them the topic tags and
- * an on-topic gate come from the trained classifier (the same two-regime rule Events use — a mild gate where a keyword agrees, a
- * high bar where none does); without them the keyword rules alone decide, which is weaker (tag macro-F1 0.60 vs 0.80) but needs no
- * model. Never throws on bad input: a post that can't be used is counted and skipped.
+ * Builds the ticker file from archive articles. `embed` + `classifier` are optional and go together: with them the topic tags, an
+ * on-topic gate and pin de-duplication come from the trained classifier and embeddings (the same two-regime rule Events use — a mild
+ * gate where a keyword agrees, a high bar where none does); without them the keyword rules alone decide, which is weaker (tag
+ * macro-F1 0.60 vs 0.80) and cannot fold duplicate pins, but needs no model. Never throws on bad input: a post that can't be used is
+ * counted and skipped.
  */
 export async function buildFirstHandTicker(
   articles: RawArticle[],
   { profiles, now }: { profiles: SourceProfile[]; now: string },
   options: { embed?: Embedder; classifier?: EmbeddingClassifier | null } = {},
 ): Promise<TickerResult> {
-  const dropped: TickerDropCounts = { unsupportedLanguage: 0, noText: 0, outOfWindow: 0, unsafe: 0, offTopic: 0 }
+  const dropped: TickerDropCounts = { unsupportedLanguage: 0, noText: 0, outOfWindow: 0, unsafe: 0, unconfirmedClaim: 0, offTopic: 0 }
   const channels = new Map(profiles.filter((p): p is FirstHandProfile => p.sourceType === 'first-hand').map((p) => [p.id, p]))
   const nowMs = Date.parse(now)
-  const earliest = nowMs - TICKER_WINDOW_HOURS * 3_600_000
+  const liveFrom = nowMs - TICKER_WINDOW_HOURS * 3_600_000
+  const pinFrom = nowMs - PIN_RETENTION_DAYS * 86_400_000
 
   const candidates: Candidate[] = []
   const seenText = new Set<string>()
@@ -100,7 +137,7 @@ export async function buildFirstHandTicker(
       continue
     }
     const time = Date.parse(article.publishedAt ?? '')
-    if (Number.isNaN(time) || time < earliest || time > nowMs) {
+    if (Number.isNaN(time) || time < pinFrom || time > nowMs) {
       dropped.outOfWindow++
       continue
     }
@@ -114,12 +151,23 @@ export async function buildFirstHandTicker(
       dropped.unsafe++
       continue
     }
-    seenText.add(key)
     const keyword = classifyText(`${article.title}. ${article.description ?? ''}`)
-    candidates.push({ article, profile, text, time, topicTags: keyword.topicTags, keywordTopic: keyword.topicTags.length > 0 })
+    if (keyword.headOfStateDeathClaim) {
+      dropped.unconfirmedClaim++
+      continue
+    }
+    const live = time >= liveFrom
+    // A post past 24 h is only here as a possible pin, and the keyword severity is a superset of the final one (tag caps only lower
+    // it) — so anything below the pin line can be dropped now, which keeps the embedder off two weeks of ordinary posts every hour.
+    if (!live && !qualifiesForPin(keyword.severity)) {
+      dropped.outOfWindow++
+      continue
+    }
+    seenText.add(key)
+    candidates.push({ article, profile, text, time, live, topicTags: keyword.topicTags, keywordTopic: keyword.topicTags.length > 0, keywordSeverity: keyword.severity })
   }
 
-  let kept = candidates
+  let kept: Candidate[]
   if (options.embed && options.classifier && candidates.length > 0) {
     const classifier = options.classifier
     const vectors = await options.embed(candidates.map((c) => embeddingText(c.article.title, c.article.description)))
@@ -131,7 +179,7 @@ export async function buildFirstHandTicker(
         dropped.offTopic++
         return
       }
-      kept.push({ ...c, topicTags: pred.tags })
+      kept.push({ ...c, topicTags: pred.tags, vector: vectors[i] })
     })
   } else {
     kept = candidates.filter((c) => {
@@ -141,21 +189,61 @@ export async function buildFirstHandTicker(
     })
   }
 
-  const posts: TickerPost[] = kept
-    .sort((a, b) => b.time - a.time)
-    .slice(0, MAX_TICKER_POSTS)
-    .map(({ article, profile, text, time, topicTags }) => ({
-      id: article.url,
-      sourceId: profile.id,
-      channelName: profile.name,
-      channel: profile.channel,
-      channelTier: profile.channelTier,
-      ...(profile.affiliationNote ? { affiliationNote: profile.affiliationNote } : {}),
-      text,
-      url: article.url,
-      publishedAt: new Date(time).toISOString(),
-      topicTags,
-      ...(article.forwardedFrom ? { forwardedFrom: article.forwardedFrom } : {}),
-    }))
+  // Final severity: the same tag-based caps the Event path applies to whichever tags won (crime / sci-tech alone cap at Major).
+  const severityOf = new Map(kept.map((c) => [c.article.url, applySeverityCaps(c.keywordSeverity, { topicTags: c.topicTags })]))
+  const pinnable = kept.filter((c) => qualifiesForPin(severityOf.get(c.article.url)!))
+
+  // One pin per story. With vectors, fold near-duplicates (the Events' own clusterer; countries are not resolved here, and an empty list is
+  // compatible with anything) and keep the most severe, then latest, of each cluster. Without vectors every pinnable post pins.
+  let pinned: Candidate[] = pinnable
+  if (pinnable.length > 0 && pinnable.every((c) => c.vector)) {
+    const clusters = clusterByEmbedding(
+      pinnable.map((c) => ({ key: c.article.url, title: c.text, linkedEntityIds: [] as string[], time: c.time, vector: c.vector!, candidate: c })),
+      PIN_FOLD_THRESHOLD,
+    )
+    pinned = clusters.map((members) =>
+      members.reduce((best, m) => {
+        const dSeverity = SEVERITY_RANK[severityOf.get(m.candidate.article.url)!] - SEVERITY_RANK[severityOf.get(best.candidate.article.url)!]
+        return dSeverity > 0 || (dSeverity === 0 && m.time > best.time) ? m : best
+      }),
+    ).map((m) => m.candidate)
+  }
+  // A folded duplicate is dropped from the ticker only if it has nothing else to be there for: past 24 h, it existed solely as a pin candidate.
+  const pinnedUrls = new Set(
+    pinned
+      .sort((a, b) => SEVERITY_RANK[severityOf.get(b.article.url)!] - SEVERITY_RANK[severityOf.get(a.article.url)!] || b.time - a.time)
+      .slice(0, MAX_PINNED_POSTS)
+      .map((c) => c.article.url),
+  )
+
+  // Newest first. Pins are never cut by the size cap on ordinary posts; a post past 24 h that did not become a pin is not in the file.
+  const posts: TickerPost[] = []
+  let ordinary = 0
+  for (const c of kept.sort((a, b) => b.time - a.time)) {
+    const isPin = pinnedUrls.has(c.article.url)
+    if (!isPin && !c.live) {
+      dropped.outOfWindow++
+      continue
+    }
+    if (!isPin) {
+      if (ordinary >= MAX_TICKER_POSTS) continue
+      ordinary++
+    }
+    posts.push({
+      id: c.article.url,
+      sourceId: c.profile.id,
+      channelName: c.profile.name,
+      channel: c.profile.channel,
+      channelTier: c.profile.channelTier,
+      ...(c.profile.affiliationNote ? { affiliationNote: c.profile.affiliationNote } : {}),
+      text: c.text,
+      url: c.article.url,
+      publishedAt: new Date(c.time).toISOString(),
+      topicTags: c.topicTags,
+      severity: severityOf.get(c.article.url)!,
+      ...(isPin ? { pinned: true as const } : {}),
+      ...(c.article.forwardedFrom ? { forwardedFrom: c.article.forwardedFrom } : {}),
+    })
+  }
   return { file: { generatedAt: now, posts }, dropped }
 }

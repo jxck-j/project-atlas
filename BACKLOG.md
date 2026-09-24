@@ -198,6 +198,20 @@ ewsTasks.ps1 -Action install` (it re-registers Build and Watch too). See
           (`MAX_TICKER_POSTS`), 24 h window (`TICKER_WINDOW_HOURS`), 12 posts in the crawl. All were guesses made when only ~130 posts existed.
         - **A dead channel is noticed by `news:watch` (3 h), not by the ticker task** — it deliberately leaves the failure streaks alone.
         - **The Event build (10AM/10PM) still re-fetches channels and archives them too;** harmless (deduped), just redundant now.
+      - **Auto-pinning top first-hand headlines: BUILT (2026-09-24, v6.17.0; J: automatic, "based on our phrasing logic built for the news events").**
+        Major/Critical wording per the Events' severity rules, kept 14 days, one pin per story, 3 per tab under the crawl. See `LOGBOOK.md`. Open:
+        - **The rules read WORDS, so a quote pins as Critical.** Live example: Zelenskyy quoting Putin's aims at the UN, Critical, top of Politics.
+          Channels are noisier than outlets ("WATCH: ... mixtape" and "Polish Foreign Minister Sikorski:" rated Major). Options if it bothers: pin
+          only when the tag AND a concrete verb agree, require 2+ channels (needs first-hand-to-first-hand clustering, which step 3 forbids for
+          Events but not for pins), or drop quote-shaped posts ("X said", "stated from the podium"). The rules are shared with the Events.
+        - **`PIN_FOLD_THRESHOLD` 0.55 and the representative choice are one-sample guesses.** "Most severe, then latest" once chose "350 strikes in
+          3 months" over a sharper headline. Without the model (`--no-classifier`) there is no folding at all.
+        - **Where pins live is my call:** a block under the crawl, not cards in the main grid (a card would read as an Event). 3 per tab, 14 days,
+          Major+ are also mine. World has no ticker, so no pins.
+        - **Not checked in a browser** (grid of three, `line-clamp`, the amber styling).
+        - **Head-of-state death claims are now dropped from the ticker** (a step-4 gap found here). There is nowhere to review them — the Admin
+          Console queue only holds Event candidates. If J wants them surfaced, they need the same manual confirmation.
+        - **Relation to translation:** most pin-worthy posts from DeepState, Rybar etc. are not English, so this improves once translation lands.
     - **The preview is an undocumented page, not an API.** If Telegram changes its markup `parseTelegramPreview` returns [] and the
       channel shows up as failed ("no posts in the web preview") — that failure is the alarm. Also unhandled: polls, link-preview
       cards (ignored), a channel's edited posts (first sighting wins), and posts deleted after archiving (they stay).
