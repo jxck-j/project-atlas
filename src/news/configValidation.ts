@@ -17,6 +17,9 @@ const LEANING_CONFIDENCES = ['high', 'medium', 'low/initial']
 const TIERS = ['wire', 'broadsheet', 'broadcast', 'regional-specialist', 'country-native']
 const PRESS_CONTROLS = ['state-controlled', 'state-run-democratic', 'independent', 'exile']
 const VETTINGS = ['confirmed', 'provisional']
+const CHANNEL_TIERS = ['verification-specialist', 'osint-aggregator', 'regional-curator', 'combatant-affiliated']
+/** Telegram's own username rule: 5-32 characters of letters, digits and underscores. */
+const CHANNEL_HANDLE = /^[A-Za-z0-9_]{5,32}$/
 
 /** Matches the citation format sourceConfig.test.ts enforces for country-native sources. */
 const RSF_CITATION = /^RSF World Press Freedom Index \d{4}: \d+\/180/
@@ -48,21 +51,39 @@ function duplicateIds(records: { id: string }[]): ValidationIssue[] {
 export function validateSources(sources: SourceProfile[], countryNames?: Set<string>): ValidationIssue[] {
   const issues: ValidationIssue[] = [...duplicateIds(sources)]
   const add = (id: string, field: string, message: string) => issues.push({ id, field, message })
+  // Telegram handles are case-insensitive, so two profiles can't share one.
+  const channels = new Set<string>()
 
   for (const s of sources) {
+    // Read once: the fixed-label checks below narrow `s` to never on their true branch, taking `s.id` with it.
+    const id = s.id
     if (isBlank(s.id)) add(s.id ?? '', 'id', 'id is required')
     if (isBlank(s.name)) add(s.id, 'name', 'name is required')
     if (!VETTINGS.includes(s.vetting)) add(s.id, 'vetting', `vetting must be one of ${VETTINGS.join(', ')}`)
 
     if (s.sourceType === 'analysis') {
-      if (s.label !== 'Non-partisan analysis') add(s.id, 'label', 'analysis orgs carry the fixed label "Non-partisan analysis"')
+      if (s.label !== 'Non-partisan analysis') add(id, 'label', 'analysis orgs carry the fixed label "Non-partisan analysis"')
       // A leaning on an analysis org isn't a typo, it's a category error (§7):
       // the whole point of the type is that it never carries one.
-      if ('leaning' in s) add(s.id, 'leaning', 'analysis orgs never carry a leaning')
+      if ('leaning' in s) add(id, 'leaning', 'analysis orgs never carry a leaning')
+      continue
+    }
+    if (s.sourceType === 'first-hand') {
+      if (s.label !== 'First-hand account') add(id, 'label', 'first-hand accounts carry the fixed label "First-hand account"')
+      if ('leaning' in s) add(id, 'leaning', 'first-hand accounts never carry a leaning')
+      if (!CHANNEL_HANDLE.test(s.channel ?? '')) add(s.id, 'channel', 'channel must be a Telegram handle without the "@" (5-32 letters, digits or underscores)')
+      else if (channels.has(s.channel.toLowerCase())) add(s.id, 'channel', `channel "${s.channel}" is already enrolled under another profile`)
+      else channels.add(s.channel.toLowerCase())
+      if (!CHANNEL_TIERS.includes(s.channelTier)) add(s.id, 'channelTier', `channelTier must be one of ${CHANNEL_TIERS.join(', ')}`)
+      // §15a: tier 1 IS the specialist-verified standing, so the two can't disagree in either direction.
+      if (s.channelTier === 'verification-specialist' && !s.specialistVerified) add(s.id, 'specialistVerified', 'a verification-specialist channel is specialist-verified (§15a tier 1)')
+      if (s.channelTier !== 'verification-specialist' && s.specialistVerified) add(s.id, 'specialistVerified', 'only a verification-specialist channel can be specialist-verified (§15a tier 1)')
+      if (s.channelTier === 'combatant-affiliated' && isBlank(s.affiliationNote)) add(s.id, 'affiliationNote', 'a combatant-affiliated channel needs a specific affiliation note (§15a)')
+      if (s.language !== undefined && (!/^[a-z]{2}$/.test(s.language) || s.language === 'en')) add(s.id, 'language', 'language is a two-letter code, and only set when the channel is not English')
       continue
     }
     if (s.sourceType !== 'outlet') {
-      add((s as SourceProfile).id, 'sourceType', 'sourceType must be "outlet" or "analysis"')
+      add((s as SourceProfile).id, 'sourceType', 'sourceType must be "outlet", "analysis" or "first-hand"')
       continue
     }
 

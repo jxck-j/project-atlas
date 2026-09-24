@@ -17,6 +17,31 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.15.0 — News Engine Phase 7 (steps 1-3): first-hand Telegram channels attach to Events
+
+**Engine expanded: the News Engine's ingestion.** It now reads first-hand Telegram channels alongside the RSS feeds, without letting an
+unverified post decide what counts as an Event.
+
+- **Five channels enrolled** as a new `first-hand` source type: `DeepStateUA` (tier 1, with an affiliation note), `AMK_Mapping`,
+  `ClashReport`, `Middle_East_Spectator`, `intelslava` (tier 4, "Pro-Russian news aggregator"). Every handle was re-checked live first;
+  `ukrainenowenglish` was refused as dead (nothing since 2022). Tiers follow design §15a and are validated (tier 1 = specialist-verified,
+  combatant-affiliated needs a note); the Admin Console has an editor for them.
+- **A keyless fetcher** (`t.me/s/<channel>`, no API key, no Python): pages back through a busy channel, strips promo/emoji/signatures,
+  keeps video posts flagged (never displayed) and never carries a picture into a published Event. `archive:news`, `build:news:events` and
+  `news:watch` fetch it with the feeds; a disabled or renamed channel fails loudly instead of looking quiet.
+- **First-hand posts ATTACH to an Event and never create or lift one** (J's call). The build clusters outlets exactly as before, then
+  joins each post to an Event it agrees with. Attached posts appear in a separate "FIRST-HAND · UNVERIFIED" list on the news card, with
+  the affiliation note visible, and never in the "N SOURCES" count. Verified on real data: the same archive window builds the same 147
+  Events with or without first-hand posts, differing only in the attached entries.
+- **A first-hand picture can satisfy an Event that has none — built, but OFF** (`FIRST_HAND_MEDIA_ENABLED`). It stays off until the
+  graphic-content filter exists: these channels mostly post raw footage, and `news-events.json` is served, so a URL in it is published.
+- DeepState posts in Ukrainian, so its text is dropped until a multilingual path exists (translation is the next step in this phase).
+- **Found, not fixed:** the local embedder's vectors depend slightly on batch composition (pre-existing). First-hand posts are embedded in
+  their own call so they cannot disturb an outlet grouping; `BACKLOG.md` has the underlying issue.
+
+Reasoning, the dry run that shaped it, and rejected alternatives: `LOGBOOK.md` (2026-09-23 and 2026-09-24 entries). Not yet built in this
+phase: translation, the per-tab ticker (§15b), the hourly refresh task.
+
 ## v6.14.0 — News Engine Phase 6: cadence (scheduled builds plus an event trigger)
 
 **Engine expanded: the News Engine's build pipeline.** It now runs unattended instead of only when someone types the command, which is

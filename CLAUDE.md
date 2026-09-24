@@ -1724,13 +1724,13 @@ here. What a session building v2 must respect:
 
 **v2 is being built in phases** (plan in `LOGBOOK.md`'s 2026-09-20 "Phase 1" entry: schema/pure logic → Event
 build pipeline → LLM classification → News tab UI → Admin Console → cadence → first-hand pipeline → video
-surfaces; **Phases 1, 2, 4, 5 and 6 are built; 3 (the LLM path) is built but deliberately NOT USED - see below. The next one is Phase 7, the first-hand pipeline**).
+surfaces; **Phases 1, 2, 4, 5 and 6 are built; 3 (the LLM path) is built but deliberately NOT USED - see below. Phase 7, the first-hand pipeline, is IN PROGRESS: steps 1 (roster), 2 (fetch + archive) and 3 (attach to Events) are done - see below**).
 **Phase 1 is `src/news/`**, a pure (no DOM/network/React) directory; its types are named distinctly from v1's
 (`TopicTag`/`Severity` vs `NewsTopicTag`/`NewsSeverity`) so an import can't silently pick up the wrong
 generation — which is what made the Phase 4 cutover a matter of swapping two components' imports.
 
 - `types.ts` — `NewsEvent`, the `SourceEntry` union (six categories), `SourceProfile` (`OutletProfile`/
-  `AnalysisProfile`), `SystemicThemeConfig`. **`NewsEvent` has no `corroboration` field** — it's derived.
+  `AnalysisProfile`/`FirstHandProfile`), `SystemicThemeConfig`. **`NewsEvent` has no `corroboration` field** — it's derived.
 - `corroboration.ts` — `deriveCorroboration(sources)`: wire-confirmed (any counting wire-tier entry) >
   outlet-corroborated (4+ *distinct non-state* `'outlet'` sources — `pressControl: 'state-controlled'` outlets
   don't count toward the four — J's 2026-09-20 amendment to §8, standing in for a wire report while none is
@@ -1764,6 +1764,27 @@ generation — which is what made the Phase 4 cutover a matter of swapping two c
   entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
   Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
 
+**First-hand channels (Phase 7 step 1, 2026-09-23)** are `sourceType: 'first-hand'` profiles (`FirstHandProfile`): a Telegram
+`channel` handle, a §15a `channelTier` (`verification-specialist` / `osint-aggregator` / `regional-curator` / `combatant-affiliated`),
+`specialistVerified` (always, and only, for tier 1 - `configValidation.ts` enforces both directions), an `affiliationNote` (required for
+combatant-affiliated), optional `language`. Five are enrolled (DeepStateUA, AMK_Mapping, ClashReport, Middle_East_Spectator, intelslava);
+Step 2 (2026-09-24) fetches them: `scripts/lib/fetchTelegram.mjs` pages `t.me/s/<channel>` (6 h lookback, 5 pages max) and
+`src/news/telegramPreview.ts` parses/cleans it (pure, tested); `scripts/lib/fetchSources.mjs` is the one entry point that fetches RSS feeds AND
+channels, used by `archiveNews`, `buildNewsEvents` and `newsCycle`. Posts are ARCHIVED (with `hasVideo`, `forwardedFrom`, the channel's `language`;
+never an `imageUrl`) and excluded from `news:watch`'s early-build trigger. **First-hand posts ATTACH to an Event and never create or lift one**
+(J, 2026-09-24): `eventBuilder.ts`'s embedding path clusters outlets/analysis orgs exactly as before, then `attachToClusters`
+(`embeddingClustering.ts`) joins each post to a cluster it agrees with; an attached entry sits AFTER the founders in the dossier,
+`countsTowardCorroboration` is always false (so a channel's `specialistVerified` is recorded but inert for the gate), and it contributes nothing
+to the Event's id, title, timestamp, countries, tags or severity. A post matching no Event is dropped as `not-attached` (still in the archive).
+The heuristic and LLM paths attach nothing. **Outlet and first-hand texts are embedded in SEPARATE calls** — the local model's vectors depend
+on batch composition, so mixing them would let a first-hand post flip an outlet grouping (pinned by a test). `distinctSources` (the card's
+"N SOURCES") excludes first-hand; `firstHandSources` feeds a separate "FIRST-HAND · UNVERIFIED" list. A post's photo/video thumbnail is archived as
+`mediaUrl` but never published while `FIRST_HAND_MEDIA_ENABLED` (`firstHandMedia.ts`) is false — the NSFW filter (§15c) doesn't exist and
+`news-events.json` is served. A first-hand profile is accounted for by its `channel`, not `feeds.json`/`feedGaps.json`. Every handle was re-verified live before enrolling and `ukrainenowenglish` was refused as dead.
+`DeepStateUA` posts in Ukrainian, so its TEXT is dropped by `BUILD_LANGUAGES` like any non-English feed. `eventBuilder.ts`'s `sourceEntry()`
+maps a first-hand profile to a `FirstHandSourceEntry` whose `countsTowardCorroboration` is `specialistVerified === true` (fails closed until
+step 3 decides the real rules). See `LOGBOOK.md`'s "Phase 7 step 1" entry and `BACKLOG.md`'s Phase 7 items before touching any of it.
+
 **The article archive (2026-09-21)** — `archive/news/articles.jsonl`, append-only, one `RawArticle` + `firstSeenAt` per line, written by
 `npm run archive:news` (fetch-only) and by every `build:news:events` run. Logic is `src/news/articleArchive.ts` (pure, tested), file I/O is
 `scripts/lib/newsArchive.mjs`. It exists because RSS windows roll off and the build is stateless; unlike `debug/` it is **not regenerable**, so
@@ -1779,8 +1800,8 @@ cluster → dossier → `resolvePublishDecision`). It writes `public/data/news-e
 gitignored `debug/news-pending-confirmation.json` — the head-of-state-death queue is deliberately NOT under `public/`, since a
 served file publishes the rumor whatever the client filters. Since Phase 4, `news-events.json` is what the NEWS tab renders.
 Things a session touching this must know:
-- **Every roster profile is either fetched or accounted for (2026-09-23).** `feeds.json` (106 feeds, 104 of 141 sources)
-  and `feedGaps.json` (the other 37, each with a status/reason/checked date) must partition `sources.json` exactly. A
+- **Every roster profile is either fetched or accounted for (2026-09-23).** `feeds.json` (106 feeds, 101 of 146 sources)
+  and `feedGaps.json` (the other 45, each with a status/reason/checked date) must partition `sources.json` exactly. A
   test enforces it, so a profile added in the Admin Console fails the suite until its feed is found or its gap recorded.
   Per-type rules in `eventBuilder.ts`'s `prepare()`: **analysis orgs** become `AnalysisSourceEntry`s (they corroborate,
   never toward Critical's three; only `specialistVerified` ones make an Event specialist-verified); **country-native**
@@ -1899,7 +1920,7 @@ third project reference, so `tsc -b` typechecks it with everything else.
   the same rules light up a field as you type). A roster that would break a §7 invariant is refused with the
   offending field named and the file left untouched — never half-written.
 - **Two views, kept navigationally apart** because §14 asked for it and the rhythms are nothing alike:
-  EDITORIAL DATA (`SourcesView.tsx` — the 141-profile roster with filters for the standing work: provisional,
+  EDITORIAL DATA (`SourcesView.tsx` — the 146-profile roster with filters for the standing work: provisional,
   contested, unrated, country-native, analysis; `ThemesView.tsx` — the quarterly theme review) and REVIEW
   QUEUE (`ReviewQueueView.tsx` — head-of-state death claims). `ThemesView` has **no delete button by
   construction**: retirement is archival, an archived theme keeps its linkage to historical Events.

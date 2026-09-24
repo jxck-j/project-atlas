@@ -108,7 +108,34 @@ export interface AnalysisProfile {
   notes?: string
 }
 
-export type SourceProfile = OutletProfile | AnalysisProfile
+/** §15a's four kinds of first-hand channel — how the channel operates, not which app it lives on. */
+export type FirstHandTier = 'verification-specialist' | 'osint-aggregator' | 'regional-curator' | 'combatant-affiliated'
+
+/**
+ * A Telegram channel (design §7 / §15a). Not fetched through feeds.json — the Phase 7 fetcher reads `channel` from here.
+ * Never carries a leaning: first-hand ≠ editorial leaning, and it is the affiliation note, not a rating, that tells a reader
+ * whose voice this is.
+ */
+export interface FirstHandProfile {
+  id: string
+  name: string
+  sourceType: 'first-hand'
+  /** Fixed — never editable per-source, never a leaning (§7). */
+  label: 'First-hand account'
+  /** Telegram handle without the "@" — the `t.me/s/<channel>` path segment. Provenance, and what the fetcher reads. */
+  channel: string
+  channelTier: FirstHandTier
+  /** §15a tier 1 only, and always for tier 1: same standing as ISW/ACLED/Bellingcat. Mirrors `AnalysisProfile.specialistVerified`. */
+  specialistVerified?: boolean
+  /** Factual, never a soft caveat. Required for `'combatant-affiliated'` (§15a: "prominent and specific"); optional otherwise. */
+  affiliationNote?: string
+  /** Two-letter code, only when the channel posts in something other than English — same convention as feeds.json's `language`. */
+  language?: string
+  vetting: VettingStatus
+  notes?: string
+}
+
+export type SourceProfile = OutletProfile | AnalysisProfile | FirstHandProfile
 
 // ---------------------------------------------------------------------------
 // Event dossier (§17b)
@@ -172,8 +199,14 @@ export interface FirstHandSourceEntry extends SourceEntryBase {
   channel: string
   /** Factual only. For combatant-affiliated channels this must be prominent and specific ("Pro-Russian military blogger"), not a soft caveat (§15a). */
   affiliationNote?: string
-  /** §15a tier 1 (verification specialists) — same standing as ISW/ACLED/Bellingcat. */
+  /** §15a tier 1 (verification specialists) — same standing as ISW/ACLED/Bellingcat. Recorded, but a first-hand entry never counts toward corroboration (J, 2026-09-24: first-hand attaches to an Event, never creates or lifts one). */
   specialistVerified?: boolean
+  /**
+   * The post's photo or video thumbnail. Deliberately NOT `imageUrl`, and absent from every published Event unless
+   * `FIRST_HAND_MEDIA_ENABLED` (firstHandMedia.ts) is on: this is the one field that could put a graphic frame on a card, and
+   * public/data/news-events.json is served to everyone whatever the client renders.
+   */
+  mediaUrl?: string
 }
 
 export type StatementType = 'press-release' | 'press-conference' | 'official-social-post'

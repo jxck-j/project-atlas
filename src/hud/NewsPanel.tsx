@@ -14,7 +14,7 @@ import type { CountryRegion } from '../data/countryRegions'
 import { buildFeed, filterEvents } from '../news/feed'
 import { NEWS_TABS } from '../news/tabs'
 import { deriveCorroboration } from '../news/corroboration'
-import { assignEventImages, distinctSources, sourceDisplayName } from '../news/eventPresentation'
+import { assignEventImages, distinctSources, firstHandSources, sourceDisplayName } from '../news/eventPresentation'
 import type { NewsEvent, NewsTabId } from '../news/types'
 import { CORROBORATION_STYLE, NEWS_SEVERITY_STYLE, TOPIC_TAG_LABEL, isEventBreaking, withAlpha } from './newsEventStyles'
 import { PANEL_SECTION_LABEL } from './panelStyles'
@@ -118,6 +118,8 @@ function CorroborationBadge({ event, small = false }: { event: NewsEvent; small?
 function SourceDossier({ event }: { event: NewsEvent }) {
   const [open, setOpen] = useState(false)
   const sources = distinctSources(event)
+  // Attached channel posts (§15): shown, labeled unverified, and NOT part of the count above — they don't count toward corroboration.
+  const firstHand = firstHandSources(event)
   return (
     <div className="mt-2 border-t border-[#16233c] pt-2">
       <button
@@ -127,10 +129,12 @@ function SourceDossier({ event }: { event: NewsEvent }) {
       >
         <span>
           {sources.length} {sources.length === 1 ? 'SOURCE' : 'SOURCES'} · {sources.map(sourceDisplayName).join(', ')}
+          {firstHand.length > 0 && <span className="text-[#ff9a3c]"> · +{firstHand.length} FIRST-HAND</span>}
         </span>
         <span className="ml-2 shrink-0">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
+        <>
         <ul className="mt-1.5 space-y-1">
           {sources.map((entry) => (
             <li key={entry.id} className="flex items-baseline justify-between gap-2">
@@ -157,6 +161,29 @@ function SourceDossier({ event }: { event: NewsEvent }) {
             </li>
           ))}
         </ul>
+        {firstHand.length > 0 && (
+          <div className="mt-2 border-t border-dashed border-[#16233c] pt-1.5">
+            <div className="text-[8.5px] font-bold tracking-[0.08em] text-[#ff9a3c]">FIRST-HAND · UNVERIFIED</div>
+            <ul className="mt-1 space-y-1">
+              {firstHand.map((entry) => (
+                <li key={entry.id} className="flex items-baseline justify-between gap-2">
+                  <a
+                    href={entry.refUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] text-[#8aa0c6] transition-colors hover:text-white"
+                  >
+                    {sourceDisplayName(entry)}
+                    {/* §15a: whose voice this is stays visible, not buried. */}
+                    {entry.affiliationNote && <span className="ml-1 text-[#ff9a3c]">· {entry.affiliationNote}</span>}
+                  </a>
+                  <span className="shrink-0 text-[9px] text-[#51648a]">{new Date(entry.timestamp).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        </>
       )}
     </div>
   )

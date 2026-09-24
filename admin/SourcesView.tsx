@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { ApiError, saveSources, type ConfigPayload } from './api'
 import { leaningTally, validateSources, type ValidationIssue } from '../src/news/configValidation'
-import type { AnalysisProfile, OutletProfile, SourceProfile } from '../src/news/types'
+import type { AnalysisProfile, FirstHandProfile, OutletProfile, SourceProfile } from '../src/news/types'
 import { Banner, Button, Checkbox, Empty, Field, IssueList, Panel, Select, TextArea, TextInput } from './ui'
 
 // Source leaning/vetting review (design §14's first named job — the AllSides
@@ -17,12 +17,13 @@ const LEANINGS = opts('left', 'lean-left', 'center', 'lean-right', 'right')
 const CONFIDENCES = opts('high', 'medium', 'low/initial')
 const TIERS = opts('wire', 'broadsheet', 'broadcast', 'regional-specialist', 'country-native')
 const PRESS_CONTROLS = opts('state-controlled', 'state-run-democratic', 'independent', 'exile')
+const CHANNEL_TIERS = opts('verification-specialist', 'osint-aggregator', 'regional-curator', 'combatant-affiliated')
 const VETTINGS = [
   { value: 'confirmed', label: 'confirmed' },
   { value: 'provisional', label: 'provisional' },
 ]
 
-type Filter = 'all' | 'provisional' | 'contested' | 'unrated' | 'country-native' | 'analysis'
+type Filter = 'all' | 'provisional' | 'contested' | 'unrated' | 'country-native' | 'analysis' | 'first-hand'
 
 const FILTERS: { id: Filter; label: string; match: (s: SourceProfile) => boolean }[] = [
   { id: 'all', label: 'All', match: () => true },
@@ -33,6 +34,7 @@ const FILTERS: { id: Filter; label: string; match: (s: SourceProfile) => boolean
   { id: 'unrated', label: 'Unrated', match: (s) => s.sourceType === 'outlet' && !s.leaning && !s.pressControl },
   { id: 'country-native', label: 'Country-native', match: (s) => s.sourceType === 'outlet' && s.tier === 'country-native' },
   { id: 'analysis', label: 'Analysis orgs', match: (s) => s.sourceType === 'analysis' },
+  { id: 'first-hand', label: 'First-hand', match: (s) => s.sourceType === 'first-hand' },
 ]
 
 /** Sets a field, deleting it when the form blanks it — the files carry absent fields, never empty strings. */
@@ -145,8 +147,50 @@ function AnalysisEditor({ source, onChange }: { source: AnalysisProfile; onChang
   )
 }
 
+function FirstHandEditor({ source, onChange }: { source: FirstHandProfile; onChange: (next: FirstHandProfile) => void }) {
+  const set = (field: string, value: string | boolean | undefined) => onChange(withField(source, field, value))
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <Field label="Name">
+        <TextInput value={source.name} onChange={(v) => set('name', v)} />
+      </Field>
+      <Field label="Telegram channel" hint="Handle without the @ — the t.me/s/… path segment.">
+        <TextInput value={source.channel} onChange={(v) => set('channel', v)} />
+      </Field>
+      <Field label="Channel tier" hint="§15a — how the channel operates, not which app it lives on.">
+        <Select
+          value={source.channelTier}
+          options={CHANNEL_TIERS}
+          // Tier 1 IS the specialist-verified standing, so the flag follows the tier rather than being a second control that can disagree.
+          onChange={(v) => onChange(withField(withField(source, 'channelTier', v), 'specialistVerified', v === 'verification-specialist' ? true : undefined))}
+        />
+      </Field>
+      <Field label="Vetting">
+        <Select value={source.vetting} options={VETTINGS} onChange={(v) => set('vetting', v)} />
+      </Field>
+      <div className="md:col-span-2">
+        <Field label="Affiliation note" hint="Factual and specific, never a soft caveat. Required for a combatant-affiliated channel.">
+          <TextInput value={source.affiliationNote ?? ''} onChange={(v) => set('affiliationNote', v)} />
+        </Field>
+      </div>
+      <Field label="Language" hint="Two-letter code, only when the channel is not English (its text is dropped by the build until a multilingual path exists).">
+        <TextInput value={source.language ?? ''} onChange={(v) => set('language', v)} />
+      </Field>
+      <div className="md:col-span-2">
+        <Field label="Notes">
+          <TextArea value={source.notes ?? ''} onChange={(v) => set('notes', v)} />
+        </Field>
+      </div>
+      <p className="font-mono text-[10px] text-cyan-100/35 md:col-span-2">
+        Label is fixed at “First-hand account” and a first-hand channel never carries a leaning (§7) — neither is editable.
+      </p>
+    </div>
+  )
+}
+
 function badge(source: SourceProfile): { text: string; className: string } {
   if (source.sourceType === 'analysis') return { text: 'analysis', className: 'text-violet-300/80 border-violet-400/30' }
+  if (source.sourceType === 'first-hand') return { text: source.channelTier, className: 'text-emerald-300/80 border-emerald-400/30' }
   if (source.pressControl) return { text: source.pressControl, className: 'text-amber-300/80 border-amber-400/30' }
   if (source.leaning) return { text: source.leaning, className: 'text-cyan-300/80 border-cyan-400/30' }
   return { text: 'unrated', className: 'text-cyan-100/40 border-cyan-500/20' }
@@ -257,6 +301,8 @@ export function SourcesView({ config, onSaved }: { config: ConfigPayload; onSave
                   <div className="border-t border-cyan-500/10 bg-[#04070a] px-4 py-4">
                     {source.sourceType === 'outlet' ? (
                       <OutletEditor source={source} countryNames={config.countryNames} onChange={update} />
+                    ) : source.sourceType === 'first-hand' ? (
+                      <FirstHandEditor source={source} onChange={update} />
                     ) : (
                       <AnalysisEditor source={source} onChange={update} />
                     )}

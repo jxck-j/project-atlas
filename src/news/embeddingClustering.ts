@@ -152,3 +152,39 @@ export function clusterByEmbedding<T extends EmbedArticle>(articles: T[], thresh
   }
   return mergePass ? mergeClusters(clusters, threshold) : clusters
 }
+
+/**
+ * Attaches items to clusters that ALREADY exist, never forming or changing one — how first-hand posts join an Event (J,
+ * 2026-09-24: "attach but not create"). Same link rule as the greedy pass — cosine at or above the threshold, inside the link
+ * window, countries soft-compatible, and a strict MAJORITY of the cluster's members must link — and, like the greedy pass, the best
+ * mean similarity wins when several clusters qualify. Unlike it, an item never extends a cluster's span and is never compared with
+ * another item, so nothing here can fuse two clusters or make one out of nothing.
+ *
+ * Pure and non-mutating: `attached[i]` is what joins `clusters[i]`, each list in time order; whatever matched nothing comes back
+ * in `unattached`.
+ */
+export function attachToClusters<C extends EmbedArticle, A extends EmbedArticle>(
+  clusters: C[][],
+  items: A[],
+  threshold = EMBED_LINK_THRESHOLD,
+): { attached: A[][]; unattached: A[] } {
+  const attached: A[][] = clusters.map(() => [])
+  const unattached: A[] = []
+  for (const item of [...items].sort((a, b) => a.time - b.time || a.key.localeCompare(b.key))) {
+    let best = -1
+    let bestMean = -1
+    clusters.forEach((cluster, i) => {
+      const sims: number[] = []
+      for (const member of cluster) if (isSameOccurrenceByEmbedding(member, item, threshold)) sims.push(dot(member.vector, item.vector))
+      if (sims.length * 2 <= cluster.length) return
+      const mean = sims.reduce((x, y) => x + y, 0) / sims.length
+      if (mean > bestMean) {
+        bestMean = mean
+        best = i
+      }
+    })
+    if (best >= 0) attached[best].push(item)
+    else unattached.push(item)
+  }
+  return { attached, unattached }
+}

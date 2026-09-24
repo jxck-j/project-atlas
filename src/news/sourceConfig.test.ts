@@ -2,13 +2,14 @@ import { feature } from 'topojson-client'
 import { describe, expect, it } from 'vitest'
 import topologyRaw from '../../public/geo/countries-un193.json?raw'
 import { getSourceProfile, SOURCES, SYSTEMIC_THEMES } from './sourceConfig'
-import type { OutletProfile } from './types'
+import type { FirstHandProfile, OutletProfile } from './types'
 
 // The config files are edited by hand (and, later, by the Admin Console), so
 // this is the guard that keeps a typo from reaching the build. It validates
 // invariants from news-sourcing-design.md §7, not the roster's exact contents.
 
 const outlets = SOURCES.filter((s): s is OutletProfile => s.sourceType === 'outlet')
+const channels = SOURCES.filter((s): s is FirstHandProfile => s.sourceType === 'first-hand')
 
 // Same asset the build script resolves country names against. 'Taiwan' is a
 // GeoEntity, not a UN-193 member, so it's the one allowed non-topology name.
@@ -66,6 +67,36 @@ describe('sources.json', () => {
   it('flags exactly ISW, Bellingcat, and ACLED as specialist-verified', () => {
     const specialists = SOURCES.filter((s) => s.sourceType === 'analysis' && s.specialistVerified).map((s) => s.id)
     expect(specialists.sort()).toEqual(['acled', 'bellingcat', 'isw'])
+  })
+
+  // Phase 7 (first-hand pipeline). Roster content, not just shape: each of these is a call J made or a live check found.
+  it('enrolls the vetted first-hand channels, with the tier §15a gives each', () => {
+    expect(Object.fromEntries(channels.map((c) => [c.channel, c.channelTier]))).toEqual({
+      DeepStateUA: 'verification-specialist',
+      AMK_Mapping: 'verification-specialist',
+      ClashReport: 'osint-aggregator',
+      Middle_East_Spectator: 'regional-curator',
+      intelslava: 'combatant-affiliated',
+    })
+  })
+
+  it('DeepState is tier 1 AND carries an affiliation note (J, 2026-09-23); it posts in Ukrainian', () => {
+    const deepstate = channels.find((c) => c.channel === 'DeepStateUA')
+    expect(deepstate).toMatchObject({ specialistVerified: true, language: 'uk' })
+    expect(deepstate?.affiliationNote).toBeTruthy()
+  })
+
+  it('the channels the backlog says still need review stay provisional', () => {
+    expect(channels.filter((c) => c.vetting === 'provisional').map((c) => c.channel).sort()).toEqual(['AMK_Mapping', 'Middle_East_Spectator', 'intelslava'])
+  })
+
+  it('does not enroll the dead or squatted handles the live check ruled out', () => {
+    const handles = channels.map((c) => c.channel.toLowerCase())
+    for (const dead of ['ukrainenowenglish', 'liveconflictmaps', 'osinttv', 'middleeastobserver', 'globalconflictmonitor', 'auroraintel', 'osintdefender']) expect(handles).not.toContain(dead)
+  })
+
+  it('a first-hand channel never carries a leaning or an outlet-only field', () => {
+    for (const c of channels) for (const key of ['leaning', 'tier', 'pressControl', 'countryName']) expect(c, `${c.id} has ${key}`).not.toHaveProperty(key)
   })
 
   it('keeps the doc-mandated disambiguations: two Daily Stars, two DAWNs, two SABAs', () => {

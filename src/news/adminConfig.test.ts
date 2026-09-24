@@ -3,7 +3,7 @@ import { findConfirmation, recordDecision, resolveReviewState, type Confirmation
 import { leaningTally, validateSources, validateThemes } from './configValidation'
 import { serializeSources, serializeThemes } from './configSerialize'
 import { SOURCES, SYSTEMIC_THEMES } from './sourceConfig'
-import type { NewsEvent, OutletProfile, SourceEntry, SourceProfile } from './types'
+import type { FirstHandProfile, NewsEvent, OutletProfile, SourceEntry, SourceProfile } from './types'
 
 // Phase 5 (Admin Console) — the pure half. The console's server and UI are the
 // only untested parts by design; everything that decides whether a write is
@@ -14,6 +14,17 @@ const outlet = (over: Partial<OutletProfile> = {}): OutletProfile => ({
   id: 'x',
   name: 'X',
   sourceType: 'outlet',
+  vetting: 'confirmed',
+  ...over,
+})
+
+const channel = (over: Partial<FirstHandProfile> = {}): FirstHandProfile => ({
+  id: 'ch',
+  name: 'Channel',
+  sourceType: 'first-hand',
+  channel: 'some_channel',
+  channelTier: 'osint-aggregator',
+  label: 'First-hand account',
   vetting: 'confirmed',
   ...over,
 })
@@ -57,6 +68,34 @@ describe('validateSources', () => {
     expect(messagesFor(issues, 'leaning')).toHaveLength(1)
   })
 
+  it('accepts a well-formed first-hand channel at every tier', () => {
+    expect(validateSources([channel()])).toEqual([])
+    expect(validateSources([channel({ channelTier: 'verification-specialist', specialistVerified: true })])).toEqual([])
+    expect(validateSources([channel({ channelTier: 'combatant-affiliated', affiliationNote: 'Pro-Russian military blogger' })])).toEqual([])
+  })
+
+  it('ties specialist-verified to the verification-specialist tier in both directions (§15a)', () => {
+    expect(messagesFor(validateSources([channel({ channelTier: 'verification-specialist' })]), 'specialistVerified')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ channelTier: 'osint-aggregator', specialistVerified: true })]), 'specialistVerified')).toHaveLength(1)
+  })
+
+  it('requires a combatant-affiliated channel to carry an affiliation note', () => {
+    expect(messagesFor(validateSources([channel({ channelTier: 'combatant-affiliated' })]), 'affiliationNote')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ channelTier: 'combatant-affiliated', affiliationNote: '  ' })]), 'affiliationNote')).toHaveLength(1)
+  })
+
+  it('refuses a leaning, a wrong label, a bad or repeated handle, a bad tier and a bad language on a first-hand channel', () => {
+    const bad = { ...channel(), label: 'Balanced', leaning: 'center', channelTier: 'aggregator' } as unknown as SourceProfile
+    const issues = validateSources([bad])
+    for (const field of ['label', 'leaning', 'channelTier']) expect(messagesFor(issues, field), field).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ channel: '@some_channel' })]), 'channel')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ channel: 'abc' })]), 'channel')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ id: 'a', channel: 'Same_Handle' }), channel({ id: 'b', channel: 'same_handle' })]), 'channel')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ language: 'en' })]), 'language')).toHaveLength(1)
+    expect(messagesFor(validateSources([channel({ language: 'ukr' })]), 'language')).toHaveLength(1)
+    expect(validateSources([channel({ language: 'uk' })])).toEqual([])
+  })
+
   it('catches duplicate ids', () => {
     expect(messagesFor(validateSources([outlet({ id: 'dup' }), outlet({ id: 'dup' })]), 'id')).toHaveLength(1)
   })
@@ -89,6 +128,11 @@ describe('config serialization', () => {
     const themesOnce = serializeThemes(SYSTEMIC_THEMES)
     expect(JSON.parse(themesOnce)).toEqual(JSON.parse(JSON.stringify(SYSTEMIC_THEMES)))
     expect(serializeThemes(JSON.parse(themesOnce))).toBe(themesOnce)
+  })
+
+  it('writes a first-hand channel with its channel fields up front, in a stable order', () => {
+    const line = serializeSources([channel({ id: 'a', channelTier: 'verification-specialist', specialistVerified: true, language: 'uk', affiliationNote: 'n', notes: 'x' })]).split('\n')[1]
+    expect(Object.keys(JSON.parse(line))).toEqual(['id', 'name', 'sourceType', 'channel', 'channelTier', 'language', 'label', 'specialistVerified', 'affiliationNote', 'notes', 'vetting'])
   })
 
   it('drops a field a form blanked rather than writing an empty string', () => {

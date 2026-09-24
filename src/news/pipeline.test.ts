@@ -541,6 +541,21 @@ describe('buildEvents', () => {
       expect(buildEvents(withAnalysis, { ...ctx, profiles: roster }).published).toHaveLength(0)
     })
 
+    it('the heuristic path cannot attach a first-hand post, so it drops it as not-attached rather than let it found or lift an Event', () => {
+      const channel = (id: string, extra: Partial<SourceProfile> = {}) =>
+        ({ id, name: id.toUpperCase(), sourceType: 'first-hand', label: 'First-hand account', channel: `${id}_channel`, channelTier: 'verification-specialist', specialistVerified: true, vetting: 'confirmed', ...extra }) as SourceProfile
+      const roster = [...profiles, channel('mapper')]
+      // Alone: nothing to publish, even from a specialist-verified channel.
+      const alone = buildEvents([art('mapper', story)], { ...ctx, profiles: roster })
+      expect(alone.published).toHaveLength(0)
+      expect(alone.dropped['not-attached']).toHaveLength(1)
+      // Beside outlets: the Event is exactly what the outlets alone make, with no first-hand entry in it.
+      const withOutlets = [art('a', story), art('b', 'Russian troops advance in offensive near Kyiv', 5)]
+      const base = buildEvents(withOutlets, { ...ctx, profiles: roster })
+      const mixed = buildEvents([...withOutlets, art('mapper', 'Troops advance in Russian army offensive near Kyiv', 3)], { ...ctx, profiles: roster })
+      expect(mixed.published).toEqual(base.published)
+    })
+
     it('a non-English feed is dropped before classification, whatever it says', () => {
       const r = buildEvents(
         [art('a', story), art('b', 'Russian troops advance in offensive near Kyiv', 5, { language: 'es' })],
@@ -583,10 +598,16 @@ describe('feeds.json', () => {
     }
   })
 
+  it('never points a feed at a first-hand channel — a t.me page is not RSS; channels are read by the Telegram fetcher', () => {
+    const channelIds = new Set(SOURCES.filter((s) => s.sourceType === 'first-hand').map((s) => s.id))
+    for (const f of feeds) expect(channelIds.has(f.sourceId), `${f.url} -> first-hand channel ${f.sourceId}`).toBe(false)
+  })
+
   // Every vetted profile is either fetched or explicitly accounted for — so a roster addition (the Admin Console can
   // add one) fails here until someone finds its feed or records why there isn't one, instead of silently never ingesting.
   it('together with feedGaps.json, covers every sources.json profile exactly once', () => {
-    const fed = new Set(feeds.map((f) => f.sourceId))
+    // A first-hand profile is fetched through its `channel` (scripts/lib/fetchTelegram.mjs), not through feeds.json.
+    const fed = new Set([...feeds.map((f) => f.sourceId), ...SOURCES.filter((s) => s.sourceType === 'first-hand').map((s) => s.id)])
     const gapIds = feedGaps.map((g) => g.sourceId)
     expect(new Set(gapIds).size, 'duplicate gap').toBe(gapIds.length)
     for (const id of gapIds) expect(fed.has(id), `${id} is both fed and listed as a gap`).toBe(false)

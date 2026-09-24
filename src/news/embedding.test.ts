@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { clusterArticles } from './clustering'
 import { buildCountryMatchers } from './countryResolution'
-import { clusterByEmbedding, dot, EMBED_LINK_THRESHOLD, embeddingText, type EmbedArticle, type Embedder, type Vector } from './embeddingClustering'
+import { attachToClusters, clusterByEmbedding, dot, EMBED_LINK_THRESHOLD, embeddingText, type EmbedArticle, type Embedder, type Vector } from './embeddingClustering'
 import { buildEventsWithEmbeddings, type RawArticle } from './eventBuilder'
 import fixture from '../../scripts/fixtures/newsClusteringEval.json'
 import { SOURCES } from './sourceConfig'
-import type { SourceProfile } from './types'
+import { deriveCorroboration } from './corroboration'
+import type { FirstHandProfile, SourceProfile } from './types'
 
 const H = 60 * 60 * 1000
 // 2-D unit vector at an angle: the cosine between two of them is cos(difference), so similarities are exact by construction.
@@ -201,6 +202,171 @@ describe('buildEventsWithEmbeddings — end to end on a fake embedder', () => {
     const r = await buildEventsWithEmbeddings(titles.map(([s, t]) => raw(s, t)), ctx, embedderFor(angles))
     expect(r.published).toHaveLength(0)
     expect(r.pending).toHaveLength(1)
+  })
+})
+
+describe('attachToClusters', () => {
+  const art = (key: string, deg: number, minute = 0, ids: string[] = []): EmbedArticle => ({ key, title: key, linkedEntityIds: ids, time: minute * 60_000, vector: at(deg) })
+
+  it('attaches to the cluster it agrees with, and reports what matched nothing', () => {
+    const clusters = [[art('a1', 0), art('a2', 4)], [art('b1', 100), art('b2', 104)]]
+    const { attached, unattached } = attachToClusters(clusters, [art('near-a', 2, 5), art('near-b', 102, 5), art('far', 220, 5)])
+    expect(attached.map((g) => g.map((x) => x.key))).toEqual([['near-a'], ['near-b']])
+    expect(unattached.map((x) => x.key)).toEqual(['far'])
+  })
+
+  it('needs a strict majority of the cluster, like the greedy pass — one bridging member is not enough', () => {
+    const cluster = [art('a1', 0), art('a2', 100)]
+    expect(attachToClusters([cluster], [art('x', 2)]).unattached).toHaveLength(1) // links 1 of 2
+  })
+
+  it('never mutates the clusters, never joins two of them, and honors the soft country rule', () => {
+    const clusters = [[art('a1', 0, 0, ['804'])], [art('b1', 4, 0, ['804'])]]
+    const before = JSON.stringify(clusters)
+    const { attached } = attachToClusters(clusters, [art('x', 2, 1, ['804'])])
+    expect(attached.flat()).toHaveLength(1) // one cluster, not both
+    expect(JSON.stringify(clusters)).toBe(before)
+    expect(attachToClusters([[art('a1', 0, 0, ['804'])]], [art('y', 1, 1, ['643'])]).unattached).toHaveLength(1)
+  })
+
+  it('never forms a cluster of its own from items alone', () => {
+    const { attached, unattached } = attachToClusters([], [art('p', 0), art('q', 1)])
+    expect(attached).toEqual([])
+    expect(unattached).toHaveLength(2)
+  })
+})
+
+describe('first-hand posts ATTACH to an Event and never create or lift one (J, 2026-09-24)', () => {
+  const COUNTRIES = [
+    { id: '804', name: 'Ukraine' },
+    { id: '643', name: 'Russia' },
+  ]
+  const outlet = (id: string) => ({ id, name: id.toUpperCase(), sourceType: 'outlet', vetting: 'confirmed' }) as SourceProfile
+  const channel = (id: string, over: Partial<FirstHandProfile> = {}): FirstHandProfile => ({
+    id,
+    name: id,
+    sourceType: 'first-hand',
+    label: 'First-hand account',
+    channel: `${id}_channel`,
+    channelTier: 'osint-aggregator',
+    vetting: 'confirmed',
+    ...over,
+  })
+  const profiles = [outlet('a'), outlet('b'), outlet('c'), channel('agg'), channel('mapper', { channelTier: 'verification-specialist', specialistVerified: true }), channel('slava', { channelTier: 'combatant-affiliated', affiliationNote: 'Pro-Russian news aggregator' })]
+  const now = '2026-09-20T12:00:00.000Z'
+  const ctx = { profiles, countryMatchers: buildCountryMatchers(COUNTRIES), now }
+  const raw = (sourceId: string, title: string, minutesAgo = 30, extra: Partial<RawArticle> = {}): RawArticle => ({
+    sourceId,
+    title,
+    description: '',
+    url: `https://${sourceId}.test/${encodeURIComponent(title)}`,
+    publishedAt: new Date(Date.parse(now) - minutesAgo * 60_000).toISOString(),
+    ...extra,
+  })
+  const embedderFor = (angles: Record<string, number>): Embedder => async (texts) => texts.map((t) => at(angles[t.split('. ')[0]] ?? 170))
+
+  const T_A = 'Ukraine army launches offensive as troops advance'
+  const T_B = 'Offensive by Ukraine army as troops advance on the front'
+  const T_FH = 'Ukraine offensive underway, troops advancing on the front'
+  const angles = { [T_A]: 0, [T_B]: 3, [T_FH]: 5 }
+  const founders = [raw('a', T_A, 40), raw('b', T_B, 35)]
+
+  it('joins the Event the outlets made — after them, labeled, and not counted', async () => {
+    const r = await buildEventsWithEmbeddings([...founders, raw('slava', T_FH, 30)], ctx, embedderFor(angles))
+    expect(r.published).toHaveLength(1)
+    const sources = r.published[0].sources
+    expect(sources.map((x) => x.sourceId)).toEqual(['a', 'b', 'slava'])
+    expect(sources[2]).toMatchObject({ sourceCategory: 'first-hand', channel: 'slava_channel', affiliationNote: 'Pro-Russian news aggregator', countsTowardCorroboration: false })
+    expect(r.dropped['not-attached']).toHaveLength(0)
+  })
+
+  it('changes NOTHING else about the Event — id, title, timestamp, countries, tags, severity, corroboration', async () => {
+    const without = await buildEventsWithEmbeddings(founders, ctx, embedderFor(angles))
+    const withPost = await buildEventsWithEmbeddings([...founders, raw('agg', T_FH, 60), raw('mapper', T_FH + ' ', 20)], ctx, embedderFor({ ...angles, [T_FH + ' ']: 5 }))
+    const { sources: s0, ...rest0 } = without.published[0]
+    const { sources: s1, ...rest1 } = withPost.published[0]
+    expect(rest1).toEqual(rest0)
+    expect(s1.filter((x) => x.sourceCategory !== 'first-hand')).toEqual(s0)
+    expect(s1.filter((x) => x.sourceCategory === 'first-hand')).toHaveLength(2)
+    expect(deriveCorroboration(s1)).toBe(deriveCorroboration(s0))
+  })
+
+  it('an alarming channel post cannot escalate the Event past what its outlets can back', async () => {
+    const alarm = 'Massacre in Ukraine: airstrike kills 50 people as troops advance'
+    const without = await buildEventsWithEmbeddings(founders, ctx, embedderFor(angles))
+    const r = await buildEventsWithEmbeddings([...founders, raw('slava', alarm, 30)], ctx, embedderFor({ ...angles, [alarm]: 5 }))
+    expect(r.published).toHaveLength(1)
+    expect(r.published[0].severity).toBe(without.published[0].severity)
+    expect(r.published[0].sources.some((x) => x.sourceCategory === 'first-hand')).toBe(true)
+  })
+
+  it('never creates an Event, whatever the channel — including a specialist-verified tier-1 one', async () => {
+    for (const id of ['agg', 'mapper', 'slava']) {
+      const r = await buildEventsWithEmbeddings([raw(id, T_A)], ctx, embedderFor(angles))
+      expect(r.published, id).toHaveLength(0)
+      expect(r.pending, id).toHaveLength(0)
+    }
+    // Several channels agreeing with each other is still not an Event.
+    const r = await buildEventsWithEmbeddings([raw('agg', T_A, 40), raw('mapper', T_B, 35), raw('slava', T_FH, 30)], ctx, embedderFor(angles))
+    expect(r.published).toHaveLength(0)
+    expect(r.dropped['not-attached']).toHaveLength(3)
+  })
+
+  it('cannot lift a below-floor Event past its floor — one outlet plus a specialist-verified post publishes nothing', async () => {
+    const r = await buildEventsWithEmbeddings([raw('a', T_A, 40), raw('mapper', T_FH, 30)], ctx, embedderFor(angles))
+    expect(r.published).toHaveLength(0)
+    expect(r.dropped['below-floor']).toHaveLength(1)
+    expect(r.dropped['not-attached']).toHaveLength(1)
+  })
+
+  it('a post about something else stays unattached, and the Event is untouched', async () => {
+    const other = 'Ukraine drone attack hits refinery overnight'
+    const r = await buildEventsWithEmbeddings([...founders, raw('agg', other, 30)], ctx, embedderFor({ ...angles, [other]: 120 }))
+    expect(r.published[0].sources).toHaveLength(2)
+    expect(r.dropped['not-attached']).toHaveLength(1)
+  })
+
+  it('non-English channel text is dropped as unsupported-language before attaching is even considered', async () => {
+    const uk = channel('deepstate', { language: 'uk' })
+    const r = await buildEventsWithEmbeddings([...founders, raw('deepstate', T_FH, 30, { language: 'uk' })], { ...ctx, profiles: [...profiles, uk] }, embedderFor(angles))
+    expect(r.dropped['unsupported-language']).toHaveLength(1)
+    expect(r.published[0].sources).toHaveLength(2)
+  })
+
+  it('a post with no country and no topic is pre-filtered without being embedded', async () => {
+    let embedded = 0
+    const embedder: Embedder = async (texts) => {
+      embedded += texts.length
+      return texts.map(() => at(0))
+    }
+    const r = await buildEventsWithEmbeddings([raw('agg', 'Lovely weather this afternoon')], ctx, embedder)
+    expect(r.dropped['not-attached']).toHaveLength(1)
+    expect(embedded).toBe(0)
+  })
+
+  it('embeds outlet articles and first-hand posts in SEPARATE calls, so a first-hand post cannot nudge an outlet vector (batch padding + q8 make vectors batch-dependent)', async () => {
+    const calls: string[][] = []
+    const embedder: Embedder = async (texts) => {
+      calls.push(texts)
+      return embedderFor(angles)(texts)
+    }
+    await buildEventsWithEmbeddings([...founders, raw('slava', T_FH, 30), raw('agg', T_FH, 25)], ctx, embedder)
+    expect(calls).toHaveLength(2)
+    expect(calls[0]).toHaveLength(2) // exactly the two outlet articles, as if no first-hand post existed
+    expect(calls[0].every((t) => !t.startsWith(T_FH))).toBe(true)
+    expect(calls[1]).toHaveLength(2)
+  })
+
+  it('carries a post picture only when first-hand media is deliberately enabled — the served file must not hold a URL by default', async () => {
+    const post = raw('slava', T_FH, 30, { mediaUrl: 'https://cdn.example/photo.jpg', hasVideo: true })
+    const off = await buildEventsWithEmbeddings([...founders, post], ctx, embedderFor(angles))
+    const fhOff = off.published[0].sources.find((x) => x.sourceCategory === 'first-hand')
+    expect(fhOff).not.toHaveProperty('mediaUrl')
+    expect(fhOff).not.toHaveProperty('imageUrl')
+    const on = await buildEventsWithEmbeddings([...founders, post], { ...ctx, firstHandMedia: true }, embedderFor(angles))
+    const fhOn = on.published[0].sources.find((x) => x.sourceCategory === 'first-hand')
+    expect(fhOn).toMatchObject({ mediaUrl: 'https://cdn.example/photo.jpg' })
+    expect(fhOn).not.toHaveProperty('imageUrl')
   })
 })
 

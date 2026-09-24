@@ -3,7 +3,7 @@ import { clusterArticles, type ClusterArticle } from './clustering'
 import { resolveReviewState, type ConfirmationRecord } from './confirmations'
 import { resolveCountryIds, type CountryMatcher } from './countryResolution'
 import { RELEVANCE_THRESHOLD, RESCUE_THRESHOLD, type EmbeddingClassifier } from './embeddingClassifier'
-import { clusterByEmbedding, embeddingText, type Embedder } from './embeddingClustering'
+import { attachToClusters, clusterByEmbedding, EMBED_LINK_THRESHOLD, embeddingText, type Embedder } from './embeddingClustering'
 import { stableHash } from './hash'
 import {
   classifyArticles,
@@ -19,9 +19,10 @@ import {
   emptyUsage,
 } from './llmPipeline'
 import { decodeHtmlEntities } from './htmlEntities'
+import { FIRST_HAND_MEDIA_ENABLED } from './firstHandMedia'
 import { resolvePublishDecision } from './publishGate'
 import { applySeverityCaps, maxSeverity } from './severity'
-import type { AnalysisSourceEntry, NewsEvent, OutletSourceEntry, Severity, SourceEntry, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
+import type { AnalysisSourceEntry, FirstHandSourceEntry, NewsEvent, OutletSourceEntry, Severity, SourceEntry, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
 
 // Articles in, Events out (design §17). Pure — no network, no clock, no fs —
 // so the build script is a thin fetch/write shell around it and every rule
@@ -49,6 +50,17 @@ export interface RawArticle {
    * before non-English feeds were ingested came from an English feed.
    */
   language?: string
+  /**
+   * The post carried video (first-hand channels only). Recorded so the archive can serve the deferred Frontlines surface
+   * (§15e) later, and NEVER shown today: the hard NSFW/graphic filter (§15c/§15f) does not exist. First-hand posts
+   * deliberately carry no `imageUrl` for the same reason — a video's thumbnail is exactly the graphic frame — so
+   * `eventImageUrl` can't put one on a card.
+   */
+  hasVideo?: true
+  /** First-hand only: the post's photo or video thumbnail. Archived; reaches a published Event only if FIRST_HAND_MEDIA_ENABLED. */
+  mediaUrl?: string
+  /** The channel this post was forwarded from, when it was a forward. A forward is one voice repeated, not a second source. */
+  forwardedFrom?: string
 }
 
 export interface BuildContext {
@@ -62,6 +74,8 @@ export interface BuildContext {
    * pending, which is the safe default.
    */
   confirmations?: ConfirmationRecord[]
+  /** Let a first-hand post's photo/video thumbnail into a published Event's dossier. Defaults to FIRST_HAND_MEDIA_ENABLED (off) — see firstHandMedia.ts before passing true. */
+  firstHandMedia?: boolean
 }
 
 export type DropReason =
@@ -69,6 +83,12 @@ export type DropReason =
   /** A non-English feed's article. Archived (so a future multilingual path has the history), never classified: see BUILD_LANGUAGES. */
   | 'unsupported-language'
   | 'not-a-report'
+  /**
+   * A first-hand post that did not join an Event. First-hand posts ATTACH to an Event outlets/analysis orgs established and never
+   * create one (J, 2026-09-24), so a post matching no Event — or matching one that was itself dropped — ends here. It is not lost:
+   * it is still in the archive, and the per-tab ticker (Phase 7 step 4) reads unattached posts from there.
+   */
+  | 'not-attached'
   | 'no-country'
   | 'no-topic'
   | 'below-floor'
@@ -128,7 +148,7 @@ export function isCommentaryUrl(url: string): boolean {
  * org flagged `specialistVerified` (ISW/ACLED/Bellingcat) makes an Event specialist-verified. The Community/live-video
  * wall is enforced there too. Official-statement entries (not built yet) should default to false — see BACKLOG.md.
  */
-function sourceEntry(candidate: Candidate): SourceEntry {
+function sourceEntry(candidate: Candidate, firstHandMedia = FIRST_HAND_MEDIA_ENABLED): SourceEntry {
   const { article, profile, time } = candidate
   const base = {
     id: `${profile.id}:${stableHash(article.url)}`,
@@ -145,6 +165,23 @@ function sourceEntry(candidate: Candidate): SourceEntry {
       org: profile.name,
       label: profile.label,
       ...(profile.specialistVerified ? { specialistVerified: true } : {}),
+    }
+    return entry
+  }
+  if (profile.sourceType === 'first-hand') {
+    // First-hand posts ATTACH to an Event, never create or lift one (J, 2026-09-24): no first-hand entry counts toward
+    // corroboration, whatever the channel's tier. `specialistVerified` is recorded (it is the channel's standing, §15a) but inert
+    // for the gate, because corroboration.ts only counts entries whose `countsTowardCorroboration` is true.
+    const entry: FirstHandSourceEntry = {
+      ...base,
+      countsTowardCorroboration: false,
+      sourceCategory: 'first-hand',
+      label: profile.label,
+      channel: profile.channel,
+      ...(profile.affiliationNote ? { affiliationNote: profile.affiliationNote } : {}),
+      ...(profile.specialistVerified ? { specialistVerified: true } : {}),
+      // The one field that could carry a graphic frame into public/data/news-events.json — omitted unless deliberately enabled.
+      ...(firstHandMedia && article.mediaUrl ? { mediaUrl: article.mediaUrl } : {}),
     }
     return entry
   }
@@ -188,6 +225,7 @@ const emptyDropped = (): BuildResult['dropped'] => ({
   'unknown-source': [],
   'unsupported-language': [],
   'not-a-report': [],
+  'not-attached': [],
   'no-country': [],
   'no-topic': [],
   'below-floor': [],
@@ -206,6 +244,9 @@ interface Prepared {
 /**
  * Shared by every path: dedupe URLs, require a vetted roster profile (outlet OR analysis org), drop non-English feeds and
  * commentary URLs, decode feed text, and resolve a country-native source's home country.
+ *
+ * `attachFirstHand`: only the embedding path can attach a first-hand post to an Event (attachToClusters). The heuristic and LLM
+ * paths have no equivalent, so a first-hand post there is dropped as `not-attached` rather than treated as a founding article.
  */
 function prepare(
   articles: RawArticle[],
@@ -213,6 +254,7 @@ function prepare(
   now: string,
   drop: (r: DropReason, a: RawArticle) => void,
   countryMatchers: CountryMatcher[],
+  attachFirstHand = false,
 ): Prepared {
   const rosterProfiles = new Map(profiles.map((p) => [p.id, p]))
   // One matcher per name a country goes by; the canonical one is what sources.json's countryName stores.
@@ -237,6 +279,16 @@ function prepare(
       drop('unknown-source', article)
       continue
     }
+    if (profile.sourceType === 'first-hand' && !attachFirstHand) {
+      drop('not-attached', article)
+      continue
+    }
+    // A video-only post from a first-hand channel is archived with an empty title (see telegramPreview.ts); there is
+    // nothing in it to classify, and its footage is not something the build reads.
+    if (article.title.trim() === '') {
+      drop('not-a-report', article)
+      continue
+    }
     if (!BUILD_LANGUAGES.has(article.language ?? 'en')) {
       drop('unsupported-language', article)
       continue
@@ -257,6 +309,13 @@ interface Cluster {
   members: Candidate[]
   /** Set by the LLM grouping pass; undefined on the heuristic path. */
   title?: string
+  /**
+   * First-hand posts attached to this Event after it was formed (embedding path only), time-ordered. They appear in the dossier,
+   * AFTER the members, and contribute NOTHING to how the Event is decided: not its id, title, timestamp, countries, tags,
+   * severity, relevance, head-of-state flag or corroboration. That separation is the whole point — a rumor in a channel must not
+   * be able to raise an Event's tier past what its outlets can back (which would drop the Event entirely), or found one.
+   */
+  attached?: Candidate[]
 }
 
 /** Shared by both paths: build each Event's dossier and run it through the corroboration gate. */
@@ -265,10 +324,11 @@ function assemble(
   now: string,
   drop: (r: DropReason, a: RawArticle) => void,
   confirmations: ConfirmationRecord[] = [],
+  firstHandMedia = FIRST_HAND_MEDIA_ENABLED,
 ): { published: NewsEvent[]; pending: NewsEvent[] } {
   const published: NewsEvent[] = []
   const pending: NewsEvent[] = []
-  for (const { members, title } of clusters) {
+  for (const { members, title, attached = [] } of clusters) {
     const first = members.find((c) => c.profile.sourceType === 'outlet' && c.profile.tier === 'wire') ?? members[0]
     const event: NewsEvent = {
       // Keyed to the earliest article, so an id survives later reports
@@ -288,7 +348,8 @@ function assemble(
       severity: maxSeverity(members.map((c) => c.severity)),
       ...(members.some((c) => c.headOfStateDeathClaim) ? { headOfStateDeathClaim: true } : {}),
       reviewStatus: 'auto-published',
-      sources: members.map(sourceEntry),
+      // Founders first (so the headline's link, `sources[0]`, is always an outlet or analysis report), then attached first-hand posts.
+      sources: [...members, ...attached].map((c) => sourceEntry(c, firstHandMedia)),
       snapshotDate: now,
     }
 
@@ -300,6 +361,7 @@ function assemble(
       const review = resolveReviewState(confirmations, event)
       if (review === 'rejected') {
         for (const c of members) drop('review-rejected', c.article)
+        for (const c of attached) drop('not-attached', c.article)
         continue
       }
       if (review === 'confirmed') event.manuallyConfirmed = true
@@ -308,6 +370,7 @@ function assemble(
     const decision = resolvePublishDecision(event)
     if (decision.outcome === 'below-floor') {
       for (const c of members) drop('below-floor', c.article)
+      for (const c of attached) drop('not-attached', c.article)
     } else if (decision.outcome === 'pending-confirmation') {
       pending.push({ ...event, reviewStatus: decision.reviewStatus })
     } else {
@@ -360,7 +423,7 @@ export function buildEvents(articles: RawArticle[], { profiles, countryMatchers,
 // countries and titles are still keyword/outlet-headline; the classifier's
 // evaluation showed it does NOT beat the severity regexes (embeddingClassifier.ts).
 
-export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now, confirmations }: BuildContext, embed: Embedder,
+export async function buildEventsWithEmbeddings(articles: RawArticle[], { profiles, countryMatchers, now, confirmations, firstHandMedia }: BuildContext, embed: Embedder,
   options: {
     /** Cosine link threshold for clustering; defaults to EMBED_LINK_THRESHOLD. */
     threshold?: number
@@ -370,7 +433,7 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
 ): Promise<BuildResult> {
   const dropped = emptyDropped()
   const drop = (reason: DropReason, a: RawArticle) => dropped[reason].push({ title: a.title, sourceId: a.sourceId })
-  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop, countryMatchers)
+  const { eligible, duplicateUrls } = prepare(articles, profiles, now, drop, countryMatchers, true)
 
   // Wide pre-filter, as on the LLM path: a country name OR a topic keyword. A story whose headline names no country
   // ("10-year Treasury yield tops 5%") can still join a cluster whose other members do.
@@ -381,17 +444,32 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
     const linkedEntityIds = linkCountries(text, homeCountryId, countryMatchers)
     const classification = classifyText(text)
     if (linkedEntityIds.length === 0 && classification.topicTags.length === 0) {
-      drop('prefiltered', article)
+      // Also keeps the embedder's workload down: the archive holds far more first-hand posts than outlet articles.
+      drop(profile.sourceType === 'first-hand' ? 'not-attached' : 'prefiltered', article)
       continue
     }
     candidates.push({ key: article.url, title: article.title, linkedEntityIds, time, article, profile, systemicThemes: [], keywordTopic: classification.topicTags.length > 0, ...classification })
     texts.push(embeddingText(article.title, article.description))
   }
 
-  const vectors = candidates.length > 0 ? await embed(texts) : []
+  // Outlet/analysis articles and first-hand posts are embedded in SEPARATE calls, deliberately. The local model pads each batch and
+  // is quantised (q8), so a text's vector depends slightly on what else is in its batch (measured: up to 0.029 per dimension for
+  // the same text). Putting first-hand posts in the same batch would nudge the founders' vectors and, near the 0.70 link
+  // threshold, flip a few groupings — first-hand posts would then be changing which Events exist, the one thing they must not do.
+  // Embedding the founders alone, exactly as before, keeps every cluster identical whether or not first-hand posts are present.
+  const firstHandAt = candidates.map((c) => c.profile.sourceType === 'first-hand')
+  const pick = (want: boolean) => texts.filter((_, i) => firstHandAt[i] === want)
+  const founderVectors = pick(false).length > 0 ? await embed(pick(false)) : []
+  const firstHandVectors = pick(true).length > 0 ? await embed(pick(true)) : []
+  let nextFounder = 0
+  let nextFirstHand = 0
+  const vectors = candidates.map((_, i) => (firstHandAt[i] ? firstHandVectors[nextFirstHand++] : founderVectors[nextFounder++]))
   const classifier = options.classifier ?? null
+  // First-hand posts are not founding articles: they are held apart, embedded like the rest, and attached to a cluster afterwards.
+  const isFirstHand = (c: Candidate) => c.profile.sourceType === 'first-hand'
   if (classifier) {
     candidates.forEach((c, i) => {
+      if (isFirstHand(c)) return
       const pred = classifier.classify(vectors[i])
       c.relevance = pred.relevance
       c.topicTags = pred.tags
@@ -399,13 +477,15 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
       c.severity = applySeverityCaps(c.severity, { topicTags: pred.tags })
     })
   }
+  const withVectors = candidates.map((c, i) => ({ ...c, vector: vectors[i] }))
   const clustered = clusterByEmbedding(
-    candidates.map((c, i) => ({ ...c, vector: vectors[i] })),
+    withVectors.filter((c) => !isFirstHand(c)),
     options.threshold,
   )
 
   // A cluster is only publishable if SOME member gives it a country and a topic (the Event union, as everywhere else).
   const clusters: Cluster[] = []
+  const gated: (typeof clustered)[number][] = [] // the same clusters, members still carrying their vectors, for attaching
   for (const members of clustered) {
     // Judged per CLUSTER, on the mean relevance: several outlets' headlines are far better evidence than one, and a single
     // mis-scored member can't sink or rescue an Event. Two regimes (embeddingClassifier.ts explains why):
@@ -421,9 +501,20 @@ export async function buildEventsWithEmbeddings(articles: RawArticle[], { profil
       for (const m of members) drop('no-topic', m.article)
     } else {
       clusters.push({ members })
+      gated.push(members)
     }
   }
-  const { published, pending } = assemble(clusters, now, drop, confirmations)
+  // Attach first-hand posts to the Events that will actually be gated — a cluster already dropped above has nothing to attach to.
+  const { attached, unattached } = attachToClusters(
+    gated,
+    withVectors.filter(isFirstHand),
+    options.threshold ?? EMBED_LINK_THRESHOLD,
+  )
+  clusters.forEach((cluster, i) => {
+    if (attached[i].length > 0) cluster.attached = attached[i]
+  })
+  for (const post of unattached) drop('not-attached', post.article)
+  const { published, pending } = assemble(clusters, now, drop, confirmations, firstHandMedia ?? FIRST_HAND_MEDIA_ENABLED)
   return { published, pending, dropped, articlesIn: articles.length, duplicateUrls, clusters: clustered.length }
 }
 

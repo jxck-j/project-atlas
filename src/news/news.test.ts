@@ -3,7 +3,7 @@ import { deriveCorroboration, meetsCorroborationFloor } from './corroboration'
 import { buildFeed, filterEvents } from './feed'
 import { isReaderVisible, resolvePublishDecision } from './publishGate'
 import { compareByRecency, compareBySeverityThenRecency, compareWorld, splitFeatured } from './ranking'
-import { assignEventImages } from './eventPresentation'
+import { assignEventImages, distinctSources, eventImageUrl, firstHandSources } from './eventPresentation'
 import {
   applySeverityCaps,
   capSeverity,
@@ -15,7 +15,7 @@ import {
 } from './severity'
 import { getNewsTab, NEWS_TABS } from './tabs'
 import { activeThemes, themeLabel } from './themes'
-import type { NewsEvent, OutletSourceEntry, SourceEntry, SystemicThemeConfig } from './types'
+import type { FirstHandSourceEntry, NewsEvent, OutletSourceEntry, SourceEntry, SystemicThemeConfig } from './types'
 
 // Hand-verified cases against news-sourcing-design.md's tables, not snapshots.
 
@@ -592,5 +592,65 @@ describe('assignEventImages', () => {
 
   it('leaves an Event with no images at all unassigned', () => {
     expect(assignEventImages([event({ id: 'bare', sources: [outlet('bbc')] })].map((e) => e)).has('bare')).toBe(false)
+  })
+})
+
+describe('first-hand entries in a dossier (attached, never counted)', () => {
+  const firstHand = (sourceId: string, extra: Partial<FirstHandSourceEntry> = {}): FirstHandSourceEntry => ({
+    id: `${sourceId}:1`,
+    sourceId,
+    sourceCategory: 'first-hand',
+    label: 'First-hand account',
+    channel: `${sourceId}_channel`,
+    countsTowardCorroboration: false,
+    refUrl: `https://t.me/${sourceId}_channel/1`,
+    timestamp: '2026-09-23T00:00:00.000Z',
+    ...extra,
+  })
+
+  it('distinctSources counts publishers only — "N SOURCES" never includes a channel', () => {
+    const e = event({ sources: [outlet('bbc'), outlet('guardian'), firstHand('slava'), firstHand('agg')] })
+    expect(distinctSources(e).map((x) => x.sourceId)).toEqual(['bbc', 'guardian'])
+  })
+
+  it('firstHandSources lists each channel once, earliest post first', () => {
+    const e = event({ sources: [outlet('bbc'), firstHand('slava', { id: 'slava:1' }), firstHand('slava', { id: 'slava:2' }), firstHand('agg')] })
+    expect(firstHandSources(e).map((x) => x.id)).toEqual(['slava:1', 'agg:1'])
+  })
+
+  it('an Event with no outlet picture stays picture-less by default, even when an attached post has media', () => {
+    const e = event({ id: 'bare', sources: [outlet('bbc'), firstHand('slava', { mediaUrl: 'https://cdn.test/frame.jpg' })] })
+    expect(eventImageUrl(e)).toBeUndefined()
+    expect(assignEventImages([e]).has('bare')).toBe(false)
+  })
+
+  it('with first-hand media enabled, a first-hand picture satisfies an Event that has none (J, 2026-09-24)', () => {
+    const e = event({ id: 'bare', sources: [outlet('bbc'), firstHand('slava', { mediaUrl: 'https://cdn.test/frame.jpg' })] })
+    expect(eventImageUrl(e, { firstHandMedia: true })).toBe('https://cdn.test/frame.jpg')
+    expect(assignEventImages([e], { firstHandMedia: true }).get('bare')).toBe('https://cdn.test/frame.jpg')
+  })
+
+  it('an outlet picture always wins, and a first-hand one is not borrowed by an Event that merely lost its outlet picture as a duplicate', () => {
+    const shared = 'https://wire.test/pool-photo.jpg'
+    const a = event({ id: 'a', sources: [outlet('bbc', { imageUrl: shared })] })
+    const b = event({ id: 'b', sources: [outlet('guardian', { imageUrl: shared }), firstHand('slava', { mediaUrl: 'https://cdn.test/frame.jpg' })] })
+    expect(eventImageUrl(b, { firstHandMedia: true })).toBe(shared)
+    const images = assignEventImages([a, b], { firstHandMedia: true })
+    expect(images.get('a')).toBe(shared)
+    expect(images.has('b')).toBe(false)
+  })
+
+  it('never puts one first-hand picture on two Events', () => {
+    const post = firstHand('slava', { mediaUrl: 'https://cdn.test/frame.jpg' })
+    const a = event({ id: 'a', sources: [outlet('bbc'), post] })
+    const b = event({ id: 'b', sources: [outlet('guardian'), { ...post, id: 'slava:9' }] })
+    const images = assignEventImages([a, b], { firstHandMedia: true })
+    expect(images.get('a')).toBe('https://cdn.test/frame.jpg')
+    expect(images.has('b')).toBe(false)
+  })
+
+  it('a first-hand entry never counts toward corroboration, even one flagged specialist-verified', () => {
+    const e = event({ sources: [outlet('bbc'), firstHand('mapper', { specialistVerified: true })] })
+    expect(deriveCorroboration(e.sources)).toBe('unconfirmed')
   })
 })

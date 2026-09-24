@@ -126,6 +126,76 @@ Open items from the 2026-09-20 design; decisions already made are in `LOGBOOK.md
     tabs fit on one evenly-spread sticky bar, no consolidation and no overflow menu.
   - **Community Pulse (§9b) and the first-hand ticker (§15b) are absent**, though `NEWS_TABS` already carries
     each tab's `communityPulse`/`firstHandTicker` flag — the tab bar reads neither yet.
+  - **Phase 7 (first-hand pipeline) — open items from scoping (2026-09-23, decisions in `LOGBOOK.md`):**
+    - **Revisit the Telegram API (J wants to).** Phase 7 starts keyless via `t.me/s/<channel>`. The API (GramJS, so it stays
+      TypeScript under `tsx`; free `api_id`/`api_hash` from my.telegram.org) is what unlocks: channels with web preview disabled
+      (`FaytuksNetwork`, `WarMonitor3`, `Conflict_Monitor_Global` returned nothing on the preview — not yet known whether they
+      exist), media download/classification (a prerequisite for the Frontlines NSFW filter), full history/backfill, and per-message
+      metadata (views, forwards). Needs: a DEDICATED throwaway account and phone number (a ban would hit it, not J's own), a one-time
+      interactive login, and the resulting session string stored gitignored like `archive/news/` — it is effectively that account's
+      password. Bot tokens can't read channels they aren't admin of, so a user account is unavoidable.
+    - **Multilingual first-hand TEXT (Russian first).** Russian-language text posts are dropped as `unsupported-language`;
+      only video from first-hand accounts is kept. Supporting Russian text means the country matcher, severity rules and MiniLM
+      classifier/clusterer all need a non-English path (or a translation step) — the clustering threshold and classifier weights are
+      tied to the English model's similarity scale, so this is a re-derivation, not a flag. Affects `rybar`, `dva_majors`,
+      `wargonzo` (and Ukrainian-language `kpszsu` and, as of step 1, `DeepStateUA`). Also unresolved: whether combatant-affiliated Russian-language text should
+      be surfaced to readers at all, given no way to verify a translation.
+    - **Video posts are retained but never shown.** No video-bearing post may reach a reader until the hard NSFW/graphic filter
+      (§15c/§15f) exists and has a tested false-negative rate. Frontlines (§15e) and the Calibration Review (§15f) stay unbuilt.
+    - **Roster coverage gaps: no live-verified candidates for Africa, Central Asia or Asia-Pacific.** Needs a research pass
+      (or names from J) and the same live check each handle got — see the LOGBOOK entry for how many of the design doc's
+      example handles were dead or squatted.
+    - **Step 1 DONE (2026-09-23): five channels enrolled** (`DeepStateUA`, `AMK_Mapping`, `ClashReport`, `Middle_East_Spectator`,
+      `intelslava`) as `sourceType: 'first-hand'` profiles — see `LOGBOOK.md`. Nothing is ingested yet: step 2 (the `t.me/s` fetcher)
+      is what turns them on.
+    - **Step 2 DONE (2026-09-23): the keyless `t.me/s` fetcher.** Fetched (`scripts/lib/fetchTelegram.mjs`, parser
+      `src/news/telegramPreview.ts`), cleaned, archived (`hasVideo`, `forwardedFrom`, `language` on the record) on every
+      `archive:news` / `build:news:events` / `news:watch` run, and excluded from `news:watch`'s early-build trigger.
+      - **Step 3 — first-hand posts ATTACH to Events, never create or lift one: DONE (2026-09-24, J).** Embedding path only; verified on
+        real data (147 Events with and without, identical). See `LOGBOOK.md`. Open from it:
+        - **`specialistVerified` on a first-hand channel is inert for the gate now.** Should a CONFIRMED tier-1 channel (DeepState,
+          once translated) still be able to lift a below-floor Event? Not chosen; a one-line change in `sourceEntry()`.
+        - **Thumbnails: built but OFF (`FIRST_HAND_MEDIA_ENABLED`, `firstHandMedia.ts`).** J asked for a first-hand picture to satisfy an
+          Event with none. It stays off until the hard NSFW/graphic filter (§15c/§15f) exists, because the URL would be published in the
+          served `news-events.json`. Needs J's explicit call to override, or the filter first. Turning it on also means videos' thumbnails
+          (most of these channels' posts) — decide whether photos only.
+        - **The card UI for attached first-hand posts has not been checked in a browser** (`NewsPanel.tsx`'s `SourceDossier`). Nothing
+          renders it until a published Event actually has an attachment, which the next scheduled build will produce.
+        - **Watch the build's runtime.** First-hand posts are embedded too (separately). The 14-day window will hold ~thousands once
+          the archive accumulates; the pre-filter (country/topic keyword) trims it, but nobody has timed a full-size window.
+        - **PRE-EXISTING: the local embedder's vectors depend on batch composition** (`localEmbedder.ts`: padded batches of 64, q8).
+          Same text, different neighbours → up to 0.029 per dimension, enough to flip a borderline 0.70 link. So today's clustering
+          already varies slightly with which unrelated articles share a batch. A real fix (batch of one, or length-sorted batches) changes
+          every vector the threshold was tuned on — re-run `eval:news-clustering` and `eval:news-classifier` first. The first-hand work
+          only sidesteps it (separate embed calls).
+      - **Translation (its own step, after 2 — J: "yes do that").** A non-LLM route: OPUS-MT seq2seq models via transformers.js
+        (`Xenova/opus-mt-{ru,uk,ar,es,fr,zh,tr,de}-en` exist; `fa`/`he` do not; `pt`/`ja`/`so` unchecked), in-process like
+        `localEmbedder.ts`, keyless, cached under `debug/`. Sits between `prepare()` and classification; off by default, on per
+        language. Prerequisites: re-run `eval:news-clustering`/`eval:news-classifier` on a hand-labeled TRANSLATED sample (the
+        thresholds are tied to English similarity), show translated text as machine-translated with the original kept, and never
+        rewrite the archive (translate at build time). Recovers DeepStateUA's text, `rybar`/`dva_majors`/`wargonzo`, and the 25
+        non-English RSS feeds (14 of them Spanish) that are archived but dropped today.
+      - **Step 4** (per-tab ticker UI, §15b) and **step 5** (hourly task in `newsTasks.ps1`). Until 5, first-hand posts are only
+        fetched when `news:watch` (every 3 h) or a build runs; the fetcher looks back 6 h and pages up to 5 pages (~100 posts), which
+        covers ClashReport (~14 posts/h) at that cadence but would not cover a long gap.
+    - **The preview is an undocumented page, not an API.** If Telegram changes its markup `parseTelegramPreview` returns [] and the
+      channel shows up as failed ("no posts in the web preview") — that failure is the alarm. Also unhandled: polls, link-preview
+      cards (ignored), a channel's edited posts (first sighting wins), and posts deleted after archiving (they stay).
+    - **Still to verify (the three enrolled as `provisional`):** `AMK_Mapping`'s affiliation and verification method — tier 1 gives it
+      the specialist-verified standing, under which ONE post can clear a floor on its own, so **decide before step 3 whether a
+      provisional tier-1 channel should carry that standing yet**; who now runs `Middle_East_Spectator` (bio names `@Elias_MES`; an
+      admin arrest/ownership change was reported in March 2026); whether "pro-Russian" for `intelslava` should be something the
+      channel's own output supports rather than the design's label. `intelslava` posts in English (confirmed live).
+    - **`OSINTdefender`'s real Telegram channel is still unknown** (or whether one exists). Not enrolled.
+    - **`DeepStateUA` posts in UKRAINIAN, so its text is dropped by the language rule** — the tier-1 channel the whole specialist-verified
+      standing was designed around yields no text on the keyless path, only video. Its English mirror `@DeepStateEN` exists (5K
+      subscribers) but is near-dormant: ~20 posts across three years, last on 2026-06-16. Not enrolled; re-check, or accept that
+      DeepState waits on multilingual support (next item).
+    - **`ukrainenowenglish` is dead** (last post 2022-10-26, a farewell) — dropped from the enrollment list on the live check.
+      Its own bio calls it "the main verified source of official information", so if it were alive it would likely belong under
+      `official-statement` (§17) rather than first-hand — not checked who runs it.
+    - **`idfofficial`/`kpszsu` are `official-statement` (§17), not first-hand** — belong to that category, not this pipeline.
+    - **Periodic handle re-check.** A channel can go dormant or change hands after vetting; nothing currently notices.
   - **Systemic-theme filters (§11) have no UI** — the default build leaves `systemicThemes` empty on every
     Event, so a filter would currently match nothing. Needs the LLM path or its own classifier first.
   - **An Event's title is still an outlet's own headline** on the default path, so a card can carry one

@@ -5,6 +5,163 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-24 — Phase 7 step 3 (attach): first-hand posts join Events, never create or lift them (J)
+
+**Decision (J, 2026-09-24):** "yes it should attach but not create. it could satisfy the thumbnail for events without one." Answering
+the step-3 question step 2 left open (the dry run had `AMK_Mapping` alone publishing "Explosion in Kyiv."). This supersedes step 2's
+hold, which is removed.
+
+**Why "attach" is a structural change, not a flag.** Letting first-hand posts simply join the clusters would have been wrong even with
+the corroboration flag off, because `assemble()` derives an Event's severity, topics, countries, title, timestamp and id from ALL its
+members, and the relevance gate averages over them. A rumor in a channel ("massacre… kills 50") would raise a cluster to Critical, its
+outlets could not back Critical's floor, and an Event that would otherwise have published at Major would vanish. So the embedding
+path now clusters outlets and analysis orgs exactly as before, THEN attaches first-hand posts to the resulting clusters
+(`attachToClusters`: the greedy pass's own link rule — cosine ≥ 0.70, link window, soft country rule, strict majority, best mean wins —
+but an item never extends a cluster's span, never links to another item, never merges clusters). Attached posts go in the dossier AFTER
+the founders (so the headline's link, `sources[0]`, is always an outlet) and contribute nothing to the Event's fields.
+
+**Verified on real data, not just synthetic tests:** the same archive window (4,220 articles, 131 of them first-hand) built twice with
+the real embedder and shipped classifier — with first-hand posts and without — gives 147 Events either way, **identical apart from the
+attached entries**; 13 Events picked up 19 attached posts, 92 posts stayed unattached. A test also proves the escalation case: an
+alarming channel post that rates Critical does not move an outlets-only Significant Event.
+
+**Found on the way, and it is a pre-existing bug: the local embedder's vectors depend on batch composition.** The first real run gave
+142 Events with first-hand posts vs 147 without. Cause: `localEmbedder.ts` pads each batch of 64 and runs the q8-quantised model, so
+the same text gets a slightly different vector depending on its neighbours (measured: up to 0.029 per dimension). Adding first-hand texts
+to the batch nudged outlet vectors across borderline 0.70 links. For this change the fix is contained — outlets and first-hand posts
+are embedded in SEPARATE calls, so the outlets' batches are byte-for-byte what they were, and a test pins it. The underlying problem
+stands (BACKLOG): today's clustering already depends slightly on which unrelated articles happen to share a batch, and a real fix
+(batch of one, or length-sorted batches) changes every vector the threshold was tuned on, so it needs a re-run of the eval.
+
+**Consequences of "never counts", stated plainly:**
+- **`specialistVerified` on a first-hand channel is now inert for the gate.** A first-hand entry's `countsTowardCorroboration` is always
+  false (step 1's `=== specialistVerified` is gone), so a tier-1 channel can neither create an Event nor lift one past its floor. The
+  tier is still recorded and validated (§15a), and nothing shows it yet. Whether a CONFIRMED tier-1 channel should still be able to lift
+  a floor was offered and not chosen; it is a one-line change in `sourceEntry()` if wanted.
+- **The forwards question is moot for corroboration** (nothing counts); `forwardedFrom` is kept for display/ticker.
+- **Only the embedding path attaches.** The heuristic and LLM paths drop first-hand posts as `not-attached` (new `DropReason`): a post
+  that matches no Event, or whose Event was itself dropped, ends there. It is not lost — it stays in the archive for the ticker.
+- **Cost:** first-hand posts with no country and no topic keyword are pre-filtered (as `not-attached`) before embedding, since the
+  archive will hold far more of them than outlet articles.
+
+**Thumbnails: built, and OFF.** J wants a first-hand picture to satisfy an Event that has none. The plumbing exists (`mediaUrl` on the
+post and on the dossier entry; `eventImageUrl`/`assignEventImages` borrow one ONLY for an Event with no outlet image at all, never
+reusing a URL) but `FIRST_HAND_MEDIA_ENABLED` (`firstHandMedia.ts`) is false. Two reasons, both about the same fact — these channels
+mostly post raw combat footage (47 of ClashReport's 59 posts in one fetch had video), so the borrowed picture would usually be a frame
+of it, and the design's graphic-content filter (§15c, "hard, non-negotiable, no override") does not exist: (1) nothing checks the
+picture, (2) `public/data/news-events.json` is SERVED, so a URL in it is published whatever the client renders — a UI-only gate is not a
+gate. The build omits `mediaUrl` entirely while the switch is off; the archive keeps it, so nothing is lost. Turning it on before the
+filter exists would be an explicit acceptance of that exposure, and is J's call.
+
+**UI:** the news card's dossier keeps "N SOURCES" to publishers only (`distinctSources` now excludes first-hand) and shows attached
+channels in their own "FIRST-HAND · UNVERIFIED" list with the affiliation note in amber, per §15a. **Not yet checked in a browser.**
+
+## 2026-09-24 — Phase 7 step 2: the keyless Telegram fetcher, archived but held out of the build (hold since removed — see above)
+
+**Built:** `src/news/telegramPreview.ts` (pure: parse one `t.me/s/<channel>` page, clean the text, map a post to a `RawArticle`),
+`scripts/lib/fetchTelegram.mjs` (network + paging), `scripts/lib/fetchSources.mjs` (RSS + channels in one call, used by
+`archiveNews`, `buildNewsEvents` and `newsCycle`). It returns the same `{articles, feedFailures, failedFeeds}` shape as the RSS
+fetcher, so a GramJS implementation can replace `fetchTelegram.mjs` later without touching gating. Verified against the live pages
+(5 channels, 131 posts archived to a scratch archive; a disabled-preview channel and a nonexistent one both fail loudly).
+
+**Decisions, and why:**
+- **Paginate, with a lookback.** One preview page is ~20 posts and ClashReport posts ~14 an hour, so one page cannot span even a 3-hour
+  `news:watch` interval. The fetcher pages with `?before=<oldest id>` until a page reaches past 6 hours or 5 pages (~100 posts).
+  The archive dedupes by URL, so overlap between ticks costs only requests.
+- **An empty FIRST page is a failure, not a quiet channel.** A disabled preview, a renamed handle and changed markup all look like it;
+  treating it as "no posts" would hide a dead channel forever. A page that serves a DIFFERENT channel (t.me follows renames) is also
+  a failure — never file another channel's posts under this profile.
+- **Video is kept, never displayed, and never leaks a thumbnail.** `hasVideo: true` is recorded on the archive record and a
+  video-only post is kept with an empty title (J's "keep video" call). First-hand posts deliberately carry NO `imageUrl`:
+  `eventImageUrl` would otherwise put a combat-footage thumbnail on a card, and the NSFW filter (§15c/§15f) does not exist. A test
+  pins it. The build drops an empty-title article as `not-a-report`.
+- **Language is the CHANNEL's, stamped on each post** (`profile.language`, like a feed's), so DeepStateUA's text drops as
+  `unsupported-language` through the existing rule, with no new code path. Per-post detection is not done.
+- **Noise filter (§15c), conservative:** t.me links, emoji/flags, trailing `@handle` signatures and "subscribe/follow" lines are
+  stripped; a post is dropped whole only for named solicitations (buymeacoffee, promo code, paid promotion…). NOT "donate" — it
+  would drop "Musk to donate $1bn". An inline @mention is kept (usually someone being quoted).
+- **`forwardedFrom` is recorded** because a forward is one voice repeated, not a second source; whether it counts is step 3's call.
+
+**The dry run found a leak, so first-hand posts are HELD OUT of the Event build.** Running the build over the scratch archive
+published Events backed by a single first-hand post — `AMK_Mapping` alone ("Explosion in Kyiv.") — because tier 1 is
+specialist-verified and the gate accepts one specialist-verified report below Critical, and AMK is still provisional. That is exactly
+the step 3 decision, and archiving must not make it by accident. `buildNewsEvents.mjs` filters first-hand source ids out of the
+window it builds from; verified afterwards that the real build over the same archive published 149 Events, none with a first-hand
+entry. The filter lives in the script rather than the pure builder as a temporary hold, marked for removal in step 3. `newsCycle.mjs`
+likewise excludes first-hand channels from the early-build trigger: a channel's "BREAKING" is much noisier than an outlet headline
+and the 12-a-day cap is finite.
+
+**Bookkeeping:** the five `telegram-channel` gap entries were removed and the roster-partition test now accepts a first-hand profile
+by its `channel`; a new test forbids pointing `feeds.json` at one (a t.me page is not RSS).
+
+**Translation (J asked for it as its own step after this one):** design and caveats are in `BACKLOG.md` — OPUS-MT via transformers.js,
+no LLM, off by default, re-evaluated on a labeled translated sample before any language is switched on.
+
+## 2026-09-23 — Phase 7 step 1: the first-hand roster is enrolled (five channels, not six)
+
+**Built:** `FirstHandProfile` (`sourceType: 'first-hand'`) as a third `SourceProfile` kind, and five channels in `sources.json`. It
+carries `channel` (the `t.me/s/<channel>` handle), `channelTier` (§15a's four kinds), `specialistVerified`, `affiliationNote`,
+optional `language`. Validation (`configValidation.ts`) enforces what §15a states: tier 1 IS `specialistVerified`, in both
+directions; a combatant-affiliated channel must carry an affiliation note; no leaning; handles unique case-insensitively. The
+Admin Console got a `FirstHandEditor` (the tier control sets the specialist flag, so the two can't be edited into disagreement).
+
+**Enrolled six was the plan; five were: `ukrainenowenglish` was dropped on the live check.** Its newest visible post is dated
+2022-10-26 and is a farewell to subscribers. The rule written down on 2026-09-23 ("a handle must be re-verified against the live
+channel before it enters `sources.json`") is the reason; enrolling it would have put a dead source in a roster whose whole point is
+speed. Everything else was re-verified the same way (subscribers, last post, language, what the bio says) and the facts are in each
+profile's `notes`.
+
+**Found while checking: `DeepStateUA` posts in Ukrainian.** The language rule J set was framed around Russian. Applied to Ukrainian too (the matcher, severity rules and MiniLM are
+English-only regardless of which non-English language it is), DeepState — the one tier-1 channel the specialist-verified standing was
+designed around — contributes no text on the keyless path. It is enrolled anyway, with `language: 'uk'`, because the tier decision
+(tier 1 + an affiliation note) is J's and is worth recording; the flag makes "why is this channel silent" answerable from the roster.
+`@DeepStateEN` is its English mirror but has ~20 posts across three years, so it was not enrolled (BACKLOG).
+
+**`countsTowardCorroboration` on a first-hand entry is `specialistVerified === true`, not blanket true.** §17b says
+"specialist-verified first-hand = true" and §15a says aggregators/curators/combatant channels are "unverified until corroborated
+elsewhere". The build's default for every other entry is `true`, so an unmarked first-hand entry would have silently counted as one
+of the two sources in `osint-corroborated (2+)` — ClashReport plus one outlet would publish. Failing closed here is a placeholder for
+step 3, which owns the real corroboration rules; it is tested (an aggregator's post is displayed in the dossier but publishes
+nothing alone or beside one outlet; a specialist channel publishes alone as `specialist-verified`).
+
+**Open call for step 3, not made here: `AMK_Mapping` is tier 1 AND provisional.** Tier 1 gives one post the power to clear a
+Major-and-below floor by itself. The design lists it as tier 1, J asked for it enrolled provisional, and its verification method was
+not independently checked — so those pull against each other. Left as the design has it; flagged in BACKLOG.
+
+**Bookkeeping choice: the five channels sit in `feedGaps.json` as `telegram-channel`** so the roster-partition test still passes
+without loosening it, rather than a `feeds.json` entry (the RSS fetcher would try to parse a `t.me` page as XML). It is honest today —
+nothing is ingested — and is meant to be removed when step 2 lands, at which point the test should recognise a first-hand profile by
+its `channel` instead.
+
+## 2026-09-23 — Phase 7 scoping: keyless Telegram first, roster vetted live, language rule (J)
+
+**Decided before building the first-hand pipeline (design §15).** Three calls, all J's:
+
+1. **`DeepStateUA` is tier 1 (specialist-verified) AND carries an `affiliationNote`.** It's a Ukrainian-run mapping project, so
+   the verification-specialist tier is right on methodology, but readers should still see whose project it is — the same reasoning
+   §15a gives for combatant-affiliated channels, applied without demoting it to tier 4. Note text is factual ("Ukrainian OSINT
+   mapping project"), never a soft caveat.
+2. **Russian-language handling: set aside text, keep video.** A Russian-language channel's TEXT posts are dropped as
+   `unsupported-language`, exactly like a non-English feed already is (the matcher, severity rules and MiniLM are English-only —
+   see `BUILD_LANGUAGES`). A post carrying VIDEO from a first-hand account is kept regardless of language, since footage isn't
+   language-bound and it's what the deferred Frontlines surface (§15e) will want. "Kept" means retained in the archive with its
+   media flagged — NOT displayed anywhere: the hard NSFW/graphic filter (§15c/§15f) doesn't exist yet, so nothing video-bearing may
+   reach a reader until it does. Interpretation recorded because the instruction was terse ("if it is a video of a first hand
+   account keep, but if it's only russia put it away"); revisit if that isn't what was meant. The Russian-language channels this
+   affects: `rybar`, `dva_majors`, `wargonzo` (tier 4, pro-Russian). Multilingual text support itself is in `BACKLOG.md`.
+3. **Ingestion is keyless first: `t.me/s/<channel>` web preview, behind a source interface.** No Telegram API key, no Python. J does
+   want to revisit the API (GramJS, user-account session) — the triggers and requirements are in `BACKLOG.md`. Built behind an
+   interface specifically so the swap doesn't touch the tiering/gating code.
+
+**Why the roster was checked live rather than taken from the design doc.** Probing the doc's handles found that several are wrong or
+dead: `liveconflictmaps` and `OsintTv` are near-empty channels created days/months ago (2 and 93 subscribers — squatters, not the
+projects the doc means); `middleeastobserver` has been dormant since 2020 and carries an inactive-account self-destruct notice;
+`globalconflictmonitor` last posted in March 2026; `AuroraIntel` in June 2025; `OSINTdefender` resolves to a 6.28K-subscriber
+defense-industry channel that is probably not the intended one (its real handle is `sentdefender`, which is X, and doesn't resolve on
+Telegram). **A handle must be re-verified against the live channel before it enters `sources.json`** — subscriber count, last post,
+and whether the content matches the project — and re-checked periodically, since a channel can be abandoned or change hands
+(`Middle_East_Spectator`'s admin was reported arrested in March 2026 with ownership being transferred; it's posting, but vet who runs it).
+
 ## 2026-09-23 — News Engine Phase 6: cadence, and the LLM path is formally not part of it
 
 **J's framing before starting:** note that the LLM is not used — a different method was found, and it's the one the engine

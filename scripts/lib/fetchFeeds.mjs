@@ -15,7 +15,7 @@ function decodeFeed(bytes, contentType) {
   }
 }
 
-async function fetchTextRetry(url, attempts = 3) {
+export async function fetchTextRetry(url, attempts = 3) {
   let lastErr
   for (let i = 0; i < attempts; i++) {
     try {

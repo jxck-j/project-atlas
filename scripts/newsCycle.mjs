@@ -21,7 +21,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { spawnSync } from 'node:child_process'
-import { fetchFeedArticles } from './lib/fetchFeeds.mjs'
+import { fetchAllArticles } from './lib/fetchSources.mjs'
+import { previewUrl } from './lib/fetchTelegram.mjs'
 import { ARCHIVE_FILE, archiveArticles, readArchive } from './lib/newsArchive.mjs'
 import {
   chronicallyFailingFeeds,
@@ -47,6 +48,8 @@ const STALE_AFTER_MS = 26 * 60 * 60 * 1000
 const mode = process.argv[2]
 const feeds = JSON.parse(fs.readFileSync('src/news/feeds.json', 'utf8'))
 const profiles = JSON.parse(fs.readFileSync('src/news/sources.json', 'utf8'))
+// Every URL a run attempts: the RSS feeds and the first-hand channels' preview pages. Streaks are tracked per URL.
+const targetUrls = [...feeds.map((f) => f.url), ...profiles.filter((p) => p.sourceType === 'first-hand').map((p) => previewUrl(p.channel))]
 
 const stamp = () => new Date().toISOString()
 function log(line) {
@@ -148,7 +151,7 @@ function readLastRun() {
 /** Folds one run's feed results into the streak map and logs anything that has crossed into "chronically down". */
 function noteFeeds(state, failedUrls) {
   const before = new Set(chronicallyFailingFeeds(state.feedFailureStreaks))
-  const feedFailureStreaks = updateFeedStreaks(state.feedFailureStreaks, feeds.map((f) => f.url), failedUrls)
+  const feedFailureStreaks = updateFeedStreaks(state.feedFailureStreaks, targetUrls, failedUrls)
   const chronic = chronicallyFailingFeeds(feedFailureStreaks)
   for (const url of chronic) if (!before.has(url)) log(`feed has now failed ${feedFailureStreaks[url]} runs in a row: ${url}`)
   for (const url of before) if (!chronic.includes(url)) log(`feed recovered: ${url}`)
@@ -186,21 +189,24 @@ async function scheduledBuild() {
 
 async function watch() {
   let state = readState()
-  const { articles, failedFeeds } = await fetchFeedArticles(feeds)
+  const { articles, failedFeeds, targets } = await fetchAllArticles(feeds, profiles)
   // Every feed failing is an outage, not a quiet hour: say so and exit non-zero so the scheduler's Last Result shows it.
   if (articles.length === 0) {
-    log(`no articles fetched (${failedFeeds.length}/${feeds.length} feeds failed). Archive untouched.`)
+    log(`no articles fetched (${failedFeeds.length}/${targets.length} feeds and channels failed). Archive untouched.`)
     return 1
   }
   const archived = archiveArticles(articles, stamp())
   state = noteFeeds(state, failedFeeds.map((f) => f.url))
-  log(`fetched ${articles.length} from ${feeds.length - failedFeeds.length}/${feeds.length} feeds; archived ${archived.added} new (${archived.total} total)`)
+  log(`fetched ${articles.length} from ${targets.length - failedFeeds.length}/${targets.length} feeds and channels; archived ${archived.added} new (${archived.total} total)`)
 
   // Candidates come from the ARCHIVE (everything first seen since the last good build), not just this tick's additions: a
   // Critical-looking article that arrived while the cooldown was holding must still count when the cooldown lifts.
   const sinceMs = state.lastBuildAt ? Date.parse(state.lastBuildAt) : 0
   const unbuilt = readArchive().filter((a) => !a.firstSeenAt || Date.parse(a.firstSeenAt) > sinceMs)
-  const candidates = findBreakingCandidates(unbuilt, new Set(profiles.map((p) => p.id)), Date.now())
+  // First-hand channels are archived but do not trigger an early build (yet): a channel's "BREAKING" is far noisier than an
+  // outlet headline, and the daily cap on event-triggered builds is finite — letting rumors spend it would starve real triggers.
+  const outletIds = new Set(profiles.filter((p) => p.sourceType !== 'first-hand').map((p) => p.id))
+  const candidates = findBreakingCandidates(unbuilt, outletIds, Date.now())
   const decision = decideBreakingBuild(candidates, state, Date.now())
   log(`trigger: ${decision.run ? 'BUILD' : 'no build'} — ${decision.reason}`)
   if (decision.run) for (const c of candidates.slice(0, 5)) log(`  candidate (${c.reason}): [${c.article.sourceId}] ${c.article.title}`)

@@ -1,4 +1,5 @@
-import type { NewsEvent, SourceEntry } from './types'
+import { FIRST_HAND_MEDIA_ENABLED } from './firstHandMedia'
+import type { FirstHandSourceEntry, NewsEvent, SourceEntry } from './types'
 
 // Derivations the News tab and the Intelligence Panel both need from an Event.
 // Pure and here rather than in hud/, for the same reason corroboration is:
@@ -17,8 +18,19 @@ import type { NewsEvent, SourceEntry } from './types'
  * For one Event on its own. A FEED renders through `assignEventImages` below
  * instead, which additionally keeps two Events from showing the same picture.
  */
-export function eventImageUrl(event: NewsEvent): string | undefined {
-  return event.sources.find((s) => s.imageUrl)?.imageUrl
+export function eventImageUrl(event: NewsEvent, { firstHandMedia = FIRST_HAND_MEDIA_ENABLED } = {}): string | undefined {
+  const own = event.sources.find((s) => s.imageUrl)?.imageUrl
+  if (own || !firstHandMedia) return own
+  return firstHandEntries(event).find((s) => s.mediaUrl)?.mediaUrl
+}
+
+/**
+ * The attached first-hand posts, in dossier order. A first-hand entry's `mediaUrl` (never its `imageUrl` — it has none) is only
+ * ever used as a FALLBACK picture for an Event that no outlet supplied one for (J, 2026-09-24), and only while
+ * FIRST_HAND_MEDIA_ENABLED: see firstHandMedia.ts for why that is off. With it off the build never writes `mediaUrl` at all.
+ */
+function firstHandEntries(event: NewsEvent): FirstHandSourceEntry[] {
+  return event.sources.filter((s): s is FirstHandSourceEntry => s.sourceCategory === 'first-hand')
 }
 
 /**
@@ -43,7 +55,7 @@ export function eventImageUrl(event: NewsEvent): string | undefined {
  * indistinguishable from the same photo twice without actually fetching the
  * images, which a static build doesn't do.
  */
-export function assignEventImages(events: NewsEvent[]): Map<string, string> {
+export function assignEventImages(events: NewsEvent[], { firstHandMedia = FIRST_HAND_MEDIA_ENABLED } = {}): Map<string, string> {
   const usedUrls = new Set<string>()
   const usedSources = new Set<string>()
   const assigned = new Map<string, string>()
@@ -52,7 +64,15 @@ export function assignEventImages(events: NewsEvent[]): Map<string, string> {
     const pick =
       withImages.find((entry) => !usedUrls.has(entry.imageUrl!) && !usedSources.has(entry.sourceId)) ??
       withImages.find((entry) => !usedUrls.has(entry.imageUrl!))
-    if (!pick?.imageUrl) continue
+    if (!pick?.imageUrl) {
+      // Only an Event with NO outlet image borrows a first-hand picture — not one whose outlet images were merely already on the page.
+      const borrowed = firstHandMedia && withImages.length === 0 ? firstHandEntries(event).find((e) => e.mediaUrl && !usedUrls.has(e.mediaUrl))?.mediaUrl : undefined
+      if (borrowed) {
+        usedUrls.add(borrowed)
+        assigned.set(event.id, borrowed)
+      }
+      continue
+    }
     usedUrls.add(pick.imageUrl)
     usedSources.add(pick.sourceId)
     assigned.set(event.id, pick.imageUrl)
@@ -83,8 +103,17 @@ export function sourceDisplayName(entry: SourceEntry): string {
  * "reported by N outlets". Distinctness is by `sourceId`, matching
  * `deriveCorroboration`: two feeds from one publisher are one source, and a
  * card must never imply more independent corroboration than the gate counted.
+ *
+ * First-hand posts are NOT in this list: they attach to an Event without counting toward it (J, 2026-09-24), so including
+ * them would make "3 SOURCES" mean two publishers and a channel. They are listed separately by `firstHandSources`.
  */
 export function distinctSources(event: NewsEvent): SourceEntry[] {
   const seen = new Set<string>()
-  return event.sources.filter((entry) => (seen.has(entry.sourceId) ? false : (seen.add(entry.sourceId), true)))
+  return event.sources.filter((entry) => entry.sourceCategory !== 'first-hand' && (seen.has(entry.sourceId) ? false : (seen.add(entry.sourceId), true)))
+}
+
+/** The attached first-hand channels, one entry per channel (its earliest post), for a dossier's separate "first-hand" list. */
+export function firstHandSources(event: NewsEvent): FirstHandSourceEntry[] {
+  const seen = new Set<string>()
+  return firstHandEntries(event).filter((entry) => (seen.has(entry.sourceId) ? false : (seen.add(entry.sourceId), true)))
 }
