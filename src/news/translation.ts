@@ -22,11 +22,13 @@ export interface TranslationModel {
   srcLang?: string
   /** Mask Cyrillic acronyms: glossary English, else the original script unless the model is known to handle them — see maskAcronyms. */
   keepAcronyms?: true
+  /** Mask the names in PROTECTED_NAMES[language] so the model never sees them — see maskProtectedNames. */
+  protectNames?: true
 }
 
 /** Which model handles which feed language. A language absent here cannot be translated, whatever is asked for. */
 export const TRANSLATION_MODELS: Readonly<Record<string, TranslationModel>> = {
-  es: { model: 'Xenova/opus-mt-es-en' },
+  es: { model: 'Xenova/opus-mt-es-en', protectNames: true },
   ru: { model: 'Xenova/nllb-200-distilled-600M', srcLang: 'rus_Cyrl', keepAcronyms: true },
   uk: { model: 'Xenova/nllb-200-distilled-600M', srcLang: 'ukr_Cyrl', keepAcronyms: true },
 }
@@ -54,6 +56,20 @@ export function translationCacheKey(language: string, text: string, restores: re
 const LATIN = /[\p{Script=Latin}\p{N}\p{P}\p{S}\p{Z}]/u
 
 /**
+ * Words a headline never legitimately ends on. Output that stops on one was cut off: OPUS drops the tail of a headline when it
+ * hits a name it cannot handle ("...and meeting with", "...teenagers with", "...add up to."). Deliberately NOT the whole list of
+ * function words: a stranded preposition is ordinary English ("the date the next president is voted on", "the disease he
+ * suffered from", "what he can be accused of"), and rejecting those would lose good headlines. Checked on all 1,871 cached
+ * translations (2026-09-25): 5 hits, every one a real truncation.
+ */
+const DANGLING_END = /(?<![\p{L}\p{N}])(?:the|a|an|and|or|with|to)[\s.,:;"”’')]*$/iu
+
+/** Whether a translation stops mid-phrase, i.e. the model dropped the end of the headline. */
+export function endsMidPhrase(text: string): boolean {
+  return DANGLING_END.test(text.trim())
+}
+
+/**
  * Whether a translation is safe to hand to the rules. The failure modes seen in the spike are all detectable without a second
  * model: output that is empty, that is still mostly the source script (untranslated), that has grown other-language
  * junk (batching bug, hallucination), or that is wildly longer than the headline it came from.
@@ -66,6 +82,7 @@ export function isPlausibleTranslation(source: string, output: string): boolean 
   if (foreign / chars.length > 0.05) return false
   const words = (s: string) => s.split(/\s+/).filter(Boolean).length
   if (words(out) > 3 * words(source) + 4) return false
+  if (endsMidPhrase(out)) return false
   return true
 }
 
@@ -149,14 +166,67 @@ const PLACEHOLDER = /ZQ(\d+)/g
 export function maskAcronyms(text: string): { masked: string; restores: string[] } {
   if (/ZQ\d/.test(text)) return { masked: text, restores: [] }
   const restores: string[] = []
-  const masked = text.replace(CYRILLIC_ACRONYM, (a) => {
+  return { masked: replaceAcronyms(text, restores), restores }
+}
+
+/** Index of `restore` in `restores` (added if new), as a 1-based placeholder. Shared so terms and acronyms number from one list. */
+function placeholderFor(restores: string[], restore: string): string {
+  let i = restores.indexOf(restore)
+  if (i === -1) i = restores.push(restore) - 1
+  return `ZQ${i + 1}`
+}
+
+function replaceAcronyms(text: string, restores: string[]): string {
+  return text.replace(CYRILLIC_ACRONYM, (a) => {
     if (!(a in ACRONYM_GLOSSARY) && TRANSLATED_ACRONYMS.has(a)) return a
-    const restore = ACRONYM_GLOSSARY[a] ?? a
-    let i = restores.indexOf(restore)
-    if (i === -1) i = restores.push(restore) - 1
-    return `ZQ${i + 1}`
+    return placeholderFor(restores, ACRONYM_GLOSSARY[a] ?? a)
   })
-  return { masked, restores }
+}
+
+/**
+ * Words and places NLLB renders wrongly, with the English the headline gets instead — the same treatment as ACRONYM_GLOSSARY, for
+ * ordinary words. Every entry was a real wrong output in the cached ru/uk window (2026-09-25), and a wrong word here is not cosmetic:
+ * госизмене (treason) -> "state-smuggling", противолодочные (anti-submarine) -> "anti-ship", Мособлсуд (Moscow Regional Court) -> "the
+ * Supreme Court", осетровая икра (sturgeon caviar) -> "ostrich", крупа (groats) -> "grape", минудобрения (mineral fertilizers) -> "mined
+ * grains", Мосбиржа (Moscow Exchange) -> "MossBirge" / "Mosbyerge" / "Mosbyerzh" (six headlines, three spellings), Брянская -> "Bryan
+ * region", Тульская -> "Tulsa region", Тува -> "Tova", Южные Курилы -> "South Coorlin", Дагестан -> "Daegestan", and the Huliaipole
+ * front sector (Гуляйпільський відтинок) -> "Gulaipileski ridge". Совет мира is the Gaza "Board of Peace", which it rendered "World Council".
+ *
+ * Patterns are stems (Russian and Ukrainian inflect), matched case-insensitively as whole words, and applied in order — put a phrase
+ * before the single word it contains. Add an entry only after seeing the model get a real headline wrong AND being certain of the
+ * English; a term it already renders correctly gains nothing from being here. This is a list of what has been SEEN, not a dictionary.
+ */
+export const CYRILLIC_TERMS: readonly { pattern: string; english: string }[] = [
+  { pattern: String.raw`Гуляйпільськ\p{L}*\s+відтин\p{L}*`, english: 'Huliaipole sector' },
+  { pattern: String.raw`Краматорськ\p{L}*\s+відтин\p{L}*`, english: 'Kramatorsk sector' },
+  { pattern: String.raw`відтин(?:ок|ку|ком|ки|ків)`, english: 'sector' },
+  { pattern: String.raw`Гуляйпіль\p{L}*`, english: 'Huliaipole' },
+  { pattern: String.raw`Краматорськ\p{L}*`, english: 'Kramatorsk' },
+  { pattern: String.raw`Мос\s?бирж\p{L}*`, english: 'Moscow Exchange' },
+  { pattern: String.raw`Мособлсуд\p{L}*`, english: 'Moscow Regional Court' },
+  { pattern: String.raw`Ростехнадзор\p{L}*`, english: 'Rostekhnadzor' },
+  { pattern: String.raw`Совет(?:а|у|ом|е)?\s+мира`, english: 'Board of Peace' },
+  { pattern: String.raw`Брянск\p{L}*`, english: 'Bryansk' },
+  { pattern: String.raw`Тульск\p{L}*`, english: 'Tula' },
+  { pattern: String.raw`Тув(?:а|е|у|ы|ой)`, english: 'Tuva' },
+  { pattern: String.raw`Курил(?:ы|ах|ам|ами|ов)?`, english: 'Kurils' },
+  { pattern: String.raw`Дагестан\p{L}*`, english: 'Dagestan' },
+  { pattern: String.raw`госизмен\p{L}*`, english: 'treason' },
+  { pattern: String.raw`противолодочн\p{L}*`, english: 'anti-submarine' },
+  { pattern: String.raw`осетров\p{L}*\s+икр\p{L}*`, english: 'sturgeon caviar' },
+  { pattern: String.raw`минудобрен\p{L}*`, english: 'mineral fertilizers' },
+  { pattern: String.raw`круп(?:а|ы|у|е|ой)`, english: 'cereals' },
+  { pattern: String.raw`провед\p{L}*\s+забо\p{L}*`, english: 'mining face operations' },
+  { pattern: String.raw`кацап\p{L}*`, english: 'Russians (pejorative)' },
+]
+
+const CYRILLIC_TERM_PATTERNS = CYRILLIC_TERMS.map(({ pattern, english }) => ({
+  re: new RegExp(String.raw`(?<![\p{L}\p{N}])(?:${pattern})(?![\p{L}\p{N}])`, 'giu'),
+  english,
+}))
+
+function replaceCyrillicTerms(text: string, restores: string[]): string {
+  return CYRILLIC_TERM_PATTERNS.reduce((t, { re, english }) => t.replace(re, () => placeholderFor(restores, english)), text)
 }
 
 /**
@@ -171,6 +241,103 @@ export function unmaskAcronyms(output: string, restores: string[]): string | nul
     return r ?? ''
   })
   return invented ? null : restored
+}
+
+/**
+ * Names the Spanish model mangles, each with the English the headline gets instead. Masked before translation (the same
+ * `ZQ<n>` placeholders as acronyms — OPUS carries them through intact) and restored afterwards, so the model is out of the
+ * decision. Every entry was a real, wrong output in the cached window (2026-09-25), not a guess: Netanyahu -> "Mr. Tunter" and
+ * "tyranny" (and, in one headline, dropped altogether), Abbott -> "the Bank of London", Shakira -> "Aktira", Swift -> "Sct. Sc.",
+ * Tijuana -> "Tianti", Chihuahua -> "Chichi", Atacama -> "Aachenham", Popayán -> "Po332an", Samarcanda -> "S(S)Ynd", Bosch -> "Bicchav", Gareca -> "Garca".
+ *
+ * A LONG TAIL REMAINS: OPUS garbles any rare name (Revoredo -> "Rev Coredo" was found the same way), and a list can only ever chase
+ * the ones already seen. Tokenizer piece count does not separate them either — Netanyahu is a SINGLE piece — and the build must not
+ * load a model to decide what to mask. Add an entry only after seeing the model get a real headline wrong; a name it already
+ * renders correctly gains nothing from being here. Matched case-sensitively, as a whole word.
+ */
+export const PROTECTED_NAMES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  es: {
+    Netanyahu: 'Netanyahu',
+    Abbott: 'Abbott',
+    Schwarzenegger: 'Schwarzenegger',
+    Crawford: 'Crawford',
+    Revoredo: 'Revoredo',
+    Itsaragrisil: 'Itsaragrisil',
+    Shakira: 'Shakira',
+    Swift: 'Swift',
+    Tijuana: 'Tijuana',
+    Chihuahua: 'Chihuahua',
+    Popayán: 'Popayán',
+    Silao: 'Silao',
+    Atacama: 'Atacama',
+    Edomex: 'Edomex',
+    Cainco: 'Cainco',
+    CONADE: 'CONADE',
+    Samarcanda: 'Samarkand',
+    Bosch: 'Bosch',
+    Gareca: 'Gareca',
+    Dellien: 'Dellien',
+    Skolnik: 'Skolnik',
+    Guaylupo: 'Guaylupo',
+    Areco: 'Areco',
+    Vásquez: 'Vásquez',
+  },
+}
+
+const NAME_PATTERNS = new Map<string, RegExp>()
+function namePattern(language: string): RegExp | undefined {
+  const names = PROTECTED_NAMES[language]
+  if (!names) return undefined
+  let p = NAME_PATTERNS.get(language)
+  if (!p) {
+    p = new RegExp(`(?<![\\p{L}\\p{N}])(${Object.keys(names).join('|')})(?![\\p{L}\\p{N}])`, 'gu')
+    NAME_PATTERNS.set(language, p)
+  }
+  return p
+}
+
+/** Swaps each protected name for a `ZQ<n>` placeholder; `restores[n-1]` is the English it becomes. Same contract as maskAcronyms. */
+export function maskProtectedNames(text: string, language: string): { masked: string; restores: string[] } {
+  const pattern = namePattern(language)
+  if (!pattern || /ZQ\d/.test(text)) return { masked: text, restores: [] }
+  const names = PROTECTED_NAMES[language]
+  const restores: string[] = []
+  const masked = text.replace(pattern, (name) => {
+    const restore = names[name]
+    let i = restores.indexOf(restore)
+    if (i === -1) i = restores.push(restore) - 1
+    return `ZQ${i + 1}`
+  })
+  return { masked, restores }
+}
+
+/** English renderings that came from a TERM or NAME entry (as opposed to an acronym): losing one loses content, not just an abbreviation. */
+const CONTENT_RESTORES: ReadonlySet<string> = new Set([
+  ...CYRILLIC_TERMS.map((t) => t.english),
+  ...Object.values(PROTECTED_NAMES).flatMap((names) => Object.values(names)),
+])
+
+/**
+ * Whether the model dropped a placeholder that stood for a term or name. A dropped ACRONYM placeholder is tolerated (the headline
+ * just reads without an abbreviation), but a dropped term is a headline that has lost its point: "Two teenagers convicted in Tula
+ * case" is what NLLB returned for a treason case, and one that lost "Netanyahu" reads as a meeting with nobody. Such a translation is
+ * rejected — left untranslated, so it drops as unsupported-language — rather than published with the meaning quietly removed.
+ */
+export function droppedContent(output: string, restores: readonly string[]): boolean {
+  return restores.some((r, i) => CONTENT_RESTORES.has(r) && !new RegExp(`ZQ${i + 1}(?!\\d)`).test(output))
+}
+
+/** What the model is shown for a headline, and what its placeholders become afterwards (nothing masked -> the text as it was). */
+export function maskForModel(language: string, text: string): { masked: string; restores: string[] } {
+  const cfg = TRANSLATION_MODELS[language]
+  if (cfg?.keepAcronyms) {
+    // Terms first, then acronyms, numbering from one list. The placeholder-collision guard runs on the ORIGINAL text.
+    if (/ZQ\d/.test(text)) return { masked: text, restores: [] }
+    const restores: string[] = []
+    return { masked: replaceAcronyms(replaceCyrillicTerms(text, restores), restores), restores }
+  }
+  if (cfg?.protectNames) return maskProtectedNames(text, language)
+  return { masked: text, restores: [] }
 }
 
 /**
@@ -234,9 +401,10 @@ export async function translateArticles(
       out.push(article)
       continue
     }
-    const { masked, restores } = TRANSLATION_MODELS[lang].keepAcronyms ? maskAcronyms(source) : { masked: source, restores: [] }
+    const { masked, restores } = maskForModel(lang, source)
     const key = translationCacheKey(lang, masked, restores)
     let english = cache.get(key)
+    const fromCache = english !== undefined && english !== null
     if (english !== undefined) {
       if (english === null) stats.rejected++
       else stats.cached++
@@ -249,7 +417,7 @@ export async function translateArticles(
       try {
         const raw = (await translate(masked, lang)).trim()
         // Plausibility is judged BEFORE the acronyms go back in: original-script acronyms would otherwise count as untranslated text.
-        english = isPlausibleTranslation(masked, raw) ? unmaskAcronyms(raw, restores) : null
+        english = isPlausibleTranslation(masked, raw) && !droppedContent(raw, restores) ? unmaskAcronyms(raw, restores) : null
       } catch {
         // A thrown model error is NOT cached: it may be transient, and a permanent null would hide the headline forever.
         stats.rejected++
@@ -265,6 +433,14 @@ export async function translateArticles(
       continue
     }
     english = cleanTranslation(source, english)
+    // A NEW translation was already judged by isPlausibleTranslation; this is for an entry cached before the truncation rule existed,
+    // which is dropped on read without re-running the model.
+    if (fromCache && endsMidPhrase(english)) {
+      stats.cached--
+      stats.rejected++
+      out.push(article)
+      continue
+    }
     const { description: _dropped, ...rest } = article
     out.push({ ...rest, title: english, language: 'en', originalTitle: source, translatedFrom: lang })
   }

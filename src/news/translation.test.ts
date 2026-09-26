@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { RawArticle } from './eventBuilder'
-import { cleanTranslation, isPlausibleTranslation, maskAcronyms, unmaskAcronyms, translateArticles, translationCacheKey, type TranslationCache, type Translator } from './translation'
+import { cleanTranslation, droppedContent, endsMidPhrase, isPlausibleTranslation, maskAcronyms, maskForModel, maskProtectedNames, unmaskAcronyms, translateArticles, translationCacheKey, type TranslationCache, type Translator } from './translation'
 
 const memoryCache = (): TranslationCache & { store: Map<string, string | null> } => {
   const store = new Map<string, string | null>()
@@ -237,5 +237,203 @@ describe('translateArticles', () => {
     const { articles } = await translateArticles([article({ title: '   ' })], { languages: es, translate: async () => (calls++, 'x'), cache: memoryCache() })
     expect(calls).toBe(0)
     expect(articles[0].language).toBe('es')
+  })
+})
+
+describe('truncated translations (the model dropped the end of the headline)', () => {
+  it('flags output that stops on a word no headline ends on', () => {
+    expect(endsMidPhrase('Javier Milei closes his trip to New York: Disertation in an economic club and meeting with')).toBe(true)
+    expect(endsMidPhrase('Motorcycles beat a group of teenagers with')).toBe(true)
+    expect(endsMidPhrase('contracts with Peña Nieto, AMLO and Sheinbaum that add up to.')).toBe(true)
+    expect(endsMidPhrase('who is responsible for each of the')).toBe(true)
+    expect(endsMidPhrase('He said “the”')).toBe(true)
+  })
+
+  it('leaves ordinary English endings alone, stranded prepositions included', () => {
+    expect(endsMidPhrase('Brazil Elections 2026: the date when the next president is voted on')).toBe(false)
+    expect(endsMidPhrase('the disease he suffered from.')).toBe(false)
+    expect(endsMidPhrase('what he can be accused of')).toBe(false)
+    expect(endsMidPhrase('Trump meets Xi in Beijing')).toBe(false)
+    // A word merely CONTAINING one of the endings is not the ending.
+    expect(endsMidPhrase('Strikes hit Tehran and Ankara')).toBe(false)
+    expect(endsMidPhrase('Talks stall over the')).toBe(true)
+  })
+
+  it('rejects a truncated NEW translation and remembers the rejection', async () => {
+    const cache = memoryCache()
+    let calls = 0
+    const translate: Translator = async () => (calls++, 'Milei closes his New York trip and meets with')
+    const a = article({ title: 'Milei cierra su viaje a Nueva York y se reúne con Netanyahu', url: 'u1' })
+    const first = await translateArticles([a], { languages: es, translate, cache })
+    expect(first.stats.rejected).toBe(1)
+    expect(first.articles[0].language).toBe('es') // left as it was, so it drops as unsupported-language
+    await translateArticles([a], { languages: es, translate, cache })
+    expect(calls).toBe(1)
+  })
+
+  it('drops a truncated translation that was cached BEFORE the rule existed, without calling the model', async () => {
+    const cache = memoryCache()
+    const a = article({ title: 'Reunión con alguien importante', url: 'u2' })
+    cache.set(translationCacheKey('es', a.title), 'Meeting with')
+    let calls = 0
+    const { articles, stats } = await translateArticles([a], { languages: es, translate: async () => (calls++, 'x'), cache })
+    expect(calls).toBe(0)
+    expect(stats).toMatchObject({ cached: 0, rejected: 1, translated: 0 })
+    expect(articles[0].language).toBe('es')
+  })
+
+  it('is part of isPlausibleTranslation', () => {
+    expect(isPlausibleTranslation('a b c d', 'Meeting with')).toBe(false)
+    expect(isPlausibleTranslation('a b c d', 'Meeting with the Pope')).toBe(true)
+  })
+})
+
+describe('protected names (es): the model mangles rare names, so it never sees them', () => {
+  it('masks a listed name and restores the set English (Samarcanda -> Samarkand)', () => {
+    const m = maskProtectedNames('Trump se reúne con Netanyahu en Washington', 'es')
+    expect(m.masked).toBe('Trump se reúne con ZQ1 en Washington')
+    expect(m.restores).toEqual(['Netanyahu'])
+    const s = maskProtectedNames('Olimpiadas de ajedrez en Samarcanda', 'es')
+    expect(s.restores).toEqual(['Samarkand'])
+  })
+
+  it('gives a repeated name one placeholder and different names their own', () => {
+    const m = maskProtectedNames('Netanyahu y Abbott hablan; Netanyahu responde', 'es')
+    expect(m.masked).toBe('ZQ1 y ZQ2 hablan; ZQ1 responde')
+    expect(m.restores).toEqual(['Netanyahu', 'Abbott'])
+  })
+
+  it('matches whole words, case-sensitively, and leaves everything else alone', () => {
+    expect(maskProtectedNames('Los Swiftboat y el swift bancario', 'es').masked).toBe('Los Swiftboat y el swift bancario')
+    expect(maskProtectedNames('Sin nombres raros hoy', 'es')).toEqual({ masked: 'Sin nombres raros hoy', restores: [] })
+    expect(maskProtectedNames('Trump y Netanyahu', 'fr')).toEqual({ masked: 'Trump y Netanyahu', restores: [] })
+  })
+
+  it('leaves a source that already contains a placeholder-shaped token unmasked', () => {
+    expect(maskProtectedNames('ZQ1 y Netanyahu', 'es').restores).toEqual([])
+  })
+
+  it('end to end: the model sees the placeholder and the headline gets the name back', async () => {
+    const seen: string[] = []
+    const translate: Translator = async (text) => (seen.push(text), 'Trump meets with ZQ1 in Washington')
+    const { articles } = await translateArticles([article({ title: 'Trump se reúne con Netanyahu en Washington' })], { languages: es, translate, cache: memoryCache() })
+    expect(seen).toEqual(['Trump se reúne con ZQ1 en Washington'])
+    expect(articles[0].title).toBe('Trump meets with Netanyahu in Washington')
+  })
+
+  it('a model that drops the placeholder at the end is caught as a truncation, not published as a name-less headline', async () => {
+    const translate: Translator = async () => 'Milei closes his trip to New York: lecture and meeting with'
+    const { articles, stats } = await translateArticles([article({ title: 'Milei cierra su viaje: disertación y reunión con Netanyahu' })], { languages: es, translate, cache: memoryCache() })
+    expect(stats.rejected).toBe(1)
+    expect(articles[0].language).toBe('es')
+  })
+
+  it('changes the cache key only for headlines that contain a listed name', async () => {
+    const plain = 'Sin nombres raros hoy'
+    const masked = maskProtectedNames('Trump y Netanyahu', 'es')
+    expect(translationCacheKey('es', plain)).toBe(translationCacheKey('es', maskProtectedNames(plain, 'es').masked, []))
+    expect(translationCacheKey('es', masked.masked, masked.restores)).not.toBe(translationCacheKey('es', 'Trump y Netanyahu'))
+  })
+})
+
+describe('Cyrillic terms (ru/uk): words and places the model gets wrong are set, not left to it', () => {
+  const mask = (t: string) => maskForModel('ru', t)
+
+  it('sets the English for the wrong outputs seen in real headlines', () => {
+    expect(mask('Двое подростков осуждены по делу о госизмене в Тульской области')).toEqual({
+      masked: 'Двое подростков осуждены по делу о ZQ2 в ZQ1 области',
+      restores: ['Tula', 'treason'],
+    })
+    expect(mask('Самолеты Тихоокеанского флота провели противолодочные учения над Охотским морем').restores).toEqual(['anti-submarine'])
+    expect(mask('Мособлсуд утвердил арест трех топ-менеджеров').restores).toEqual(['Moscow Regional Court'])
+    expect(mask('Производство осетровой икры в РФ выросло на 5%').restores).toEqual(['sturgeon caviar'])
+  })
+
+  it('takes every inflected form of a stem to one placeholder (Мосбиржа, Мосбирже, МосБиржи)', () => {
+    const m = mask('Рубль на "Мосбирже" подешевел; индекс МосБиржи вырос; "Мосбиржа" запустит фьючерс')
+    expect(m.masked).toBe('Рубль на "ZQ1" подешевел; индекс ZQ1 вырос; "ZQ1" запустит фьючерс')
+    expect(m.restores).toEqual(['Moscow Exchange'])
+  })
+
+  it('puts a phrase before the word it contains: Huliaipole sector, not Huliaipole + sector', () => {
+    expect(maskForModel('uk', 'Бійці 33 ОШП поділилися кадрами роботи на Гуляйпільському відтинку')).toEqual({
+      masked: 'Бійці 33 ZQ2 поділилися кадрами роботи на ZQ1',
+      restores: ['Huliaipole sector', 'separate assault regiment'],
+    })
+    expect(maskForModel('uk', 'на Краматорського відтинку').restores).toEqual(['Kramatorsk sector'])
+    expect(maskForModel('uk', 'бої на цьому відтинку').restores).toEqual(['sector']) // no place name: just the general word
+  })
+
+  it('numbers terms and acronyms from one list (terms first, in glossary order) so their placeholders cannot collide', () => {
+    const m = mask('Минобороны РФ: ВСУ атаковали Брянскую область')
+    expect(m.masked).toBe('Минобороны РФ: ZQ2 атаковали ZQ1 область')
+    expect(m.restores).toEqual(['Bryansk', 'Ukrainian Armed Forces'])
+    const back = unmaskAcronyms('Russian Defense Ministry: ZQ2 attacked ZQ1 region', m.restores)
+    expect(back).toBe('Russian Defense Ministry: Ukrainian Armed Forces attacked Bryansk region')
+  })
+
+  it('matches whole words only', () => {
+    expect(mask('Крупный банк и крупные вложения').restores).toEqual([])
+    expect(mask('Тувалу подписало соглашение').restores).toEqual([]) // Tuvalu, not Tuva
+    expect(mask('Курильщики против запрета').restores).toEqual([])
+  })
+
+  it('leaves Spanish alone and a source that already contains a placeholder-shaped token unmasked', () => {
+    expect(maskForModel('es', 'Госизмена').restores).toEqual([])
+    expect(mask('ZQ1 и госизмена')).toEqual({ masked: 'ZQ1 и госизмена', restores: [] })
+  })
+
+  it('a headline with no listed term keeps its old cache key, so existing entries stay valid', () => {
+    const t = 'Двое подростков осуждены'
+    const m = mask(t)
+    expect(translationCacheKey('ru', m.masked, m.restores)).toBe(translationCacheKey('ru', t))
+  })
+
+  it('end to end: the model sees the placeholder and the headline gets the English back', async () => {
+    const seen: string[] = []
+    const translate: Translator = async (text) => (seen.push(text), 'Two teenagers convicted of ZQ2 in ZQ1 region')
+    const a = article({ language: 'ru', title: 'Двое подростков осуждены по делу о госизмене в Тульской области' })
+    const { articles } = await translateArticles([a], { languages: new Set(['ru']), translate, cache: memoryCache() })
+    expect(seen).toEqual(['Двое подростков осуждены по делу о ZQ2 в ZQ1 области'])
+    expect(articles[0].title).toBe('Two teenagers convicted of treason in Tula region')
+  })
+})
+
+describe('a dropped term or name placeholder fails closed', () => {
+  it('flags output that lost a term or name, but tolerates a dropped acronym', () => {
+    expect(droppedContent('Two teenagers convicted in ZQ1 case', ['Tula', 'treason'])).toBe(true) // ZQ2 (treason) is gone
+    expect(droppedContent('Two teenagers convicted of ZQ2 in ZQ1 region', ['Tula', 'treason'])).toBe(false)
+    expect(droppedContent('Trump meets with in Washington', ['Netanyahu'])).toBe(true)
+    // An acronym's expansion is not content in this sense: the headline still reads without it.
+    expect(droppedContent('The Ministry says drones were shot down', ['Ukrainian Armed Forces'])).toBe(false)
+  })
+
+  it('does not mistake ZQ1 for ZQ10', () => {
+    const restores = ['Tula', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'treason']
+    expect(droppedContent('ZQ10 only', restores)).toBe(true) // ZQ1 (Tula) missing, ZQ11 (treason) missing
+  })
+
+  it('end to end: a translation that lost a term is rejected, remembered, and left untranslated', async () => {
+    const cache = memoryCache()
+    let calls = 0
+    const translate: Translator = async () => (calls++, 'Two teenagers convicted in ZQ1 case')
+    const a = article({ language: 'ru', title: 'Двое подростков осуждены по делу о госизмене в Тульской области' })
+    const first = await translateArticles([a], { languages: new Set(['ru']), translate, cache })
+    expect(first.stats.rejected).toBe(1)
+    expect(first.articles[0].language).toBe('ru')
+    await translateArticles([a], { languages: new Set(['ru']), translate, cache })
+    expect(calls).toBe(1)
+  })
+
+  it('a Spanish headline whose name placeholder was dropped is rejected too', async () => {
+    const translate: Translator = async () => 'Milei closes his New York trip: lecture and a meeting'
+    const a = article({ title: 'Milei cierra su viaje a Nueva York: disertación y una reunión con Netanyahu' })
+    const { stats } = await translateArticles([a], { languages: es, translate, cache: memoryCache() })
+    expect(stats.rejected).toBe(1)
+  })
+
+  it('the new terms', () => {
+    expect(maskForModel('ru', 'Ростехнадзор приостановил проведение забоя на шахте').restores).toEqual(['Rostekhnadzor', 'mining face operations'])
+    expect(maskForModel('uk', 'скидів на голови кацапів').restores).toEqual(['Russians (pejorative)'])
   })
 })

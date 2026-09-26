@@ -1,0 +1,1864 @@
+{
+ "note": "HAND-LABELED TRANSLATED-HEADLINE SAMPLE (2026-09-25): 60 machine-translated headlines (30 es / 15 ru / 15 uk, every k-th of the translated window, not the newest) with the SHIPPED classifier relevance and the 3 nearest same-window neighbors by embedding similarity at the time. Labels by Claude reading the original + translation + neighbors, NOT independently checked by J and not by a Russian/Ukrainian/Spanish reader of record - treat as soft evidence, same as the other fixtures. scope: 1 in / 0 out / null ambiguous (excluded from scoring). translationQuality: ok | minor (wrong word, same event) | meaning (an actor, action or object changed or dropped). sameEventNeighbors: indexes into neighbors that report the SAME event. Sims are title-only translated vs title+description English, i.e. the real build condition. Third-party RSS headlines kept as evaluation input. Regenerate the sheet with debug/labelSheet.mjs (scratch, gitignored).",
+ "articles": [
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Lista de actores y personajes de “Monster: The Lizzie Borden Story”: quién es quién en el elenco de la serie de Netflix",
+   "translation": "List of actors and characters from “Monster: The Lizzie Borden Story”: who is who in the cast of the Netflix series",
+   "relevance": 0.056,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.756,
+     "src": "indian-express",
+     "title": "Lizzie Borden: The real story behind Netflix’s Monster, explained"
+    },
+    {
+     "sim": 0.233,
+     "src": "globe-and-mail",
+     "title": "Holocaust survivor Judy Weissenberg Cohen believed history could show the warning signs of hatred"
+    },
+    {
+     "sim": 0.198,
+     "src": "indian-express",
+     "title": "Jemima Goldsmith wedding photos: Imran Khan’s ex-wife marries Cameron O’Reilly; sons walk her down aisle"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-republica-peru",
+   "original": "Miguel Torres sale en defensa del ministro del Interior y cuestiona su censura mientras presiona por pedido de facultades",
+   "translation": "Miguel Torres goes out in defense of the Interior Minister and questions his censorship while pressing for powers",
+   "relevance": 0.916,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": null,
+   "translationQuality": "meaning",
+   "neighbors": [
+    {
+     "sim": 0.654,
+     "src": "el-comercio-peru",
+     "title": "Miguel Torres assures that the presidency of the Constitutional Commission is in breach of the law and regulations by curbing the powers of the"
+    },
+    {
+     "sim": 0.54,
+     "src": "telesur-english",
+     "title": "Spain’s Sanchez Urges Equitable Representation and Abolition of Veto Power at UNGA"
+    },
+    {
+     "sim": 0.514,
+     "src": "al-jazeera",
+     "title": "Spain’s Sanchez warns of far-right threat in UNGA speech"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "los-tiempos",
+   "original": "Paz desde EEUU: “Cada vez que he salido al exterior, siempre retorno con platita”",
+   "translation": "Peace from the USA: “Every time I’ve gone abroad, I always come back with plate”",
+   "relevance": 0.522,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": null,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.482,
+     "src": "el-deber",
+     "title": "Peace after intense meetings in the US: “10 billion dollars will come to Bolivia”"
+    },
+    {
+     "sim": 0.446,
+     "src": "scmp-asia",
+     "title": "Warm welcome, trade truce extended: the takeaways as Xi arrives in US"
+    },
+    {
+     "sim": 0.436,
+     "src": "el-deber",
+     "title": "Peace intensifies its agenda in New York with meetings with the World Bank and the World Economic Forum"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "confidencial",
+   "original": "Casi 8000 reos comunes han sido liberados por la dictadura en nueve meses",
+   "translation": "Almost 8000 common prisoners have been released by the dictatorship in nine months",
+   "relevance": 0.972,
+   "tags": [
+    "diplomacy-politics",
+    "humanitarian-displacement"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.459,
+     "src": "interfax",
+     "title": "The Kremlin said the issue of prisoners is in the hands of the Ministry of Defense and the special services."
+    },
+    {
+     "sim": 0.45,
+     "src": "foreign-policy",
+     "title": "China’s Human Rights Crisis Hasn’t Disappeared"
+    },
+    {
+     "sim": 0.449,
+     "src": "el-tiempo",
+     "title": "President Abel Eduardo De La Espriella orders to transfer 76 members of the Sierra Conquering Self-Defense Forces to maximum security prisons"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-republica-peru",
+   "original": "Dina Boluarte reaparece en acto público después de más de 10 meses: “Yo estoy feliz”",
+   "translation": "Dina Boluarte reappears in public after more than 10 months: “I am happy”",
+   "relevance": 0.125,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.389,
+     "src": "el-universal",
+     "title": "Rosita Arenas leaves the “basement” at 93 years to receive her Ariel"
+    },
+    {
+     "sim": 0.329,
+     "src": "meduza",
+     "title": "‘I was literally in prison.’ Owner of Lady Gaga fan account with 480,000 followers returns as reports identify him as a Belarusian protest prisoner."
+    },
+    {
+     "sim": 0.323,
+     "src": "arab-news",
+     "title": "Mahira Abdel Aziz: ‘I treated exhaustion as proof I was committed’"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Florida se despide del calor: qué se sabe del primer frente frío de la temporada y qué tanto bajarán las temperaturas",
+   "translation": "Florida Says Good-bye to Heat: What's Known About the First Cold Front of the Season and How Much Temperature Will Get Down",
+   "relevance": 0.236,
+   "tags": [
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.54,
+     "src": "ars-technica",
+     "title": "Effort begins to fill the void left by terminated US climate report"
+    },
+    {
+     "sim": 0.526,
+     "src": "la-nacion-argentina",
+     "title": "A polar cold air mass is advancing, leading to a progressive thermal rise and causing humidity, rain showers and storms: affected areas"
+    },
+    {
+     "sim": 0.525,
+     "src": "pagina-12",
+     "title": "El Niño: Increases the expectation of heat-related mortality"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "La TV del miércoles: Argentina-Perú en el fútbol de los Suramericanos y el Abierto de Hurlingham de polo",
+   "translation": "Wednesday's TV: Argentina-Peru in South American Football and the Hurlingham Polo Open",
+   "relevance": 0.011,
+   "tags": [
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.736,
+     "src": "el-comercio-peru",
+     "title": "Peru vs. Chile for bronze medal: time, TV channel and where to watch the 2026 South American Games"
+    },
+    {
+     "sim": 0.693,
+     "src": "el-comercio-peru",
+     "title": "Peru vs Argentina: previous and latest news from the semi-final of the 2026 South American Games"
+    },
+    {
+     "sim": 0.686,
+     "src": "el-comercio-peru",
+     "title": "Peru vs. Argentina EN DIRECTO for the 2026 South American Games: where the semi-73 FREE ONLINE"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Fuerza Popular en las elecciones subnacionales: en 16 años, solo ganó 3 gobiernos regionales y ningún alcalde en Lima",
+   "translation": "Popular Force in Subnational Elections: In 16 years, only 3 regional governments and no mayor in Lima won",
+   "relevance": 0.793,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.64,
+     "src": "la-republica-peru",
+     "title": "Municipal debate 2026: so was the broadcast with the 13 candidates for the mayor of Lima"
+    },
+    {
+     "sim": 0.61,
+     "src": "la-republica-peru",
+     "title": "Municipal debate 2026: so was the participation of candidates for the mayor of Lima in the second day"
+    },
+    {
+     "sim": 0.6,
+     "src": "la-republica-peru",
+     "title": "Two days, four hours and the last word after the Municipal debate: the response of the candidates for the mayor of Lima Metropolitana 2026"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-tiempo",
+   "original": "Santa Marta intenta recuperar la normalidad: autoridades acompañan la reapertura del comercio y refuerzan la seguridad",
+   "translation": "Santa Marta tries to recover normality: authorities accompany the reopening of trade and strengthen security",
+   "relevance": 0.683,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.602,
+     "src": "telesur-english",
+     "title": "Colombia Deploys Military to Santa Marta After Violence"
+    },
+    {
+     "sim": 0.597,
+     "src": "telesur-english",
+     "title": "Armed Strike Paralyzes Colombia’s Santa Marta as Businesses Stay Shut"
+    },
+    {
+     "sim": 0.524,
+     "src": "el-comercio-peru",
+     "title": "U.S. asks its citizens to avoid areas affected by riots in Colombian Santa Marta"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-deber",
+   "original": "¿Messi jugará ante Bolivia? Villegas espera enfrentar al astro argentino",
+   "translation": "Messi will play against Bolivia? Villegas hopes to face the Argentine star",
+   "relevance": 0.65,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.518,
+     "src": "asharq-al-awsat",
+     "title": "Scaloni Says he Did his Best to Convince Messi to Return for Argentina Farewell"
+    },
+    {
+     "sim": 0.51,
+     "src": "la-nacion-argentina",
+     "title": "Next friendly Argentine team: days, times, venues and rivals"
+    },
+    {
+     "sim": 0.499,
+     "src": "el-comercio-peru",
+     "title": "Peru vs Argentina: Franco Domínguez failed 1-0 of the ‘Albiceleste’ in the semifinals of the 2026 South American Games"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Tras presión, prometen atender escuela de la Ollin Yoliztl",
+   "translation": "After pressure, they promise to attend Ollin Yoliztl school",
+   "relevance": 0.286,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.375,
+     "src": "taipei-times",
+     "title": "Keep pressure on Russia: Zelenskiy"
+    },
+    {
+     "sim": 0.353,
+     "src": "al-monitor",
+     "title": "South Lebanon children return to school destroyed by Israel strike"
+    },
+    {
+     "sim": 0.349,
+     "src": "euronews",
+     "title": "Exclusive: Iran's school year opens as fees triple and enrolment falls"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "Es oficial: Mamdani se sube a la campaña por las elecciones 2026 y ya tiene su candidato en Nueva York",
+   "translation": "It's official: Mamdani is on the campaign for the 2026 election and already has his candidate in New York",
+   "relevance": 0.439,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.638,
+     "src": "guardian",
+     "title": "Trump and Mamdani appear friendly after ‘wide-ranging’ meeting at Gracie Mansion"
+    },
+    {
+     "sim": 0.611,
+     "src": "the-hindu",
+     "title": "Trump praises Mamdani after meeting in New York"
+    },
+    {
+     "sim": 0.557,
+     "src": "al-jazeera",
+     "title": "Mamdani challenges Trump over White House press ban during meeting"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Grupo 5 lanza ‘El Secreto’, su nuevo single viral que causa sensación en redes",
+   "translation": "Group 5 launches “El Secreto”, its new viral single that causes a web-like sensation",
+   "relevance": 0.212,
+   "tags": [
+    "science-technology"
+   ],
+   "scope": 0,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.373,
+     "src": "el-universal",
+     "title": "London Police remove Banda El Recodo for playing at Tower Bridge; now it goes viral in networks"
+    },
+    {
+     "sim": 0.356,
+     "src": "el-universal",
+     "title": "Network Furor; a young Korean falls in love with the Internet with his version of Gangnam Style in Spanish"
+    },
+    {
+     "sim": 0.335,
+     "src": "reforma",
+     "title": "Reveal Violence Displaces 1.6 Million"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-deber",
+   "original": "Banco BISA cambia de mando tras más de 40 años con León Prado",
+   "translation": "BISA Bank changes command after more than 40 years with León Prado",
+   "relevance": 0.706,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.409,
+     "src": "la-nacion-argentina",
+     "title": "Another official is being displaced by ARCA's investigation into the suppliers of the trucker hotel in Mar del Plata"
+    },
+    {
+     "sim": 0.381,
+     "src": "libya-herald",
+     "title": "CBL Governor discusses economic reform files with Minister of Finance & Head of Audit Bureau"
+    },
+    {
+     "sim": 0.378,
+     "src": "libya-herald",
+     "title": "China’s Sichuan Huayuan Construction Co. discusses with Savings & Real Estate Investment Bank cooperation in sector"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Sheinbaum revela cuánto reciben de pensión Zedillo y Guillermo Ortiz en Banxico; AMLO sólo percibe 30 mil pesos, contrasta",
+   "translation": "Sheinbaum reveals how much Zedillo and Guillermo Ortiz receive from pension in Banxico; AMLO only receives 30,000 pesos, contrasts",
+   "relevance": 0.191,
+   "tags": [
+    "diplomacy-politics",
+    "economic-trade"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.453,
+     "src": "la-nacion-argentina",
+     "title": "“They wanted to justify themselves and made it worse”: a municipality in Buenos Aires reported millions in expenses, but $0 in essential works in two years"
+    },
+    {
+     "sim": 0.453,
+     "src": "la-nacion-argentina",
+     "title": "San Pedro had the biggest drop in the theft rate since 2023 and Malvinas Argentinas, the worst"
+    },
+    {
+     "sim": 0.447,
+     "src": "el-tiempo",
+     "title": "Delcy Rodríguez smiles with Trump while Maria C. Machado suffers her seventh blockade to return to Venezuela: two faces of the new Venezuelan policy"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Así puedes identificar una buena tortilla",
+   "translation": "So you can identify a good tortilla",
+   "relevance": 0.044,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.442,
+     "src": "la-nacion-argentina",
+     "title": "How to make a good hand-crafted empanada, according to five cooks: the keys to the dough, the filling and the repulgue"
+    },
+    {
+     "sim": 0.386,
+     "src": "la-nacion-argentina",
+     "title": "Cooks agree: “In a plate of raw meat there is nowhere to hide the product”"
+    },
+    {
+     "sim": 0.371,
+     "src": "app-pakistan",
+     "title": "A vendor prepares the traditional food item ‘tikka’ for customers at a roadside stall on Lehtrar Road."
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "El desalojo de una madrileña de 87 años conmociona a España en plena crisis de la vivienda",
+   "translation": "The eviction of a 87-year-old Madrid woman shockes Spain in the midst of a housing crisis",
+   "relevance": 0.145,
+   "tags": [
+    "humanitarian-displacement"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.872,
+     "src": "la-nacion-argentina",
+     "title": "The eviction of a 87-year-old woman from the house where she lived for seven decades sparks a political storm in Spain"
+    },
+    {
+     "sim": 0.869,
+     "src": "arab-news",
+     "title": "Dramatic eviction of 87-year-old Madrid tenant spotlights Spain's housing crisis"
+    },
+    {
+     "sim": 0.86,
+     "src": "nbc-news",
+     "title": "Eviction of 87-year-old tenant in Madrid highlights Spain's housing crisis"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "Con explosivos y detonación dinamitaron una montaña en La Rioja: así avanza la megaobra de un túnel de 250 metros en la ruta nacional 75",
+   "translation": "With explosives and detonation they dynamite a mountain in La Rioja: this is how the megawork of a 250-metre tunnel advances on National Route 75",
+   "relevance": 0.409,
+   "tags": [
+    "conflict-security",
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.534,
+     "src": "el-comercio-peru",
+     "title": "A tunnel under the sea? The 870-meter megaproject that will change the connection in Latin America"
+    },
+    {
+     "sim": 0.53,
+     "src": "el-universal",
+     "title": "Huachicolero tunnel destroyed in Tlaxcoapan, Hidalgo; 19 structures were disabled in the current administration"
+    },
+    {
+     "sim": 0.483,
+     "src": "middle-east-spectator",
+     "title": "Another view of the unidentified explosion / smoke trail"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Programa \"DIF + Cerca\" llevará salud gratuita a zonas prioritarias de Nuevo León; primera jornada será en San Nicolás",
+   "translation": "Program \"DIF + Cerca\" will take free health to priority areas of Nuevo León; first day will be in San Nicolás",
+   "relevance": 0.143,
+   "tags": [
+    "diplomacy-politics",
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.45,
+     "src": "el-comercio-peru",
+     "title": "Free food, attention in San Francisco from September 25 to 27: distribution points and schedules"
+    },
+    {
+     "sim": 0.403,
+     "src": "la-razon-bolivia",
+     "title": "Oncological Hospital, Heritage and Fundared: Deputies pass three laws for Santa Cruz"
+    },
+    {
+     "sim": 0.398,
+     "src": "focus-taiwan",
+     "title": "Q&A: Taiwan's health token incentive program"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Precio del dólar en Perú: revisa el tipo de cambio del jueves 24 de setiembre",
+   "translation": "Dollar Price in Peru: Check the exchange rate on Thursday, September 24",
+   "relevance": 0.442,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.484,
+     "src": "el-deber",
+     "title": "The dollar price is still rising, for this Thursday will be quoted in Bs 12:26"
+    },
+    {
+     "sim": 0.477,
+     "src": "clarin",
+     "title": "Blue Dollar Today: How much you're quoted for this Thursday, September 24th"
+    },
+    {
+     "sim": 0.471,
+     "src": "la-nacion-argentina",
+     "title": "Dollar today and dollar blue, LIVE: how much the official quotes and what is the price of parallel this Wednesday September 23, minute by minute"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "clarin",
+   "original": "\"Habrá elecciones en Venezuela\": Delcy Rodríguez confirmó los comicios en su país, \"garantizó\" la libre participación, pero no puso fecha",
+   "translation": "\"There will be elections in Venezuela\": Delcy Rodríguez confirmed the elections in his country, \"guaranteed\" free participation, but did not set a date",
+   "relevance": 0.882,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.84,
+     "src": "el-comercio-peru",
+     "title": "“In Venezuela there will be elections,” says Delcy Rodríguez in a speech to the UN"
+    },
+    {
+     "sim": 0.839,
+     "src": "confidencial",
+     "title": "Delcy Rodríguez says at the UN that there will be elections in Venezuela"
+    },
+    {
+     "sim": 0.821,
+     "src": "el-tiempo",
+     "title": "Delcy Rodríguez speaks to the UN General Assembly in New York: 'In Venezuela there will be elections'"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Christian Martinoli propone una solución radical; pide tres descensos en el futbol mexicano",
+   "translation": "Christian Martinoli proposes a radical solution; calls for three declines in Mexican football",
+   "relevance": 0.2,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.507,
+     "src": "al-jazeera",
+     "title": "Premier League and La Liga lead FIFA reform calls after ‘exploitative’ plan"
+    },
+    {
+     "sim": 0.479,
+     "src": "granma",
+     "title": "Wearing the jersey half-heartedly"
+    },
+    {
+     "sim": 0.467,
+     "src": "deutsche-welle",
+     "title": "Bundesliga and three other top European leagues call for major FIFA reforms"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "Médicos de tres generaciones: un emblemático centro de salud cumple 100 años, entre cirugías inéditas e influencers foodies",
+   "translation": "Doctors of three generations: an iconic health center turns 100, between unprecedented surgeries and influential foods",
+   "relevance": 0.002,
+   "tags": [
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.487,
+     "src": "rest-of-world",
+     "title": "China is excelling in health tech. That’s good news for the world"
+    },
+    {
+     "sim": 0.446,
+     "src": "the-hindu",
+     "title": "Keralam’s 24×7 specialty care rollout falters amid political pushback"
+    },
+    {
+     "sim": 0.442,
+     "src": "el-comercio-peru",
+     "title": "The INCREASE case of the person who reached 113 years: what did he do throughout his life to stay healthy?"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "Robbie Williams recibe la inesperada visita de un gallinazo en Lima: “Es enorme”",
+   "translation": "Robbie Williams receives the unexpected visit of a chicken in Lima: “It’s huge”",
+   "relevance": 0.008,
+   "tags": [
+    "diplomacy-politics",
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "meaning",
+   "neighbors": [
+    {
+     "sim": 0.611,
+     "src": "bbc",
+     "title": "Robbie Williams' surprise singalong after Peru gig cancelled"
+    },
+    {
+     "sim": 0.344,
+     "src": "la-nacion-argentina",
+     "title": "Hudson Williams’ girlfriend made a strong request to fans of More Than rivals: “They crossed a limit”"
+    },
+    {
+     "sim": 0.34,
+     "src": "euronews",
+     "title": "Pope Leo XIV gets the latte art treatment ahead of Latin America visit"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "Javier Milei cierra su viaje a Nueva York: disertación en un club económico y reunión con Netanyahu",
+   "translation": "Javier Milei closes his trip to New York: Disertation in an economic club and meeting with",
+   "relevance": 0.118,
+   "tags": [
+    "diplomacy-politics",
+    "economic-trade"
+   ],
+   "scope": 1,
+   "translationQuality": "meaning",
+   "neighbors": [
+    {
+     "sim": 0.695,
+     "src": "clarin",
+     "title": "Javier Milei lectures to investors and meets with twitter in New York before returning to Argentina"
+    },
+    {
+     "sim": 0.508,
+     "src": "pagina-12",
+     "title": "Milei participated in the event, the American"
+    },
+    {
+     "sim": 0.475,
+     "src": "pagina-12",
+     "title": "The tiredness of universities with Milei: “Education must be state policy”"
+    }
+   ],
+   "sameEventNeighbors": [
+    0
+   ]
+  },
+  {
+   "lang": "es",
+   "sourceId": "clarin",
+   "original": "China confirma su primer diálogo con EE.UU. sobre IA, pero no aclara prórroga de la tregua",
+   "translation": "China confirms its first dialogue with the US on AI, but does not clarify extension of the truce",
+   "relevance": 0.983,
+   "tags": [
+    "diplomacy-politics",
+    "science-technology"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.688,
+     "src": "scmp-asia",
+     "title": "US, China agree AI dialogue ahead of Trump-Xi summit"
+    },
+    {
+     "sim": 0.686,
+     "src": "bloomberg",
+     "title": "US Unveils Two-Month Truce Extension as Xi Lands for State Visit"
+    },
+    {
+     "sim": 0.672,
+     "src": "nikkei-asia",
+     "title": "US says China talks yield progress on tariff carve-outs, AI dialogue"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "El regalo hecho a mano de Mario Pergolini que desconcertó por completo a Mora Bianchi: “¿Querés que la firme?”",
+   "translation": "Mario Pergolini’s hand-made gift that completely baffled Mora Bianchi: “Do you want me to sign it?”",
+   "relevance": 0.049,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.352,
+     "src": "el-comercio-peru",
+     "title": "“Dad went to play with PiI”: Dibu Martínez’s tender message to his children before joining Argentina"
+    },
+    {
+     "sim": 0.344,
+     "src": "el-deber",
+     "title": "San José de Chiquitos pays tribute to Santa Cruz recognizing the talent and civism of Josesano"
+    },
+    {
+     "sim": 0.344,
+     "src": "el-universal",
+     "title": "To inventory, the art collection of MARCO"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-comercio-peru",
+   "original": "China advierte de que Taiwán es “la cuestión más importante” antes de la reunión Xi-Trump",
+   "translation": "China warns that Taiwan is “the most important issue” before the Xi-Trump meeting",
+   "relevance": 0.875,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.687,
+     "src": "taipei-times",
+     "title": "Taiwan no longer just a US-China problem"
+    },
+    {
+     "sim": 0.68,
+     "src": "focus-taiwan",
+     "title": "Xi expected to raise Taiwan during Trump-Xi summit: U.S. scholars"
+    },
+    {
+     "sim": 0.66,
+     "src": "scmp-asia",
+     "title": "Trump’s warm welcome for Xi met with caution and uncertainty in Taiwan"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "es",
+   "sourceId": "el-universal",
+   "original": "Nigeria desmantela otro narcolaboratorio ligado a carteles mexicanos; buscan a hombre identificado como \"Rodríguez Villanueva\"",
+   "translation": "Nigeria dismantles another narcolaboratory linked to Mexican cartels; they seek out a man identified as \"Rodríguez\"",
+   "relevance": 0.857,
+   "tags": [
+    "crime-trafficking"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.677,
+     "src": "arab-news",
+     "title": "Nigeria busts another Mexican cartel-linked meth lab"
+    },
+    {
+     "sim": 0.614,
+     "src": "el-comercio-peru",
+     "title": "Ecuador and the United States Disarticulate Criminal Gang Allegedly Linked to the Jalisco Cartel New Generation"
+    },
+    {
+     "sim": 0.516,
+     "src": "tass",
+     "title": "Drug cartels attempt to establish major cocaine transit hub in Russia — expert"
+    }
+   ],
+   "sameEventNeighbors": [
+    0
+   ]
+  },
+  {
+   "lang": "es",
+   "sourceId": "la-nacion-argentina",
+   "original": "La hipótesis del amor: lo mejor y lo peor de la película que ya es un éxito mundial",
+   "translation": "The hypothesis of love: the best and worst of the film that is already a world success",
+   "relevance": 0.02,
+   "tags": [
+    "diplomacy-politics",
+    "humanitarian-displacement"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.56,
+     "src": "el-comercio-peru",
+     "title": "It breaks down Lili Reinhart's performance: what the critique of “The Love Hypothesis” is saying, the Amazon Prime Video movie"
+    },
+    {
+     "sim": 0.416,
+     "src": "el-comercio-peru",
+     "title": "From revenge to love: “How to lose your popularity”, the romantic comedy that arrives in Netflix on September 24"
+    },
+    {
+     "sim": 0.398,
+     "src": "japan-times",
+     "title": "Woe is marriage: ‘Until the T-Shirt Dries’ is a meandering take on middle-class ennui"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Цены производителей на бензин в августе выросли на 2,9% после 4,7% в июле",
+   "translation": "Gasoline prices in August rose 2.9% after 4.7% in July",
+   "relevance": 0.56,
+   "tags": [
+    "economic-trade",
+    "energy"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.515,
+     "src": "wsj-news",
+     "title": "European Gas Prices Rise as Storage Levels Worry Market"
+    },
+    {
+     "sim": 0.496,
+     "src": "taipei-times",
+     "title": "Retail, food, beverage sales hit record highs for August"
+    },
+    {
+     "sim": 0.487,
+     "src": "pbs-newshour",
+     "title": "Rising gas prices frustrate voters. Trump says it's an 'inexpensive price to pay' for the Iran war"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Россия за восемь месяцев сократила выпуск стального проката на 4,2%",
+   "translation": "Russia has cut steel rental output by 4.2% in eight months",
+   "relevance": 0.788,
+   "tags": [
+    "economic-trade",
+    "energy"
+   ],
+   "scope": null,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.578,
+     "src": "tass",
+     "title": "Russia’s industrial output flat in January-August 2026 — statistics service"
+    },
+    {
+     "sim": 0.543,
+     "src": "tass",
+     "title": "Russia’s share in global coal exports to grow from 13% to 27% by 2050"
+    },
+    {
+     "sim": 0.542,
+     "src": "tass",
+     "title": "Russia’s total gas output up 3.4% to 446.5 bcm in January-August — statistics service"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "На встрече с Рубио российская сторона подчеркнула необходимость выправления отношений РФ и США",
+   "translation": "At the meeting with Rubio, the Russian side stressed the need to correct the relations between Russia and the United States",
+   "relevance": 0.992,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.733,
+     "src": "tass",
+     "title": "Lavrov meets with Rubio on UN General Assembly sidelines"
+    },
+    {
+     "sim": 0.675,
+     "src": "el-universal",
+     "title": "Rubio will try to achieve truce in energy attacks between Ukraine and Russia: invites Putin to the G20 summit in the US"
+    },
+    {
+     "sim": 0.661,
+     "src": "tass",
+     "title": "US fears conflict to ‘metastasize’ beyond Ukraine — Rubio"
+    }
+   ],
+   "sameEventNeighbors": [
+    0
+   ]
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Финляндия и Украина заключили соглашение о сотрудничестве в области обороны",
+   "translation": "Finland and Ukraine signed an agreement on cooperation in defence",
+   "relevance": 0.952,
+   "tags": [
+    "conflict-security",
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.585,
+     "src": "nv-ukraine",
+     "title": "Ukraine ready to sign U.S. drone pact after year of defense tech work"
+    },
+    {
+     "sim": 0.574,
+     "src": "nv-ukraine",
+     "title": "Kyiv secures nearly €3 billion after completing 10 reform targets"
+    },
+    {
+     "sim": 0.567,
+     "src": "kyiv-independent",
+     "title": "EU approves 3 billion euros for Ukraine after Kyiv passes reforms"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Госсекретарь США и глава МИД Индии обсудили санкции за коммерческие дела с РФ",
+   "translation": "US Secretary of State and India's Foreign Ministry chief discussed sanctions for commercial affairs with Russia",
+   "relevance": 0.994,
+   "tags": [
+    "diplomacy-politics",
+    "economic-trade"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.761,
+     "src": "al-monitor",
+     "title": "US and Indian top diplomats discuss Russia sanctions bill signed by Trump"
+    },
+    {
+     "sim": 0.724,
+     "src": "tass",
+     "title": "Sanctions against Russia just pretext for US to put pressure on India — ambassador"
+    },
+    {
+     "sim": 0.69,
+     "src": "bloomberg",
+     "title": "Rubio, Jaishankar Discuss Fallout From Russia-Linked Sanctions"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    2
+   ]
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Иран сообщил о восстановлении 50% поврежденной инфраструктуры на месторождении Южный Парс",
+   "translation": "Iran reported restoring 50% of damaged infrastructure at the South Pars field",
+   "relevance": 0.648,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.757,
+     "src": "intel-slava",
+     "title": "Iran has announced that it has restored 50% of the damaged production capacity at the South Pars gas field in the Persian Gulf, six months after it was struck by Israel, according to Al Jazeera."
+    },
+    {
+     "sim": 0.491,
+     "src": "bloomberg",
+     "title": "US Plans $5 Billion Middle East Reconstruction Fund for Iran War"
+    },
+    {
+     "sim": 0.448,
+     "src": "al-jazeera",
+     "title": "How oil, gas losses have shrunk Iran’s GDP by 10 percent during war"
+    }
+   ],
+   "sameEventNeighbors": [
+    0
+   ]
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "В Баку заявили о потенциале \"Маршрута Трампа\" для региональной энергетической связанности",
+   "translation": "In Baku, the potential of \"Trump Route\" for regional energy connectivity was announced",
+   "relevance": 0.804,
+   "tags": [
+    "diplomacy-politics",
+    "energy"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.537,
+     "src": "al-jazeera",
+     "title": "Trump pushes Russia-Ukraine ‘energy truce’: Can it work?"
+    },
+    {
+     "sim": 0.514,
+     "src": "eurasianet",
+     "title": "United States, Uzbekistan to cooperate on nuclear energy operations and safety issues"
+    },
+    {
+     "sim": 0.502,
+     "src": "eurasianet",
+     "title": "Uzbekistan outlines grand Middle Corridor plans"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Временный президент Венесуэлы пообещала в ООН провести прозрачные выборы",
+   "translation": "Venezuela's interim president pledged to hold transparent elections at the UN",
+   "relevance": 0.97,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.754,
+     "src": "scmp-asia",
+     "title": "At UN, Venezuela’s acting president promises elections without setting date"
+    },
+    {
+     "sim": 0.745,
+     "src": "globe-and-mail",
+     "title": "Venezuela’s interim President Rodriguez promises elections, transition to ‘full democracy’"
+    },
+    {
+     "sim": 0.696,
+     "src": "confidencial",
+     "title": "Delcy Rodríguez says at the UN that there will be elections in Venezuela"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Минобороны сообщило о массированном ударе по целям в Киеве и Одесской области",
+   "translation": "The Ministry of Defense reported a massive strike on targets in Kiev and Odessa region",
+   "relevance": 0.976,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.712,
+     "src": "tass",
+     "title": "Russian forces strike Ukraine’s logistics centers, energy facilities, defense enterprises"
+    },
+    {
+     "sim": 0.691,
+     "src": "tass",
+     "title": "IN BRIEF: Russia's massive strike on defense facilities, logistics centers in Kiev, Odessa"
+    },
+    {
+     "sim": 0.675,
+     "src": "deutsche-welle",
+     "title": "Russia: Ukrainian drone strike on Moscow kills 2"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1
+   ]
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Сотрудница московского банка задержана за хищение более 5,7 млн рублей",
+   "translation": "Moscow bank employee arrested for stealing more than 5,7 million rubles",
+   "relevance": 0.758,
+   "tags": [
+    "economic-trade",
+    "crime-trafficking"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.527,
+     "src": "nv-ukraine",
+     "title": "Russians pull most money from banks since 2022 outflow in August"
+    },
+    {
+     "sim": 0.52,
+     "src": "la-nacion-argentina",
+     "title": "This was the citizen arrest made by bank clients who reduced the thief who fired in an attempted robbery"
+    },
+    {
+     "sim": 0.492,
+     "src": "meduza",
+     "title": "Russia has 2.5 trillion rubles more cash in circulation than at the start of the year. The central bank wants lenders scrutinizing where it comes from."
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "РФ планирует ввести 22% НДС для трансграничной онлайн-торговли",
+   "translation": "Russia plans to introduce 22% VAT for cross-border online trade",
+   "relevance": 0.74,
+   "tags": [
+    "economic-trade",
+    "energy"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.527,
+     "src": "tass",
+     "title": "Russia’s coal exports to gain 77% by 2050 to 350 mln tons"
+    },
+    {
+     "sim": 0.516,
+     "src": "tass",
+     "title": "Russia’s share in global coal exports to grow from 13% to 27% by 2050"
+    },
+    {
+     "sim": 0.493,
+     "src": "tass",
+     "title": "WTO grants Russian request for CBAM dispute panel — official"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "ЦБ Швейцарии сохранил ставку на нулевом уровне и повысил прогноз инфляции",
+   "translation": "The Swiss Central Bank kept the rate at zero and raised the inflation forecast",
+   "relevance": 0.822,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.648,
+     "src": "bloomberg",
+     "title": "SNB Holds Rates, Eases Threat of Franc Intervention"
+    },
+    {
+     "sim": 0.536,
+     "src": "allafrica",
+     "title": "South Africa: South Africa Raises Interest Rate to 7.25 Percent As Inflation Risks Return"
+    },
+    {
+     "sim": 0.535,
+     "src": "tass",
+     "title": "Russia’s annual inflation at 6.22% as of September 21, ministry says"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Военные заявили о контроле над селом Светлая Долина в Запорожской области",
+   "translation": "Military declared control over the village of Svetlya Valley in Zaporizhzhya region",
+   "relevance": 0.803,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.531,
+     "src": "tass",
+     "title": "Ukrainian forces lose about 1,290 troops in special op zone in past day — Defense Ministry"
+    },
+    {
+     "sim": 0.525,
+     "src": "amk-mapping",
+     "title": "Ukrainian forces have re-established control over the village of Pyskunivka, Slovyansk direction, Donetsk Oblast (Kramatorsk District)."
+    },
+    {
+     "sim": 0.461,
+     "src": "tass",
+     "title": "Ukraine loses nearly 1,400 troops in special op zone over past 24 hours — Defense Ministry"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Петр Толстой выдвинут кандидатом в председатели комитета Думы по международным делам",
+   "translation": "Petro Tolstoy nominated as chairman of the Duma Committee on International Affairs",
+   "relevance": 0.614,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": null,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.531,
+     "src": "tass",
+     "title": "CIS observers note fair and open nature of Russia’s State Duma elections"
+    },
+    {
+     "sim": 0.468,
+     "src": "tass",
+     "title": "First post-election Duma meeting slated for September 30 — presidential decree"
+    },
+    {
+     "sim": 0.466,
+     "src": "meduza",
+     "title": "One in three members of Russia’s new State Duma has ties to the war in Ukraine. Some are accused of war crimes. Here’s who they are — and what they’ve done."
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "ru",
+   "sourceId": "interfax",
+   "original": "Страховые пенсии в 2027 году проиндексируют 1 февраля и 1 апреля",
+   "translation": "Insurance pensions in 2027 will be indexed on 1 February and 1 April",
+   "relevance": 0.125,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.633,
+     "src": "el-universal",
+     "title": "Wellness Pension 2026: pay today, September 23rd; check the calendar here"
+    },
+    {
+     "sim": 0.603,
+     "src": "la-nacion-argentina",
+     "title": "Anses PNC calendar: what is the amount of non-contributory pensions in October 2026"
+    },
+    {
+     "sim": 0.591,
+     "src": "saba-houthi",
+     "title": "General Authority for Social Insurance and Pensions Begins Disbursing First Half of November 2021 Pension"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Вміння працювати з даними — одна з найцінніших навичок у 2026 році.",
+   "translation": "The ability to work with data  is one of the most valuable skills in 2026.",
+   "relevance": 0.005,
+   "tags": [
+    "science-technology"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.423,
+     "src": "semafor",
+     "title": "Asian economies boom on AI-driven data center demand"
+    },
+    {
+     "sim": 0.417,
+     "src": "globe-and-mail",
+     "title": "As the U.S. midterms near, AI has become a real issue for Trump"
+    },
+    {
+     "sim": 0.402,
+     "src": "indian-express",
+     "title": "‘Made in Bastar’: How state known for coal is now building AI data centres"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Rheinmetall планує випускати до 400 систем ППО Skyranger і Skynex на рік",
+   "translation": "Rheinmetall plans to produce up to 400 air defense Skyranger and Skynex systems a year",
+   "relevance": 0.087,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.46,
+     "src": "the-war-zone",
+     "title": "Cessna Cuts Cockpit Out Of SkyCourier Cargo Hauler For Uncrewed Logistics"
+    },
+    {
+     "sim": 0.421,
+     "src": "breaking-defense",
+     "title": "&#8216;Totally new&#8217;: Nammo pursues rocket motor engine for latest IRIS-T air defense"
+    },
+    {
+     "sim": 0.404,
+     "src": "the-war-zone",
+     "title": "Fleet Of At Least 500 Collaborative Combat Aircraft By 2032 Now In USAF’s Plans"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Мапу оновлено",
+   "translation": "Map updated",
+   "relevance": 0.047,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.354,
+     "src": "guardian",
+     "title": "Appeals court rules in favor of Trump-backed Missouri congressional maps"
+    },
+    {
+     "sim": 0.281,
+     "src": "le-nouvelliste",
+     "title": "Voter Registration Remains Very Low After Two Months..."
+    },
+    {
+     "sim": 0.27,
+     "src": "globe-and-mail",
+     "title": "Morning Update: Selling a new alliance"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "В Україні прискорять ідентифікацію тіл загиблих військових",
+   "translation": "Ukraine speeds up identification of dead military personnel",
+   "relevance": 0.848,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": null,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.52,
+     "src": "scmp-asia",
+     "title": "4 dead in Ukraine after Russian missile and drone attacks on industrial cities"
+    },
+    {
+     "sim": 0.489,
+     "src": "globe-and-mail",
+     "title": "Russia targets Zaporizhzhia after Ukraine’s 1,000-drone weekend barrage"
+    },
+    {
+     "sim": 0.477,
+     "src": "nbc-news",
+     "title": "Three dead in Moscow as Ukraine launches massive drone attack while Russia votes"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Український досвід медичної евакуації переймають у Швеції",
+   "translation": "Ukrainian medical evacuation experience is being reviewed in Sweden",
+   "relevance": 0.399,
+   "tags": [
+    "humanitarian-displacement"
+   ],
+   "scope": null,
+   "translationQuality": "meaning",
+   "neighbors": [
+    {
+     "sim": 0.404,
+     "src": "deutsche-welle",
+     "title": "Ukraine steps up measures to protect railways"
+    },
+    {
+     "sim": 0.395,
+     "src": "nk-news",
+     "title": "Ukrainian medics recall how they saved North Korean POW captured by Kyiv"
+    },
+    {
+     "sim": 0.39,
+     "src": "indian-express",
+     "title": "World News Updates: Ukrainian capital Kyiv under missile attack, mayor says"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Мапу оновлено",
+   "translation": "Map updated",
+   "relevance": 0.047,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.354,
+     "src": "guardian",
+     "title": "Appeals court rules in favor of Trump-backed Missouri congressional maps"
+    },
+    {
+     "sim": 0.281,
+     "src": "le-nouvelliste",
+     "title": "Voter Registration Remains Very Low After Two Months..."
+    },
+    {
+     "sim": 0.27,
+     "src": "globe-and-mail",
+     "title": "Morning Update: Selling a new alliance"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Мапу оновлено",
+   "translation": "Map updated",
+   "relevance": 0.047,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.354,
+     "src": "guardian",
+     "title": "Appeals court rules in favor of Trump-backed Missouri congressional maps"
+    },
+    {
+     "sim": 0.351,
+     "src": "la-nacion-argentina",
+     "title": "25 km of mountain route: advances the megawork that seeks to change forever the map of tourism in Cordoba"
+    },
+    {
+     "sim": 0.347,
+     "src": "bloomberg",
+     "title": "Cleaver Challenger Hints at Lawsuit If Old Missouri Map Is Used"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Тільки факти: оперативно та без маніпуляцій. Важливі історії, незалежна журналістика та головні події дня.",
+   "translation": "Just facts: quick and unmanipulative, important stories, independent journalism, and the main events of the day.",
+   "relevance": 0.044,
+   "tags": [
+    "diplomacy-politics"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.458,
+     "src": "taipei-times",
+     "title": "World News Quick Take"
+    },
+    {
+     "sim": 0.436,
+     "src": "premium-times",
+     "title": "Premium Times Academy trains journalists on peace, conflict-sensitive reporting"
+    },
+    {
+     "sim": 0.423,
+     "src": "la-republica-peru",
+     "title": "Kenny Yucra, Ica’s threat journalist: “Independent journalism is necessary and must be guaranteed”"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Китай виключив із партії та армії двох топгенералів",
+   "translation": "China has excluded two top generals from the party and army",
+   "relevance": 0.969,
+   "tags": [
+    "conflict-security",
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.691,
+     "src": "al-jazeera",
+     "title": "China expels two top ‘disloyal’ military leaders from Communist Party"
+    },
+    {
+     "sim": 0.666,
+     "src": "financial-times",
+     "title": "China accuses ousted top generals of ‘disloyalty’"
+    },
+    {
+     "sim": 0.663,
+     "src": "semafor",
+     "title": "Xi purges top generals for 'disloyalty'"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Бійці 33 ОШП поділилися кадрами роботи на Гуляйпільському відтинку",
+   "translation": "33 separate assault regiment fighters shared their work on the Gulaipileski ridge",
+   "relevance": 0.75,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": null,
+   "translationQuality": "meaning",
+   "neighbors": [
+    {
+     "sim": 0.489,
+     "src": "el-universal",
+     "title": "Defense deploys 600 military personnel in Guanajuato; seeks to strengthen security and peace"
+    },
+    {
+     "sim": 0.434,
+     "src": "tass",
+     "title": "Russian forces hit Ukrainian drone deployment, command posts in DPR, Kharkov Region"
+    },
+    {
+     "sim": 0.422,
+     "src": "el-universal",
+     "title": "Armed attack leaves three police officers dead in Comonfort, Guanajuato; they implement operative in search of responsible"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Мапу оновлено",
+   "translation": "Map updated",
+   "relevance": 0.047,
+   "tags": [
+    "economic-trade"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.673,
+     "src": "taipei-times",
+     "title": "Liquefaction map update shows several changes"
+    },
+    {
+     "sim": 0.428,
+     "src": "taipei-times",
+     "title": "Taiwan has redrawn the AI map"
+    },
+    {
+     "sim": 0.379,
+     "src": "allafrica",
+     "title": "Ethiopia: Maps Can Be Misleading - On Purpose - and Their Story Becomes History. The Case of Ethiopia"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "США, Данія та Гренландія підпишуть угоду про розширення американської військової присутності в Арктиці",
+   "translation": "The United States, Denmark and Greenland will sign an agreement to expand American military presence in the Arctic.",
+   "relevance": 0.977,
+   "tags": [
+    "conflict-security",
+    "diplomacy-politics"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.785,
+     "src": "globe-and-mail",
+     "title": "U.S., Denmark reach deal to expand American military presence on Greenland, Trump says"
+    },
+    {
+     "sim": 0.768,
+     "src": "al-jazeera",
+     "title": "US signs ‘tremendous’ Arctic security deal with Denmark, Greenland"
+    },
+    {
+     "sim": 0.754,
+     "src": "globe-and-mail",
+     "title": "Trump signs deal with Greenland, Denmark in bid to end Arctic standoff"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1,
+    2
+   ]
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Відчуваєте, що AI поступово \"відбирає\" вашу інженерну експертизу?",
+   "translation": "Do you feel like AI is gradually taking over your engineering expertise?",
+   "relevance": 0.062,
+   "tags": [
+    "science-technology"
+   ],
+   "scope": 0,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.652,
+     "src": "taipei-times",
+     "title": "Is AI coming for us?"
+    },
+    {
+     "sim": 0.652,
+     "src": "tass",
+     "title": "Alan Turing Institute sees possibility of humans losing control over AI within five years"
+    },
+    {
+     "sim": 0.586,
+     "src": "la-nacion-argentina",
+     "title": "Specialists respond if you should pay for artificial intelligence"
+    }
+   ],
+   "sameEventNeighbors": []
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "Кремлівська платіжна мережа провела понад $6,9 млрд через міжнародні банки за фальшивими документами",
+   "translation": "The Kremlin's payment network has spent over $6.9 billion through international banks on fake documents",
+   "relevance": 0.869,
+   "tags": [
+    "diplomacy-politics",
+    "economic-trade"
+   ],
+   "scope": 1,
+   "translationQuality": "ok",
+   "neighbors": [
+    {
+     "sim": 0.737,
+     "src": "financial-times",
+     "title": "Kremlin-backed forgery scheme moved $6.9bn through global banks"
+    },
+    {
+     "sim": 0.635,
+     "src": "financial-times",
+     "title": "FirstFT: Kremlin-backed forgery operation moved $6.9bn through global banks"
+    },
+    {
+     "sim": 0.561,
+     "src": "financial-times",
+     "title": "Rosneft billions fed Kremlin-backed money laundering network"
+    }
+   ],
+   "sameEventNeighbors": [
+    0,
+    1
+   ]
+  },
+  {
+   "lang": "uk",
+   "sourceId": "deepstate",
+   "original": "23 ОШП \"Р.У.Г.\" 2 КНГУ \"Хартія\" продовжує повертати контроль поблизу Западного",
+   "translation": "23 separate assault regiment R.U.G. 2 National Guard Corps Chartia continues to regain control of the West",
+   "relevance": 0.893,
+   "tags": [
+    "conflict-security"
+   ],
+   "scope": 1,
+   "translationQuality": "minor",
+   "neighbors": [
+    {
+     "sim": 0.465,
+     "src": "clash-report",
+     "title": "The U.S. Army Reserve is reviewing whether it can provide logistics, engineering, medical and military police units to U.S. Southern Command within 90–120 days."
+    },
+    {
+     "sim": 0.464,
+     "src": "saba-houthi",
+     "title": "Armed forces target operations rooms, command, control centers, weapons depots, Saudi enemy troop concentrations in Al-Tawal, Jizan"
+    },
+    {
+     "sim": 0.453,
+     "src": "tass",
+     "title": "Defense minister inspects Battlegroup North, hears reports on current situation"
+    }
+   ],
+   "sameEventNeighbors": []
+  }
+ ]
+}

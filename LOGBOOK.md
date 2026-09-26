@@ -5,6 +5,66 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-25 — Translation: Spanish finished, first labeled eval on translated headlines (60 hand-labeled; language NOT switched on)
+
+**Spanish is translated.** `translate:news -- --languages es` took the 1,629 Spanish headlines in the window in one pass (~1,450 new, OPUS, a few minutes; the
+first 40 were ~38 s including model load). Claude Code's low-memory guard killed the background shell AFTER it had finished and flushed (cache 427 -> 1,871),
+so nothing was lost; nothing was restarted. Cache is now 1,871 entries; a cache-only pass over the CURRENT window still reports 388 es/ru/uk headlines uncached (cause not checked; most likely archived since the run — rerun `translate:news` to clear them).
+
+**Eval design:** `scripts/fixtures/newsTranslatedLabels.json` — 60 translated headlines (30 es / 15 ru / 15 uk, every k-th of the translated window, so not just
+the newest), each with the SHIPPED classifier's relevance and its 3 nearest same-window neighbors by embedding similarity (title-only translated text vs the
+English neighbor's title+description — the real build condition). Labeled by Claude from original + translation + neighbors: in/out of scope (ambiguous
+excluded), translation quality, and which neighbors are the SAME EVENT. Soft evidence, exactly as the other fixtures: one labeler, n small, no native reader
+of record. Not a new script — the numbers below are recomputable from the fixture; the sheet builder was scratch (`debug/labelSheet.mjs`, gitignored).
+
+**Relevance (shipped classifier, threshold 0.30, title-only translated text; 46 clear labels, 14 ambiguous excluded):** P 0.78, R 0.90, F1 ~0.84 (TP 18, FN 2,
+FP 5, TN 21). English held-out baseline at the same threshold: P 0.83, R 0.99, F1 0.90. Slightly worse, inside the noise a 46-item sample can't resolve.
+- **The 5 false positives are local-life items**, not war/politics: a Messi/Bolivia friendly (0.65), a Bolivian bank's CEO change (0.71), a tunnel blast in La
+  Rioja (0.41), a daily dollar-rate listing (0.44), a Moscow bank clerk's theft (0.76). Three sit at/above the 0.60 rescue line, so the keyword guard would not
+  save them. They only ship if 2+ distinct outlets cluster on the same story, which none of these did (all single-outlet in the sample).
+- **The 2 false negatives:** one is a TRANSLATION defect (Milei's NYC trip: "...and meeting with" — Netanyahu dropped, 0.12); the other a Rheinmetall air-defense
+  output headline (0.09), which may be low in English too (not checked).
+
+**Clustering (13 translated headlines that have a same-event neighbor):** at the shipped 0.70 link, 9/13 reach at least one same-event neighbor (English
+multi-outlet baseline: 40/47 stories at >=2 outlets, ~85%); by pair, 16 of 28 true same-event pairs clear 0.70. The misses cluster at 0.66-0.70 (China expelling
+two generals 0.66-0.69 vs Al Jazeera/FT/Semafor; the AI-dialogue story 0.67-0.69; the Nigeria meth lab 0.68), i.e. the direction is toward SPLITTING, the safe
+direction (§ "Clustering leans toward splitting"). Links >=0.70 to a DIFFERENT event: 3 — two out of scope (a Lizzie Borden cast list vs an explainer, 0.76; two
+South American Games TV listings, 0.74) and one in scope but related (a US-India sanctions ministers' meeting vs the Indian ambassador's remark on the same
+sanctions, 0.72). One near-contamination in 60 is not a measured rate. **Decision: do NOT lower the threshold for translated text on this evidence** — 13
+stories can't justify loosening the number the whole engine's corroboration safety rests on.
+
+**Translation quality (the finding that matters most):** 49 ok / 6 minor (wrong word, same event) / 5 meaning-changing (an actor/action dropped or changed) of 60.
+Meaning-changing: "censura" -> "censorship" for censure (es); the Milei headline truncated before "Netanyahu" (es); "gallinazo" (vulture) -> "chicken" (es); a Ukrainian "medical evacuation experience is being adopted in Sweden" -> "reviewed"; and
+"Huliaipole sector" -> "Gulaipileski ridge" (uk). By language: es 24/3/3, ru 13/2/0 (best, but 15 Interfax wire headlines — not a language comparison; cause not tested), uk 12/1/2.
+Roughly 1 in 12 headlines changes meaning, and titles-only gives the model no context to recover. Nothing here breaks the gate (a mistranslation can't
+manufacture a second outlet), but it can change WHICH story a headline is grouped with and a severity keyword's presence.
+
+**What this does and doesn't establish:** the classifier and clustering thresholds survive translation acceptably on a small sample; translation quality is the
+weaker link. It does NOT justify switching a language on for scheduled builds by itself — the sample is 60, one labeler, and no severity check on translated text
+was done (severity is keyword rules, and a dropped/altered word can flip one — the Milei truncation is the visible case; not measured). The scheduled tasks still
+pass no `--translate`, and nothing runs `translate:news`.
+
+### Follow-up (same day): fixing the meaning-changing errors — names, terms, truncation
+
+Three mechanisms in `src/news/translation.ts`, all in the PURE layer (the build still never loads a translation model). What each does and why that shape:
+
+- **`PROTECTED_NAMES` (es) — mask rare names.** OPUS garbles rare names, and the failure is broad, not one headline: Netanyahu -> "Mr. Tunter" / "tyranny" / dropped, Abbott -> "the Bank of London", Shakira -> "Aktira", Taylor Swift -> "Taylor Sct. Sc.", Tijuana -> "Tianti",
+  Chihuahua -> "Chichi", Atacama -> "Aachenham", Popayán -> "Po332an", Samarcanda -> "S(S)Ynd", Bosch -> "Bicchav". Masked as `ZQ<n>` (OPUS carries them through intact; probed before building) and restored verbatim, or as an English exonym (Samarcanda -> Samarkand). 24 entries, each a
+  real wrong output. **A tokenizer-piece-count heuristic was tried and rejected**: Netanyahu is a SINGLE piece, so it separates mangled names from common words badly, and the build can't load a model to ask. A capitalized-token detector was also tried and rejected (674 of 1,629 headlines flagged — Spanish capitalizes
+  "Gobierno", "Casa Blanca", "Poder Judicial", which translate fine). **The long tail remains** (Revoredo -> "Rev Coredo" was found the same way): a list only chases what has been seen.
+- **`CYRILLIC_TERMS` (ru/uk) — the same treatment for ordinary words and places.** Reading all 191 ru/uk translations showed the 15-headline sample had UNDERSTATED the problem: госизмена (treason) -> "state-smuggling", противолодочные (anti-submarine) -> "anti-ship", Мособлсуд -> "the Supreme Court", крупа (groats) -> "grape",
+  минудобрения -> "mined grains", Мосбиржа -> three different misspellings across six headlines, Брянская -> "Bryan region", Тульская -> "Tulsa region", Тува -> "Tova", Южные Курилы -> "South Coorlin", the Huliaipole sector -> "Gulaipileski ridge", кацапи -> "catzaps". Stem patterns, case-insensitive, whole-word,
+  applied in order (a phrase before the word it contains). Terms and acronyms number their placeholders from one list. Совет мира -> "Board of Peace" is the one entry I'm less than certain of beyond the Gaza context it appeared in.
+- **Truncation and dropped content fail CLOSED.** `endsMidPhrase` rejects output ending on `the/a/an/and/or/with/to` — deliberately not every function word: stranded prepositions are ordinary English ("voted on", "suffered from"), and the word list was checked against all 1,871 then-cached translations (5 hits, all real truncations, incl. "teenagers with" = autism dropped).
+  It applies to entries cached before the rule too (on read), so no re-translation was needed for that. `droppedContent` rejects a translation that lost a TERM or NAME placeholder (NLLB returned "Two teenagers convicted in Tula case" for a treason case: reads fine, lost its point) but still tolerates a dropped ACRONYM, as before. Rejection means untranslated,
+  so the headline drops as unsupported-language — a missing headline over a wrong one.
+
+**Result.** Verified against the real models on every affected headline (37 es, 18 ru/uk): Milei now reads "...and meeting with Netanyahu", Abbott/Shakira/Tijuana/Chihuahua/Samarkand render correctly, Moscow Exchange/Dagestan/Tuva/the Kurils/anti-submarine/mineral fertilizers/Board of Peace/Huliaipole sector likewise. Re-scoring the 60-headline labeled sample under the new
+translations: **2 of the 5 meaning-changing errors are fixed** (Milei, Huliaipole); **3 are not** — "censura" -> "censorship" (it does mean censorship in other headlines, so a blind swap would be wrong), "gallinazo" -> "chicken", and "переймають" (adopt) -> "reviewed" (a verb, no glossary route). Window now: es 1,987 cached / 5 rejected, ru 192 / 1, uk 23 / 0, nothing uncached.
+548 tests pass (was 523; +25 for names, terms, truncation, dropped content and cache-key stability). The cache key changes ONLY for a headline containing a listed name or term, so existing entries stay valid.
+
+**Not measured, and I'd rather say so:** the fixed set is what I SAW. No held-out check of how often OPUS/NLLB mangle a name or word that is not on the lists — that is the long tail, and the labeled sample has only 60 headlines. The relevance/clustering numbers above were NOT re-run on the new translations (the two changed headlines are the only ones in the sample that moved).
+
 ## 2026-09-24 — Phase 7: headline translation, first cut (OFF by default; not yet evaluated)
 
 **What was built:** `src/news/translation.ts` (pure), `localTranslator.ts` (the one model loader), `scripts/translateNews.mjs` (`npm run translate:news`,
