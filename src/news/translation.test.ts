@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { RawArticle } from './eventBuilder'
-import { cleanTranslation, droppedContent, endsMidPhrase, isPlausibleTranslation, maskAcronyms, maskForModel, maskProtectedNames, unmaskAcronyms, translateArticles, translationCacheKey, type TranslationCache, type Translator } from './translation'
+import { cleanTranslation, droppedContent, endsMidPhrase, isBrokenOutput, isPlausibleTranslation, maskAcronyms, maskForModel, maskProtectedNames, unmaskAcronyms, translateArticles, translationCacheKey, type TranslationCache, type Translator } from './translation'
 
 const memoryCache = (): TranslationCache & { store: Map<string, string | null> } => {
   const store = new Map<string, string | null>()
@@ -174,13 +174,13 @@ describe('translateArticles', () => {
 
   it('serves a repeat from the cache instead of calling the model again', async () => {
     let calls = 0
-    const translate: Translator = async () => (calls++, 'Cached headline here')
+    const translate: Translator = async () => (calls++, 'Milei attacked the UN and asked for support over the Falklands')
     const cache = memoryCache()
     await translateArticles([article()], { languages: es, translate, cache })
     const second = await translateArticles([article({ url: 'https://example.com/b' })], { languages: es, translate, cache })
     expect(calls).toBe(1)
     expect(second.stats).toMatchObject({ translated: 0, cached: 1 })
-    expect(second.articles[0].title).toBe('Cached headline here')
+    expect(second.articles[0].title).toBe('Milei attacked the UN and asked for support over the Falklands')
   })
 
   it('leaves an implausible translation untranslated and remembers the rejection', async () => {
@@ -435,5 +435,109 @@ describe('a dropped term or name placeholder fails closed', () => {
   it('the new terms', () => {
     expect(maskForModel('ru', 'Ростехнадзор приостановил проведение забоя на шахте').restores).toEqual(['Rostekhnadzor', 'mining face operations'])
     expect(maskForModel('uk', 'скидів на голови кацапів').restores).toEqual(['Russians (pejorative)'])
+  })
+})
+
+describe('second glossary pass (2026-09-26): Paz, more names, phrases', () => {
+  const mask = (t: string) => maskProtectedNames(t, 'es')
+
+  it('masks Bolivia\'s president Paz where OPUS reads it as "Peace"', () => {
+    expect(mask('Paz intensifica su agenda en Nueva York con reuniones con el Banco Mundial').masked).toBe('ZQ1 intensifica su agenda en Nueva York con reuniones con el Banco Mundial')
+    expect(mask('Paz pone a la Hidrovía como eje de su agenda económica en EEUU').restores).toEqual(['Paz'])
+    expect(mask('Paz tras intensas reuniones en EEUU: “10.000 millones de dólares van a llegar a Bolivia”').restores).toEqual(['Paz'])
+    expect(mask('Paz se olvida de Cerimedo y dice a la ONU que no tuvo expertos').restores).toEqual(['Paz', 'Cerimedo'])
+    expect(mask('El presidente Paz viaja a Washington').restores).toEqual(['Paz'])
+    expect(mask('Rodrigo Paz de Bolivia habló ante la ONU').restores).toEqual(['Paz']) // "de" would exclude it, but a title before it decides
+  })
+
+  it('leaves peace, the city and a peace agreement to the model', () => {
+    for (const t of [
+      'Paz en Gaza: los mediadores esperan una respuesta',
+      'La Paz vive una jornada de bloqueos',
+      'Colombia: A 10 años del Acuerdo de Paz, ¿cuánto se ha avanzado?',
+      'Trump y su plan de Paz total para Ucrania',
+      'Piden paz y seguridad para la región',
+      'Se celebra el Día de la Paz',
+    ]) expect(mask(t).restores).not.toContain('Paz')
+  })
+
+  it('masks the names and phrases OPUS got wrong, longest entry first', () => {
+    expect(mask('Lula en Naciones Unidas: “Brasil no cabe en el patio trasero de nadie”').masked).toContain('ZQ1 en Naciones Unidas')
+    expect(mask('Turkish Airlines anuncia la compra de 150 aviones a Boeing').restores).toEqual(['Boeing'])
+    expect(mask('Sánchez reivindica la españolidad de Ceuta ante la ONU').restores).toEqual(['Ceuta'])
+    expect(mask('Tiempo EN VIVO: temblor hoy').restores).toEqual(['LIVE'])
+    expect(mask('Hallan sin vida a candidato a regidor en Laredo').restores).toEqual(['councilor'])
+    expect(mask('Hallan a dos regidores').restores).toEqual(['councilors'])
+    expect(mask('Fernanda Chávez designada en el IEEPO').restores).toEqual(['IEEPO'])
+    expect(mask('Keiko Fujimori sostuvo reunión con la reina Máxima de los Países Bajos').restores).toEqual(['Queen Máxima'])
+    expect(mask('afirma Salomón Jara en Oaxaca').restores).toEqual(['Salomón Jara'])
+  })
+
+  it('a case-sensitive word list does not touch lookalikes', () => {
+    expect(mask('Un regidorcito y el aliasing').restores).toEqual([])
+    expect(mask('Sin Boeings a la vista').restores).toEqual([])
+  })
+})
+
+describe('broken output no glossary can repair', () => {
+  it('flags repetition loops and punctuation runs', () => {
+    expect(isBrokenOutput('x', 'Senate Commission Approves Reform on Dual Nationality; Is Is Is Is Is Is Is Is??????')).toBe(true)
+    expect(isBrokenOutput('x', 'this is how it is for Brazil elections, Brazil, Brazil, Brazil, Brazil, Brazil')).toBe(true)
+    expect(isBrokenOutput('x', 'What?????')).toBe(true)
+  })
+
+  it('leaves ordinary repetition and punctuation alone', () => {
+    expect(isBrokenOutput('x', 'Very very good news for the Middle East')).toBe(false)
+    expect(isBrokenOutput('x', 'Brazil, Brazil and Brazil again lead the table')).toBe(false)
+    expect(isBrokenOutput('x', 'The vote... was close')).toBe(false)
+    expect(isBrokenOutput('x', 'Is it over?!')).toBe(false)
+  })
+
+  it('flags a fragment of a long headline, but not a short translation of a short one', () => {
+    const src = 'Alcaldesa de Ecatepec inaugura pavimentación en calles de colonia San Francisco de Asís; sus vialidades fueron'
+    expect(isBrokenOutput(src, 'Mayor of Eca')).toBe(true)
+    expect(isBrokenOutput('Paz en Gaza', 'Peace in Gaza')).toBe(false)
+    expect(isBrokenOutput('Trump dice que no dudará en usar la fuerza en Latinoamérica', 'Trump says he will not hesitate to use force in Latin America')).toBe(false)
+    // Spanish headlines often run shorter in English (articles/prepositions drop), so a real translation at ~0.6 must pass.
+    expect(isBrokenOutput('El presidente de la República se reunió con el ministro de Economía en Lima', 'The president met with the economy minister in Lima')).toBe(false)
+  })
+
+  it('is applied to a cached entry too, without calling the model', async () => {
+    const cache = memoryCache()
+    const a = article({ title: 'Alcaldesa de Ecatepec inaugura pavimentación en calles de colonia San Francisco de Asís; sus vialidades fueron', url: 'u9' })
+    cache.set(translationCacheKey('es', maskProtectedNames(a.title, 'es').masked, maskProtectedNames(a.title, 'es').restores), 'Mayor of Ecatepec')
+    let calls = 0
+    // The cached value is a 3-word fragment of a 17-word headline, so it is dropped on read.
+    const { stats } = await translateArticles([a], { languages: es, translate: async () => (calls++, 'x'), cache })
+    expect(calls).toBe(0)
+    expect(stats.rejected).toBe(1)
+  })
+})
+
+describe('Paz in a Bolivian headline, and the third name batch', () => {
+  const mask = (t: string) => maskProtectedNames(t, 'es')
+
+  it('relaxes the neighbour rule when the headline names Bolivia or a Bolivian figure', () => {
+    expect(mask('Paz en la ONU abre Bolivia a la inversión, pide parar las guerras').restores).toEqual(['Paz'])
+    expect(mask('Lara se declara presidente en ejercicio ante viaje de Paz a EEUU y Bolivia').restores).toEqual(['Paz'])
+    expect(mask('Cerimedo declarará este jueves; Paz responde').restores.filter((r) => r === 'Paz')).toEqual(['Paz'])
+  })
+
+  it('still leaves the city and a peace agreement alone in that context', () => {
+    expect(mask('Cae una banda peruana-boliviana acusada de robo agravado en La Paz').restores).not.toContain('Paz')
+    expect(mask('Bolivia respalda el Acuerdo de Paz en Colombia').restores).not.toContain('Paz')
+    expect(mask('Bolivia pide Paz total en la región').restores).not.toContain('Paz')
+  })
+
+  it('does not relax the rule for a headline with no Bolivian context', () => {
+    expect(mask('Reunión de Paz en Oslo con mediadores').restores).not.toContain('Paz')
+    expect(mask('Expresidente critica reunión de Paz con mediadores').restores).not.toContain('Paz')
+  })
+
+  it('masks the third batch', () => {
+    expect(mask('Niños salieron gateando de un colegio en Timba, entre Cauca y Valle').restores).toEqual(['Cauca'])
+    expect(mask('TGP retoma el gasoducto de Ica a Arequipa').restores).toEqual(['Arequipa'])
+    expect(mask('Milei participó del evento Shield of the Americas').restores).toEqual(['Shield of the Americas'])
+    expect(mask('Caso Daniel Sancho | Tribunal de Tailandia desestimó apelaciones').restores).toEqual(['Daniel Sancho'])
   })
 })

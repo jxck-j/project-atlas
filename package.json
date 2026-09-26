@@ -22,6 +22,7 @@
     "build:current-status": "tsx scripts/buildCurrentStatus.mjs",
     "archive:news": "tsx scripts/archiveNews.mjs",
     "translate:news": "tsx scripts/translateNews.mjs",
+    "mine:translation-candidates": "tsx scripts/mineTranslationCandidates.mjs",
     "build:news:events": "tsx scripts/buildNewsEvents.mjs",
     "build:news:ticker": "tsx scripts/buildFirstHandTicker.mjs",
     "news:build": "tsx scripts/newsCycle.mjs build",

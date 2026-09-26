@@ -70,6 +70,26 @@ export function endsMidPhrase(text: string): boolean {
 }
 
 /**
+ * The model's degenerate-generation failures, seen in the real cache (2026-09-26, 2,605 translations): a word repeated in a loop
+ * ("...Nationality; Is Is Is Is Is Is Is Is??????", "...Brazil elections, Brazil, Brazil, Brazil, Brazil...") and a runaway string of
+ * one punctuation mark. Four in a row is far past anything a headline does; the check found 2 hits and no false positive.
+ */
+const REPEATED_WORD = /(?<![\p{L}\p{N}])([\p{L}\p{N}]+)(?:[\s,;:.-]+\1(?![\p{L}\p{N}])){3,}/iu
+const PUNCTUATION_RUN = /([^\p{L}\p{N}\s])\1{3,}/u
+
+/**
+ * Whether an output is broken in a way no glossary can repair, judged against the headline it came from: it stops mid-phrase, it is
+ * a repetition loop, or it is a fragment of a long source ("Mayor of Eca" for a 21-word headline about Ecatepec; the one hit at a
+ * 0.4 ratio, no false positives). Applied to a NEW translation and, on read, to one cached before the rule existed.
+ */
+export function isBrokenOutput(source: string, output: string): boolean {
+  const out = output.trim()
+  if (endsMidPhrase(out) || REPEATED_WORD.test(out) || PUNCTUATION_RUN.test(out)) return true
+  const words = (s: string) => s.split(/\s+/).filter(Boolean).length
+  return words(source) >= 8 && words(out) < 0.4 * words(source)
+}
+
+/**
  * Whether a translation is safe to hand to the rules. The failure modes seen in the spike are all detectable without a second
  * model: output that is empty, that is still mostly the source script (untranslated), that has grown other-language
  * junk (batching bug, hallucination), or that is wildly longer than the headline it came from.
@@ -82,7 +102,7 @@ export function isPlausibleTranslation(source: string, output: string): boolean 
   if (foreign / chars.length > 0.05) return false
   const words = (s: string) => s.split(/\s+/).filter(Boolean).length
   if (words(out) > 3 * words(source) + 4) return false
-  if (endsMidPhrase(out)) return false
+  if (isBrokenOutput(source, out)) return false
   return true
 }
 
@@ -281,8 +301,77 @@ export const PROTECTED_NAMES: Readonly<Record<string, Readonly<Record<string, st
     Guaylupo: 'Guaylupo',
     Areco: 'Areco',
     Vásquez: 'Vásquez',
+    // Second pass (2026-09-26, 2,605 cached translations, in-scope headlines only). Each was a real wrong output:
+    // Lula -> "Lure", Noboa -> dropped ("Daniel (94) to the UN"), Boeing -> "Bobo", Ceuta -> dropped ("the Spanishness of the United
+    // Nations"), Ecatepec -> "Eca" (the whole headline), Pereira -> "Pierón", Anthropic -> "Antropic", Mazzucato -> "Indigenous Mazzucat",
+    // Miriam Haley -> "Mary Haley", Denis Palacios -> "Ex-Desert of the Palaces", De la Fuente -> "From the Source", Salomón Jara ->
+    // "Solomon Jara", reina Máxima -> "Queen Max", IEEPO -> "I980", CSN -> "C95", "EN VIVO" -> "ON LIFE", regidor (a municipal
+    // councillor) -> "governor" / "ruler", "alias" -> "ás alias" / "álias".
+    Lula: 'Lula',
+    Noboa: 'Noboa',
+    Boeing: 'Boeing',
+    Ceuta: 'Ceuta',
+    Ecatepec: 'Ecatepec',
+    Pereira: 'Pereira',
+    Anthropic: 'Anthropic',
+    Nayar: 'Nayar',
+    IEEPO: 'IEEPO',
+    CSN: 'CSN',
+    'Mariana Mazzucato': 'Mariana Mazzucato',
+    'Miriam Haley': 'Miriam Haley',
+    'Denis Palacios': 'Denis Palacios',
+    'De la Fuente': 'De la Fuente',
+    'Salomón Jara': 'Salomón Jara',
+    'reina Máxima': 'Queen Máxima',
+    'La Libertad': 'La Libertad',
+    'EN VIVO': 'LIVE',
+    'EN DIRECTO': 'LIVE',
+    alias: 'alias',
+    regidor: 'councilor',
+    regidora: 'councilor',
+    regidores: 'councilors',
+    regidoras: 'councilors',
+    // Third batch, same day, from re-reading the re-translated Bolivia/Colombia/Peru headlines: Cauca -> "Caca" (a Colombian department),
+    // Arequipa -> "Abraika", Chonchocoro -> "Chonch NGOoro" (a Bolivian prison), Cerimedo -> "Certificate", Sancho -> "Sangray",
+    // and the English event name "Shield of the Americas", which OPUS dropped outright ("Milei participated in the event, the American").
+    Cauca: 'Cauca',
+    Arequipa: 'Arequipa',
+    Chonchocoro: 'Chonchocoro',
+    Cerimedo: 'Cerimedo',
+    'Daniel Sancho': 'Daniel Sancho',
+    'Shield of the Americas': 'Shield of the Americas',
   },
 }
+
+/**
+ * Names that are also ordinary words, so a plain word list cannot decide. Only "Paz" so far — Bolivia's president Rodrigo Paz, whom
+ * OPUS renders "Peace" ("Peace intensifies its agenda in New York", "Peace after intense meetings in the US" — five or more headlines,
+ * every one of them wrong about who did what). "Paz" is also peace, and "La Paz" is the city, so the rule reads its neighbours:
+ * always a name after Rodrigo/presidente/mandatario; otherwise a name unless it follows an article/preposition ("La Paz", "Acuerdo de
+ * Paz", "Día de la Paz") or is followed by a complement that makes it the noun ("Paz en Gaza", "Paz total", "Paz y seguridad").
+ * Restored verbatim, so the one wrong call — a rare headline where "Paz" starting the sentence really is peace — costs a Spanish word
+ * in an English headline, not a wrong person. Matched case-sensitively.
+ */
+const PAZ_AFTER = String.raw`(?<=\b(?:Rodrigo|[Pp]residente|[Mm]andatario)\s)Paz`
+const PAZ_STOP_BEFORE = 'La|la|el|de|del|una|su|en|con|sin|por|para|hacia|contra|y|e|Día|Nobel|Acuerdo|Acuerdos|Proceso|Tratado|Premio'
+const PAZ_STOP_AFTER = 'en|de|del|y|e|para|con|entre|por|a|al|sin|mundial|total|social|duradera|justa|verdadera|será|es'
+/**
+ * A headline that names Bolivia (or a Bolivian place/figure) is about the president far more often than about peace, so there the
+ * neighbour rule is relaxed: "Paz en la ONU abre Bolivia a la inversión" (peace in the UN?) and "viaje de Paz a EEUU" (a peace trip?)
+ * are the president. "La Paz" and "Acuerdo de Paz" stay out; a genuinely peace-related "Paz" here restores as a Spanish word, harmlessly.
+ */
+const BOLIVIA_CONTEXT = /Bolivia|boliviano|Evo\b|Evo Morales|Evista|Santa Cruz|El Alto|Cochabamba|Oruro|Potos[ií]|Tarija|Cerimedo|Aramayo|Beller|Chonchocoro/
+export const SPANISH_TERMS: readonly { pattern: string; english: string; when?: RegExp }[] = [
+  { pattern: String.raw`(?:${PAZ_AFTER}|(?<!\b(?:${PAZ_STOP_BEFORE})\s)Paz(?!\s+(?:${PAZ_STOP_AFTER})\b))`, english: 'Paz' },
+  { pattern: String.raw`(?<!\b(?:La|Acuerdo\s+de|Día\s+de\s+la)\s)Paz(?!\s+(?:mundial|total|social|duradera|justa|verdadera)\b)`, english: 'Paz', when: BOLIVIA_CONTEXT },
+]
+const SPANISH_TERM_PATTERNS = SPANISH_TERMS.map(({ pattern, english, when }) => ({
+  re: new RegExp(String.raw`(?<![\p{L}\p{N}])${pattern}(?![\p{L}\p{N}])`, 'gu'),
+  english,
+  when,
+}))
+
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const NAME_PATTERNS = new Map<string, RegExp>()
 function namePattern(language: string): RegExp | undefined {
@@ -290,7 +379,9 @@ function namePattern(language: string): RegExp | undefined {
   if (!names) return undefined
   let p = NAME_PATTERNS.get(language)
   if (!p) {
-    p = new RegExp(`(?<![\\p{L}\\p{N}])(${Object.keys(names).join('|')})(?![\\p{L}\\p{N}])`, 'gu')
+    // Longest first, so "Salomón Jara" wins over any shorter entry it contains.
+    const keys = Object.keys(names).sort((a, b) => b.length - a.length).map(escapeRegExp)
+    p = new RegExp(`(?<![\\p{L}\\p{N}])(${keys.join('|')})(?![\\p{L}\\p{N}])`, 'gu')
     NAME_PATTERNS.set(language, p)
   }
   return p
@@ -302,18 +393,15 @@ export function maskProtectedNames(text: string, language: string): { masked: st
   if (!pattern || /ZQ\d/.test(text)) return { masked: text, restores: [] }
   const names = PROTECTED_NAMES[language]
   const restores: string[] = []
-  const masked = text.replace(pattern, (name) => {
-    const restore = names[name]
-    let i = restores.indexOf(restore)
-    if (i === -1) i = restores.push(restore) - 1
-    return `ZQ${i + 1}`
-  })
+  const contextual = language === 'es' ? SPANISH_TERM_PATTERNS.reduce((t, { re, english, when }) => (when && !when.test(text) ? t : t.replace(re, () => placeholderFor(restores, english))), text) : text
+  const masked = contextual.replace(pattern, (name) => placeholderFor(restores, names[name]))
   return { masked, restores }
 }
 
 /** English renderings that came from a TERM or NAME entry (as opposed to an acronym): losing one loses content, not just an abbreviation. */
 const CONTENT_RESTORES: ReadonlySet<string> = new Set([
   ...CYRILLIC_TERMS.map((t) => t.english),
+  ...SPANISH_TERMS.map((t) => t.english),
   ...Object.values(PROTECTED_NAMES).flatMap((names) => Object.values(names)),
 ])
 
@@ -435,7 +523,7 @@ export async function translateArticles(
     english = cleanTranslation(source, english)
     // A NEW translation was already judged by isPlausibleTranslation; this is for an entry cached before the truncation rule existed,
     // which is dropped on read without re-running the model.
-    if (fromCache && endsMidPhrase(english)) {
+    if (fromCache && isBrokenOutput(source, english)) {
       stats.cached--
       stats.rejected++
       out.push(article)

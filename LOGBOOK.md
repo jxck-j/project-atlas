@@ -65,6 +65,28 @@ translations: **2 of the 5 meaning-changing errors are fixed** (Milei, Huliaipol
 
 **Not measured, and I'd rather say so:** the fixed set is what I SAW. No held-out check of how often OPUS/NLLB mangle a name or word that is not on the lists — that is the long tail, and the labeled sample has only 60 headlines. The relevance/clustering numbers above were NOT re-run on the new translations (the two changed headlines are the only ones in the sample that moved).
 
+### Second glossary pass (2026-09-26): mining the whole cache for what the glossary was missing
+
+**Method.** Translated the ~410 older archive headlines (es 2,381 / ru 218 / uk 24 in the archive in total — the window had most of them; ru/uk material is scarce because only Interfax and DeepState are non-English feeds), so the cache holds 2,605 translations. Then `npm run mine:translation-candidates`
+(new, read-only, `scripts/mineTranslationCandidates.mjs`): restricted to headlines the shipped classifier calls in scope (1,265 of 2,605), it flags a capitalised name missing from the output, glued digits/`(94)`/`I980`, source numbers absent from the output, and a source negation with none in the output. **Every row is a human's to read** —
+the NAME section is noisy by design (Spanish capitalises "Gobierno", "Poder Judicial", which translate fine). It found more, and worse, than the first pass, because the first pass read a window at a glance.
+
+**What it found that the first pass had missed** (all in-scope, all real outputs):
+- **Bolivia's president Paz -> "Peace"** in 24+ headlines ("Peace intensifies its agenda in New York"). The worst find: it makes the country's head of state a noun. A name that is also a word needs context, so `SPANISH_TERMS` reads neighbours (after Rodrigo/presidente/mandatario always; otherwise not after an article/preposition — "La Paz", "Acuerdo de Paz" — nor before a complement
+  that makes it the noun — "Paz en Gaza", "Paz total") and, when the headline names Bolivia or a Bolivian figure, relaxes to everything but "La Paz"/"Acuerdo de Paz"/"paz total". Restores verbatim, so the wrong call costs a Spanish word, not a wrong person.
+- **Lula -> "Lure"; Noboa -> dropped ("Daniel (94) to the UN"); Boeing -> "Bobo"; Ceuta -> dropped ("Sánchez claims the Spanishness of the United Nations"); Cauca -> "Caca"; Arequipa -> "Abraika"; Chonchocoro -> "Chonch NGOoro"; Cerimedo -> "Certificate"; Ecatepec -> "Eca" (the WHOLE output was "Mayor of Eca").**
+  Also IEEPO -> "I980", CSN -> "C95", "EN VIVO" -> "ON LIFE", regidor (municipal councillor) -> "governor"/"ruler", "alias" -> "ás alias", and the English event name "Shield of the Americas", which OPUS simply dropped. `PROTECTED_NAMES` (es) is now 54 entries; `CYRILLIC_TERMS` 21.
+- **Two structural failures no glossary repairs** — a repetition loop ("...Nationality; Is Is Is Is Is Is Is Is??????", "...Brazil elections, Brazil, Brazil, Brazil...") and a fragment of a long headline ("Mayor of Eca"). `isBrokenOutput` now covers them with the dangling-end rule: a word repeated 4+ times in a row, a 4+ run of one punctuation mark, or output under 0.4x the source's words for a source of 8+ words.
+  Measured before adding: 2 repetition hits and 1 shortening hit in 2,605, no false positives. It applies to entries cached before the rule (on read).
+
+**Rejected leads.** Curly single quotes were suspected for a mojibake output ("â â El Mexicano"); probed — not the cause (the word "alias" is; all three quote styles broke the same way). A dictionary/tokenizer route to auto-detect names was already rejected (first pass).
+
+**Verified against the real model** on every changed headline: Paz/Lula/Boeing/Ceuta/Cauca/Chonchocoro/Arequipa/Shield of the Americas/regidor/"EN VIVO" all render correctly; the four brokens are now rejected or fixed. Candidate counts: ODD 8 -> 1, NAME 153 -> ~125 (the rest is the expected noise). 560 tests pass (+12).
+
+**Still wrong, on purpose left:** three Paz headlines that read as peace from their neighbours ("Paz y el Escudo de las Américas...", "viaje de Paz a EEUU" with no Bolivian word in the headline, "reunión de Paz con Benjamín Netanyahu") — forcing them would misread real peace headlines. `censura`/`gallinazo`/`переймають` as before. **Number garbling is real and unfixable by glossary:**
+NUM flagged 10-12 in-scope headlines where a quantity changed — "286 cargos" -> "86", "288 motos" -> "a thousand", "2 mil 500" -> "2,000", "50/50" -> "5050". ~1% of in-scope headlines; the economy-tagged ones matter most. Masking numbers was considered and NOT built (Spanish "10.000" vs English "10,000" would make restoring verbatim wrong), so this is a BACKLOG item, not a fix.
+**Not covered:** the ru/uk side got no new terms — there were only ~25 new ru headlines and none showed a certain error; the ru/uk corpus is too small (Interfax + DeepState) for this method to say much. A glossary is a list of what has been SEEN; run the miner again after the next big archive.
+
 ## 2026-09-24 — Phase 7: headline translation, first cut (OFF by default; not yet evaluated)
 
 **What was built:** `src/news/translation.ts` (pure), `localTranslator.ts` (the one model loader), `scripts/translateNews.mjs` (`npm run translate:news`,
