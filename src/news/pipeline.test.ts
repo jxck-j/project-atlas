@@ -9,6 +9,7 @@ import { SOURCES } from './sourceConfig'
 import type { SourceProfile } from './types'
 import feeds from './feeds.json'
 import feedGaps from './feedGaps.json'
+import wireSources from './wireSources.json'
 import { CAPITAL_CITY_NAMES, EXCLUDED_CAPITAL_NAMES } from './capitalCities'
 import { COUNTRY_PROFILES } from '../data/countryProfiles'
 
@@ -587,7 +588,7 @@ describe('feeds.json', () => {
     expect(new Set(feeds.map((f) => f.url)).size).toBe(feeds.length)
   })
 
-  it('never points a wire-tier id at a feed it cannot actually serve (Reuters/AP/AFP have no reachable feed)', () => {
+  it('never points a wire-tier id at feeds.json — Reuters/AP/AFP are fetched through wireSources.json', () => {
     for (const f of feeds) expect(['reuters', 'ap', 'afp']).not.toContain(f.sourceId)
   })
 
@@ -606,8 +607,13 @@ describe('feeds.json', () => {
   // Every vetted profile is either fetched or explicitly accounted for — so a roster addition (the Admin Console can
   // add one) fails here until someone finds its feed or records why there isn't one, instead of silently never ingesting.
   it('together with feedGaps.json, covers every sources.json profile exactly once', () => {
-    // A first-hand profile is fetched through its `channel` (scripts/lib/fetchTelegram.mjs), not through feeds.json.
-    const fed = new Set([...feeds.map((f) => f.sourceId), ...SOURCES.filter((s) => s.sourceType === 'first-hand').map((s) => s.id)])
+    // A first-hand profile is fetched through its `channel` (scripts/lib/fetchTelegram.mjs), a wire service through wireSources.json
+    // (scripts/lib/wire/) — neither through feeds.json.
+    const fed = new Set([
+      ...feeds.map((f) => f.sourceId),
+      ...wireSources.publishers.map((p) => p.sourceId),
+      ...SOURCES.filter((s) => s.sourceType === 'first-hand').map((s) => s.id),
+    ])
     const gapIds = feedGaps.map((g) => g.sourceId)
     expect(new Set(gapIds).size, 'duplicate gap').toBe(gapIds.length)
     for (const id of gapIds) expect(fed.has(id), `${id} is both fed and listed as a gap`).toBe(false)

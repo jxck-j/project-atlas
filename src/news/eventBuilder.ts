@@ -21,6 +21,7 @@ import {
 import { decodeHtmlEntities } from './htmlEntities'
 import { FIRST_HAND_MEDIA_ENABLED } from './firstHandMedia'
 import { resolvePublishDecision } from './publishGate'
+import { mergeWireArticles } from './wireCommon'
 import { applySeverityCaps, maxSeverity } from './severity'
 import type { AnalysisSourceEntry, FirstHandSourceEntry, NewsEvent, OutletSourceEntry, Severity, SourceEntry, SourceProfile, SystemicThemeConfig, TopicTag } from './types'
 
@@ -266,9 +267,14 @@ function prepare(
   const rosterProfiles = new Map(profiles.map((p) => [p.id, p]))
   // One matcher per name a country goes by; the canonical one is what sources.json's countryName stores.
   const idByName = new Map(countryMatchers.map((m) => [m.name, m.id]))
+  // A wire service is fetched through several channels (wireSources.ts) and the archive keeps first sightings, so one story can be
+  // stored under two URLs — Google's opaque redirect from one run, the real link from a later one. Fold those into one article
+  // (real URL, description and image from whichever channel had them). Wire tier only: nowhere else does a source have channels.
+  const wireIds = new Set(profiles.filter((p) => p.sourceType === 'outlet' && p.tier === 'wire').map((p) => p.id))
+  const merged = wireIds.size === 0 ? articles : [...articles.filter((a) => !wireIds.has(a.sourceId)), ...mergeWireArticles(articles.filter((a) => wireIds.has(a.sourceId)))]
   // The same URL can arrive through two feeds (Bloomberg markets + politics).
   const seenUrls = new Set<string>()
-  const unique = articles.filter((a) => (seenUrls.has(a.url) ? false : (seenUrls.add(a.url), true)))
+  const unique = merged.filter((a) => (seenUrls.has(a.url) ? false : (seenUrls.add(a.url), true)))
   const eligible: Prepared['eligible'] = []
   for (const raw of unique) {
     // Decode here, at the ONE point every path passes through, rather than at

@@ -5,6 +5,111 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-27 — AP sitemap turned on via curl transport (J's permission), and the near-duplicate fold that surfaced
+
+**J confirmed AP's permission for this specific fetch** and asked to work around the Cloudflare 403 documented below. `scripts/lib/wire/curlFetch.mjs` shells out to the system
+`curl` (same honest User-Agent, `-sS -L --compressed`, status checked via `-w`) instead of Node's `fetch`; a channel opts in with `"transport": "curl"` — nothing else about the
+channel changes, and no other channel uses it. AP's `news-sitemap` channel now has `enabled` removed and `transport: "curl"`, with the permission and the reason recorded in its
+own `note` field in `wireSources.json`. Live result: AP went from 219 to 702 articles, 588 with a real URL (up from 89); zero failures; all 1,129 wire URLs across the three
+publishers stayed unique.
+
+**That surfaced a real problem: AP re-titles some stories between Google's index and the sitemap/Bluesky.** "Brazil's President Lula bans online betting" (Google) vs "Brazil's
+Lula bans fixed-odds betting" (sitemap) is the same article, different wording — the exact-headline match in `mergeWireArticles` doesn't catch it, so AP would be listed twice in
+the Event (corroboration still counts it once — distinct SOURCES, not entries — but the dossier would show a duplicate and a Google-link entry with no image/description sitting
+next to the real one). Measured: 21 of AP's 114 Google-only items in the first curl-enabled pull were reworded duplicates of a real-URL item.
+
+**Fix: a bounded fuzzy fold, `foldGoogleNearDuplicates` in `wireCommon.ts`, run inside `mergeWireArticles` after the exact match.** Deliberately narrow, because a wrong fold here
+only ever loses a second headline from a source already counted once (never merges two real-URL records, never crosses sources): same `sourceId`, still a Google link, within 48h
+and ≥60% overlap of words longer than 3 characters (`NEAR_DUPLICATE_OVERLAP`) with a same-day real-URL record. The 0.6 threshold is read off five true pairs found in the live data
+(0.64, 0.64, 0.78, 0.86, 1.00) — **not calibrated against false positives**, since the classifier that would have run the check to look for false merges was denied twice in this
+session (see below); re-derive it properly (a larger sample, and specifically hunting for two genuinely different AP stories that happen to share 60% of their words) before
+trusting it past the stopgap stage. Live re-check after adding it: AP's remaining Google-only count dropped from 114 to 78.
+
+**Tooling note.** The auto-mode classifier denied two Bash calls in this task with no stated reason (one a live probe script, one a `cat >>`+typecheck+lint+test chain) — the second
+denial silently discarded the heredoc that was meant to add the fold's own tests, so "tests pass" from the immediately-following turn was checking the OLD test count until this was
+caught and the tests were re-added via the Edit tool instead of `cat >>`.
+
+## 2026-09-26 (later) — Wire channels: Bluesky, Google topic slicing, AP sitemap (written, OFF); what the research ruled out
+
+**Why a second pass.** The first cut (entry below) shipped Google News RSS alone: opaque links, no description, no image, 100 items per query. J asked for research on "similar
+methods" before committing. Everything below was probed live on 2026-09-26; volumes are one day's sample.
+
+**What was built (`src/news/wireSources.json` now lists channels per publisher).**
+- **Bluesky, the publisher's own account** — the find. Public unauthenticated AppView (`getAuthorFeed`, cursor pagination). Reuters: ~150 posts/day, 98% with a link card carrying
+  the headline, Reuters' own description text and a thumbnail; AP: ~33/day, 91%. The link is the publisher's shortener (`reut.rs`, AP's `bit.ly`), a 301 whose Location is the real
+  article URL plus tracking params (`link_source`, `taid`, `utm_*` — stripped). Resolving is one HEAD to the shortener (never the article), cached in `debug/`. Zero-width/word-joiner
+  characters in Reuters' text (U+2060) are stripped so headlines match exactly. Reuters' account also posts YouTube links — dropped by the domain check.
+- **Google topic slicing.** A query returns at most 100 items ranked by relevance, and `when:6h` alone already hits the cap, so one `site:` query only samples Reuters. Measured for
+  Reuters (1 day): base 97; +43 (conflict), +34 (politics), +44 (economy), then +9 (disaster), +6 (crime), +15 (tech). Diminishing after three, so Reuters runs 5 queries (the last folds
+  disaster + cyber/space/chip), AFP and AP run 3. ~13 requests per run, sequential and 1 s apart. `after:/before:` also works (day granularity) for backfill; not used.
+- **Merge.** `mergeWireArticles` (per publisher, across channels) matches on cleaned URL OR normalized headline; `prepare()` repeats it for wire-tier articles at build time because
+  the archive keeps first sightings (Google link from one run, real link from another would otherwise be two records).
+- **Result** (`fetchWireArticles`, live): Reuters 99→318 articles (177 with real URL + description + image), AP 97→219 (89 enriched), AFP 84→119; 656 unique URLs, no tracking params, no
+  same-source headline repeats. First end-to-end `news:build` over a scratch archive: 288 Events, 192 with a wire source, 110 of them existing ONLY because of wire entries, 6 of the
+  9 Critical wire-sourced (one AP entry alone can publish a Critical Event — that is the wire tier's design, now live rather than theoretical). Wire entries carried an image in 89 Events.
+
+**Decisions.**
+- **AP's news sitemap is written and tested.** `apnews.com/news-sitemap-content.xml` is listed in AP's robots.txt (which allows it), and curl gets 200 with ~550 article URLs, real
+  URLs, headlines, publication times. Node's `fetch` gets 403 from Cloudflare with byte-identical headers, so it is a transport-level (TLS/HTTP) fingerprint — at the time of this
+  entry, shelling out to curl to get past that felt like defeating a bot check on our own initiative, so the channel shipped `enabled: false` pending J's call. **Turned on 2026-09-27
+  once J confirmed AP's permission for this fetch — see that entry above** for the curl-transport mechanism and a fold it surfaced. Only the sitemap file is ever fetched — never
+  article pages (AP's terms restrict automated collection and storing except personal/non-commercial use, and AP litigated exactly headline+lede reuse in *AP v. Meltwater*). Article
+  pages DO serve `og:image`/`og:description` to a plain fetch; deliberately not used.
+- **Reuters is not read directly.** Its robots.txt is `User-agent: * / Disallow: /` with a notice forbidding automated collection without written consent. The news sitemap index
+  returned 200 to one probe request; technically reachable is not permitted, so there is no Reuters direct channel (a test pins it).
+- **AFP stays Google-only.** `en.afp.com` posts ~50/day but 3 of 300 carry a link card (text and pictures otherwise, no article URL); the French account 5 of 298 (YouTube). The
+  press-release problem below is therefore unchanged.
+- **A wire image is a Bluesky CDN copy of the publisher's link-card thumbnail**, hot-linked like any other feed's `imageUrl`. It is the preview the publisher chose to publish.
+
+**Dead ends (do not re-probe without a reason).** Bing News RSS returns an empty shell page; Yahoo News RSS is retired (404/403; Yahoo Finance's RSS exists but is third-party
+content); GDELT DOC API answered 429 on four attempts including one after a 35 s pause, so it is UNVERIFIED (it would give real URLs and a social image in principle). Not tested:
+RSSHub (a scraper — same terms question), Common Crawl news (batch, delayed), the keyed news APIs (J prefers keyless).
+
+**Still true from the entry below:** `afp.com` hosts paid third-party press releases that cannot be told from AFP reports without the URL path, and a wire-tier entry can publish alone.
+
+## 2026-09-26 — Wire services (Reuters/AP/AFP) through Google News RSS, behind a swappable adapter
+
+> Superseded in part by the entry above: Google is now one channel of several (see wireSources.json), and Reuters/AP articles now carry real URLs, descriptions and images from Bluesky. The decisions below about `<source>` verification, dedup and AFP still stand.
+
+**What and why.** Reuters, AP and AFP had no reachable feed (`feedGaps.json`, 2026-09-23: 401 / 403 / corporate-press-release-only), so the wire tier — the one that clears
+Critical alone — was empty and Critical leaned on the 3-distinct-outlets fallback. J asked for Google News RSS as a free stopgap: one `site:` search per publisher
+(`site:reuters.com`, `site:apnews.com`, `site:afp.com`, `when:2d`, en-US). Built as an ADAPTER so an official/licensed API can replace it later: `src/news/wireSources.json`
+names the adapter and the publishers; `scripts/lib/wire/index.mjs` registers implementations; `scripts/lib/wire/googleNewsRss.mjs` is the only Google-specific fetch code;
+`src/news/wireSources.ts` is the pure, tested normalizer. The adapter's whole output is `RawArticle` records — the shape every feed already produces — which is why the
+archive, Event build, gate and client needed no change. `fetchSources.mjs`'s `fetchAllArticles` calls it, so `archive:news`, `build:news:events` and `news:build/watch` all
+pick it up with no caller edits. Reuters/AP/AFP left `feedGaps.json`; the roster-partition test now counts `wireSources.json` publishers as fed.
+
+**What the live feed turned out to be (measured 2026-09-26, not assumed).** ~100 items per query, spanning ~2 days each; no images; the
+`<description>` is only a link plus the publisher name; `<source url>` is present and consistent; **`<link>` is an opaque `news.google.com/rss/articles/CBMi…` redirect**
+(the new encrypted format — no publisher URL inside it; a browser follows it to the article). Google's article URLs are stable across fetches (a second full archive run
+added nothing for the wire items), so archive dedup by URL works.
+
+**Decisions.**
+- **`<source>` is verified, not the query trusted.** `site:afp.com` also returns `factcheck.afp.com` ("AFP Fact Check"), a different product. An item is kept only if its `<source>`
+  host is EXACTLY one of the publisher's `domains` (after stripping `www.`).
+- **Headline + link only.** No description (Google's isn't the article's text), no image (none exists). `url` stays Google's redirect.
+- **Commentary screening is by title, because there is no URL path to read** (`isCommentaryUrl` is blind to a Google link). Only shapes actually seen: `Explainer:` (Reuters),
+  `Photos of …` (AP galleries). Titles under 3 words are dropped ("White House - afp.com" came back as an item). Extend the list only after seeing a real headline.
+- **Dedup**: by URL (`archiveKey`) and by publisher + normalized headline — the feeds repeat items verbatim (Reuters 100→99, AP 100→97, AFP 100→84 after dropping repeats,
+  the fact-check item and stubs). The same headline from two DIFFERENT publishers is deliberately kept twice: that is two sources.
+- **A 200 with zero `<item>`s counts as a feed failure**, so Google changing its markup or serving a consent page shows in `news:status` and the failure streaks instead of looking
+  like a quiet day.
+- **Wire-tier standing is unchanged, so ONE of these articles now wire-confirms an Event by itself** (pinned by a test). That is the point of ingesting them, and it raises the
+  stakes of the AFP problem below.
+
+**Found and NOT fixed: `afp.com` also hosts third-party paid press releases** ("AngloGold Ashanti Plc Announces Appointment of Non-Executive Director", "MultiBank Group Secures Two
+Awards at Forex Expo Dubai 2026", "Novotech to acquire Agilex Biolabs" all appeared in one pull) — the exact exposure `feedGaps.json` logged for AFP on 2026-09-23. The URL path that
+would tell a release from a report is inside the encrypted token, and a title heuristic is unreliable: Title-Case catches two of the three above and would miss the third, so it would
+give false comfort. A corporate release would still have to clear the relevance classifier and cluster into an Event to matter, which most won't. J's call whether to leave AFP on
+(current), or set `"enabled": false` on the AFP publisher in `wireSources.json` (a one-line change; nothing else references it). See `BACKLOG.md`.
+
+**Rejected.** (1) Decoding Google's article token to the real URL via its undocumented `batchexecute` endpoint: fragile, rate-limited, and calling an undocumented Google API at
+build time is more than "an RSS feed"; the redirect link works for a reader. (2) Scraping the publishers directly: that is the 401/403 wall this replaces. (3) A `via` field on
+`RawArticle` recording the adapter: the URL host already says it, and a schema change to the archive for provenance nobody reads yet.
+
+**Terms.** Google's feed carries a notice limiting it to personal, non-commercial feed-reader use. This project's archive is local and gitignored, but `news-events.json` is tracked
+and served, so revisit before publishing (`BACKLOG.md`). It is a stopgap by design.
+
 ## 2026-09-25 — Translation: Spanish finished, first labeled eval on translated headlines (60 hand-labeled; language NOT switched on)
 
 **Spanish is translated.** `translate:news -- --languages es` took the 1,629 Spanish headlines in the window in one pass (~1,450 new, OPUS, a few minutes; the

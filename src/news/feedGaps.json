@@ -1,7 +1,4 @@
 [
-  {"sourceId":"reuters","status":"no-public-feed","reason":"Every feed and the homepage return 401; Reuters retired public RSS.","checked":"2026-09-23"},
-  {"sourceId":"ap","status":"no-public-feed","reason":"apnews.com returns 403 to every feed path; AP publishes no public RSS.","checked":"2026-09-23"},
-  {"sourceId":"afp","status":"no-news-feed","reason":"The only public feed (afp.com/en/actus/afp_communique/all/feed) is AFP corporate press releases, not news. Ingesting it under a wire-tier id would let one press release wire-confirm an Event by itself.","checked":"2026-09-23"},
   {"sourceId":"national-review","status":"no-news-feed","reason":"The profile is \"National Review (News)\", but the only feed (/feed/) is the magazine and opinion content — no /news/ items — and /news/feed/ 404s.","checked":"2026-09-23"},
   {"sourceId":"iss-africa","status":"no-feed-found","reason":"No feed advertised; every guessed feed path serves the site's HTML 404 page.","checked":"2026-09-23"},
   {"sourceId":"carnegie","status":"no-feed-found","reason":"Next.js site with no advertised feed; every guessed path serves HTML.","checked":"2026-09-23"},

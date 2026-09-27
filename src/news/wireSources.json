@@ -1,0 +1,82 @@
+{
+  "publishers": [
+    {
+      "sourceId": "reuters",
+      "domains": [
+        "reuters.com"
+      ],
+      "channels": [
+        {
+          "adapter": "bluesky",
+          "handle": "reuters.com",
+          "pages": 2,
+          "shorteners": [
+            "reut.rs"
+          ]
+        },
+        {
+          "adapter": "google-news-rss",
+          "lookback": "2d",
+          "queries": [
+            "site:reuters.com",
+            "site:reuters.com (war OR military OR missile OR strike OR attack)",
+            "site:reuters.com (election OR president OR parliament OR minister OR sanctions)",
+            "site:reuters.com (economy OR inflation OR tariffs OR trade OR oil)",
+            "site:reuters.com (earthquake OR flood OR storm OR wildfire OR outbreak OR cyber OR satellite OR chip)"
+          ]
+        }
+      ]
+    },
+    {
+      "sourceId": "ap",
+      "domains": [
+        "apnews.com"
+      ],
+      "channels": [
+        {
+          "adapter": "bluesky",
+          "handle": "apnews.com",
+          "pages": 1,
+          "shorteners": [
+            "bit.ly"
+          ]
+        },
+        {
+          "adapter": "google-news-rss",
+          "lookback": "2d",
+          "queries": [
+            "site:apnews.com",
+            "site:apnews.com (war OR military OR missile OR strike OR attack)",
+            "site:apnews.com (election OR president OR parliament OR minister OR sanctions)"
+          ]
+        },
+        {
+          "adapter": "news-sitemap",
+          "url": "https://apnews.com/news-sitemap-content.xml",
+          "pathPrefixes": [
+            "/article/"
+          ],
+          "note": "Cloudflare answers 403 to Node fetch but 200 to curl (transport fingerprint), so this channel uses curl. J confirmed AP permission for this fetch on 2026-09-26. Only this sitemap file is fetched, never article pages.",
+          "transport": "curl"
+        }
+      ]
+    },
+    {
+      "sourceId": "afp",
+      "domains": [
+        "afp.com"
+      ],
+      "channels": [
+        {
+          "adapter": "google-news-rss",
+          "lookback": "2d",
+          "queries": [
+            "site:afp.com",
+            "site:afp.com (war OR military OR missile OR strike OR attack)",
+            "site:afp.com (election OR president OR parliament OR minister OR sanctions)"
+          ]
+        }
+      ]
+    }
+  ]
+}

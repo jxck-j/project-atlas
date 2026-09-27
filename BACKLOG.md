@@ -265,8 +265,25 @@ ewsTasks.ps1 -Action install` (it re-registers Build and Watch too). See
     story ALSO has its own 6-source Event. Same shape as the standing China/AI-vs-China/space false merge:
     same country, same principal, different event. Not on the clustering fixture yet.
 
+- **Wire services (Reuters/AP/AFP, 2026-09-26/27) — open items** (built as channels: Bluesky + Google topic slicing + AP's sitemap via curl transport with J's permission; see
+  `LOGBOOK.md`'s three 2026-09-26/27 entries):
+  - **The near-duplicate fold's 0.6 word-overlap threshold is unvalidated.** Read off five true AP retitled-story pairs, not checked against false positives (two genuinely
+    different AP stories sharing 60%+ of their significant words). Re-derive properly on a larger sample — `wireCommon.ts`'s `foldGoogleNearDuplicates`/`NEAR_DUPLICATE_OVERLAP`.
+  - **AFP press releases can wire-confirm an Event.** `site:afp.com` returns third-party paid releases beside AFP's own reports, indistinguishable without the URL path (inside Google's
+    encrypted link token). AFP has no other channel (its Bluesky accounts almost never post a link card). Decide: leave AFP on, or `"enabled": false` for it. Watch what AFP items publish.
+  - **One wire entry publishes an Event alone, including Critical** (first full build, before the sitemap was on: 110 of 288 Events wire-only, 6 of 9 Critical wire-sourced, some from a
+    single AP entry). That is the design (a wire report clears Critical), but AP's volume roughly tripled once its sitemap channel turned on; worth a fresh look at those Events' quality
+    before the schedule runs unattended at the new volume.
+  - **Reuters and AFP are still partly or fully Google-only** (opaque link, no description, no image): Bluesky covers only what the publisher posts there (Reuters ~180/318 real-URL from
+    Bluesky's 2 pages ≈ 32h; AFP has no working link-card channel at all). AP is now mostly real-URL via its sitemap.
+  - **Bluesky, Google and curl-via-AP's-sitemap are all unofficial or semi-official surfaces**, not a licensed feed. Bluesky's public AppView limits are "generous" and unspecified;
+    Google's feed notice restricts it to personal, non-commercial feed-reader use and it is undocumented; AP's sitemap fetch was cleared verbally by J on AP's behalf, not in writing from
+    AP itself. Fine for the local archive; revisit before `news-events.json` (tracked, served) is published anywhere. An official Reuters/AP/AFP API is what the channel design is for.
+  - **Wire images are hot-linked Bluesky CDN copies** of the publisher's preview thumbnail.
+  - **Commentary screening for wire items is title-only and short** (`Explainer:`, `Photos of`, <3 words) — extend from real headlines as they show up.
+  - **Unverified alternatives:** GDELT DOC API (429 on every attempt), RSSHub, Common Crawl news, keyed news APIs.
 - **Critical's 3-outlet fallback still counts sources, not independent newsgathering** (amended 2026-09-20
-  because no wire feed — Reuters/AP/AFP — is reachable; state-controlled outlets are already excluded from the
+  because no wire feed — Reuters/AP/AFP — was reachable then; a stopgap (Bluesky + Google News RSS channels) has since been added, see above; state-controlled outlets are already excluded from the
   four, see `LOGBOOK.md`). Three outlets running one syndicated AP/Reuters story still pass (lowered from four on 2026-09-21, which makes this slightly worse). Fixing that needs
   syndication detection (matching wire bylines/boilerplate/near-identical text across a dossier) that nothing
   has yet — Phase 2 now ingests real feeds and the weakness is live (2026-09-20 pull: NPR, PBS and France 24 all

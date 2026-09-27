@@ -30,6 +30,12 @@ function extractAttr(itemXml, tag, attr) {
   return match ? decodeEntities(match[1]) : undefined
 }
 
+function extractSource(itemXml) {
+  const name = extractTag(itemXml, 'source')
+  const url = extractAttr(itemXml, 'source', 'url')
+  return name || url ? { name, url } : undefined
+}
+
 /**
  * Parses every <item> block in an RSS 2.0 feed's raw XML text.
  * Returns { title, description, link, pubDate, guid, imageUrl } per item —
@@ -54,6 +60,9 @@ export function parseRssItems(xmlText) {
       extractAttr(block, 'media:thumbnail', 'url') ??
       extractAttr(block, 'enclosure', 'url') ??
       extractAttr(block, 'media:content', 'url'),
+    // RSS 2.0's <source url="...">Name</source> — who actually published the item. Only aggregators fill it (Google News); the
+    // fetchers for ordinary feeds ignore it.
+    source: extractSource(block),
   }))
 }
 

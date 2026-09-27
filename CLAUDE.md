@@ -1762,11 +1762,34 @@ generation — which is what made the Phase 4 cutover a matter of swapping two c
   **`sources.json`'s key order is canonical as of Phase 5** (`configSerialize.ts`) and one record per LINE —
   don't reformat it with `JSON.stringify(x, null, 2)`, which turns a one-field edit into a 1,400-line diff. `sources.json` carries only what the design doc states; anything unspecified is `vetting:
   'provisional'` with a note. **Wire tier is Reuters/AP/AFP only — Bloomberg is not wire in v2** (v1's
-  `WIRE_TIER_OUTLETS` includes it). No working wire feed exists yet, which is why Critical also accepts 4+
-  distinct outlets; the fallback's remaining weakness (three outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
+  `WIRE_TIER_OUTLETS` includes it). No native wire feed exists (Reuters/AP/AFP publish none); a Google News RSS stopgap supplies them since 2026-09-26 (see
+  "Wire services" below), and Critical still also accepts 3+ distinct outlets; the fallback's remaining weakness (three outlets running one syndicated story still pass) is in `BACKLOG.md`. Every
   country-native source carries an RSF 2026 rank in `pressFreedomContext` (enforced by a test); five country-native
   entries remain `vetting: 'provisional'`, plus five general outlets (Euronews, Defense News, Breaking Defense, The War Zone,
   Ars Technica) added 2026-09-20 with no `leaning` — unrated, not neutral. They count toward corroboration like any outlet.
+
+**Wire services (Reuters/AP/AFP, 2026-09-26)** are fetched through swappable CHANNELS, not `feeds.json`: `src/news/wireSources.json` lists, per publisher, its `domains` and its
+`channels` (each `{adapter, ...config, enabled?, note?}`); `scripts/lib/wire/index.mjs` registers the adapters (`WIRE_ADAPTER_NAMES` in `wireSources.ts` must match) and runs a
+publisher's channels concurrently; `fetchAllArticles` (`fetchSources.mjs`) calls it, so every fetch path picks it up. **To add or replace a source (an official Reuters/AP/AFP
+API):** write `scripts/lib/wire/<name>.mjs` returning `{articles: RawArticle[], feedFailures, failedFeeds, targets}`, register it, list it as a channel — nothing downstream sees
+a difference, because the output is ordinary `RawArticle`s. Three adapters exist: **`bluesky`** (the publisher's OWN account via the public unauthenticated AppView: the link card
+gives the headline, the publisher's own description and a thumbnail; the card link is the publisher's shortener — `reut.rs`, AP's `bit.ly` — resolved with one HEAD request to the
+SHORTENER, never the article, cached in `debug/wire-shortlink-cache.json`; the destination must be the publisher's own domain), **`google-news-rss`** (several `site:` queries per
+publisher because a query caps at 100 items and ranks by relevance: a base query plus topic splits, spaced 1 s apart; keeps an item only if its `<source>` host is exactly one of the
+`domains`; headline + opaque redirect link only), and **`news-sitemap`** (a Google-News sitemap from the publisher's robots.txt: real URLs, headlines, times — AP's runs with
+**`"transport": "curl"`** (`scripts/lib/wire/curlFetch.mjs`, shells out to the system `curl`), because Cloudflare answers 403 to Node's own `fetch` for this host with byte-identical
+headers while curl gets 200 — a transport-level fingerprint, not anything sent. `transport: 'curl'` is opt-in per channel and used here only because J confirmed AP's permission for
+this specific fetch (2026-09-26); it fetches only the sitemap file, never article pages, and is not a general bot-check workaround — don't flip it on elsewhere without the same kind
+of confirmation). `wireCommon.ts`'s `mergeWireArticles` folds a publisher's channels into one record per story: same source + same cleaned URL OR same normalized headline merge
+outright (the first wins, later copies only fill the real URL / description / image and move the time earlier); a same-source, same-day, still-Google-linked record that shares
+≥60% of its significant words with a real-URL record (`NEAR_DUPLICATE_OVERLAP`) is folded too, because AP re-titles some stories between what Google indexed and what the sitemap/
+Bluesky hold (measured: 21 of 114 AP Google-only items were reworded duplicates) — see `LOGBOOK.md`'s second 2026-09-26 entry for the measurement and the threshold's exact provenance
+(read off five true examples, not calibrated against false positives). `eventBuilder.ts`'s `prepare()` runs the same fold over wire-tier articles at build time, because the archive
+keeps first sightings and a story can be stored under Google's link from one run and the real link from another. Tracking parameters (`utm_*`, `link_source`, `taid`)
+are stripped from real URLs. Reuters is deliberately NOT read directly (robots.txt `Disallow: /` plus a notice forbidding automated collection). AFP is Google-only: its Bluesky
+accounts almost never post a link card. Sources are stamped `reuters`/`ap`/`afp`, still wire tier, so **one such article wire-confirms an Event by itself** (tested; in the first
+end-to-end build 110 of 288 Events existed only because of wire entries, 6 of 9 Critical) — and `afp.com` also carries paid third-party press releases, which cannot be told apart
+here; see `BACKLOG.md` and `LOGBOOK.md`'s two 2026-09-26 entries before changing any of this. A 200 with no items (or an empty Bluesky feed) counts as a feed failure.
 
 **First-hand channels (Phase 7 step 1, 2026-09-23)** are `sourceType: 'first-hand'` profiles (`FirstHandProfile`): a Telegram
 `channel` handle, a §15a `channelTier` (`verification-specialist` / `osint-aggregator` / `regional-curator` / `combatant-affiliated`),
@@ -1851,7 +1874,8 @@ gitignored `debug/news-pending-confirmation.json` — the head-of-state-death qu
 served file publishes the rumor whatever the client filters. Since Phase 4, `news-events.json` is what the NEWS tab renders.
 Things a session touching this must know:
 - **Every roster profile is either fetched or accounted for (2026-09-23).** `feeds.json` (106 feeds, 101 of 146 sources)
-  and `feedGaps.json` (the other 45, each with a status/reason/checked date) must partition `sources.json` exactly. A
+  and `feedGaps.json` (the rest, each with a status/reason/checked date) must partition `sources.json` exactly — counting `wireSources.json`
+  publishers and first-hand channels as fetched, so Reuters/AP/AFP are no longer gaps. A
   test enforces it, so a profile added in the Admin Console fails the suite until its feed is found or its gap recorded.
   Per-type rules in `eventBuilder.ts`'s `prepare()`: **analysis orgs** become `AnalysisSourceEntry`s (they corroborate,
   never toward Critical's three; only `specialistVerified` ones make an Event specialist-verified); **country-native**
