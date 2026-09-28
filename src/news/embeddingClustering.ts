@@ -88,44 +88,120 @@ export function isSameOccurrenceByEmbedding(a: EmbedArticle, b: EmbedArticle, th
  *
  * Merges are applied best-first (highest linked fraction) and repeated until none qualify. A merged cluster must still fit in
  * MAX_CLUSTER_SPAN_MS, and only articles within LINK_WINDOW_MS of each other can link, so distant clusters are never compared.
+ *
+ * **Scaling (2026-09-27):** a naive version of this rescanned every still-alive cluster pair's fraction from scratch on every merge
+ * iteration — O(iterations × clusters²) — which was fine at the article volumes this was tuned on but, once wire services (Reuters/AP/
+ * AFP) and the first-hand Telegram channels pushed the 14-day feed window past 17,000 articles, made the underlying article-pair
+ * `linkCache` grow past V8's ~16.7M-entry Map size limit and throw mid-build. Only pairs touching the cluster a merge just created
+ * actually change; every other pair's fraction is unaffected by definition of what a merge does. `fractionByClusterId` memoizes exactly
+ * that per surviving cluster pair (keyed by a stable id, since array positions shift under `splice`), and a lazily-invalidated max-heap
+ * (`bestCandidates`) finds the next merge in O(log n) instead of an O(n²) rescan — a stale entry (either side already merged away) is
+ * just discarded on pop, never acted on. `linkCache` itself is still capped defensively (`MAX_LINK_CACHE_ENTRIES`): clearing it early
+ * never changes a result, an evicted pair is simply recomputed, so this is pure headroom against further growth, not a correctness bound.
  */
 function mergeClusters<T extends EmbedArticle>(clusters: T[][], threshold: number): T[][] {
   const linkCache = new Map<string, number>()
+  const MAX_LINK_CACHE_ENTRIES = 8_000_000
   const link = (a: T, b: T): number => {
     const key = a.key < b.key ? `${a.key}\u0001${b.key}` : `${b.key}\u0001${a.key}`
     let v = linkCache.get(key)
     if (v === undefined) {
       v = isSameOccurrenceByEmbedding(a, b, threshold) ? dot(a.vector, b.vector) : -1
+      if (linkCache.size >= MAX_LINK_CACHE_ENTRIES) linkCache.clear()
       linkCache.set(key, v)
     }
     return v
   }
-  const cs = clusters.map((c) => [...c])
-  for (;;) {
-    let best: { i: number; j: number; fraction: number } | undefined
-    for (let i = 0; i < cs.length; i++) {
-      for (let j = i + 1; j < cs.length; j++) {
-        const A = cs[i]
-        const B = cs[j]
-        const first = Math.min(A[0].time, B[0].time)
-        const last = Math.max(A[A.length - 1].time, B[B.length - 1].time)
-        if (last - first > MAX_CLUSTER_SPAN_MS) continue
-        // No cross pair can link if the two windows are more than the link window apart.
-        if (A[0].time - B[B.length - 1].time > LINK_WINDOW_MS || B[0].time - A[A.length - 1].time > LINK_WINDOW_MS) continue
-        let linked = 0
-        for (const a of A) for (const b of B) if (link(a, b) >= 0) linked++
-        const pairs = A.length * B.length
-        if (linked * 2 <= pairs) continue
-        const fraction = linked / pairs
-        if (!best || fraction > best.fraction) best = { i, j, fraction }
+
+  interface Cluster {
+    id: number
+    articles: T[]
+  }
+  let nextId = 0
+  const alive = new Map<number, Cluster>()
+  for (const c of clusters) {
+    const cluster: Cluster = { id: nextId++, articles: c }
+    alive.set(cluster.id, cluster)
+  }
+
+  // The linked fraction between two clusters, or -1 if their time windows rule them out or fewer than a strict majority of cross pairs link.
+  const fraction = (A: Cluster, B: Cluster): number => {
+    const aArts = A.articles, bArts = B.articles
+    const first = Math.min(aArts[0].time, bArts[0].time)
+    const last = Math.max(aArts[aArts.length - 1].time, bArts[bArts.length - 1].time)
+    if (last - first > MAX_CLUSTER_SPAN_MS) return -1
+    if (aArts[0].time - bArts[bArts.length - 1].time > LINK_WINDOW_MS || bArts[0].time - aArts[aArts.length - 1].time > LINK_WINDOW_MS) return -1
+    let linked = 0
+    for (const a of aArts) for (const b of bArts) if (link(a, b) >= 0) linked++
+    const pairs = aArts.length * bArts.length
+    if (linked * 2 <= pairs) return -1
+    return linked / pairs
+  }
+
+  // Max-heap over { idA, idB, fraction, seq }, ordered by fraction desc then seq asc (so ties resolve to whichever pair was queued
+  // first, matching the ascending-index scan order the pre-2026-09-27 version used). Popped entries are checked against `alive` —
+  // an entry naming an id that's since been merged away is simply dropped, never merged.
+  interface Candidate { idA: number; idB: number; fraction: number; seq: number }
+  const heap: Candidate[] = []
+  let seq = 0
+  const better = (x: Candidate, y: Candidate) => x.fraction > y.fraction || (x.fraction === y.fraction && x.seq < y.seq)
+  const heapPush = (c: Candidate) => {
+    heap.push(c)
+    let i = heap.length - 1
+    while (i > 0) {
+      const parent = (i - 1) >> 1
+      if (!better(heap[i], heap[parent])) break
+      ;[heap[i], heap[parent]] = [heap[parent], heap[i]]
+      i = parent
+    }
+  }
+  const heapPop = (): Candidate | undefined => {
+    const top = heap[0]
+    const last = heap.pop()
+    if (heap.length && last) {
+      heap[0] = last
+      let i = 0
+      for (;;) {
+        const l = i * 2 + 1
+        const r = i * 2 + 2
+        let pick = i
+        if (l < heap.length && better(heap[l], heap[pick])) pick = l
+        if (r < heap.length && better(heap[r], heap[pick])) pick = r
+        if (pick === i) break
+        ;[heap[i], heap[pick]] = [heap[pick], heap[i]]
+        i = pick
       }
     }
-    if (!best) break
-    const merged = [...cs[best.i], ...cs[best.j]].sort((x, y) => x.time - y.time || x.key.localeCompare(y.key))
-    cs[best.i] = merged
-    cs.splice(best.j, 1)
+    return top
   }
-  return cs
+  const queueAgainst = (target: Cluster, others: Iterable<Cluster>) => {
+    for (const other of others) {
+      const f = fraction(target, other)
+      if (f >= 0) heapPush({ idA: target.id, idB: other.id, fraction: f, seq: seq++ })
+    }
+  }
+
+  const initial = [...alive.values()]
+  for (let i = 0; i < initial.length; i++) queueAgainst(initial[i], initial.slice(i + 1))
+
+  for (;;) {
+    let top: Candidate | undefined
+    for (;;) {
+      top = heapPop()
+      if (!top) break
+      if (alive.has(top.idA) && alive.has(top.idB)) break
+    }
+    if (!top) break
+    const A = alive.get(top.idA)!
+    const B = alive.get(top.idB)!
+    alive.delete(A.id)
+    alive.delete(B.id)
+    const merged: Cluster = { id: nextId++, articles: [...A.articles, ...B.articles].sort((x, y) => x.time - y.time || x.key.localeCompare(y.key)) }
+    queueAgainst(merged, alive.values())
+    alive.set(merged.id, merged)
+  }
+
+  return [...alive.values()].map((c) => c.articles)
 }
 
 /** Each returned cluster is in time order, so [0] is the first report. */

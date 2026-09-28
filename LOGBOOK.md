@@ -5,6 +5,40 @@ approach — the *why* behind decisions in the code, for whenever "wait, why did
 we do it this way?" comes up later. Not a changelog (see `CHANGELOG.md` for
 user-facing *what changed*); this is the debugging/reasoning trail.
 
+## 2026-09-28 — `build:news:events` crashed at 17k+ articles/14 days: `mergeClusters`'s O(iterations × clusters²) rescan, not the model
+
+**Symptom.** The first `build:news:events` run after the wire-services commit (Reuters/AP/AFP, 2026-09-26) failed with a generic "Embedding model unavailable: Map maximum size
+exceeded" — misleading, since the model loaded fine; the catch block around `runEmbed()` wraps the whole embed+cluster+classify call, not just the model load. The real error
+(confirmed via a temporary `err.stack` log, reverted after): `RangeError: Map maximum size exceeded` at `embeddingClustering.ts`'s `mergeClusters`, inside its `linkCache.set`.
+
+**Root cause.** Wire services (Google News RSS topic-slicing per publisher + Bluesky + the AP sitemap) plus the five first-hand Telegram channels pushed the 14-day feed window
+from roughly the low thousands (what clustering was tuned/tested against) to ~17,150 articles. `mergeClusters`'s second pass found its next merge by rescanning **every** still-alive
+cluster pair's linked fraction from scratch on **every** merge iteration — O(iterations × clusters²) — memoizing only the underlying per-article-pair dot product in a single
+`Map<string, number>`. At that volume the number of distinct article pairs the rescans touched blew past V8's hard Map size limit (~16.7M entries) before a single build could
+finish. This would have recurred on every future scheduled run, not just this one — the article volume this pipeline needs to survive changed permanently once wire services shipped.
+
+**Why not just cap the Map and move on.** Capping `linkCache`'s size (clear-on-full) alone would have stopped the crash but not the underlying cost: the *same* full cluster-pair
+rescan already needed on the order of ~15-16M dot products for a single pass at this volume (a legitimate, not-redundant cost), multiplied by however many merge iterations the run
+needed — realistically far too slow to finish a build in any reasonable time, crash or not. The crash was a symptom; the O(iterations × clusters²) rescan was the actual defect.
+
+**Fix.** Rewrote `mergeClusters` to stop rescanning unaffected pairs: each cluster gets a stable numeric id (array positions shift under `splice`, ids don't), a merge only recomputes
+the linked fraction for pairs touching the *just-created* cluster (every other pair is provably unaffected by what a merge does), and a lazily-invalidated max-heap finds the next
+best-fraction merge in O(log n) instead of an O(n) rescan of all live pairs — a heap entry naming a cluster that's since merged away is simply discarded on pop. `linkCache` itself
+is still capped defensively (`MAX_LINK_CACHE_ENTRIES = 8_000_000`, clear-and-continue) as headroom against further volume growth: eviction only forces a recompute, it can't change a
+result, so this is pure safety margin, not the actual fix. Tie-breaking for exactly-equal fractions changed (heap order by insertion sequence, not array-position scan order) — the
+docstring only ever promised "best-first," never a specific tie rule, and no existing test depended on the old one.
+
+**Verification, in order:** the pre-existing `embedding.test.ts`/`classifier.test.ts`/`firstHandTicker.test.ts` suites (97 tests) pass unchanged; the full suite (599 tests) passes;
+`npm run eval:news-clustering` reproduces the exact numbers CLAUDE.md documents for the shipped 0.70 threshold (40/47 stories with ≥2 outlets, 14/19 with ≥3) — grouping quality is
+byte-identical, only the complexity changed; a real `npm run build:news:events` run then completed clean: 20,383 articles archived (19,497 in the 14-day window), 125/125 feeds and
+channels fetched successfully, 832 Events published (up from the pre-wire-services 525), 290 of them carrying a Reuters/AP/AFP source (391 wire source-entries total: 208 Reuters,
+137 AP, 46 AFP) — confirming the wire additions are genuinely flowing into what gets published, not just present in the roster. `tsc -b --noEmit` and `oxlint` both clean.
+
+**Standing question, not resolved here:** whether the *first pass* (`clusterByEmbedding`'s greedy assignment, before `mergeClusters` ever runs) has a similar growth exposure at
+even higher future volumes — it's a single O(n) pass per article against currently-open clusters bounded by `MAX_CLUSTER_SPAN_MS`, so it doesn't have the same O(iterations ×
+clusters²) shape, but wasn't specifically load-tested here. Revisit if volume grows further (more wire channels, more first-hand sources) and a similar symptom recurs elsewhere in
+this file.
+
 ## 2026-09-27 — AP sitemap turned on via curl transport (J's permission), and the near-duplicate fold that surfaced
 
 **J confirmed AP's permission for this specific fetch** and asked to work around the Cloudflare 403 documented below. `scripts/lib/wire/curlFetch.mjs` shells out to the system

@@ -17,6 +17,24 @@ Relationship, Intelligence, Data, Timeline). Every new major version should
 name which engine it expands and how that reduces future complexity — see
 `CLAUDE.md`'s Architecture section.
 
+## v6.17.1 — News Engine: fix a clustering crash that blocked every build once wire services shipped
+
+**Engine fixed: the News Engine's local-embedding grouping (`src/news/embeddingClustering.ts`).** The first `build:news:events` run
+after the Reuters/AP/AFP wire-services commit failed outright (`RangeError: Map maximum size exceeded`, surfaced as a misleading
+"Embedding model unavailable"): the 14-day feed window had grown from the low thousands to ~17,150 articles once wire channels and the
+first-hand Telegram channels were added, and `mergeClusters`'s second pass rescanned every still-alive cluster pair from scratch on every
+merge iteration (O(iterations × clusters²)), blowing its per-article-pair cache past V8's ~16.7M-entry Map limit.
+
+- Rewrote `mergeClusters` to only recompute a cluster pair's linked fraction when a merge actually touches one of the two clusters —
+  everything else is provably unchanged — using stable per-cluster ids and a lazily-invalidated max-heap to find the next merge in
+  O(log n) instead of an O(n) rescan. The article-pair cache is also capped defensively as headroom against further volume growth.
+- Grouping behavior is unchanged: `npm run eval:news-clustering` reproduces the exact documented numbers for the shipped 0.70 threshold
+  (40/47 stories with ≥2 outlets, 14/19 with ≥3), and the full Vitest suite passes unmodified.
+- Confirms the wire additions are genuinely live: the first successful post-fix build published 832 Events (up from 525 pre-wire), 290
+  of them carrying a Reuters/AP/AFP source (391 wire source-entries: 208 Reuters, 137 AP, 46 AFP), from 125/125 feeds and channels.
+
+Reasoning and the full before/after numbers: `LOGBOOK.md`'s 2026-09-28 entry.
+
 ## v6.17.0 — News Engine Phase 7: the first-hand ticker auto-pins its top headlines
 
 **Engine expanded: the News Engine's presentation of first-hand posts** (J: "pin should be automatic based on our phrasing logic built for
